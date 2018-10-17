@@ -1,3 +1,7 @@
+dist/
+nbproject/
+*.bak
+
 # Logs
 logs
 *.log

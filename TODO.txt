@@ -1,0 +1,5 @@
+- search maps, summary
+- cron job: get stash and rates every x hours (configurable)
+- screenshot dialog - where to save file?
+- xp graph, level log
+- what to put on front page?

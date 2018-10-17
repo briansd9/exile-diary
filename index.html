@@ -1,0 +1,220 @@
+<html>
+  <head>
+    <title>Loot Logger</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="res/style.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.min.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.structure.min.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.theme.min.css" />
+
+    <script>if (typeof module === 'object') {
+        window.module = module;
+        module = undefined;
+      }</script>
+
+    <!-- normal script imports etc  -->
+    <script src="res/jquery-3.3.1.min.js"></script>
+    <script src="res/jquery.tablesorter.js"></script>
+    <script src="res/jquery.tablesorter.widgets.js"></script>
+    <script src="res/jquery.lazy.js"></script>
+    <script src="res/jquery-ui.js"></script>
+
+    <!-- Insert this line after script imports -->
+    <script>if (window.module)
+        module = window.module;</script>
+
+    <script>
+      const {dialog} = require('electron').remote;
+      const {ipcRenderer} = require('electron');
+      const fs = require('fs');
+      const DB = require('./modules/DB').getDB();
+      const settings = require('./modules/settings').get();
+      const Jimp = require('jimp');
+      const logger = require('./modules/Log').getLogger(__filename);
+      const {webContents} = require('electron');
+      const moment = require('moment');
+      const momentDurationFormatSetup = require("moment-duration-format");
+      const Utils = require('./modules/Utils');
+
+      var hasAreaInfo = false;
+      var hasMapMods = false;
+
+      $(document).ready(function () {
+        
+        $("#sidenav").load("sidenav.html");
+
+        DB.serialize(() => {
+
+          DB.get(" select id from mapruns order by id desc limit 1", (err, row) => {
+            if (row) {
+              $("#mapLink").attr("href", "map.html?id=" + row.id)
+              $("#mapLink").html(row.id);
+            }
+          });
+          
+          getLastAreaInfo();
+          getLastMaps();
+          
+        });
+
+        ipcRenderer.on("areaInfo", (event, areaInfo) => {
+          logger.info("Got area info in renderer");
+          addAreaInfo(areaInfo);
+          hasAreaInfo = true;
+          if(hasAreaInfo && hasMapMods) {
+            logger.info("Showing");
+            $("#lastArea").show();
+          }
+        });
+
+        ipcRenderer.on("mapMods", (event, mods) => {
+          logger.info("Got map mods in renderer");
+          addMapMods(mods);
+          hasMapMods = true;
+          if(hasAreaInfo && hasMapMods) {
+            logger.info("Showing");
+            $("#lastArea").show();
+          }
+        });
+        
+        ipcRenderer.on("runProcessed", (event, runInfo) => {
+          $("#lastArea").hide();
+          $("#mapLink").attr("href", "map.html?id=" + runInfo.id);
+          $("#mapLink").html(`Last completed run: ${runInfo.id} ${runInfo.name}`);
+          DB.get(`
+            select mapruns.id, name, level, depth, iiq, iir, packsize, firstevent, lastevent, gained,
+            (select count(1) from events where event_type='slain' and events.id between firstevent and lastevent) deaths
+            from areainfo, mapruns
+            where mapruns.id = ? and areainfo.id = mapruns.id;
+          `, [runInfo.id], (err, row) => {
+            if(row) {
+              $("#lastMapsRows tr:last").remove();
+              Utils.addMapRow($("#lastMapsRows"), row, true);
+            }
+          });          
+        });
+        
+        ipcRenderer.on("OCRError", (event) => {
+          alert("Error getting area info from screenshot. Please try again");
+        });
+
+      });
+      
+      function getLastAreaInfo() {
+        DB.get(`
+          select * from areainfo where not exists 
+          (select 1 from mapruns where mapruns.id = areainfo.id)
+          order by id desc limit 1
+        `, (err, areaInfo) => {
+          if(areaInfo) {
+            DB.all("select mod from mapmods where area_id = ? order by cast(id as integer)", [areaInfo.id], (err, mods) => {
+              addMapMods(mods);
+              addAreaInfo(areaInfo);
+              $("#lastArea").show();
+            });
+          }
+        });
+      }
+      
+      function getLastMaps() {
+        DB.all(`
+          select mapruns.id, name, level, depth, iiq, iir, packsize, firstevent, lastevent, gained,
+          (select count(1) from events where event_type='slain' and events.id between firstevent and lastevent) deaths
+          from areainfo, mapruns
+          where areainfo.id = mapruns.id
+          order by mapruns.id desc
+          limit 10;
+        `, (err, rows) => {
+          if(rows) {
+            rows.forEach( row => {
+              Utils.addMapRow($("#lastMapsRows"), row);
+            });
+            //$("#lastMapsTable").tablesorter();              
+          }
+        });
+      }
+      
+      function addMapMods(mods) {
+        $("#mods").empty();
+        mods.forEach(m => {
+          if(m.mod) {
+            m = m.mod;
+          }
+          $("#mods").append($("<span>", {"class": "mapMod", "html": m + "<br/>"}));
+        });
+      }
+      
+      function addAreaInfo(areaInfo) {
+        $("#name").html(areaInfo.name);
+        $("#level").html(`Monster Level: ${areaInfo.level}`);
+        $("#league").html(`${settings.activeProfile.league} League`);
+        if (areaInfo.depth) {
+          $("#depth").html(`Delve Depth: ${areaInfo.depth}`);
+        }
+      }
+      
+    </script>
+
+  <body>
+    <div class='sidenav' id='sidenav'></div>
+    <div id="lastArea" style="display:none">
+      <table style="width:100%;">
+        <tr>
+          <td colspan="2">
+            <div class='sectionHeader'>
+              Last Entered Area
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="vertical-align:top;">
+            <div id='mapDiv' class='mapInfo'>
+              <div id='name'></div>
+              <div id='level'></div>
+              <div id='depth'></div>
+              <div id='league'></div>
+            </div>
+          </td>
+          <td style="vertical-align:top;">
+            <div id='mods' class='mapMod'></div>
+          </td>
+        </tr>        
+      </table>
+    </div>
+    
+    <div style="height:30px;">&nbsp;</div>
+    
+    <div style="padding:4px;">
+      <div class='sectionHeader'>
+        Most Recent Maps
+      </div>
+      <table class='searchResults' id='lastMapsTable' style='width:100%;border-spacing:0px 6px;'>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Name</th>
+            <th>Level</th>
+            <th>IIQ</th>
+            <th>IIR</th>
+            <th>Pack Size</th>
+            <th>Time</th>
+            <th><img src='res/c.png'></th>
+            <th>Deaths</th>
+          </tr>
+        </thead>
+        <tbody id='lastMapsRows'>
+        </tbody>
+      </table>      
+    </div>
+  </body>
+</html>
+<!--
+select *, 86400 * (last - first) as time from (
+select *, 
+julianday(substr(firstevent,1,4) || '-' || substr(firstevent, 5, 2) || '-' || substr(firstevent, 7, 2) || ' ' || substr(firstevent, 9, 2) || ':' || substr(firstevent, 11, 2) || ':' || substr(firstevent, 13, 2)) first,
+julianday(substr(lastevent,1,4) || '-' || substr(lastevent, 5, 2) || '-' || substr(lastevent, 7, 2) || ' ' || substr(lastevent, 9, 2) || ':' || substr(lastevent, 11, 2) || ':' || substr(lastevent, 13, 2)) last
+from mapruns
+) a
+order by time
+-->

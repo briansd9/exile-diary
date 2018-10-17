@@ -1,0 +1,708 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="res/style.css" />
+    <link rel="stylesheet" type="text/css" href="res/poedit.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.min.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.structure.min.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.theme.min.css" />
+
+    <script>if (typeof module === 'object') {
+        window.module = module;
+        module = undefined;
+      }</script>
+
+    <script src="res/jquery-3.3.1.min.js"></script>
+    <script src="res/jquery.lazy.js"></script>
+    <script src="res/jquery-ui.js"></script>
+    <script src="res/utils.js"></script>
+    <script src="res/item.js"></script>
+
+    <!-- Insert this line after script imports -->
+    <script>if (window.module)
+        module = window.module;</script>
+
+
+    <style>
+      label {
+        display: inline-block;
+        width: 5em;
+      }
+    </style>		
+    <script>
+    
+      const Utils = require('./modules/Utils');
+      const moment = require('moment');
+      const momentDurationFormatSetup = require("moment-duration-format");
+      const RateGetter = require('./modules/RateGetter');
+      const settings = require('./modules/settings').get();
+      const logger = require('./modules/Log').getLogger(__filename);
+      const MapRun = require('./modules/MapRun');
+      const Parser = require('./modules/FilterParser');
+      const RunParser = require('./modules/RunParser');
+      const DB = require('./modules/DB').getDB();
+      const {ipcRenderer} = require('electron');
+      const remote = require('electron').remote;
+      
+      var maprun, parser, rates, itemsByType, itemsById, currScroll;
+      
+      ipcRenderer.on("done-capturing", () => { 
+        $("#sidenav").show();
+        $("#topnav").show();
+        $("#mods").removeClass('mapModScreenshot');
+        $("#mods").addClass('dropdown-content');
+        $("#mods").addClass('mapMod');
+        $("body").removeClass('bodyScreenshot');
+        $(".footer").hide();
+        $(document).scrollTop(currScroll);
+        logger.info("Done capturing");
+      });
+      
+      $(document).ready(() => {
+        $("#sidenav").load("sidenav.html", () => {
+          $("#sidenav").append("<div><a class='ui-text' onclick='screenshot()'>Screenshot</a></div>");
+        });
+      });
+      
+      function screenshot() {
+        $("#sidenav").hide();
+        $("#topnav").hide();
+        $("#mods").removeClass('dropdown-content');
+        $("#mods").removeClass('mapMod');
+        $("#mods").addClass('mapModScreenshot');
+        $("body").addClass('bodyScreenshot');
+        $(".footer").show();
+        currScroll = $(document).scrollTop();
+        remote.getCurrentWindow().captureFullPage(img => {
+          img.write("test.png");
+        });  
+      }
+
+      (async () => {
+        
+        var mapID = await getMapID();
+        var m = new MapRun(mapID);
+        m.on("MapRunReady", () => { loadMap(m); });
+        
+        $(document).tooltip({
+          tooltipClass: "tooltipStyle",
+          show: "true",
+          hide: "false",
+          items: "[icon]",
+          content: function () {
+            var element = $(this);
+            var str = "<div class='uniqueBox'>";
+            if (element.attr("secretName")) {
+              str += "<div class='uniqueItemName'>" + element.attr("secretName") + "</div>";
+            }
+            str += "<img class='centerImage' src='" + element.attr("icon") + "'/>";
+            str += "</div>";
+            return str;
+          }
+        });
+        
+        ipcRenderer.on("runProcessed", (event, run) => { 
+          addToRunList(run.id); 
+        });
+        loadRunList(mapID);
+
+//        $("#total").tablesorter();
+      })();
+      
+      function addToRunList(id) {
+        
+        DB.get(`
+          select mapruns.id, name, level, depth, gained, 
+          (select count(1) from events where event_type='slain' and events.id between firstevent and lastevent) as deaths
+          from areainfo, mapruns
+          where mapruns.id = ? and areainfo.id = mapruns.id
+        `, [id], (err, row) => {
+            if(row) {
+              logger.info("Adding to run list " + JSON.stringify(row));
+              $("#runs").append(getSelectMapOption(row));
+            }
+        });
+        
+        DB.get(`
+          select id from mapruns where id < ? order by id desc limit 1
+        `, [id], (err, row) => {
+          if(row) {
+            if($("#runs").val() === row.id) {
+              logger.info("Adding next map " + id);
+              $("#nextCell").empty().html(`<a id='nextMap' onclick='goToRun("${id}")'>${id} >></a>`);
+            }
+          }
+        });
+        
+        
+      }
+      
+      function loadRunList(selectedID) {
+        DB.all(`
+          select mapruns.id, name, level, depth, gained, 
+          (select count(1) from events where event_type='slain' and events.id between firstevent and lastevent) as deaths
+          from areainfo, mapruns
+          where areainfo.id = mapruns.id
+          order by mapruns.id
+        `, (err, rows) => {
+          rows.forEach(row => {
+            var opt = getSelectMapOption(row);
+            if(row.id == selectedID) {
+              opt.attr("selected", true)
+            };
+            $("#runs").append(opt);
+          });
+        })
+      }
+      
+      function getSelectMapOption(row) {
+          var deathStr = Utils.getDeathCount(row.deaths);
+          if (Utils.isLabArea(row.name)) {
+            switch(row.level) {
+              case 33:
+                row.name = "The Labyrinth";
+                break;
+              case 55:
+                row.name = "The Cruel Labyrinth";
+                break;
+              case 68:
+                row.name = "The Merciless Labyrinth";
+                break;
+              case 75:
+                row.name = "The Eternal Labyrinth";
+                break;
+              default:
+                logger.info(`Failed to get row level ${row.level}`);
+                break;
+            }
+            row.level = '';
+          }
+          var levelStr = (row.level ? ` (${Utils.getMapTierString(row)})` : '');
+          var str = `${row.id} - ${row.name}${levelStr} - ${Number(row.gained).toFixed(2)}C${deathStr == '-' ? '' : `, ${deathStr}`}`;
+          return $("<option>").val(row.id).html(str);
+      }
+      
+      function loadMap(mapRun) {
+        clearCurrentMap();        
+        parser = mapRun.parser;
+        rates = mapRun.rates;
+        showNavigation(mapRun);
+        showInfo(mapRun);
+        showEvents(mapRun);
+        $("#runs").val(mapRun.id);
+        $("body").show();
+      }
+      
+      function clearCurrentMap() {
+        ["itemsTable", "prevCell", "nextCell", "IIQ", "IIR", "packSize", "eventsDiv", "mods"].forEach( str => {
+          $(`#${str}`).empty();
+        });
+        itemsByType = {};
+        itemsById = {};
+      }
+      
+      
+      function getMapID() {
+        var params = Utils.getParams(window.location.toString());
+        var id = params['id'];
+        if(id) {
+          return id;
+        } else {
+          return new Promise( (resolve, reject) => {
+            DB.get(" select max(id) as id from mapruns ", (err, row) => {
+              if(err) {
+                logger.info(`Unable to get latest map run: ${err}`);
+              } else if(row) {
+                resolve(row.id);
+              }
+            });
+          });
+        }
+      }
+      
+      function showNavigation(run) {
+        if(run.nav.prev) {
+          $("#prevCell").html(`<a class='ui-text' id='prevMap' onclick='goToRun("${run.nav.prev}")'><< ${run.nav.prev}</a>`);
+        }
+        if(run.nav.next) {
+          $("#nextCell").html(`<a class='ui-text' id='nextMap' onclick='goToRun("${run.nav.next}")'>${run.nav.next} >></a>`);
+        }
+      }
+
+
+      async function getItemInfo(id) {
+        await fetch("item.php?id=" + id)
+          .then(function (response) {
+            return response.json();
+          })
+          .then(function (data) {
+            if (data.itemdata.artFilename) {
+              $("#itemInfoIcon").empty().html("<img src='https://web.poecdn.com/image/gen/divination_cards/" + data.itemdata.artFilename + ".png'/>");
+            } else {
+              $("#itemInfoIcon").empty().html("<img src='" + data.itemdata.icon + "'/>");
+            }
+            f = new Intl.NumberFormat();
+            $("#itemInfoName").empty().html(displayInfoName(data));
+            $("#itemInfoCount").empty().html(f.format(data.count) + " found");
+            $("#itemInfoPrevCount").empty();
+            if (data.prevcount) {
+              $("#itemInfoPrevCount").html(" (" + f.format(data.prevcount) + " previously)");
+            }
+            $("#itemInfoLastFound").empty();
+            if (data.lastfound) {
+              data.lastfound.forEach(drawFoundItem);
+            }
+            $("#itemInfoLastFound").append("<tr><td colspan=3><hr></td></tr>");
+            if (data.nextfound) {
+              data.nextfound.forEach(drawFoundItem);
+            }
+            $("#myModal").css({display: "block"});
+          });
+      }
+
+      function displayInfoName(i) {
+
+        var name = displayName(i.itemdata);
+        if (i.secretname) {
+          name = i.secretname + ", " + name;
+        }
+
+        var span = $("<span/>");
+        switch (i.itemdata.frameType) {
+          case 1: //magic
+            span.addClass("magic");
+            break;
+          case 2: //rare
+            span.addClass("rare");
+            break;
+          case 3: //unique
+            span.addClass("unique");
+            break;
+          case 4: //gem
+            span.addClass("gem");
+            break;
+          case 8: //prophecy
+            span.addClass("prophecy");
+            break;
+          default:
+            break;
+        }
+
+        span.html(name);
+
+        return span;
+
+      }
+
+      function drawFoundItem(i) {
+        var item = new Item(JSON.parse(i.rawdata));
+        var itemDiv = drawItem(item);
+
+        var str = "<tr>";
+        str += "<td class='eventTime'>" + MiscUtils.formatDate(i.timestamp) + "</td>";
+        str += "<td style='text-align:center;'><div class='item-container'>" + itemDiv.innerHTML + "</div></td>";
+        str += "<td>found in <a href='map.html?id=" + i.mapId + "'>" + i.name + " (T" + (i.level - 67) + ")</a></td>";
+        str += "</tr>";
+        $("#itemInfoLastFound").append(str);
+      }
+
+      function showInfo(run) {
+        
+        var info = run.info;
+        if (Utils.isLabArea(info.name)) {
+          info.name = "The Lord's Labyrinth";
+        }
+        $("#name").html(info.name);
+        $("#level").html(`Monster Level: ${info.level}`);
+        $("#depth").html(info.depth ? `Delve Depth: ${info.depth}` : '');
+        $("#league").html(`${settings.activeProfile.league} League`);
+        
+        if (info.iiq) {
+          $("#IIQ").html(`Item Quantity<br/><span class='mapStatValue'>${info.iiq}%</span><br/>`);
+        }
+        if (info.iir) {
+          $("#IIR").html(`Item Rarity<br/><span class='mapStatValue'>${info.iir}%</span><br/>`);
+        }
+        if (info.packsize) {
+          $("#packSize").html(`Monster Pack Size<br/><span class='mapStatValue'>${info.packsize}%</span><br/>`);
+        }
+
+        run.mods.forEach(mod => {
+          $("#mods").append(
+            $("<span>", {
+              "class": "mapMod",
+              "html": mod + "<br/>"
+            })
+            );
+        });
+        if(run.mods.length > 0) {
+          $("#mods").addClass('dropdown-content');
+        } else {
+          $("#mods").hide();
+        }
+
+        if(info.xp) {
+          var f = new Intl.NumberFormat();
+          var xpgained = info.xp - info.prevxp;
+          $("#xp").html(
+            f.format(info.xp)
+            + (xpgained === 0 ? "" : ` (${Utils.formatSignedNumber(xpgained)})`)
+          );
+          $("#xpDiv").css("display","block");
+        }
+        $(".mapArea").show();
+      }
+
+      function getEventString(e) {
+
+        var eventType = e.event_type;
+        var eventText;
+
+        switch (eventType) {
+          case "entered":
+          case "level":
+            eventText = e.event_text;
+            break;
+          case "note":
+            eventType = "";
+            eventText = e.event_text;
+            break;
+          default:
+            eventText = "";
+        }
+        return(`<span class='eventType'>${eventType}</span> <span class='eventText'>${eventText}</span></div>`);
+      }
+
+      function drawItem(itemData) {
+        var item = new Item(itemData);
+        var itemDiv = item.draw();
+        MiscUtils.applyDefaultStyle(item);
+        for (var j = 0; j < parser.ruleSet.length; j++) {
+          var rule = parser.ruleSet[j];
+          if (rule.match(item)) {
+            item.matchingRule = rule;
+            rule.applyTo(item);
+            break;
+          }
+        }
+        return itemDiv;
+      }
+
+      function getItemDiv(item) {
+        itemDiv = drawItem(item);
+        if (item.frameType === 3) {
+          MiscUtils.preload(item.icon);
+          itemDiv.setAttribute("icon", item.icon);
+          if (!item.identified && item.secretName) {
+            itemDiv.setAttribute("secretName", item.secretName);
+          }
+        }
+        return itemDiv;
+      }
+
+      function showEvents(mapRun) {
+        
+        var events = mapRun.events;
+        var eventTimes = Object.keys(events).sort();
+        
+        var startTime = moment(eventTimes[0], "YYYYMMDDHHmmss");
+        var endTime = moment(eventTimes[eventTimes.length - 1], "YYYYMMDDHHmmss");
+        var runningTime = moment.duration(endTime.diff(startTime)).format();
+        $("#runningTime").html(`Time<br/><span class='mapStatValue'>${runningTime}</span>`);
+        
+        for (var i = 0; i < eventTimes.length; i++) {
+          eventTime = "[" + eventTimes[i].substring(8, 10) + ":" + eventTimes[i].substring(10, 12) + ":" + eventTimes[i].substring(12, 14) + "]";
+          var currEvent = events[eventTimes[i]];
+          if (i > 0 && !lastEnteredTown(events, eventTimes, i)) {
+            var lootString = getInventoryDiffs(mapRun.items, eventTimes[i]);
+            if (lootString.length > 0) {
+              $("#eventsDiv").append(
+                "<div class='eventInfo'>"
+                + "<span class='eventTime'>" + eventTime + "</span> "
+                + lootString
+                + "</div>"
+                );
+            }
+          }
+          
+          if(i > 0) {
+            var prevEvent = events[eventTimes[i-1]];
+            // don't spam multiple entries for Azurite Mine
+            if(currEvent.event_type === "entered" && prevEvent.event_type === "entered" && currEvent.event_text === prevEvent.event_text) {
+              continue;
+            }
+          }
+          
+          var eventString = getEventString(currEvent);
+          if (eventString.length > 0) {
+            $("#eventsDiv").append(
+              "<div class='eventInfo'>"
+              + "<span class='eventTime'>" + eventTime + "</span> "
+              + eventString
+              + "</div>"
+              );
+          }
+        }        
+
+        display();
+        $(".eventsArea").show();
+
+      }
+      
+      function lastEnteredTown(events, eventTimes, currIndex) {
+        for (var i = currIndex - 1; i >= 0; i--) {
+          var event = events[eventTimes[i]];
+          if (event.event_type === "entered") {
+            return Utils.isTown(event.event_text);
+          }
+        }
+      }
+
+      function getInventoryDiffs(items, timestamp) {
+        
+        if(!items[timestamp]) return "";
+        
+        var inventoryDiv = document.createElement("div");
+        items[timestamp].forEach( rawdata => {
+          var item = JSON.parse(rawdata);
+          processItem(item);
+          var itemDiv = getItemDiv(item);
+          inventoryDiv.appendChild(itemDiv);
+        });
+        return (`<span class='eventType'>Picked up:</span> <span class='eventText'>${inventoryDiv.outerHTML}</span></div>`);
+
+      }
+
+      function display() {
+
+        var items = itemsById;
+        var tbl = $("#total");
+
+        var totalValue = 0;
+
+        Object.keys(items).forEach(function (k) {
+          item = items[k];
+          totalValue += Number.parseFloat(setValue(item));
+          item.displayName = displayName(item);
+          item.icon = (item.icon.replace(/stackSize=\d+/, "")) + (item.stackSize ? (item.stackSize > 1 ? "&stackSize=" + item.stackSize : "") : "");
+        });
+
+        var values = Object.values(items);
+        values.sort(itemCompare);
+
+        for (var v of values) {
+          tbl.append(itemToString(v));
+        }
+
+        $("#netWorth").html(
+          "Gained: "
+          + totalValue.toFixed(2)
+          + " <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&scaleIndex=3&&w=1&h=1'/> "
+          );
+        
+        $(".lazy").Lazy();
+        
+        function itemCompare(a, b) {
+          a1 = (a.chaosValue || -1);
+          b1 = (b.chaosValue || -1);
+          return (b1 == a1 ? a.displayName.localeCompare(b.displayName) : (b1 - a1));
+        }
+
+      }
+
+      function processItem(item) {
+        if (!itemsByType[item.typeLine] || !item.stackSize) {
+          itemsById[item.id] = item;
+          itemsByType[item.typeLine] = item.id;
+        } else {
+          itemsById[itemsByType[item.typeLine]].stackSize += item.stackSize;
+        }
+      }
+
+      function displayName(i) {
+        var name = "";
+        if (!i.identified && i.frameType == 3 && i.typeLine.endsWith(" Map")) {
+          name = Utils.getUniqueMap(i.typeLine);
+          return name;
+        }
+        if (i.hasOwnProperty("name")) {
+          if (i.name.length > 0)
+            name += i.name.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "") + ", ";
+        }
+        name += i.typeLine.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "");
+        return name;
+      }
+
+      function itemToString(i) {
+        if (!i.chaosValue)
+          return;
+        var str = "<tr><td bgcolor=0 style='min-width:60px'><img class='lazy' style='height:" + (i.h * 40) + "px;width:" + (i.w * 40) + "px;' data-src='" + i.icon + "'/></td>";
+        str += "<td style='text-align: right;'>" + (i.stackSize || "&nbsp;") + "</td>";
+        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.stackSize ? "x" : "&nbsp;") + "</td>";
+        str += "<td style='padding-left:10px;padding-right:10px;min-width:300px'>" + i.displayName + "</td>";
+        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.unitValue ? i.unitValue + "" : "&nbsp;") + "</td>";
+        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.chaosValue ? i.chaosValue + "" : "&nbsp;") + "</td>";
+        return str;
+      }
+
+
+
+
+      function setValue(item) {
+
+        if (item.chaosValue)
+          return item.chaosValue;
+        
+        var sockets = Utils.getSockets(item);
+        
+        if(sockets) {
+          if(sockets.replace(/[DV\- ]/g, "").length === 6) {
+            if(sockets.replace(/[RGBWDV ]/g, "").length === 5) {
+              item.chaosValue = rates["Divine Orb"];
+            } else {
+              item.chaosValue = 7 * rates["Jeweller's Orb"];
+            }
+          } else {
+            item.chaosValue = Utils.getItemValue(item, rates);
+          }
+        } else {
+          item.chaosValue = Utils.getItemValue(item, rates);
+        }
+        
+        if(item.chaosValue > 0) item.chaosValue = item.chaosValue.toFixed(2);
+        
+        var name = Utils.getBaseName(item);
+        if (name === "Chaos Orb") {
+          item.unitValue = (1).toFixed(2);
+        } else if (rates[name]) {
+          item.unitValue = (rates[name] * 1).toFixed(2);
+        }
+        
+        return item.chaosValue || 0;
+
+      }
+
+      function goToRun(id) {
+        var m = new MapRun(id);
+        m.on("MapRunReady", () => { 
+          window.history.pushState("", "", `map.html?id=${id}`);
+          loadMap(m);
+        });
+      }
+
+      document.onkeydown = function (e) {
+        switch (e.key) {
+          case "ArrowLeft":
+            $("#prevMap")[0].click();
+            break;
+          case "ArrowRight":
+            if (document.getElementById("nextMap")) {
+              $("#nextMap")[0].click();
+            }
+            break;
+          //case "End":
+            //window.location.href = "map.html";
+            //break;
+          case "Escape":
+          case "Esc":
+            $("#myModal").css({display: "none"});
+            break;
+        }
+      }
+
+      document.onclick = async e => {
+        if (e.target.classList.contains("item-name")) {
+          await getItemInfo(e.target.id);
+        } else if (e.target.classList.contains("modal")) {
+          $("#myModal").css({display: "none"});
+        }
+      }
+
+    </script>
+  </head>
+  <body style='display:none;'>
+    
+    <div class='sidenav' id='sidenav'></div>    
+    
+    <table id='topnav' style='width:100%;'>
+      <tr>
+        <td id='prevCell' style='text-align:left;width:25%;'/>
+        <td style='text-align:center;'>
+          <select class='ui-text' id='runs' style='width:100%;' onchange='goToRun($("#runs").val());'>
+          </select>
+        </td>
+        <td id='nextCell' style='text-align:right;width:25%;'/>
+      </tr>
+    </table>
+    <hr style='border:1px solid #999;' />
+    <div id='mapCanvas'>
+      <div class='dropdown' style='text-align:left;width:100%;'>
+        <div class='dropbtn'>
+          <table class='mapArea mapTable' style='width:100%;'>
+            <tr style='vertical-align: top;'>
+              <td>
+                <div id='mapDiv' class='mapInfo'>
+                  <div id='name'></div>
+                  <div id='level'></div>
+                  <div id='depth'></div>
+                  <div id='league'></div>
+                </div>
+              </td>				
+              <td class='mapStat' id='IIQ'>
+              </td>
+              <td class='mapStat' id='IIR'>
+              </td>
+              <td class='mapStat' id='packSize'>
+              </td>
+              <td class='mapStat' id='runningTime'>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <div id='mods' class='mapMod'></div>
+      </div>						
+      <hr class='mapArea' style='border:1px solid #999;' />
+      <div id='xpDiv' style='display:none'>
+        Experience Points: <span id='xp'></span>
+        <hr style='border:1px solid #999;' />
+      </div>
+      <div class='eventsDiv' id='eventsDiv'></div>
+      <hr class='eventsArea' style='border:1px solid #999;' />
+      <div id='netWorth' class='tableLink netWorth' onclick='$("#total").toggle()'></div>
+      <table id='total' style='display:block;'>
+        <thead>
+          <tr class='ui-text'>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+            <th>Item</th>
+            <th>Unit</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody id="itemsTable">
+        </tbody>
+      </table>
+      <hr style='border:1px solid #999;' />
+      <div id="myModal" class="modal">
+        <div id="modalContent" class="modal-content">
+          <table style="border-spacing: 20px;">
+            <tr>
+              <td>
+                <div id="itemInfoIcon"></div>
+              </td>
+              <td style="vertical-align:middle;">
+                <div id="itemInfoName"></div>
+                <span id="itemInfoCount"></span> <span id="itemInfoPrevCount"></span>
+              </td>
+            </tr>
+          </table>
+          <table id="itemInfoLastFound">
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="footer">Generated by Exile Diary https://github.com/briansd9/exile-diary</div>
+  </body>
+</html>
+

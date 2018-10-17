@@ -1,0 +1,298 @@
+<html>
+	<head>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="res/style.css" />
+    <link rel="stylesheet" type="text/css" href="res/poedit.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.min.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.structure.min.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.theme.min.css" />
+
+    
+    <script>if (typeof module === 'object') {
+        window.module = module;
+        module = undefined;
+      }</script>
+
+    <script src="res/jquery-3.3.1.min.js"></script>
+    <script src="res/jquery.lazy.js"></script>
+    <script src="res/jquery-ui.js"></script>
+    <script src="res/jquery.tablesorter.js"></script>
+    <script src="res/jquery.tablesorter.widgets.js"></script>
+    <script src="res/utils.js"></script>
+    <script src="res/item.js"></script>
+
+    <!-- Insert this line after script imports -->
+    <script>if (window.module)
+        module = window.module;</script>
+    
+    <script>
+    
+      const Utils = require('./modules/Utils');
+      const settings = require('./modules/settings').get();
+      const logger = require('./modules/Log').getLogger(__filename);
+      const DB = require('./modules/DB').getDB();
+      const moment = require('moment');
+      const momentDurationFormatSetup = require("moment-duration-format");
+      const {ipcRenderer} = require('electron');
+      const remote = require('electron').remote;
+
+
+      $(document).ready(function() {
+
+        $("#sidenav").load("sidenav.html", () => {
+          $("#sidenav").append("<div><a class='ui-text' onclick='screenshot()'>Screenshot</a></div>");
+        });
+
+        $("#mapFilters").append(numberInput("IIQ", "iiq"));
+        $("#mapFilters").append(numberInput("IIR", "iir"));
+        $("#mapFilters").append(numberInput("Pack Size", "packsize"));
+        $("#mapFilters").append(numberInput("Level", "level"));
+        $("#mapFilters").append(numberInput("Player Level", "playerlevel"));
+        $("#mapFilters").append(numberInput("Profit (<img style='vertical-align:middle;' src='res/c.png'/>)", "profit", 5));
+        $("#mapFilters").append(numberInput("Deaths", "deaths"));
+        
+        $("#levellabel").html(`
+          <select name='levelmode' id='levelmode'>
+            <option value='mapTier' selected>Map Tier</option>
+            <option value='delveDepth'>Delve Depth</option>
+            <option value='monsterLevel'>Monster Level</option>
+          </select>
+        `)
+        
+        DB.all(" select distinct name from areainfo order by replace(name, 'The ', '') ", (err, rows) => {
+          var mapNames = rows.map(elem => elem.name);
+          $("#mapname").autocomplete({ delay: 0, minLength: 0, source: mapNames });
+        });
+        
+    
+
+        $("#form").submit(function(event) {
+          event.preventDefault();
+          $("#searchButton").prop("value", "Searching...");
+          var data = $(this).serialize();
+          ipcRenderer.send("searchMaps", data);
+          $("#searchResults").hide();
+          $("#summaryContentsLoading").show();
+          $("#summaryContents").hide();
+        });
+        
+        ipcRenderer.on("mapSearchResults", (event, rows) => {
+          $("#mapRows").empty();
+          rows.forEach(row => {
+            Utils.addMapRow($("#mapRows"), row);
+          })
+          $("#mapTable").trigger("update");
+          $("#searchButton").prop("value", `${rows.length} results found`);
+          $("#searchResults").show();
+        });
+
+        ipcRenderer.on("mapSummaryResults", (event, data) => {
+          var f = new Intl.NumberFormat();
+          $("#totalTime").html(moment.duration(data.totalTime, "seconds").format());
+          $("#avgTime").html(moment.duration(data.totalTime / data.numMaps, "seconds").format());
+          $("#totalXP").html(f.format(data.totalXP));
+          $("#avgXP").html(f.format(Math.round(data.totalXP / data.numMaps)));
+          display(data.items);
+          $("#summaryContentsLoading").hide();
+          $("#summaryContents").show();
+        });
+    
+        ipcRenderer.on("done-capturing", () => { 
+          $("#sidenav").show();
+//          $("ul").show();
+//          $("#mapList").show();
+//          $("#mapSummary").hide();
+          $(".footer").hide();
+          $("body").removeClass('bodyScreenshot');
+          $(document).scrollTop(currScroll);
+          logger.info("Done capturing");
+        });        
+        
+        $("#mapTable").tablesorter({
+          emptyTo: "bottom"
+        });
+        
+        $("#tabs").tabs({
+          active: 0
+        });
+        
+      });
+      
+      function screenshot() {
+        $("#sidenav").hide();
+//        $("ul").hide();
+//        $("#mapList").show();
+//        $("#mapSummary").show();
+        $("body").addClass('bodyScreenshot');
+        $(".footer").show();
+        currScroll = $(document).scrollTop();
+        remote.getCurrentWindow().captureFullPage(img => {
+          img.write("test.png");
+        });  
+      }
+      
+
+      function numberInput(label, inputname, maxlength = 3, pattern = '[0-9]+') {
+        return ` 
+            <tr>
+              <td>
+                <div class='searchLabel' id='${inputname}label'>${label}</div>
+              </td>
+              <td>
+                <input name='${inputname}min' id='${inputname}min' class='number' type='text' placeholder='Min' min='0' pattern='${pattern}' maxlength='${maxlength}' size='5' />
+                <input name='${inputname}max' id='${inputname}max' class='number' type='text' placeholder='Max' min='0' pattern='${pattern}' maxlength='${maxlength}' size='5' />
+              </td>
+            </tr>
+        `;
+      }      
+
+      function toggleFilters() {
+        $("#mapFilters").toggle();
+        $("#mapFilterButtons").toggle();
+        if($("#mapFiltersHeaderIcon").html() === "( - )") {
+          $("#mapFiltersHeaderIcon").html("( + )");
+        } else {
+          $("#mapFiltersHeaderIcon").html("( - )");
+        }
+      }
+      
+      function display(items) {
+
+        var tbl = $("#itemsTable");
+        tbl.empty();        
+
+        var totalValue = 0;
+
+        items.forEach(item => {
+          totalValue += item.chaosValue;
+          item.displayName = displayName(item);
+          item.icon = (
+            item.icon.replace(/stackSize=\d+/, "")) 
+            + (item.stackSize ? (item.stackSize > 1 ? "&stackSize=" + item.stackSize * (item.displayName === "6-socket items" ? 7 : 1) : "") : "")
+          ;
+        });
+
+        items.sort(itemCompare);
+
+        items.forEach(item => {
+          tbl.append(itemToString(item));
+        });
+
+        $("#netWorth").html( 
+          "Gained: "
+          + totalValue.toFixed(2)
+          + " <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&scaleIndex=3&&w=1&h=1'/> "
+          );
+        
+        $(".lazy").Lazy();
+        
+        function itemCompare(a, b) {
+          a1 = (a.chaosValue || -1);
+          b1 = (b.chaosValue || -1);
+          return (b1 == a1 ? a.displayName.localeCompare(b.displayName) : (b1 - a1));
+        }
+
+      }
+      
+      function displayName(i) {
+        var name = "";
+        if (!i.identified && i.frameType == 3 && i.typeLine.endsWith(" Map")) {
+          name = Utils.getUniqueMap(i.typeLine);
+          return name;
+        }
+        if (i.hasOwnProperty("name")) {
+          if (i.name.length > 0)
+            name += i.name.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "") + ", ";
+        }
+        name += i.typeLine.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "");
+        return name;
+      }
+
+      function itemToString(i) {
+        if (!i.chaosValue)
+          return;
+        var str = "<tr><td bgcolor=0 style='min-width:60px'><img class='lazy' style='height:" + (i.h * 40) + "px;width:" + (i.w * 40) + "px;' data-src='" + i.icon + "'/></td>";
+        str += "<td style='text-align: right;'>" + (i.stackSize || "&nbsp;") + "</td>";
+        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.stackSize ? "x" : "&nbsp;") + "</td>";
+        str += "<td style='padding-left:10px;padding-right:10px;min-width:300px'>" + i.displayName + "</td>";
+        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.chaosValue ? Number(i.chaosValue).toFixed(2) + "" : "&nbsp;") + "</td>";
+        return str;
+      }
+
+    </script>    
+  </head>
+  <body>
+    
+    <div class='sidenav' id='sidenav'></div>    
+    <form autocomplete='off' id='form' method='POST' action='results.php' target="test">
+      <div class='row'>
+        <div class='column'>
+          <div class='searchHeader' id='mapFiltersHeader' onclick='toggleFilters()'>
+            <span class='headerIcon' id='mapFiltersHeaderIcon'>( - )</span> Map Filters
+          </div>
+          <table id='mapFilters'>
+            <tr>
+              <td><div class='searchLabel'>Name</div></td>
+              <td><input class='autoclick' name='mapname' id='mapname' type='text' maxlength='30' size='40' /></td>
+            </tr>
+          </table>
+          <div id='mapFilterButtons'>
+            <input id='searchButton' style='float:left;width:85%' type='submit' value='Search'/>
+            <input id='resetButton' style='float:right;width:10%' type='reset'value='Clear Filters'/>
+          </div>
+        </div>
+      </div>
+    </form>
+    <div id='searchResults' style='display:none;'>
+      <hr/>
+      <div id="tabs">
+        <ul>
+          <li><a href="#mapList">Map List</a></li>
+          <li><a href="#mapSummary">Summary</a></li>
+        </ul>
+        <div id="mapSummary">
+          <div id="summaryContentsLoading">Loading...</div>
+          <div id="summaryContents" style="display:none;">
+            <div>Total time: <span id='totalTime'></span> (<span id='avgTime'></span> / map)</div>
+            <div>Total XP: <span id='totalXP'></span> (<span id='avgXP'></span> / hr)</div>
+            <div id='netWorth' class='tableLink netWorth' onclick='$("#total").toggle()'></div>
+            <table id='total' style='display:block;'>
+              <thead>
+                <tr class='ui-text'>
+                  <th>&nbsp;</th>
+                  <th>&nbsp;</th>
+                  <th>&nbsp;</th>
+                  <th>Item</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody id="itemsTable">
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div id="mapList">
+          <table class='searchResults' id='mapTable' style='width:100%;border-spacing:0px 6px;'>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Tier</th>
+                <th>IIQ</th>
+                <th>IIR</th>
+                <th>Pack Size</th>
+                <th>Time</th>
+                <th><img src='res/c.png'></th>
+                <th>Deaths</th>
+              </tr>
+            </thead>
+            <tbody id='mapRows'>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="footer">Generated by Exile Diary https://github.com/briansd9/exile-diary</div>
+   </body>
+</html>

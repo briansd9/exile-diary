@@ -1,0 +1,370 @@
+<html>
+  <head>
+    <title>Loot Logger</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="res/style.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.min.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.structure.min.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.theme.min.css" />
+
+    <script>if (typeof module === 'object') {
+        window.module = module;
+        module = undefined;
+      }</script>
+
+    <!-- normal script imports etc  -->
+    <script src="res/jquery-3.3.1.min.js"></script>
+    <script src="res/jquery.tablesorter.js"></script>
+    <script src="res/jquery.lazy.js"></script>
+    <script src="res/jquery-ui.js"></script>
+    <script src="res/item.js"></script>
+    <script src="res/utils.js"></script>
+
+    <!-- Insert this line after script imports -->
+    <script>if (window.module)
+        module = window.module;</script>
+
+    <script>
+
+      const https = require('https');
+      const {dialog, app} = require('electron').remote;
+      const path = require('path');
+      const {ipcRenderer} = require('electron');
+      const fs = require('fs');
+      const FilterParser = require('./modules/FilterParser');
+      const logger = require('./modules/Log').getLogger(__filename);
+      const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir"];
+      //const profileKeys = ["accountName", "characterName", "league"];
+
+      var settings = {};
+      var filterData = null;
+      var requiresRestart = false;
+
+      $(document).ready(function () {
+
+        try {
+
+          settings = require(path.join(app.getPath("userData"), "settings.json"));
+          configKeys.forEach((key) => {
+            $("#" + key).val(settings[key]);
+          });
+
+        } catch (err) {
+          throw(err);
+        }
+        
+        if(settings.activeProfile && settings.activeProfile.characterName) {
+          $("#activeProfile").html(`${settings.activeProfile.characterName} (${settings.activeProfile.league} league)`);
+          $("#selectedName").val(settings.activeProfile.characterName);
+          $("#selectedLeague").val(settings.activeProfile.league);
+          $("#uploadFilter").attr('placeholder', `Click to upload new item filter for ${settings.activeProfile.characterName}`);
+        } else {
+          $("#activeProfile").html(`None`);
+          $("#uploadFilter").hide();
+        }
+
+
+        $("#clientTxt").click(function () {
+          dialog.showOpenDialog(
+            require('electron').remote.getCurrentWindow(),
+            {properties: ['openFile']},
+            function (filepath) {
+              if (filepath && filepath.length == 1 && typeof (filepath[0] == "string") && filepath[0].endsWith("Client.txt")) {
+                $("#clientTxt").val(filepath[0]);
+              }
+            }
+          );
+        });
+        
+        $("#uploadFilter").click(function () {
+          dialog.showOpenDialog(
+            require('electron').remote.getCurrentWindow(),
+            {
+              properties: ['openFile'],
+              filters: [ { name: "Item Filters", extensions: ["filter"] } ]
+            },
+            function (filepath) {
+              if (filepath && filepath.length == 1 && typeof (filepath[0] == "string") && filepath[0].endsWith(".filter")) {
+                processFilter(filepath[0]);
+              }
+            }
+          );
+        });        
+
+        $("#screenshotDir").click(function () {
+          dialog.showOpenDialog(
+            require('electron').remote.getCurrentWindow(),
+            {properties: ['openDirectory']},
+            function (filepath) {
+              if (filepath && filepath.length == 1 && typeof (filepath[0] == "string")) {
+                $("#screenshotDir").val(filepath[0]);
+              }
+            }
+          );
+        });
+
+        $("#body").show();
+
+      });
+      
+      function processFilter(path) {
+        logger.info("Getting filter file " + path);
+        
+        var stats = fs.statSync(path);
+        if(stats.size > 2097152) {
+          $("#uploadFilter").val("Maximum file size (2MB) exceeded");
+          return;
+        }
+        
+        var data = fs.readFileSync(path, "utf8");
+        var filter = FilterParser.test(data.toString());
+        if(JSON.stringify(filter.errors) !== "[]") {
+          $("#uploadFilter").val("Errors found while parsing filter");
+          logger.info(filter.errors);
+        } else {
+          $("#uploadFilter").val(`[${path}] will be uploaded on save`);
+          filterData = data;
+          return;
+        }
+      }
+
+      function changeProfile() {
+        var profileId = $("#activeProfile").val();
+        console.log("Selected " + profileId);
+        if (profileId in settings.profiles) {
+          console.log(settings.profiles[profileId]);
+          console.log(Object.keys(settings.profiles[profileId]));
+          Object.keys(settings.profiles[profileId]).forEach((key) => {
+            console.log(key + "=>" + settings.profiles[profileId][key]);
+            $("#" + key).val(settings.profiles[profileId][key]);
+          });
+        } else {
+          profileKeys.forEach((key) => {
+            $("#" + key).val("");
+          });
+        }
+        $("#saveSettings").prop("disabled", (profileId.trim() === ""));
+      }
+
+
+      function saveSettings() {
+        
+          configKeys.forEach((key) => {
+            settings[key] = $("#" + key).val();
+          });
+          settings.activeProfile = {
+            characterName: $("#selectedName").val(),
+            league: $("#selectedLeague").val()
+          };
+
+          logger.info(JSON.stringify(settings));
+
+          var filename = path.join(app.getPath("userData"), "settings.json");
+          fs.writeFile(filename, JSON.stringify(settings), (err) => {
+            if (err) throw err;
+            if(requiresRestart) {
+              logger.info("Requires restart");
+              app.relaunch({args: []});
+              setTimeout( () => {app.quit()}, 1000);
+            } else {
+              if(filterData) {
+                var DB = require('./modules/DB').getDB();
+                var moment = require('moment');          
+                DB.run(
+                  "insert into filters(timestamp, text) values(?, ?)",
+                  [moment().format('YYYYMMDDHHmmss'), filterData],
+                  (err) => {
+                    if(err) {                
+                      logger.info("Error inserting filter: " + err);
+                    }
+                    window.location.reload();
+                  }
+                );
+              } else {
+                window.location.reload();
+              }
+            }
+          });
+
+      }
+
+      function getCharacters() {
+        
+        if(!$("#accountName").val()) {
+          return;
+        }
+        
+        $("#characterList").val(`Loading characters for ${$("#accountName").val()} . . .`);
+        
+        var requestParams = {
+          hostname: 'www.pathofexile.com',
+          path: '/character-window/get-characters?accountName=' + $("#accountName").val(),
+          method: 'GET',
+          headers: {
+            Referer: 'http://www.pathofexile.com/',
+            Cookie: `POESESSID=${this.settings.poesessid}`
+          }
+        };
+        
+        var request = https.request(requestParams, (response) => {
+          var body = '';
+          response.setEncoding('utf8');
+          response.on('data', (chunk) => {
+            body += chunk;
+          });
+          response.on('end', () => {
+            try {
+              var data = JSON.parse(body);
+              listCharacters(data);
+            } catch (err) {
+              characterListError(err);
+            }
+          });
+          response.on('error', (err) => {
+            characterListError(err);
+          });
+        });
+        request.on('error', characterListError);
+        request.end();
+        
+        function characterListError(err) {
+          alert(`Failed to get character list (${err}). Please check your network connection`);
+          $("#characterList").val("");
+        }
+        
+      }
+      
+      function listCharacters(data) {
+        var charList = [];
+        var activeChar = "";
+        data.forEach( char => {
+          var obj = {
+            label: `${char.name} (Level ${char.level} ${char.class} in ${char.league})`,
+            name: char.name,
+            league: char.league
+          };
+          charList.push(obj);
+          if(char.name === settings.activeProfile.characterName) {
+            $("#characterList").val(obj.label);
+            $("#selectedName").val(obj.name);
+            $("#selectedLeague").val(obj.league);
+          }
+        });
+        
+        $("#characterList").prop("onclick", null);
+        
+        $("#characterList").autocomplete({
+          delay: 0,
+          minLength: 0,
+          source: charList,
+          focus: function(event, ui) {
+            $("#characterList").val(ui.item.label);
+            return false;
+          },
+          select: function( event, ui ) {
+            $("#characterList").val(ui.item.label);
+            $("#selectedName").val(ui.item.name);
+            $("#selectedLeague").val(ui.item.league);
+            if($("#selectedName").val() !== settings.activeProfile.characterName || $("#selectedLeague").val() !== settings.activeProfile.league) {
+              requiresRestart = true;
+              filterData = null;
+              $("#uploadFilter").hide();              
+              $("#saveSettings").html("Save and Restart");
+            } else {
+              requiresRestart = false;
+              filterData = null;
+              $("#uploadFilter").show();
+              $("#saveSettings").html("Save");
+            }
+            return false;
+          }
+        });
+        $("#characterList").focus(function () {
+          $(this).autocomplete('search', '');
+        });
+        $("#characterList").click(function () {
+          $(this).autocomplete('search', '');
+        });
+        $("#characterList").click();        
+      }
+      
+      function setActiveCharacter() {
+        settings.activeProfile = {
+          characterName: $("#selectedName").val(),
+          league: $("#selectedLeague").val()
+        };
+      }
+
+      function backToMain() {
+        ipcRenderer.once("done-initializing", () => {
+          window.location.href = "index.html";
+        });        
+        ipcRenderer.send("reinitialize");
+      }
+
+    </script>
+
+  </head>
+  <body id='body' style='display:none'>
+    <div class='sectionHeader ui-text'>
+      Configuration
+    </div>
+    <table id='mapFilters'>
+      <tr>
+        <td><div class='configLabel ui-text'>Account Name</div></td>
+        <td><input class='configInput' name='accountName' id='accountName' type='text' maxlength='50' size='80' /></td>
+      </tr>
+      <tr>
+        <td style='vertical-align:middle;'>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <hr>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          Currently active character: <span id='activeProfile'/>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <input class='configInput' readonly name='uploadFilter' id='uploadFilter' type='text' style='width:100%'/>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <input class='configInput' onclick='getCharacters()' name='characterList' id='characterList' type='text' style='width:100%' placeholder='Click to change active character (requires restart)' />
+          <input type='hidden' id='selectedName' />
+          <input type='hidden' id='selectedLeague' />
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <hr>
+        </td>
+      </tr>
+      <tr>
+        <td><div class='configLabel ui-text'>POESESSID</div></td>
+        <td><input class='configInput' name='poesessid' id='poesessid' type='text' maxlength='50' size='80' /></td>
+      </tr>
+      <tr>
+        <td><div class='configLabel ui-text'>Client.txt Location</div></td>
+        <td><input class='configInput' name='clientTxt' id='clientTxt' readonly type='text' maxlength='50' size='80' /></td>
+      </tr>
+      <tr>
+        <td><div class='configLabel ui-text'>Screenshot Directory</div></td>
+        <td><input class='configInput' name='screenshotDir' id='screenshotDir' readonly type='text' maxlength='50' size='80' /></td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <br/>
+          <button class='ui-text' style='width:48%;float:left;' id='saveSettings' onclick='saveSettings()'>Save</button>
+          <button class='ui-text' style='width:48%;float:right;' onclick='backToMain()'>Back to Main</button>
+        </td>
+      </tr>
+    </table>    
+  </body>
+</html>

@@ -1,0 +1,519 @@
+/* font definitions */
+
+@font-face {
+		font-family: FontinSmallCaps;
+		src: url("Fontin-SmallCaps.ttf");
+}
+
+/* positioning */
+
+#header {
+	position: absolute;
+	margin: 0px;
+	padding: 0px;
+	text-align: center;
+
+	left: 0px;
+	right: 0px;
+	top: 0px;
+	height: 32px;
+	
+	background-color: yellow;
+}
+
+#header > a {
+	color: red;
+	font-family: Fontin;
+	font-size: 24px;
+	text-decoration: None;
+	text-align: center;
+}
+
+#main {
+	position: absolute;
+	margin: 10px;
+
+	left: 0px;
+	right: 0px;
+	top: 30px;
+	bottom: 0px;
+}
+
+#code-area {
+	position: absolute;
+	margin: 2px;
+
+	left: 0px;
+	right: 50%;
+	top: 0px;
+	bottom: 0px;
+}
+
+#code-window-container {
+	position: absolute;
+
+	left: 0px;
+	right: 0px;
+	top: 0px;
+	bottom: 0px;
+	padding-bottom: 90px;
+}
+
+#code-window {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+
+#log-window {
+	position: absolute;
+	height: 60px;
+
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+}
+
+#items-area {
+	position: absolute;
+	margin: 2px;
+
+	left: 50%;
+	right: 0px;
+	top: 0px;
+	bottom: 0px;
+}
+
+#items-editor {
+	position: absolute;
+	margin: 2px;
+
+	left: 50%;
+	right: 0px;
+	top: 0px;
+	bottom: 0px;
+
+	display: none; /* initially hidden */
+}
+
+#items-editor > p {
+	margin: 1px 5px;
+}
+
+#help-window {
+	position: absolute;
+	margin: 2px;
+	z-index: 0;
+	overflow-y: scroll;
+
+	left: 50%;
+	right: 0px;
+	top: 0px;
+	bottom: 0px;
+
+	display: none; /* initially hidden */
+}
+
+#buttons {
+	position: absolute;
+	margin: 2px;
+	bottom: 0px;
+	right: 0px;
+	z-index: 100;
+}
+
+#buttons > button {
+	display: inline-block;
+	margin: 0px;
+}
+
+#code-toolbar {
+	position: absolute;
+	height: 30px;
+	left: 0px;
+	right: 0px;
+	bottom: 60px;
+}
+
+#colorpicker {
+	position: absolute;
+	height: 30px;
+	left: 0px;
+	right: 100px;
+}
+
+#download-button {
+	position: absolute;
+	width: 90px;
+	right: 5px;
+}
+
+#RGB-color {
+	height: 22px;
+	margin: 2px 0px 1px 0px;
+}
+/* code editor style */
+
+#code-window {
+	padding: 3px;
+	background-color: #252525;
+	color: #ddddaa;
+	font-weight: bold;
+	font-family: monospace;
+	overflow-y: scroll;
+}
+
+#log-window {
+	background-color: white;
+	border: 1px solid black;
+	overflow-y: scroll;
+
+	font-family: sans-serif;
+	color: red;
+}
+
+#code-window > .code-error {
+	color: red;
+}
+
+#code-window > .code-comment {
+	color: rgb(0, 200, 0);
+	font-style: italic;
+}
+
+.highlighted {
+	background-color: rgba(255, 255, 255, 0.25);
+}
+
+#code-toolbar {
+	padding: 2px 0px 0px 2px;
+	background-color: white;
+	border: 1px solid black;
+	border-bottom: none;
+}
+
+#RGB-picker > input {
+	width: 49%;
+}
+
+#RGB-color {
+	display: inline-block;
+	width: 49%;
+	border: 1px solid black;
+	font-family: sans-serif;
+}
+
+/* intellisense */
+
+#intellisense {
+	position: absolute;
+	display: none;
+
+	border: 1px solid grey;
+	background-color: rgba(0, 0, 0, 0.75);
+}
+
+#intellisense > p {
+	font-family: monospace;
+	font-weight: bold;
+	color: white;
+	margin: 0px;
+	padding: 0px 5px;
+}
+
+#intellisense > p.selected {
+	background-color: rgba(220, 180, 80, 0.75);
+}
+
+/* items area style */
+
+#items-area {
+	background-image: url("../img/background.jpg");
+	background-size: cover;
+	background-position: center;
+}
+
+.item-container {
+	display: inline-block;
+	margin: 2px;
+}
+
+.hidden-item-container {
+	display: inline-block;
+	margin: 2px;
+}
+
+.hidden-item-container:hover {
+	border: 1px dashed grey;
+}
+
+.item {
+    position: relative;
+	margin: 0px;
+	padding: 1px 6px;
+	background-color: rgba(0, 0, 0, 0.75);
+}
+
+.item > span {
+	display: inline-block;
+	margin: 0px;
+	margin-top: -2px;
+	padding: 0px;
+	text-align: center;
+	vertical-align: middle;
+
+	color: white;
+	font-family: Fontin;
+	font-size: 17.5px;
+
+	cursor: default;
+}
+
+.item > .influence {
+    margin-right: 3px;
+    height: 16px;
+}
+
+.item > .sockets {
+	position: relative;
+	display: inline-block;
+	width: 10px;
+	height: 16px;
+	margin-left: 2px;
+	margin-top: -5px;
+	vertical-align: middle;
+}
+
+.item > .sockets > .socket {
+	position: absolute;
+	z-index: 5;
+	width: 4px;
+	height: 4px;
+	/* position and color is set by script */
+}
+
+.item > .sockets > .link-vertical {
+	position: absolute;
+	z-index: 10;
+	width: 2px;
+	height: 4px;
+	background-color: white;
+	/* position is set by script */
+}
+
+.item > .sockets > .link-horizontal {
+	position: absolute;
+	z-index: 10;
+	width: 4px;
+	height: 2px;
+	background-color: white;
+	/* position is set by script */
+}
+
+.item > .beam {
+    position: absolute;
+    left: 50%;
+    margin-left: -20px;
+    bottom: -10px;
+}
+
+.item > .mapIcon {
+    position: absolute;
+    left: 50%;
+    margin-left: 30px;
+    bottom: 0px;
+}
+
+/* item details */
+
+#item-details {
+	display: none; /* this is set to block by script */
+	position: absolute;
+	margin: 0px;
+	z-index: 20;
+	/* position is also set by script */
+
+	border: 1px solid white;
+	background-color: rgba(0, 0, 0, 0.75);
+
+	font-family: Fontin;
+	font-size: 15px;
+}
+
+#item-details > p {
+	margin: 0px 5px;
+}
+
+#item-details > p > .label {
+	color: #aaaaaa;
+}
+
+#item-details > p > .value {
+	color: white;
+}
+
+/* add item dialog */
+
+#additem-dialog {
+	display: none; /* this is set to block by script */
+	position: absolute;
+	padding: 5px;
+	margin: 0px;
+	z-index: 30;
+	/* position is also set by script */
+
+	border: 1px solid white;
+	background-color: rgba(0, 0, 0, 0.75);
+	box-shadow: 0px 0px 15px #888;
+
+	font-family: Fontin;
+	font-size: 15px;
+}
+
+#additem-dialog > p {
+	margin: 1px 0px 2px 0px;
+	text-align: right;
+}
+
+#additem-dialog > p > .label {
+	color: #aaaaaa;
+}
+
+#additem-dialog > p > .value {
+	color: white;
+}
+
+#additem-dialog > p > input[type=text] {
+	width: 170px;
+}
+#additem-dialog > p > .checkbox-align {
+	width: 170px;
+	margin: 0px;
+	padding: 0px;
+	text-align: left;
+	display: inline-block;
+}
+#additem-dialog > p > select {
+	width: 170px;
+}
+
+@keyframes additem-button-anim {
+	from { opacity: 1.0 }
+	to { opacity: 0.7 }
+}
+
+#additem-button {
+	animation-name: additem-button-anim;
+	animation-duration: 1s;
+	animation-direction: alternate;
+	animation-iteration-count: infinite;
+	animation-timing-function: ease-in-out;
+}
+
+/* items editor */
+
+#items-editor {
+	padding: 3px;
+	background-color: white;
+	color: black;
+	font-family: monospace;
+	overflow-y: scroll;
+}
+
+/* help window */
+
+#help-window {
+	padding: 3px 10px;
+	background-color: #252525;
+	color: #ddddaa;
+	font-family: sans-serif;
+	font-size: 16px;
+}
+
+#help-window > h1 {
+	font-family: Fontin;
+}
+
+#help-window > p {
+	padding: 2px 10px;
+}
+
+#help-window li {
+	padding: 5px;
+}
+
+#help-window a:link { color: rgb(250, 150, 50); }
+#help-window a:visited { color: rgb(250, 150, 50); }
+
+#help-window .url { font-style: italic; }
+#help-window .url .highlight { font-weight: bold; color: red; }
+#help-window .url .highlight2 { font-weight: bold; color: green; }
+
+#help-window img.inline { display:inline-block; }
+
+/* settings dialog */
+
+#settings-dialog {
+	display:none;
+
+	position:absolute;
+	left:50%;
+	top:50%;
+	width:300px;
+	height:230px;
+	margin-left:-150px;
+	margin-top:-200px;
+	z-index: 1000;
+
+	border:2px solid black;
+	box-shadow: 0px 0px 15px #888;
+	background-color: white;
+	color: black;
+	font-family: Tahoma,Verdana,Arial,sans-serif;
+}
+
+#settings-dialog > h1 {
+	padding:0px 0px 2px 5px;
+	margin:0px;
+	font-size: 16pt;
+	background-color: grey;
+}
+
+#settings-dialog > h2 {
+	padding:10px 0px 2px 5px;
+	margin:0px;
+	font-size: 14pt;
+}
+
+#settings-dialog > p {
+	padding:0px 0px 2px 5px;
+	margin:5px;
+}
+
+#settings-dialog select {
+	width:50%;
+	float:right;
+}
+
+#settings-dialog input {
+	float:right;
+}
+
+#settings-dialog button {
+	float:right;
+	margin:10px 2px 2px 2px;
+}
+
+/* debug button */
+
+#manual-update-button {
+	position: absolute;
+	left: 50%;
+	margin-left: -40px;
+	z-index: 100;
+	display: none;
+}
+
+/* generic stuff */
+
+* { box-sizing: border-box; }
