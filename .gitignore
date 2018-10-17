@@ -1,6 +1,7 @@
 dist/
 nbproject/
 *.bak
+test.png
 
 # Logs
 logs
