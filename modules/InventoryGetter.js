@@ -58,16 +58,7 @@ class InventoryGetter extends EventEmitter {
           }
         }
       });
-      /*
-       if (Object.keys(diff).length !== 0) {
-       logger.info("diffs follow:");
-       Object.keys(diff).forEach(key => {
-       logger.info((diff[key].stackSize ? diff[key].stackSize + " " : "") + diff[key].typeLine);
-       });
-       } else {
-       logger.info("No diffs found");
-       }
-       */
+      
       this.updateLastInventory(curr);
       resolve(diff);
 
