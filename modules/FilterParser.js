@@ -41,6 +41,9 @@ function getFilterID(forID) {
       if (err) {
         logger.warn(`Failed to get filter ID: ${err}`);
         reject();
+      } else if(!row) {
+        logger.warn(`No filter found for ${forID}`);
+        resolve("");
       } else {
         resolve(row.timestamp);
       }
@@ -54,6 +57,9 @@ function getFilterText(forID) {
       if (err) {
         logger.warn(`Failed to get filter: ${err}`);
         reject();
+      } else if(!row) {
+        logger.warn(`No filter found for ${forID}`);
+        resolve("");
       } else {
         resolve(row.text.toString());
       }
