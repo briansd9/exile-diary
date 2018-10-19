@@ -5,7 +5,7 @@ function get() {
   
   var app = require('electron').app || require('electron').remote.app;
 
-  var settings = {};
+  var settings = null;
   
   try {
     settings = require(path.join(app.getPath("userData"), "settings.json"));

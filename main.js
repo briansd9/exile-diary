@@ -8,6 +8,7 @@ const RateGetter = require("./modules/RateGetter");
 const RunParser = require('./modules/RunParser');
 const MapSearcher = require('./modules/MapSearcher');
 const ScreenshotWatcher = require("./modules/ScreenshotWatcher");
+const settings = require("./modules/settings");
 const StashGetter = require("./modules/StashGetter");
 const fs = require('fs');
 const path = require('path');
@@ -32,14 +33,16 @@ function init() {
   // remove settings file from cache, then restart all components 
   // to make sure they're using the current settings file
   
-  delete require.cache[require.resolve(path.join(app.getPath("userData"), "settings.json"))];
-  
-  DB.getDB(true);
-  RateGetter.update();
-  StashGetter.get();
-  ClientTxtWatcher.start();
-  ScreenshotWatcher.start();
-  OCRWatcher.start();
+  var settingsPath = path.join(app.getPath("userData"), "settings.json");
+  if(fs.existsSync(settingsPath)) {
+    delete require.cache[require.resolve(settingsPath)];
+    DB.getDB(true);
+    RateGetter.update();
+    StashGetter.get();
+    ClientTxtWatcher.start();
+    ScreenshotWatcher.start();
+    OCRWatcher.start();
+  }
   
 }
 
@@ -114,7 +117,11 @@ function createWindow() {
   mainWindow.show();
 
   // and load the index.html of the app.
-  mainWindow.loadFile('index.html');
+  if(!settings.get()) {
+    mainWindow.loadFile('config.html');
+  } else {
+    mainWindow.loadFile('index.html');
+  }
   
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {

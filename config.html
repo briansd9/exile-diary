@@ -40,23 +40,24 @@
       var requiresRestart = false;
 
       $(document).ready(function () {
+        
+        var settingsPath = path.join(app.getPath("userData"), "settings.json");
+        if(fs.existsSync(settingsPath)) {
+          settings = require(settingsPath);
+        }
 
         $("#sidenav").load("sidenav.html", () => {
-          $("#sidenav-main").removeAttr("href");
-          $("#sidenav-main").click(backToMain);
+          if(JSON.stringify(settings) === "{}") {
+            $("#sidenav-items").hide();
+          } else {
+            $("#sidenav-main").removeAttr("href");
+            $("#sidenav-main").click(backToMain);
+          }
         });
-          
 
-        try {
-
-          settings = require(path.join(app.getPath("userData"), "settings.json"));
-          configKeys.forEach((key) => {
-            $("#" + key).val(settings[key]);
-          });
-
-        } catch (err) {
-          throw(err);
-        }
+        configKeys.forEach((key) => {
+          $("#" + key).val(settings[key]);
+        });
         
         if(settings.activeProfile && settings.activeProfile.characterName) {
           $("#activeProfile").html(`${settings.activeProfile.characterName} (${settings.activeProfile.league} league)`);
@@ -195,7 +196,7 @@
 
       function getCharacters() {
         
-        if(!$("#accountName").val()) {
+        if(!$("#accountName").val() || !$("#poesessid").val()) {
           return;
         }
         
@@ -203,11 +204,11 @@
         
         var requestParams = {
           hostname: 'www.pathofexile.com',
-          path: '/character-window/get-characters?accountName=' + $("#accountName").val(),
+          path: `/character-window/get-characters?accountName=${$("#accountName").val()}`,
           method: 'GET',
           headers: {
             Referer: 'http://www.pathofexile.com/',
-            Cookie: `POESESSID=${this.settings.poesessid}`
+            Cookie: `POESESSID=${$("#poesessid").val()}`
           }
         };
         
@@ -219,6 +220,7 @@
           });
           response.on('end', () => {
             try {
+              logger.info(body);
               var data = JSON.parse(body);
               listCharacters(data);
             } catch (err) {
@@ -249,10 +251,14 @@
             league: char.league
           };
           charList.push(obj);
-          if(char.name === settings.activeProfile.characterName) {
-            $("#characterList").val(obj.label);
-            $("#selectedName").val(obj.name);
-            $("#selectedLeague").val(obj.league);
+          try {
+            if(char.name === settings.activeProfile.characterName) {
+              $("#characterList").val(obj.label);
+              $("#selectedName").val(obj.name);
+              $("#selectedLeague").val(obj.league);
+            }
+          } catch(err) {
+            // active profile not found - do nothing
           }
         });
         
@@ -270,7 +276,7 @@
             $("#characterList").val(ui.item.label);
             $("#selectedName").val(ui.item.name);
             $("#selectedLeague").val(ui.item.league);
-            if($("#selectedName").val() !== settings.activeProfile.characterName || $("#selectedLeague").val() !== settings.activeProfile.league) {
+            if(settings.activeProfile && ($("#selectedName").val() !== settings.activeProfile.characterName || $("#selectedLeague").val() !== settings.activeProfile.league)) {
               requiresRestart = true;
               filterData = null;
               $("#uploadFilter").hide();              
@@ -278,7 +284,10 @@
             } else {
               requiresRestart = false;
               filterData = null;
-              $("#uploadFilter").show();
+              if(settings.activeProfile && settings.activeProfile.characterName) {
+                $("#uploadFilter").attr('placeholder', `Click to upload new item filter for ${settings.activeProfile.characterName}`);
+                $("#uploadFilter").show();
+              }
               $("#saveSettings").html("Save");
             }
             return false;
@@ -323,6 +332,10 @@
         <td><input class='configInput' name='accountName' id='accountName' type='text' maxlength='50' size='80' /></td>
       </tr>
       <tr>
+        <td><div class='configLabel ui-text'>POESESSID</div></td>
+        <td><input class='configInput' name='poesessid' id='poesessid' type='text' maxlength='50' size='80' /></td>
+      </tr>
+      <tr>
         <td style='vertical-align:middle;'>
         </td>
       </tr>
@@ -352,10 +365,6 @@
         <td colspan="2">
           <hr>
         </td>
-      </tr>
-      <tr>
-        <td><div class='configLabel ui-text'>POESESSID</div></td>
-        <td><input class='configInput' name='poesessid' id='poesessid' type='text' maxlength='50' size='80' /></td>
       </tr>
       <tr>
         <td><div class='configLabel ui-text'>Client.txt Location</div></td>

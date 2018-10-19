@@ -7,8 +7,13 @@ class DB {
   static getDB(startup = false) {
 
     var settings = require('./settings').get();
+    if(!settings) {
+      logger.info("No settings file found, can't initialize DB");
+      return null;
+    }
     if (!settings.activeProfile) {
-      throw new Error("No active profile selected");
+      logger.info("No active profile selected, can't initialize DB");
+      return null;
     }
 
     var app = require('electron').app || require('electron').remote.app;
