@@ -1,5 +1,6 @@
 const logger = require('./Log').getLogger(__filename);
 const DB = require('./DB').getDB();
+const Constants = require('./Constants');
 const EventEmitter = require('events');
 const Parser = require('./FilterParser');
 const ClientTxtWatcher = require('./ClientTxtWatcher');
@@ -127,20 +128,26 @@ async function getItems(mapID) {
   return new Promise((resolve, reject) => {
     var items = {};
     DB.all(`
-            select events.id, items.rawdata from mapruns, events, items
+            select events.id, items.rarity, items.icon, items.rawdata from mapruns, events, items
             where mapruns.id = ?
             and events.id between mapruns.firstevent and mapruns.lastevent
             and items.event_id = events.id;
-          `, [mapID], (err, rows) => {
+          `, [mapID], async (err, rows) => {
       if (err) {
         logger.info(`Failed to get run events: ${err}`);
       } else {
-        rows.forEach(row => {
+        for(var i = 0; i < rows.length; i++) {
+          var row = rows[i];
           if(!items[row.id]) {
             items[row.id] = [];
           }
+          if(row.rarity === "Unique") {
+            var data = JSON.parse(row.rawdata);
+            data.secretName = await Constants.getItemName(row.icon);
+            row.rawdata = JSON.stringify(data);
+          }
           items[row.id].push(row.rawdata);
-        });
+        }
         resolve(items);
       }
     });

@@ -1,3 +1,8 @@
+const sqlite3 = require('sqlite3');
+const logger = require("./Log").getLogger(__filename);
+
+const DB = new sqlite3.cached.Database("./constants.sqlite", sqlite3.OPEN_READONLY);
+
 const townstrings = [
   "Lioneye's Watch",
   "The Forest Encampment",
@@ -871,9 +876,24 @@ const mods = [
   "Unique Monsters drop Corrupted Items"
 ];
 
+function getItemName(icon) {
+  logger.info("Getting name for " + icon);
+  return new Promise( (resolve, reject) => {
+    DB.get(" select name from itemicons where icon = ? and upgraded = 0 ", [icon], (err, row) => {
+      if(!row) {
+        resolve();
+      } else {
+        resolve(row.name);
+      }
+    });
+  });
+}
+
 module.exports.townstrings = townstrings;
 module.exports.uniqueMaps = uniqueMaps;
 module.exports.baseMaps = baseMaps;
 module.exports.areas = areas;
 module.exports.labAreas = labAreas;
 module.exports.mods = mods;
+module.exports.DB = DB;
+module.exports.getItemName = getItemName;
