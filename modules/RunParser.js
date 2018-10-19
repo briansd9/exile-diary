@@ -180,6 +180,7 @@ function getItemValues(area, firstEvent, lastEvent) {
               totalProfit += Number.parseFloat(await getItemValuesFor(rows[i].id, rates));
             }
           }
+          totalProfit = Number(totalProfit).toFixed(2);
           DB.run(" update mapruns set gained = ? where id = ? ", [totalProfit, area.id], (err) => {
             if(err) {
               logger.info(`Unable to update total profit for ${area.id}: ${err}`);
