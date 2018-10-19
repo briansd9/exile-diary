@@ -42,6 +42,8 @@
 
       $(document).ready(function () {
         
+        $(document).attr("title", `Exile Diary v${require('electron').remote.app.getVersion()}`);
+        
         $("#sidenav").load("sidenav.html");
 
         DB.serialize(() => {
@@ -209,12 +211,3 @@
     </div>
   </body>
 </html>
-<!--
-select *, 86400 * (last - first) as time from (
-select *, 
-julianday(substr(firstevent,1,4) || '-' || substr(firstevent, 5, 2) || '-' || substr(firstevent, 7, 2) || ' ' || substr(firstevent, 9, 2) || ':' || substr(firstevent, 11, 2) || ':' || substr(firstevent, 13, 2)) first,
-julianday(substr(lastevent,1,4) || '-' || substr(lastevent, 5, 2) || '-' || substr(lastevent, 7, 2) || ' ' || substr(lastevent, 9, 2) || ':' || substr(lastevent, 11, 2) || ':' || substr(lastevent, 13, 2)) last
-from mapruns
-) a
-order by time
--->
