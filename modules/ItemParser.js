@@ -34,17 +34,27 @@ async function hasExistingKey(items) {
   
   return new Promise( (resolve, reject) => {
     
+    var checkDuplicates = false;
+    
     if(items.length === 0) resolve(false);
 
     var keys = Object.keys(items);
     var query = "select count(1) as count from items where id in (";
     for(var i = 0; i < keys.length; i++) {
+      
+      // only check duplication for non-stackable items
+      if(!items[keys[i]].stackSize) continue;
+
+      checkDuplicates = true;
       if(i > 0) query += ",";
       query += `'${keys[i]}'`;
+      
     }
     query += ")";
 
-    //logger.info(query);
+    if(!checkDuplicates) {
+      return false;
+    }
 
     var DB = require('./DB').getDB();
     DB.get(query, (err, row) => {
@@ -52,6 +62,7 @@ async function hasExistingKey(items) {
         logger.warn(`Error checking inventory keys: ${err}`);
         resolve(false);
       } else {
+        logger.info(`${row.count} duplicate items found in DB`);
         resolve(row.count > 0);
       }
     });
