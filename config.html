@@ -1,8 +1,6 @@
 <html>
   <head>
-    <title>Loot Logger</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" type="text/css" href="res/style.css" />
     <link rel="stylesheet" type="text/css" href="res/jquery-ui.min.css" />
     <link rel="stylesheet" type="text/css" href="res/jquery-ui.structure.min.css" />
@@ -42,6 +40,12 @@
       var requiresRestart = false;
 
       $(document).ready(function () {
+
+        $("#sidenav").load("sidenav.html", () => {
+          $("#sidenav-main").removeAttr("href");
+          $("#sidenav-main").click(backToMain);
+        });
+          
 
         try {
 
@@ -307,6 +311,9 @@
 
   </head>
   <body id='body' style='display:none'>
+
+    <div class='sidenav' id='sidenav'></div>    
+    
     <div class='sectionHeader ui-text'>
       Configuration
     </div>
