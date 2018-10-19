@@ -45,9 +45,9 @@ async function hasExistingKey(items) {
       // only check duplication for non-stackable items
       if(!items[keys[i]].stackSize) continue;
 
-      checkDuplicates = true;
-      if(i > 0) query += ",";
+      if(checkDuplicates) query += ",";
       query += `'${keys[i]}'`;
+      checkDuplicates = true;
       
     }
     query += ")";
