@@ -126,7 +126,11 @@
         $(".footer").show();
         currScroll = $(document).scrollTop();
         remote.getCurrentWindow().captureFullPage(img => {
-          img.write("test.png");
+          var fileName = `screenshot-${moment().format("YYYYMMDDhhmmss")}.png`;
+          remote.dialog.showSaveDialog(
+            {defaultPath: fileName},
+            (savePath) => { img.write(savePath) }
+          );
         });  
       }
       
