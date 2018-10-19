@@ -113,7 +113,7 @@ function createWindow() {
   mainWindow.show();
 
   // and load the index.html of the app.
-  mainWindow.loadFile('testing.html');
+  mainWindow.loadFile('index.html');
   
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
