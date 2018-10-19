@@ -99,6 +99,7 @@ function createWindow() {
   
   // Create the browser window.
   mainWindow = new BrowserWindow({
+    title: `Exile Diary v${app.getVersion()}`,
     minWidth: 1100,
     backgroundColor: `#000000`,
     show: false,
