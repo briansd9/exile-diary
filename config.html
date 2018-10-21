@@ -163,8 +163,6 @@
             league: $("#selectedLeague").val()
           };
 
-          logger.info(JSON.stringify(settings));
-
           var filename = path.join(app.getPath("userData"), "settings.json");
           fs.writeFile(filename, JSON.stringify(settings), (err) => {
             if (err) throw err;
@@ -183,11 +181,17 @@
                     if(err) {                
                       logger.info("Error inserting filter: " + err);
                     }
-                    window.location.reload();
+                    ipcRenderer.once("done-initializing", () => {
+                      window.location.reload();
+                    });        
+                    ipcRenderer.send("reinitialize");
                   }
                 );
               } else {
-                window.location.reload();
+                ipcRenderer.once("done-initializing", () => {
+                  window.location.reload();
+                });        
+                ipcRenderer.send("reinitialize");
               }
             }
           });
