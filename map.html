@@ -47,6 +47,8 @@
       
       ipcRenderer.on("done-capturing", () => { 
         $("#sidenav").show();
+        $("#messages").show();
+        $("#messagePadding").show();
         $("#topnav").show();
         $("#mods").removeClass('mapModScreenshot');
         $("#mods").addClass('dropdown-content');
@@ -61,10 +63,13 @@
         $("#sidenav").load("sidenav.html", () => {
           $("#sidenav").append("<div><a class='ui-text' onclick='screenshot()'>Screenshot</a></div>");
         });
+        $("#messages").load("messages.html");
       });
       
       function screenshot() {
         $("#sidenav").hide();
+        $("#messages").hide();
+        $("#messagePadding").hide();
         $("#topnav").hide();
         $("#mods").removeClass('dropdown-content');
         $("#mods").removeClass('mapMod');
@@ -408,9 +413,7 @@
         var events = mapRun.events;
         var eventTimes = Object.keys(events).sort();
         
-        var startTime = moment(eventTimes[0], "YYYYMMDDHHmmss");
-        var endTime = moment(eventTimes[eventTimes.length - 1], "YYYYMMDDHHmmss");
-        var runningTime = moment.duration(endTime.diff(startTime)).format();
+        var runningTime = Utils.getRunningTime(eventTimes[0], eventTimes[eventTimes.length - 1]);
         $("#runningTime").html(`Time<br/><span class='mapStatValue'>${runningTime}</span>`);
         
         for (var i = 0; i < eventTimes.length; i++) {
@@ -712,6 +715,8 @@
         $("#appVersionFooter").html(require('electron').remote.app.getVersion());
       </script>      
     </div>
+    <div id="messagePadding" style="height:150px;visibility:hidden;">&nbsp;</div>
+    <div id="messages" class="messageSection"></div>
   </body>
 </html>
 
