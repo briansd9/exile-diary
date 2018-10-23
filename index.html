@@ -31,30 +31,22 @@
       const settings = require('./modules/settings').get();
       const Jimp = require('jimp');
       const logger = require('./modules/Log').getLogger(__filename);
-      const {webContents} = require('electron');
+      const {webContents, remote} = require('electron');
       const moment = require('moment');
       const momentDurationFormatSetup = require("moment-duration-format");
       const Utils = require('./modules/Utils');
-
+      
       var hasAreaInfo = false;
       var hasMapMods = false;
 
       $(document).ready(function () {
         
         $("#sidenav").load("sidenav.html");
+        $("#messages").load("messages.html");
 
         DB.serialize(() => {
-
-          DB.get(" select id from mapruns order by id desc limit 1", (err, row) => {
-            if (row) {
-              $("#mapLink").attr("href", "map.html?id=" + row.id)
-              $("#mapLink").html(row.id);
-            }
-          });
-          
-          getLastAreaInfo();
+          //getLastAreaInfo();
           getLastMaps();
-          
         });
 
         ipcRenderer.on("areaInfo", (event, areaInfo) => {
@@ -79,8 +71,6 @@
         
         ipcRenderer.on("runProcessed", (event, runInfo) => {
           $("#lastArea").hide();
-          $("#mapLink").attr("href", "map.html?id=" + runInfo.id);
-          $("#mapLink").html(`Last completed run: ${runInfo.id} ${runInfo.name}`);
           DB.get(`
             select mapruns.id, name, level, depth, iiq, iir, packsize, firstevent, lastevent, gained,
             (select count(1) from events where event_type='slain' and events.id between firstevent and lastevent) deaths
@@ -94,10 +84,6 @@
           });          
         });
         
-        ipcRenderer.on("OCRError", (event) => {
-          alert("Error getting area info from screenshot. Please try again");
-        });
-
       });
       
       function getLastAreaInfo() {
@@ -205,6 +191,8 @@
         <tbody id='lastMapsRows'>
         </tbody>
       </table>      
+    </div>
+    <div id="messages" class="messageSection">
     </div>
   </body>
 </html>
