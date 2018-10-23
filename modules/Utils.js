@@ -1,6 +1,8 @@
 const URL = require('url');
 const Query = require('querystring');
 const Constants = require('./Constants');
+const moment = require('moment');
+const momentDurationFormatSetup = require("moment-duration-format");
 
 class Utils {
   
@@ -146,9 +148,7 @@ class Utils {
     row.append($("<td>").append(map.iir ? `+${map.iir}%` : ''));
     row.append($("<td>").append(map.packsize ? `+${map.packsize}%` : ''));
 
-    var startTime = moment(map.firstevent, "YYYYMMDDHHmmss");
-    var endTime = moment(map.lastevent, "YYYYMMDDHHmmss");
-    var runningTime = moment.duration(endTime.diff(startTime)).format();
+    var runningTime = Utils.getRunningTime(map.firstevent, map.lastevent);
     row.append($("<td>").append(runningTime));
 
     row.append($("<td>").append(Number(map.gained).toFixed(2)));
@@ -191,7 +191,11 @@ class Utils {
 
     return str;
 
-  }  
+  }
+  
+  static getRunningTime(firstevent, lastevent) {
+    return moment.duration(moment(lastevent, "YYYYMMDDHHmmss").diff(moment(firstevent, "YYYYMMDDHHmmss"))).format();
+  }
 
 }
 
