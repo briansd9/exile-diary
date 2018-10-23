@@ -1,4 +1,3 @@
-const EventEmitter = require('events');
 const Tail = require('nodejs-tail');
 const logger = require("./Log").getLogger(__filename);
 const InventoryGetter = require('./InventoryGetter');
