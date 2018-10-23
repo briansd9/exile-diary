@@ -9,6 +9,7 @@ async function insertItems(items, timestamp) {
     
     var hasKey = await hasExistingKey(items);
     if(hasKey) {
+      logger.info("Duplicate items found, returning");
       resolve();
     }
     
@@ -43,7 +44,7 @@ async function hasExistingKey(items) {
     for(var i = 0; i < keys.length; i++) {
       
       // only check duplication for non-stackable items
-      if(!items[keys[i]].stackSize) continue;
+      if(!items[keys[i]].stacksize) continue;
 
       if(checkDuplicates) query += ",";
       query += `'${keys[i]}'`;
@@ -53,9 +54,11 @@ async function hasExistingKey(items) {
     query += ")";
 
     if(!checkDuplicates) {
-      return false;
+      logger.info("No non-stackable items found, not checking duplicates");
+      resolve(false);
     }
 
+    logger.info(query);
     var DB = require('./DB').getDB();
     DB.get(query, (err, row) => {
       if(err) {
@@ -63,7 +66,7 @@ async function hasExistingKey(items) {
         resolve(false);
       } else {
         logger.info(`${row.count} duplicate items found in DB`);
-        resolve(row.count > 0);
+        resolve(row.count === 0);
       }
     });
     
