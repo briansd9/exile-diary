@@ -10,6 +10,8 @@ const MapSearcher = require('./modules/MapSearcher');
 const ScreenshotWatcher = require("./modules/ScreenshotWatcher");
 const settings = require("./modules/settings");
 const StashGetter = require("./modules/StashGetter");
+const Utils = require("./modules/Utils");
+const moment = require('moment');
 const fs = require('fs');
 const path = require('path');
 
@@ -43,7 +45,9 @@ function init() {
     ScreenshotWatcher.start();
     OCRWatcher.start();
   }
-  
+
+  global.messages = [];
+
 }
 
 function initWindow(window) {
@@ -51,21 +55,29 @@ function initWindow(window) {
   var webContents = window.webContents;
   
   OCRWatcher.emitter.removeAllListeners();
-  OCRWatcher.emitter.on("areaInfo", (info) => {
-    webContents.send("areaInfo", info);
-    RunParser.processPrev("areaInfo", info);
-  });
-  OCRWatcher.emitter.on("mapMods", (mods) => {
-    webContents.send("mapMods", mods);
-    RunParser.processPrev("mapMods", mods);
-  });
   OCRWatcher.emitter.on("OCRError", () => {
     webContents.send("OCRError");
   });
+  OCRWatcher.emitter.on("areaInfoComplete", (info) => {
+    addMessage(`Started tracking run in <span class='eventText'>${info.areaInfo.name}</span>`);
+    RunParser.process();
+  });
+  
+  ScreenshotWatcher.emitter.removeAllListeners();
+  ScreenshotWatcher.emitter.on("OCRError", () => {
+    webContents.send("OCRError");
+  });
+  
   
   RunParser.emitter.removeAllListeners();
-  RunParser.emitter.on("runProcessed", (runInfo) => {
-    webContents.send("runProcessed", runInfo);
+  RunParser.emitter.on("runProcessed", (run) => {
+    addMessage(
+      `Completed run in <span class='eventText'>${run.name}</span> `
+      + `(${Utils.getRunningTime(run.firstevent, run.lastevent)}, `
+      + `${run.gained} <img src='res/c.png' style='vertical-align:middle'>, `
+      + `${new Intl.NumberFormat().format(run.xp)} XP)`
+    );
+    webContents.send("runProcessed", run);
   });
   
   MapSearcher.emitter.removeAllListeners();
@@ -88,7 +100,7 @@ function createWindow() {
     init();
     event.sender.send("done-initializing");
   });
-  
+
   ipcMain.on("searchMaps", (event, data) => {
     MapSearcher.search(data);
   });
@@ -113,8 +125,6 @@ function createWindow() {
   });
   
   //mainWindow.setMenu(null);
-  mainWindow.maximize();
-  mainWindow.show();
 
   // and load the index.html of the app.
   if(!settings.get()) {
@@ -137,6 +147,19 @@ function createWindow() {
   
   initWindow(mainWindow);
   
+  mainWindow.maximize();
+  mainWindow.show();
+  
+}
+
+function addMessage(text) {
+  var msg = {
+    timestamp: moment().format("YYYY-MM-DD hh:mm:ss"),
+    text: text
+  };
+  mainWindow.webContents.send("message", msg);
+  global.messages.push(msg);
+  logger.info(JSON.stringify(global.messages));
 }
 
 // This method will be called when Electron has finished

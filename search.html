@@ -41,6 +41,7 @@
         $("#sidenav").load("sidenav.html", () => {
           $("#sidenav").append("<div><a class='ui-text' onclick='screenshot()'>Screenshot</a></div>");
         });
+        $("#messages").load("messages.html");
 
         $("#mapFilters").append(numberInput("IIQ", "iiq"));
         $("#mapFilters").append(numberInput("IIR", "iir"));
@@ -98,6 +99,8 @@
     
         ipcRenderer.on("done-capturing", () => { 
           $("#sidenav").show();
+          $("#messages").show();
+          $("#messagePadding").show();
 //          $("ul").show();
 //          $("#mapList").show();
 //          $("#mapSummary").hide();
@@ -119,6 +122,8 @@
       
       function screenshot() {
         $("#sidenav").hide();
+        $("#messages").hide();
+        $("#messagePadding").hide();
 //        $("ul").hide();
 //        $("#mapList").show();
 //        $("#mapSummary").show();
@@ -301,5 +306,7 @@
         $("#appVersionFooter").html(require('electron').remote.app.getVersion());
       </script>      
     </div>
+    <div id="messagePadding" style="height:150px;visibility:hidden;">&nbsp;</div>
+    <div id="messages" class="messageSection"></div>
   </body>
 </html>
