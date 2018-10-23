@@ -4,10 +4,12 @@ const convert = require('color-convert');
 const moment = require('moment');
 const chokidar = require('chokidar');
 const logger = require("./Log").getLogger(__filename);
+const EventEmitter = require('events');
 
 var settings;
 var watcher;
 var app = require('electron').app || require('electron').remote.app;
+var emitter = new EventEmitter();
 
 function start() {
 
@@ -41,37 +43,41 @@ function process(file) {
   if (file.length > 0) {
     Jimp.read(file).then(image => {
 
-      // 1920 x 1080 image scaled up 3x;
-      // scale differently sized images proportionately
-      var scaleFactor = 3 * (1920 / image.bitmap.width);
+      try {
+        // 1920 x 1080 image scaled up 3x;
+        // scale differently sized images proportionately
+        var scaleFactor = 3 * (1920 / image.bitmap.width);
 
-      var yBounds = getYBounds(image);
-      var xBounds = getXBounds(image, yBounds);
+        var yBounds = getYBounds(image);
+        var xBounds = getXBounds(image, yBounds);
 
-      var image2 = image.clone();
+        var image2 = image.clone();
 
-      // chop off top 24px of area info - blank
-      image.crop(xBounds, 24, image.bitmap.width - xBounds, yBounds[0] - 24);
-      // then take only rightmost 260px of area info (no area name is longer than this)
-      if (image.bitmap.width > 260) {
-        image.crop(image.bitmap.width - 260, 0, 260, image.bitmap.height);
+        // chop off top 24px of area info - blank
+        image.crop(xBounds, 24, image.bitmap.width - xBounds, yBounds[0] - 24);
+        // then take only rightmost 260px of area info (no area name is longer than this)
+        if (image.bitmap.width > 260) {
+          image.crop(image.bitmap.width - 260, 0, 260, image.bitmap.height);
+        }
+        image.color([
+          {apply: 'red', params: [99]},
+          {apply: 'blue', params: [-99]},
+          {apply: 'green', params: [-99]},
+          {apply: 'saturate', params: [100]},
+        ]);
+        enhanceImage(image, scaleFactor);
+        image.write(path.join(app.getPath("temp"), filename + "." + path.basename(file, ".png") + ".area.png"));
+
+        image2.crop(xBounds, yBounds[0], image2.bitmap.width - xBounds, yBounds[1] - yBounds[0]);
+        image2.color([
+          {apply: 'red', params: [-50]},
+          {apply: 'green', params: [-50]},
+        ]);
+        enhanceImage(image2, scaleFactor);
+        image2.write(path.join(app.getPath("temp"), filename + "." + path.basename(file, ".png") + ".mods.png"));
+      } catch(e) {
+        logFailedCapture(e);
       }
-      image.color([
-        {apply: 'red', params: [99]},
-        {apply: 'blue', params: [-99]},
-        {apply: 'green', params: [-99]},
-        {apply: 'saturate', params: [100]},
-      ]);
-      enhanceImage(image, scaleFactor);
-      image.write(path.join(app.getPath("temp"), filename + "." + path.basename(file, ".png") + ".area.png"));
-
-      image2.crop(xBounds, yBounds[0], image2.bitmap.width - xBounds, yBounds[1] - yBounds[0]);
-      image2.color([
-        {apply: 'red', params: [-50]},
-        {apply: 'green', params: [-50]},
-      ]);
-      enhanceImage(image2, scaleFactor);
-      image2.write(path.join(app.getPath("temp"), filename + "." + path.basename(file, ".png") + ".mods.png"));
 
     });
   }
@@ -216,4 +222,10 @@ function isBlack(pixel, tolerance) {
   return (hsv[2] <= tolerance);
 }
 
+function logFailedCapture(e) {
+  logger.info(`Error processing screenshot: ${e}`);
+  emitter.emit("OCRError");
+}
+
 module.exports.start = start;
+module.exports.emitter = emitter;
