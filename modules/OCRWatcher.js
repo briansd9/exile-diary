@@ -11,6 +11,8 @@ var DB;
 var watcher;
 var emitter = new EventEmitter();
 var app = require('electron').app || require('electron').remote.app;
+var areaInfo;
+var mapMods;
 
 const watchPaths = [
   path.join(app.getPath("temp"), "*.area.png"),
@@ -23,7 +25,9 @@ function test(filename) {
 }
 
 function start() {
-
+  
+  areaInfo = null;
+  mapMods = null;
   DB = require('./DB').getDB();
 
   if (watcher) {
@@ -57,19 +61,20 @@ function processImage(file) {
 
       if (file.indexOf("area") > -1) {
         
-        var areaInfo = getAreaInfo(lines);
+        var area = getAreaInfo(lines);
         DB.run(
           "insert into areainfo(id, name, level, depth) values(?, ?, ?, ?)",
-          [timestamp, areaInfo.name, areaInfo.level, areaInfo.depth],
+          [timestamp, area.name, area.level, area.depth],
           (err) => {
             if(err) {
               cleanFailedOCR(err, timestamp);
             } else {
-              emitter.emit("areaInfo", areaInfo);
+              areaInfo = area;
+              checkAreaInfoComplete();
+              //emitter.emit("areaInfo", area);
             }
           }
         );
-        
 
       } else if (file.indexOf("mods") > -1) {
         
@@ -90,7 +95,9 @@ function processImage(file) {
           if(mapModErr) {
             cleanFailedOCR(mapModErr, timestamp);
           } else {
-            emitter.emit("mapMods", mods);
+            mapMods = mods;
+            checkAreaInfoComplete();
+            //emitter.emit("mapMods", mods);
           }
         }
         catch(e) {
@@ -102,8 +109,16 @@ function processImage(file) {
     });
 }
 
+function checkAreaInfoComplete() {
+  if(areaInfo && mapMods) {
+    emitter.emit("areaInfoComplete", {areaInfo: areaInfo, mapMods: mapMods});
+  }
+}
+
 function cleanFailedOCR(e, timestamp) {
   logger.info(`Error processing screenshot: ${e}`);
+  areaInfo = null;
+  mapMods = null;
   emitter.emit("OCRError");
   DB.serialize(() => {
     DB.run("delete from areainfo where id = ?", [timestamp]);

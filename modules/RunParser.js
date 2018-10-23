@@ -10,26 +10,6 @@ const https = require('https');
 var DB;
 var emitter = new EventEmitter();
 
-var areaInfo = null;
-var mapMods = null;
-
-async function processPrev(eventType, data) {
-  if(eventType === "areaInfo") {
-    logger.info("Detected areainfo complete");
-    areaInfo = data;
-  }
-  if(eventType === "mapMods") {
-    logger.info("Detected mapmods complete");
-    mapMods = data;
-  }
-  if(areaInfo && mapMods) {
-    logger.info("Automatically processing previous run");
-    await process();
-    areaInfo = null;
-    mapMods = null;
-  }
-}
-
 async function processAll() {
   
   DB = require('./DB').getDB();
@@ -137,7 +117,7 @@ async function getXP() {
   });
 }
 
-async function checkProfit(area, firstEvent, lastEvent) {
+async function checkProfit(area, firstevent, lastevent) {
 
   var lastinv = await new Promise( async (resolve, reject) => {
       DB.get("select timestamp from lastinv", (err, row) => {
@@ -149,17 +129,30 @@ async function checkProfit(area, firstEvent, lastEvent) {
       })
     });
   
-  if(lastinv < lastEvent) {
-    logger.info(`Last inventory not yet processed (${lastinv} < ${lastEvent}), waiting 3 seconds`);
-    setTimeout(function() { checkProfit(area, firstEvent, lastEvent) }, 3000);
+  if(lastinv < lastevent) {
+    logger.info(`Last inventory not yet processed (${lastinv} < ${lastevent}), waiting 3 seconds`);
+    setTimeout(function() { checkProfit(area, firstevent, lastevent) }, 3000);
   } else {
-    //logger.info(`Getting chaos value of items from ${area.id} ${area.name}`);
-    getItemValues(area, firstEvent, lastEvent).then( (success) => {
-      if(success) {
-        emitter.emit("runProcessed", {name: area.name, id: area.id});
+    logger.info(`Getting chaos value of items from ${area.id} ${area.name}`);
+    var totalProfit = await getItemValues(area, firstevent, lastevent);
+    logger.info("Total profit is " + totalProfit);
+    if(totalProfit) {
+      var xp = await getXPDiff(area.id);
+      emitter.emit("runProcessed", {name: area.name, id: area.id, gained: totalProfit, xp: xp, firstevent: firstevent, lastevent: lastevent});
+    }
+  }
+}
+
+function getXPDiff(id) {
+  return new Promise( (resolve, reject) => {
+    DB.all( " select xp from mapruns where id <= ? order by id desc limit 2", [id], (err, rows) => {
+      if(!err) {
+        resolve(rows[0].xp - rows[1].xp);
+      } else {
+        logger.info("Error: " + err);
       }
     });
-  }
+  });
 }
 
 function getItemValues(area, firstEvent, lastEvent) {
@@ -187,7 +180,7 @@ function getItemValues(area, firstEvent, lastEvent) {
               resolve(false);
             } else {
               logger.info(`Updated ${area.id} with ${totalProfit}`);
-              resolve(true);
+              resolve(totalProfit);
             }
           });
         }   
@@ -346,5 +339,4 @@ function getMapStats(arr) {
 
 module.exports.process = process;
 module.exports.processAll = processAll;
-module.exports.processPrev = processPrev;
 module.exports.emitter = emitter;
