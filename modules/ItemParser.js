@@ -44,7 +44,7 @@ async function hasExistingKey(items) {
     for(var i = 0; i < keys.length; i++) {
       
       // only check duplication for non-stackable items
-      if(!items[keys[i]].stacksize) continue;
+      if(!items[keys[i]].stacksize && !items[keys[i]].stackSize) continue;
 
       if(checkDuplicates) query += ",";
       query += `'${keys[i]}'`;
@@ -66,7 +66,7 @@ async function hasExistingKey(items) {
         resolve(false);
       } else {
         logger.info(`${row.count} duplicate items found in DB`);
-        resolve(row.count === 0);
+        resolve(row.count !== 0);
       }
     });
     
