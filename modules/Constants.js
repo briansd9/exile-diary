@@ -62,7 +62,7 @@ const uniqueMaps = {
   "Overgrown Shrine Map": "Acton's Nightmare",
   "Necropolis Map": "Death and Taxes",
   "Dunes Map": "Pillars of Arun",
-  "Atoll Map": "Maelstr�m of Chaos",
+  "Atoll Map": "Maelstrom of Chaos",
   "Strand Map": "Whakawairua Tuahu"
 };
 
@@ -868,6 +868,7 @@ const mods = [
   "Unique Boss drops 1 additional Unique Item",
   "Unique Boss drops # additional Maps",
   "Unique Boss drops an additional Vaal Item",
+  "Unique Boss drops divination cards",
   "Unique Boss gives #% increased Experience",
   "Unique Boss has #% increased Attack and Cast Speed",
   "Unique Boss has #% increased Life",
