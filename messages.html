@@ -1,12 +1,11 @@
 <script>
 
   function addMessageRow(msg) {
-    logger.info(JSON.stringify(msg));
     $("#messages").append(`<div><span class='eventTime'>[${msg.timestamp}]</span> ${msg.text}</div>`);
-    $("#messages").scrollTop($("#messages")[0].scrollHeight);
     if($("#messages div").length > 10) {
       $("#messages").find("div:first").remove();
     }
+    $("#messages").scrollTop($("#messages")[0].scrollHeight);
   }
 
   require('electron').ipcRenderer.on("OCRError", (event) => {
@@ -18,10 +17,20 @@
   });
   
   $("document").ready(() => {
+    $("#messages").hover(
+      () => { 
+        $("#messages").css('height', 'auto') 
+      },
+      () => { 
+        $("#messages").css('height', '40px');
+        $("#messages").scrollTop($("#messages")[0].scrollHeight);
+      }
+    );
     var messages = remote.getGlobal("messages");
     for(var i = 0; i < messages.length; i++) {
       addMessageRow(messages[i]);
     }
+    $("#messages").scrollTop($("#messages")[0].scrollHeight);
   });
   
 </script>
