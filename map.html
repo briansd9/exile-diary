@@ -80,7 +80,10 @@
         remote.getCurrentWindow().captureFullPage(img => {
           var fileName = `screenshot-${moment().format("YYYYMMDDhhmmss")}.png`;
           remote.dialog.showSaveDialog(
-            {defaultPath: fileName},
+            {
+              defaultPath: fileName,
+              filters: [{ name: 'PNG', extensions: ['png'] }]
+            },
             (savePath) => { img.write(savePath) }
           );
         });  
