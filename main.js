@@ -60,7 +60,7 @@ function initWindow(window) {
   });
   OCRWatcher.emitter.on("areaInfoComplete", (info) => {
     addMessage(`Started tracking run in <span class='eventText'>${info.areaInfo.name}</span>`);
-    RunParser.process();
+    RunParser.process(info);
   });
   
   ScreenshotWatcher.emitter.removeAllListeners();
@@ -147,6 +147,8 @@ function createWindow() {
   
   initWindow(mainWindow);
   
+  addMessage("Exile Diary started");
+  
   mainWindow.maximize();
   mainWindow.show();
   
@@ -159,7 +161,7 @@ function addMessage(text) {
   };
   mainWindow.webContents.send("message", msg);
   global.messages.push(msg);
-  logger.info(JSON.stringify(global.messages));
+  global.messages = global.messages.slice(-10);
 }
 
 // This method will be called when Electron has finished

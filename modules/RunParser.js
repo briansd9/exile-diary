@@ -27,22 +27,25 @@ async function processAll() {
     
 }
 
-async function process() {
+async function process(runInfo) {
   
   DB = require('./DB').getDB();
 
   var currArea = await getCurrAreaInfo();
   if(!currArea) return;
+
+  var mods = await getMapMods(currArea.id);
+  if(!mods) return;
   
-//  logger.info("Retrieved: " + JSON.stringify(currArea));
-//  logger.info("From prev: " + JSON.stringify(areaInfo));
+  if(runInfo) {
+    var currentRun = { areaInfo: currArea, mapMods: mods };
+    if(isSameRun(currentRun, runInfo)) {
+      logger.info("No new run started yet, will not automatically process previous run");
+      return;
+    }      
+  }
   
   logger.info(`Processing run in ${currArea.name}`);
-  
-  var mods = await getMapMods(currArea.id)
-  
-//  logger.info("Retrieved: " + JSON.stringify(mods));
-//  logger.info("From prev: " + JSON.stringify(mapMods));
   
   var mapStats = getMapStats(mods);
   
@@ -55,7 +58,7 @@ async function process() {
   var lastEvent = await getLastEvent(currArea, firstEvent);
   if(!lastEvent) return;
   
-  var xp = await getXP();
+  var xp = await getXP(firstEvent, lastEvent);
   
   var runArr = [currArea.id, firstEvent, lastEvent, mapStats.iiq, mapStats.iir, mapStats.packsize, xp];
   
@@ -66,7 +69,36 @@ async function process() {
   
 }
 
-async function getXP() {
+function isSameRun(run1, run2) {
+  
+  // note: use of != is deliberate, areaInfo.level can be returned as either number or string
+  if(run1.areaInfo.name != run2.areaInfo.name || run1.areaInfo.level != run2.areaInfo.level) {
+    return false;
+  }
+  
+  if(JSON.stringify(run1.mapMods) !== JSON.stringify(run2.mapMods)) {
+    return false;
+  }
+  
+  return true;  
+}
+
+async function getXP(firstEvent, lastEvent) {
+  return new Promise( async (resolve, reject) => {
+    DB.get(" select timestamp, xp from xp where timestamp between ? and ? order by timestamp desc limit 1 ", [firstEvent, lastEvent], async (err, row) => {
+      if(err || !row) {
+        logger.info(`Failed to get XP between ${firstEvent} and ${lastEvent} from local DB, retrieving manually`);
+        resolve(await getXPManual());
+      } else {
+        logger.info(`Got XP from DB: ${row.xp} at ${row.timestamp}`);
+        resolve(row.xp);
+      }
+    })    
+  });
+}
+  
+  
+async function getXPManual() {
   var requestParams = {
     hostname: 'www.pathofexile.com',
     path: '/character-window/get-characters?accountName=joshagarrado',
@@ -313,19 +345,22 @@ function getLastUsedEvent() {
 function getMapMods(id) {
   return new Promise( (resolve, reject) => {
     DB.all("select mod from mapmods where area_id = ? order by cast(id as integer)", [id], (err, rows) => {
+      var mods = [];
       if(err) {
         logger.error(`Unable to get last map mods: ${err}`);
-        resolve([]);
+      } else {
+        for(var i = 0; i < rows.length; i++) {
+          mods.push(rows[i].mod);
+        }
       }
-      resolve(rows);
+      resolve(mods);
     });    
   });
 }
 
 function getMapStats(arr) {
   var mapStats = {};
-  arr.forEach( (row) => {
-    var mod = row.mod;
+  arr.forEach( (mod) => {
     if(mod.endsWith("% increased Rarity of Items found in this Area")) {      
       mapStats['iir'] = mod.match(/[0-9]+/)[0];
     } else if(mod.endsWith("% increased Quantity of Items found in this Area")) {

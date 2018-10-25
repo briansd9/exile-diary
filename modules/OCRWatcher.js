@@ -112,6 +112,8 @@ function processImage(file) {
 function checkAreaInfoComplete() {
   if(areaInfo && mapMods) {
     emitter.emit("areaInfoComplete", {areaInfo: areaInfo, mapMods: mapMods});
+    areaInfo = null;
+    mapMods = null;
   }
 }
 

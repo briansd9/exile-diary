@@ -2,12 +2,14 @@ const logger = require("./Log").getLogger(__filename);
 const moment = require('moment');
 
 async function logXP(timestamp, currXP) {
+  logger.info(`Logging xp: ${timestamp} ${currXP}`);
   var DB = require('./DB').getDB();
-  var timestamp = moment().format('YMMDDHHmmss');
   var prevXP = await getPrevXP(DB);
   if(prevXP !== currXP) {
     logger.info(`XP update ${timestamp}: ${prevXP} -> ${currXP}`);
     DB.run("insert into xp(timestamp, xp) values(?, ?)", [timestamp, currXP]);
+  } else {
+    logger.info(`No change, not logging XP`);
   }
 }
 
