@@ -4,30 +4,31 @@ const rarities = ['Normal', 'Magic', 'Rare', 'Unique', 'Gem', 'Currency', 'Divin
 
 async function insertItems(items, timestamp) {
   return new Promise( async (resolve, reject) => {
-    logger.info(`Inserting items for ${timestamp}`);
+
     var DB = require('./DB').getDB();
     
     var hasKey = await hasExistingKey(items);
     if(hasKey) {
-      logger.info("Duplicate items found, returning");
+      logger.info(`Duplicate items found for ${timestamp}, returning`);
       resolve();
+    } else {
+      logger.info(`Inserting items for ${timestamp}`);
+      var stmt = DB.prepare(
+        `
+          insert into items (id, event_id, icon, name, rarity, category, identified, typeline, sockets, stacksize, rawdata)
+          values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `
+      );
+      Object.keys(items).forEach((key) => {
+        stmt.run(parseItem(items[key], timestamp));
+      });
+      stmt.finalize( (err) => {
+        if(err) {
+          logger.warn(`Error inserting items for ${timestamp}: ${err}`);
+        }
+        resolve();
+      });
     }
-    
-    var stmt = DB.prepare(
-      `
-        insert into items (id, event_id, icon, name, rarity, category, identified, typeline, sockets, stacksize, rawdata)
-        values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `
-    );
-    Object.keys(items).forEach((key) => {
-      stmt.run(parseItem(items[key], timestamp));
-    });
-    stmt.finalize( (err) => {
-      if(err) {
-        logger.warn(`Error inserting items for ${timestamp}: ${err}`);
-      }
-      resolve();
-    });
   });
 }
 
@@ -44,7 +45,7 @@ async function hasExistingKey(items) {
     for(var i = 0; i < keys.length; i++) {
       
       // only check duplication for non-stackable items
-      if(!items[keys[i]].stacksize && !items[keys[i]].stackSize) continue;
+      if(items[keys[i]].stacksize || items[keys[i]].stackSize) continue;
 
       if(checkDuplicates) query += ",";
       query += `'${keys[i]}'`;
