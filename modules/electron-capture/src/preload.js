@@ -15,7 +15,6 @@ ipcRender.on('get-content-size', function() {
 });
 
 ipcRender.on('move-page-to', function(events, page) {
-    logger.info('Capturing page ' + page);
     window.scrollTo(0, window.innerHeight * (page - 1) )
     setTimeout(function() {
         ipcRender.send('return-move-page', page);
