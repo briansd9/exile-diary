@@ -45,6 +45,9 @@ function flattenPNG () {
     fileNames.push(tempDir + '/' + i + '.png')
   }
   mergeImages(fileNames, {direction: true}).then(img => {
+    for(var i = 0; i < fileNames.length; i++) {
+      fs.unlink(fileNames[i]);
+    }
     img.crop(0, 0, img.bitmap.width - contentSize.scrollBarWidth, img.bitmap.height);
     callback(img);
   })
