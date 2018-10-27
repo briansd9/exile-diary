@@ -43,11 +43,11 @@ class StringMatcher {
 
     // don't return match if too different
     if (minLevenshtein / str.length > 0.5) {
-      logger.info("Correction factor too high (" + str + " -> " + ret + " = " + (minLevenshtein / str.length) + "), returning");
+      //logger.info("Correction factor too high (" + str + " -> " + ret + " = " + (minLevenshtein / str.length) + "), returning");
       return "";
     }
 
-    logger.info(`Returning [${str}] => [${ret}] with score of ${minLevenshtein} (correction factor: ${(minLevenshtein / str.length)}`);
+    //logger.info(`Returning [${str}] => [${ret}] with score of ${minLevenshtein} (correction factor: ${(minLevenshtein / str.length)}`);
     return ret;
   }
 

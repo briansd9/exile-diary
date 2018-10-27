@@ -8,8 +8,6 @@ async function logXP(timestamp, currXP) {
   if(prevXP !== currXP) {
     logger.info(`XP update ${timestamp}: ${prevXP} -> ${currXP}`);
     DB.run("insert into xp(timestamp, xp) values(?, ?)", [timestamp, currXP]);
-  } else {
-    logger.info(`No change, not logging XP`);
   }
 }
 

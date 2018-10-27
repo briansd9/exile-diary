@@ -55,18 +55,18 @@ async function hasExistingKey(items) {
     query += ")";
 
     if(!checkDuplicates) {
-      logger.info("No non-stackable items found, not checking duplicates");
+      //logger.info("No non-stackable items found, not checking duplicates");
       resolve(false);
     }
 
-    logger.info(query);
+    //logger.info(query);
     var DB = require('./DB').getDB();
     DB.get(query, (err, row) => {
       if(err) {
         logger.warn(`Error checking inventory keys: ${err}`);
         resolve(false);
       } else {
-        logger.info(`${row.count} duplicate items found in DB`);
+        //logger.info(`${row.count} duplicate items found in DB`);
         resolve(row.count !== 0);
       }
     });

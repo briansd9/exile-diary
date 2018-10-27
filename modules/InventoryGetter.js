@@ -41,7 +41,7 @@ class InventoryGetter extends EventEmitter {
 
     return new Promise((resolve, reject) => {
 
-      logger.info("Comparing inventories...");
+      //logger.info("Comparing inventories...");
 
       var prevKeys = Object.keys(prev);
       var currKeys = Object.keys(curr);
@@ -143,7 +143,7 @@ class InventoryGetter extends EventEmitter {
         if (err) {
           logger.info(`Unable to update last inventory: ${err}`);
         } else {
-          logger.info(`Updated last inventory`);
+          //logger.info(`Updated last inventory`);
         }
       }
       );

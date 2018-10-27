@@ -120,7 +120,6 @@ function checkAreaInfoComplete() {
 }
 
 function cleanFailedOCR(e, timestamp) {
-  logger.info(`Error processing screenshot: ${e}`);
   areaInfo = null;
   mapMods = null;
   emitter.emit("OCRError");
@@ -138,7 +137,6 @@ function getAreaInfo(lines) {
     var line = lines[i];
     if (!areaInfo.name) {
       var str = StringMatcher.getMap(line);
-      logger.info(`${line} => ${str}`);
       if (str.length > 0) {
         areaInfo.name = str;
         continue;
