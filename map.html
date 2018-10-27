@@ -77,16 +77,11 @@
         $("body").addClass('bodyScreenshot');
         $(".footer").show();
         currScroll = $(document).scrollTop();
-        remote.getCurrentWindow().captureFullPage(img => {
-          var fileName = `screenshot-${moment().format("YYYYMMDDhhmmss")}.png`;
-          remote.dialog.showSaveDialog(
-            {
-              defaultPath: fileName,
-              filters: [{ name: 'PNG', extensions: ['png'] }]
-            },
-            (savePath) => { img.write(savePath) }
-          );
-        });  
+        remote.getCurrentWindow().captureFullPage(img => { 
+          img.getBase64('image/png', (err, imgdata) => {
+            ipcRenderer.send("screenshotCaptured", imgdata);
+          });
+        });
       }
 
       (async () => {
@@ -117,7 +112,6 @@
         });
         loadRunList(mapID);
 
-//        $("#total").tablesorter();
       })();
       
       function addToRunList(id) {
