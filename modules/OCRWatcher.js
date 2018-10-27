@@ -29,7 +29,7 @@ function start() {
   areaInfo = null;
   mapMods = null;
   DB = require('./DB').getDB();
-
+  
   if (watcher) {
     try {
       watcher.close();
@@ -46,14 +46,16 @@ function start() {
 }
 
 function processImage(file) {
-  logger.info("Performing OCR on " + file + "...");
-  var filename = path.basename(file);
-  var timestamp = filename.substring(0, filename.indexOf("."));
-  Tesseract.recognize(file, {
+  
+  logger.info("Performing OCR on " + file + "...");  
+  
+  Tesseract.create({ langPath: process.resourcesPath }).recognize(file, {
+    lang: "eng",
     tessedit_char_whitelist: "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ:-',%+"
-  })
-    .then((result) => {
-
+  }).then((result) => {
+      
+      var filename = path.basename(file);
+      var timestamp = filename.substring(0, filename.indexOf("."));
       var lines = [];
       result.lines.forEach(line => {
         lines.push(line.text.trim());
