@@ -143,8 +143,11 @@ async function getItems(mapID) {
           }
           if(row.rarity === "Unique") {
             var data = JSON.parse(row.rawdata);
-            data.secretName = await Constants.getItemName(row.icon);
-            row.rawdata = JSON.stringify(data);
+            var secretName = Constants.getItemName(row.icon);
+            if(secretName) {
+              data.secretName = secretName;
+              row.rawdata = JSON.stringify(data);
+            }            
           }
           items[row.id].push(row.rawdata);
         }
