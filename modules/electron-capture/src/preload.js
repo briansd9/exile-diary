@@ -1,5 +1,4 @@
 const ipcRender = require('electron').ipcRenderer;
-const logger = require("../../Log").getLogger(__filename);
 
 //console.log("preloading");
 
