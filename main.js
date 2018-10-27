@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow, ipcMain} = require('electron');
+const {app, BrowserWindow, dialog, ipcMain} = require('electron');
 const logger = require("./modules/Log").getLogger(__filename);
 const ClientTxtWatcher = require("./modules/ClientTxtWatcher");
 const OCRWatcher = require("./modules/OCRWatcher");
@@ -65,8 +65,7 @@ function initWindow(window) {
   ScreenshotWatcher.emitter.removeAllListeners();
   ScreenshotWatcher.emitter.on("OCRError", () => {
     webContents.send("OCRError");
-  });
-  
+  });  
   
   RunParser.emitter.removeAllListeners();
   RunParser.emitter.on("runProcessed", (run) => {
@@ -99,9 +98,11 @@ function createWindow() {
     init();
     event.sender.send("done-initializing");
   });
-
   ipcMain.on("searchMaps", (event, data) => {
     MapSearcher.search(data);
+  });
+  ipcMain.on("screenshotCaptured", (event, img) => {
+    saveScreenshot(img);
   });
   
   if (shouldQuit) {
@@ -158,9 +159,96 @@ function addMessage(text) {
     timestamp: moment().format("YYYY-MM-DD hh:mm:ss"),
     text: text
   };
-  mainWindow.webContents.send("message", msg);
   global.messages.push(msg);
   global.messages = global.messages.slice(-10);
+  mainWindow.webContents.send("message", msg);
+  mainWindow.once('focus', () => mainWindow.flashFrame(false));
+  mainWindow.flashFrame(true);
+  
+}
+
+function saveScreenshot(img) {
+  
+  img = (img.split(','))[1];
+  
+  var settings = require('./modules/settings').get();
+  if(settings.screenshotMode) {
+    switch(settings.screenshotMode) {
+      case "local":
+        saveLocal(img);
+        return;
+      case "imgur":
+        saveToImgur(img);
+        return;
+    }
+  }
+  
+  dialog.showMessageBox({    
+    type: "question",
+    buttons: [
+      "Save to file",
+      "Upload to imgur",
+      "Cancel"
+    ],
+    title: "Exile Diary",
+    icon: "res/icons/png/32x32.png",
+    message: "Screenshot generated",
+    detail: "Where should the generated screenshot be saved?",
+    checkboxLabel: "Don't ask again"  
+  }, (buttonIndex, checked) => {
+    switch(buttonIndex) {
+      case 0:
+        if(checked) {
+          require('./modules/settings').set("screenshotMode", "local");
+        }
+        saveLocal(img);
+        break;
+      case 1:
+        if(checked) {
+          require('./modules/settings').set("screenshotMode", "imgur");
+        }
+        saveToImgur(img);
+        break;
+      default:
+        break;
+    }
+  });  
+}
+
+function saveLocal(img) {
+  var fileName = `screenshot-${moment().format("YYYYMMDDhhmmss")}.png`;
+  dialog.showSaveDialog(
+    {
+      defaultPath: fileName,
+      filters: [{ name: 'PNG', extensions: ['png'] }]
+    },
+    (savePath) => { 
+      if(savePath) {
+        var Jimp = require('jimp');
+        Jimp.read(Buffer.from(img, 'base64')).then(imgdata => imgdata.write(savePath));
+      }
+    }
+  );
+}
+
+function saveToImgur(img) {
+  
+  addMessage("Uploading screenshot...");
+  var imgur = require('imgur');
+  imgur.setClientId('ba8f73761b94a1d');
+  imgur.uploadBase64(img)
+    .then(json => {
+      if(json.data.error) {
+        addMessage(`Error uploading image: ${json.data.error.message}`);
+      } else {
+        logger.info(`Delete link for uploaded image is http://imgur.com/delete/${json.data.deletehash}`);
+        addMessage(`Screenshot uploaded to <a class='opn-link' href='${json.data.link}'>${json.data.link}</a>`);
+      }
+    })
+    .catch(err => {
+      addMessage(`Error uploading image: ${err}`);
+    });
+  
 }
 
 // This method will be called when Electron has finished
