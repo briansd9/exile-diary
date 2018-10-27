@@ -1,17 +1,20 @@
 {
   "name": "exile-diary",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "main.js",
   "build": {
     "appId": "com.pathofexile.exilediary",
     "productName": "Exile Diary",
     "win": {
       "target": "nsis",
-      "icon": "./res/icons/win/ExileDiary.ico"
+      "icon": "./res/icons/win/ExileDiary.ico",
+      "extraResources": [
+        "eng.traineddata"
+      ]
     },
     "nsis": {
       "oneClick": "false",
-      "allowElevation": "true",
+      "allowElevation": "false",
       "allowToChangeInstallationDirectory": "true",
       "installerIcon": "./res/icons/win/ExileDiary.ico",
       "uninstallerIcon": "./res/icons/win/ExileDiary.ico",
