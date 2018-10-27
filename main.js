@@ -191,7 +191,6 @@ function saveScreenshot(img) {
       "Cancel"
     ],
     title: "Exile Diary",
-    icon: "res/icons/png/32x32.png",
     message: "Screenshot generated",
     detail: "Where should the generated screenshot be saved?",
     checkboxLabel: "Don't ask again"  
