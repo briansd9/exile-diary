@@ -1,5 +1,5 @@
 <script>
-
+  
   function addMessageRow(msg) {
     $("#messages").append(`<div><span class='eventTime'>[${msg.timestamp}]</span> ${msg.text}</div>`);
     if($("#messages div").length > 10) {
@@ -17,6 +17,14 @@
   });
   
   $("document").ready(() => {
+    
+    const opn = require('opn');
+    $(document).on("click", "a.opn-link", (event) => {
+      var target = "" + event.target;
+      event.preventDefault();      
+      opn(target);      
+    });
+    
     $("#messages").hover(
       () => { 
         $("#messages").css('height', 'auto') 
