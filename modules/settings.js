@@ -2,11 +2,8 @@ const logger = require("./Log").getLogger(__filename);
 const path = require('path');
 
 function get() {
-  
   var app = require('electron').app || require('electron').remote.app;
-
   var settings = null;
-  
   try {
     settings = require(path.join(app.getPath("userData"), "settings.json"));
   } catch (err) {
@@ -16,4 +13,22 @@ function get() {
   return settings;
 }
 
+function set(key, value) {
+  var app = require('electron').app || require('electron').remote.app;
+  var fs = require('fs');
+  var settingsPath = path.join(app.getPath("userData"), "settings.json");
+  if(fs.existsSync(settingsPath)) {
+    var settings = require(settingsPath);
+    settings[key] = value;
+    fs.writeFile(settingsPath, JSON.stringify(settings), (err) => {
+      if(err) {
+        throw err;
+      } else {
+        logger.info(`Set "${key}" to "${value}"`);
+      }
+    });    
+  }  
+}
+
 module.exports.get = get;
+module.exports.set = set;
