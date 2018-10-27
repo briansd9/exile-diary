@@ -30,7 +30,6 @@
       const path = require('path');
       const {ipcRenderer} = require('electron');
       const fs = require('fs');
-      const FilterParser = require('./modules/FilterParser');
       const logger = require('./modules/Log').getLogger(__filename);
       const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir"];
       //const profileKeys = ["accountName", "characterName", "league"];
@@ -123,7 +122,7 @@
         }
         
         var data = fs.readFileSync(path, "utf8");
-        var filter = FilterParser.test(data.toString());
+        var filter = require('./modules/FilterParser').test(data.toString());
         if(JSON.stringify(filter.errors) !== "[]") {
           $("#uploadFilter").val("Errors found while parsing filter");
           logger.info(filter.errors);
