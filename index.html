@@ -84,6 +84,12 @@
           });          
         });
         
+        $(document).keypress((e) => {
+          if(e.ctrlKey && e.shiftKey && e.which === 4) {
+            remote.BrowserWindow.getAllWindows()[0].webContents.toggleDevTools();
+          }
+        });
+        
       });
       
       function getLastAreaInfo() {
