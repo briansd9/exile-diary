@@ -1,14 +1,13 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow, ipcMain} = require('electron');
 const logger = require("./modules/Log").getLogger(__filename);
-const DB = require("./modules/DB");
 const ClientTxtWatcher = require("./modules/ClientTxtWatcher");
 const OCRWatcher = require("./modules/OCRWatcher");
 const RateGetter = require("./modules/RateGetter");
 const RunParser = require('./modules/RunParser');
 const MapSearcher = require('./modules/MapSearcher');
 const ScreenshotWatcher = require("./modules/ScreenshotWatcher");
-const settings = require("./modules/settings");
+
 const StashGetter = require("./modules/StashGetter");
 const Utils = require("./modules/Utils");
 const moment = require('moment');
@@ -38,7 +37,7 @@ function init() {
   var settingsPath = path.join(app.getPath("userData"), "settings.json");
   if(fs.existsSync(settingsPath)) {
     delete require.cache[require.resolve(settingsPath)];
-    DB.getDB(true);
+    require("./modules/DB").getDB(true);
     RateGetter.update();
     StashGetter.get();
     ClientTxtWatcher.start();
@@ -127,7 +126,7 @@ function createWindow() {
   //mainWindow.setMenu(null);
 
   // and load the index.html of the app.
-  if(!settings.get()) {
+  if(!require("./modules/settings").get()) {
     mainWindow.loadFile('config.html');
   } else {
     mainWindow.loadFile('index.html');
