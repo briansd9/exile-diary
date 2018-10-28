@@ -1,7 +1,7 @@
 <script>
   
   function addMessageRow(msg) {
-    $("#messages").append(`<div><span class='eventTime'>[${msg.timestamp}]</span> ${msg.text}</div>`);
+    $("#messages").append(`<div class='message'><span class='eventTime'>[${msg.timestamp}]</span> ${msg.text}</div>`);
     if($("#messages div").length > 10) {
       $("#messages").find("div:first").remove();
     }

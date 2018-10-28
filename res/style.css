@@ -456,3 +456,7 @@ div.messageSection {
   background-color: #000;
   overflow-y: hidden;
 }
+
+div.message {
+  font-family: Fontin !important;
+}
