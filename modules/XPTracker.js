@@ -2,7 +2,6 @@ const logger = require("./Log").getLogger(__filename);
 const moment = require('moment');
 
 async function logXP(timestamp, currXP) {
-  logger.info(`Logging xp: ${timestamp} ${currXP}`);
   var DB = require('./DB').getDB();
   var prevXP = await getPrevXP(DB);
   if(prevXP !== currXP) {
