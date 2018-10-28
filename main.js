@@ -147,7 +147,7 @@ function createWindow() {
   
   initWindow(mainWindow);
   
-  addMessage("Exile Diary started");
+  addMessage(`Exile Diary v${app.getVersion()} started`);
   
   mainWindow.maximize();
   mainWindow.show();
