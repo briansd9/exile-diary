@@ -1,4 +1,6 @@
 - cron job: get stash and rates every x hours (configurable)
-- screenshot dialog - where to save file?
+- config tooltips
+- elder despawn timer? # of maps since last elder guardian encounter
+- stash value history
 - xp graph, level log
 - what to put on front page?
