@@ -3,7 +3,6 @@ const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
 const StringMatcher = require('./StringMatcher');
-const Tesseract = require('tesseract.js');
 const logger = require("./Log").getLogger(__filename);
 const EventEmitter = require('events');
 
@@ -48,8 +47,10 @@ function start() {
 function processImage(file) {
   
   logger.info("Performing OCR on " + file + "...");  
+
+  var TesseractWorker = require('tesseract.js').create({ langPath: process.resourcesPath });
   
-  Tesseract.create({ langPath: process.resourcesPath }).recognize(file, {
+  TesseractWorker.recognize(file, {
     lang: "eng",
     tessedit_char_whitelist: "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ:-',%+"
   }).then((result) => {
@@ -108,6 +109,11 @@ function processImage(file) {
         
       }
       
+    }).catch(err => {
+      cleanFailedOCR(err);
+    }).finally(() => {
+      TesseractWorker.terminate();
+      logger.info("Completed OCR on " + file);
     });
 }
 
@@ -122,11 +128,14 @@ function checkAreaInfoComplete() {
 function cleanFailedOCR(e, timestamp) {
   areaInfo = null;
   mapMods = null;
+  logger.info("Error processing screenshot: " + e);
   emitter.emit("OCRError");
-  DB.serialize(() => {
-    DB.run("delete from areainfo where id = ?", [timestamp]);
-    DB.run("delete from mapmods where area_id = ?", [timestamp]);
-  });
+  if(timestamp) {
+    DB.serialize(() => {
+      DB.run("delete from areainfo where id = ?", [timestamp]);
+      DB.run("delete from mapmods where area_id = ?", [timestamp]);
+    });
+  }
 }
 
 function getAreaInfo(lines) {
