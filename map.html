@@ -533,6 +533,7 @@
             name += i.name.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "") + ", ";
         }
         name += i.typeLine.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "");
+        name = name.replace("Superior ", "");
         return name;
       }
 
