@@ -460,3 +460,7 @@ div.messageSection {
 div.message {
   font-family: Fontin !important;
 }
+
+.itemToggle {
+  padding-right: 10px;
+}

@@ -63,8 +63,6 @@
           var mapNames = rows.map(elem => elem.name);
           $("#mapname").autocomplete({ delay: 0, minLength: 0, source: mapNames });
         });
-        
-    
 
         $("#form").submit(function(event) {
           event.preventDefault();
@@ -72,8 +70,29 @@
           var data = $(this).serialize();
           ipcRenderer.send("searchMaps", data);
           $("#searchResults").hide();
+          $("input[type=checkbox]").each(function() {
+            $(this).prop("checked", false);
+          });
+          
           $("#summaryContentsLoading").show();
           $("#summaryContents").hide();
+        });
+        
+        $("input[type=checkbox]").click(function() {
+          var itemTypes = [];
+          $("input[type=checkbox]").each(function() {
+            if(this.checked) {
+              itemTypes.push(this.value);
+            }
+          });
+          $("#itemsTable > tr").each(function() {
+            var itemClass = $(this).data("itemclass");
+            if(itemTypes.length === 0 || itemTypes.includes(itemClass)) {
+              $(this).show();
+            } else {
+              $(this).hide();
+            }
+          });
         });
         
         ipcRenderer.on("mapSearchResults", (event, rows) => {
@@ -92,7 +111,7 @@
           $("#avgTime").html(moment.duration(data.totalTime / data.numMaps, "seconds").format());
           $("#totalXP").html(f.format(data.totalXP));
           $("#avgXP").html(f.format(Math.round(data.totalXP / data.numMaps)));
-          display(data.items);
+          display(data);
           $("#summaryContentsLoading").hide();
           $("#summaryContents").show();
         });
@@ -104,6 +123,12 @@
 //          $("ul").show();
 //          $("#mapList").show();
 //          $("#mapSummary").hide();
+          var numberFields = ['iiq', 'iir', 'packsize', 'level', 'playerlevel', 'profit', 'deaths'];
+          numberFields.forEach(field => {
+            $(`#${field}row`).show();
+          });
+          $("#mapnamerow").show();
+
           $(".footer").hide();
           $("body").removeClass('bodyScreenshot');
           $(document).scrollTop(currScroll);
@@ -128,6 +153,17 @@
 //        $("#mapList").show();
 //        $("#mapSummary").show();
         $("body").addClass('bodyScreenshot');
+        
+        var numberFields = ['iiq', 'iir', 'packsize', 'level', 'playerlevel', 'profit', 'deaths'];
+        numberFields.forEach(field => {
+          if(!$(`#${field}max`).val() && !$(`#${field}min`).val()) {
+            $(`#${field}row`).hide();
+          }
+        });
+        if(!$("#mapname").val()) {
+          $("#mapnamerow").hide();
+        }
+        
         $(".footer").show();
         currScroll = $(document).scrollTop();
         remote.getCurrentWindow().captureFullPage(img => { 
@@ -140,7 +176,7 @@
 
       function numberInput(label, inputname, maxlength = 3, pattern = '[0-9]+') {
         return ` 
-            <tr>
+            <tr id='${inputname}row'>
               <td>
                 <div class='searchLabel' id='${inputname}label'>${label}</div>
               </td>
@@ -162,8 +198,10 @@
         }
       }
       
-      function display(items) {
-
+      function display(data) {
+        
+        var items = data.items;
+        
         var tbl = $("#itemsTable");
         tbl.empty();        
 
@@ -184,11 +222,14 @@
           tbl.append(itemToString(item));
         });
 
-        $("#netWorth").html( 
-          "Gained: "
-          + totalValue.toFixed(2)
-          + " <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&scaleIndex=3&&w=1&h=1'/> "
-          );
+//        $("#netWorth").html( 
+//          "Gained: "
+//          + totalValue.toFixed(2)
+//          + " <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&scaleIndex=3&&w=1&h=1'/> "
+//          );
+
+        $("#totalProfit").html(totalValue.toFixed(2));
+        $("#avgProfit").html((totalValue / data.numMaps).toFixed(2));
         
         $(".lazy").Lazy();
         
@@ -211,17 +252,19 @@
             name += i.name.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "") + ", ";
         }
         name += i.typeLine.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "");
+        name = name.replace("Superior ", "");
         return name;
       }
 
       function itemToString(i) {
         if (!i.chaosValue)
           return;
-        var str = "<tr><td bgcolor=0 style='min-width:60px'><img class='lazy' style='height:" + (i.h * 40) + "px;width:" + (i.w * 40) + "px;' data-src='" + i.icon + "'/></td>";
-        str += "<td style='text-align: right;'>" + (i.stackSize || "&nbsp;") + "</td>";
-        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.stackSize ? "x" : "&nbsp;") + "</td>";
-        str += "<td style='padding-left:10px;padding-right:10px;min-width:300px'>" + i.displayName + "</td>";
-        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.chaosValue ? Number(i.chaosValue).toFixed(2) + "" : "&nbsp;") + "</td>";
+        var item = new Item(i);
+        var str = `<tr data-itemclass="${item.itemClass}"><td bgcolor=0 style='min-width:60px'><img class='lazy' style='height:${i.h * 40}"px;width:${i.w * 40}px;' data-src='${i.icon}'/></td>`;
+        str += `<td style='text-align: right;'>${i.stackSize || "&nbsp;"}</td>`;
+        str += `<td style='padding-left:10px;padding-right:10px'>${i.stackSize ? "x" : "&nbsp;"}</td>`;
+        str += `<td style='padding-left:10px;padding-right:10px;min-width:300px'>${i.displayName}</td>`;
+        str += `<td style='padding-left:10px;padding-right:10px'>${i.chaosValue ? Number(i.chaosValue).toFixed(2) + "" : "&nbsp;"}</td>`;
         return str;
       }
 
@@ -237,8 +280,8 @@
             <span class='headerIcon' id='mapFiltersHeaderIcon'>( - )</span> Map Filters
           </div>
           <table id='mapFilters'>
-            <tr>
-              <td><div class='searchLabel'>Name</div></td>
+            <tr id='mapnamerow'>
+              <td><div id='mapnamelabel' class='searchLabel'>Name</div></td>
               <td><input class='autoclick' name='mapname' id='mapname' type='text' maxlength='30' size='40' /></td>
             </tr>
           </table>
@@ -260,18 +303,16 @@
           <div id="summaryContentsLoading">Loading...</div>
           <div id="summaryContents" style="display:none;">
             <div>Total time: <span id='totalTime'></span> (<span id='avgTime'></span> / map)</div>
-            <div>Total XP: <span id='totalXP'></span> (<span id='avgXP'></span> / hr)</div>
-            <div id='netWorth' class='tableLink netWorth' onclick='$("#total").toggle()'></div>
+            <div>Total XP: <span id='totalXP'></span> (<span id='avgXP'></span> / map)</div>
+            <div>Total profit: <span id='totalProfit'></span> <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&scaleIndex=3&&w=1&h=1'/> (<span id='avgProfit'></span> / map)</div>
+            <hr/>
+            <!--<div id='netWorth' class='tableLink netWorth' onclick='$("#total").toggle()'></div>-->
+            <div id='itemToggles'>
+              <span class='itemToggle'><input type='checkbox' value='Currency'/>Currency</span></span>
+              <span class='itemToggle'><input type='checkbox' value='Maps'/>Maps</span>
+              <span class='itemToggle'><input type='checkbox' value='Divination Card'/>Div Cards</span>
+            </div>
             <table id='total' style='display:block;'>
-              <thead>
-                <tr class='ui-text'>
-                  <th>&nbsp;</th>
-                  <th>&nbsp;</th>
-                  <th>&nbsp;</th>
-                  <th>Item</th>
-                  <th>Value</th>
-                </tr>
-              </thead>
               <tbody id="itemsTable">
               </tbody>
             </table>
