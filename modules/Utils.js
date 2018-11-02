@@ -71,7 +71,7 @@ class Utils {
   }
 
   static getBaseFromMagicMap(m) {
-    baseMap = "";
+    var baseMap = "";
     for (var i = 0; i < Constants.baseMaps.length; i++) {
       var elder = "Elder " + Constants.baseMaps[i];
       var shaped = "Shaped " + Constants.baseMaps[i];
