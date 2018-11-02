@@ -7,8 +7,8 @@ async function insertItems(items, timestamp) {
 
     var DB = require('./DB').getDB();
     
-    var hasKey = await hasExistingKey(items);
-    if(hasKey) {
+    var duplicateInventory = await isDuplicateInventory(items);
+    if(duplicateInventory) {
       logger.info(`Duplicate items found for ${timestamp}, returning`);
       resolve();
     } else {
@@ -32,42 +32,46 @@ async function insertItems(items, timestamp) {
   });
 }
 
-async function hasExistingKey(items) {
+async function isDuplicateInventory(items) {
   
   return new Promise( (resolve, reject) => {
     
     var checkDuplicates = false;
+    var numItemsToCheck = 0;
     
     if(items.length === 0) resolve(false);
 
     var keys = Object.keys(items);
-    var query = "select count(1) as count from items where id in (";
+    var query = "select count(1) as count from items where (";
     for(var i = 0; i < keys.length; i++) {
-      
-      // only check duplication for non-stackable items
-      if(items[keys[i]].stacksize || items[keys[i]].stackSize) continue;
 
-      if(checkDuplicates) query += ",";
-      query += `'${keys[i]}'`;
-      checkDuplicates = true;
+      if(items[keys[i]].stacksize || items[keys[i]].stackSize) continue;
+      
+      if(checkDuplicates) {
+        query += " or ";
+      } else {
+        checkDuplicates = true;
+      }
+
+      query += `( id = '${keys[i]}' `;
+      query += `)`;
+      
+      numItemsToCheck++;
       
     }
     query += ")";
+    
+    if(!checkDuplicates) resolve(false);
 
-    if(!checkDuplicates) {
-      //logger.info("No non-stackable items found, not checking duplicates");
-      resolve(false);
-    }
-
-    //logger.info(query);
+    logger.info(query);
     var DB = require('./DB').getDB();
     DB.get(query, (err, row) => {
       if(err) {
         logger.warn(`Error checking inventory keys: ${err}`);
         resolve(false);
       } else {
-        //logger.info(`${row.count} duplicate items found in DB`);
-        resolve(row.count !== 0);
+        logger.info(`${numItemsToCheck} items in inventory, ${row.count} duplicates found in DB`);
+        resolve(row.count === numItemsToCheck);
       }
     });
     
