@@ -2,5 +2,6 @@
 - config tooltips
 - elder despawn timer? # of maps since last elder guardian encounter
 - stash value history
+- add editing for area info and map mods, in case OCR goes wrong
 - xp graph, level log
 - what to put on front page?
