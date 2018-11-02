@@ -272,7 +272,10 @@ function getSQL(q) {
     } else if(q.levelmax) {
       str += " and level <= ? ";
       params.push(q.levelmax);
-    }        
+    }
+    if(q.levelmode === "mapTier") {
+      str += " and depth is null ";
+    }
   }
   
   if(q.deathsmin || q.deathsmax) {
