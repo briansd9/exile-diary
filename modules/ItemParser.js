@@ -13,19 +13,26 @@ async function insertItems(items, timestamp) {
       resolve();
     } else {
       logger.info(`Inserting items for ${timestamp}`);
-      var stmt = DB.prepare(
-        `
-          insert into items (id, event_id, icon, name, rarity, category, identified, typeline, sockets, stacksize, rawdata)
-          values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        `
-      );
-      Object.keys(items).forEach((key) => {
-        stmt.run(parseItem(items[key], timestamp));
-      });
-      stmt.finalize( (err) => {
-        if(err) {
-          logger.warn(`Error inserting items for ${timestamp}: ${err}`);
-        }
+      DB.serialize(function() {
+        DB.run("begin transaction");
+        var stmt = DB.prepare(
+          `
+            insert into items (id, event_id, icon, name, rarity, category, identified, typeline, sockets, stacksize, rawdata)
+            values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `
+        );
+        Object.keys(items).forEach((key) => {
+          stmt.run(parseItem(items[key], timestamp));
+        });
+        stmt.finalize( (err) => {
+          if(err) {
+            logger.warn(`Error inserting items for ${timestamp}: ${err}`);
+            DB.run("rollback");
+          } else {
+            DB.run("commit");
+          }
+        });
+        logger.info(`Done inserting items for ${timestamp}`);
         resolve();
       });
     }
