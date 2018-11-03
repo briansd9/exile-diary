@@ -127,10 +127,12 @@ function createWindow() {
   //mainWindow.setMenu(null);
 
   // and load the index.html of the app.
-  if(!require("./modules/settings").get()) {
+  var settings = require("./modules/settings").get();
+  if(!settings) {
     mainWindow.loadFile('config.html');
   } else {
-    mainWindow.loadFile('index.html');
+    mainWindow.loadFile('index.html');    
+    global.ssf = (settings.activeProfile && settings.activeProfile.league && settings.activeProfile.league.includes("SSF"));
   }
   
   // Emitted when the window is closed.
