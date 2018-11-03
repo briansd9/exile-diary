@@ -34,9 +34,16 @@
       const momentDurationFormatSetup = require("moment-duration-format");
       const {ipcRenderer} = require('electron');
       const remote = require('electron').remote;
-
+      
+      const ssf = remote.getGlobal("ssf");
 
       $(document).ready(function() {
+        
+        if(ssf) {
+          $("#totalProfitDiv").hide();
+          $("#totalProfitCell").remove();
+          $("#itemValue").remove();
+        }
 
         $("#sidenav").load("sidenav.html", () => {
           $("#sidenav").append("<div><a class='ui-text' onclick='screenshot()'>Screenshot</a></div>");
@@ -48,7 +55,9 @@
         $("#mapFilters").append(numberInput("Pack Size", "packsize"));
         $("#mapFilters").append(numberInput("Level", "level"));
         $("#mapFilters").append(numberInput("Player Level", "playerlevel"));
-        $("#mapFilters").append(numberInput("Profit (<img style='vertical-align:middle;' src='res/c.png'/>)", "profit", 5));
+        if(!ssf) {
+          $("#mapFilters").append(numberInput("Profit (<img style='vertical-align:middle;' src='res/c.png'/>)", "profit", 5));
+        }
         $("#mapFilters").append(numberInput("Deaths", "deaths"));
         
         $("#levellabel").html(`
@@ -98,7 +107,7 @@
         ipcRenderer.on("mapSearchResults", (event, rows) => {
           $("#mapRows").empty();
           rows.forEach(row => {
-            Utils.addMapRow($("#mapRows"), row);
+            Utils.addMapRow($("#mapRows"), row, false, ssf);
           })
           $("#mapTable").trigger("update");
           $("#searchButton").prop("value", `${rows.length} results found`);
@@ -112,6 +121,7 @@
           $("#totalXP").html(f.format(data.totalXP));
           $("#avgXP").html(f.format(Math.round(data.totalXP / data.numMaps)));
           display(data);
+          $("#items").trigger("update");
           $("#summaryContentsLoading").hide();
           $("#summaryContents").show();
         });
@@ -138,6 +148,7 @@
         $("#mapTable").tablesorter({
           emptyTo: "bottom"
         });
+        $("#items").tablesorter();
         
         $("#tabs").tabs({
           active: 0
@@ -264,7 +275,9 @@
         str += `<td style='text-align: right;'>${i.stackSize || "&nbsp;"}</td>`;
         str += `<td style='padding-left:10px;padding-right:10px'>${i.stackSize ? "x" : "&nbsp;"}</td>`;
         str += `<td style='padding-left:10px;padding-right:10px;min-width:300px'>${i.displayName}</td>`;
-        str += `<td style='padding-left:10px;padding-right:10px'>${i.chaosValue ? Number(i.chaosValue).toFixed(2) + "" : "&nbsp;"}</td>`;
+        if(!ssf) {
+          str += `<td style='padding-left:10px;padding-right:10px'>${i.chaosValue ? Number(i.chaosValue).toFixed(2) + "" : "&nbsp;"}</td>`;
+        }
         return str;
       }
 
@@ -283,6 +296,10 @@
             <tr id='mapnamerow'>
               <td><div id='mapnamelabel' class='searchLabel'>Name</div></td>
               <td><input class='autoclick' name='mapname' id='mapname' type='text' maxlength='30' size='40' /></td>
+            </tr>
+            <tr id='mapcountrow'>
+              <td><div id='mapcountlabel' class='searchLabel' style='padding-right:0px;'>Only search previous</div></td>
+              <td><input name='mapcount' id='mapcount' class='number' type='text'min='0' pattern='[0-9]+' maxlength='5' size='5' /> <span style='padding-left:8px;' class='searchLabel'>maps</span></td>
             </tr>
           </table>
           <div id='mapFilterButtons'>
@@ -304,15 +321,24 @@
           <div id="summaryContents" style="display:none;">
             <div>Total time: <span id='totalTime'></span> (<span id='avgTime'></span> / map)</div>
             <div>Total XP: <span id='totalXP'></span> (<span id='avgXP'></span> / map)</div>
-            <div>Total profit: <span id='totalProfit'></span> <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&scaleIndex=3&&w=1&h=1'/> (<span id='avgProfit'></span> / map)</div>
+            <div id='totalProfitDiv'>Total profit: <span id='totalProfit'></span> <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&scaleIndex=3&&w=1&h=1'/> (<span id='avgProfit'></span> / map)</div>
             <hr/>
-            <!--<div id='netWorth' class='tableLink netWorth' onclick='$("#total").toggle()'></div>-->
             <div id='itemToggles'>
-              <span class='itemToggle'><input type='checkbox' value='Currency'/>Currency</span></span>
-              <span class='itemToggle'><input type='checkbox' value='Maps'/>Maps</span>
-              <span class='itemToggle'><input type='checkbox' value='Divination Card'/>Div Cards</span>
+              <span class='itemToggle'><input type='checkbox' value='Currency'/> Currency</span>
+              <span class='itemToggle'><input type='checkbox' value='Maps'/> Maps</span>
+              <span class='itemToggle'><input type='checkbox' value='Divination Card'/> Div Cards</span>
             </div>
-            <table id='total' style='display:block;'>
+            <hr/>
+            <table id="items" style='display:block;'>
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Count</th>
+                  <th></th>
+                  <th>Name</th>
+                  <th id="itemValue">Value</th>
+                </tr>
+              </thead>
               <tbody id="itemsTable">
               </tbody>
             </table>
@@ -329,7 +355,7 @@
                 <th>IIR</th>
                 <th>Pack Size</th>
                 <th>Time</th>
-                <th><img src='res/c.png'></th>
+                <th id='totalProfitCell'><img src='res/c.png'></th>
                 <th>Deaths</th>
               </tr>
             </thead>

@@ -171,9 +171,16 @@ function getSQL(q) {
   var str = ` 
     select areainfo.*, mapruns.*,
     (select count(1) from events e where e.id between mapruns.firstevent and mapruns.lastevent and e.event_type = 'slain') deaths
-    from areainfo, mapruns 
-    where areainfo.id = mapruns.id
+    from areainfo,
   `;
+  
+  if(q.mapcount) {
+    str += ` (select * from mapruns order by id desc limit ${q.mapcount} ) mapruns `
+  } else {
+    str += " mapruns ";
+  }
+    
+  str += " where areainfo.id = mapruns.id ";
   var params = [];
   
   if(q.mapname) {
@@ -273,7 +280,7 @@ function getSQL(q) {
       str += " and level <= ? ";
       params.push(q.levelmax);
     }
-    if(q.levelmode === "mapTier") {
+    if( q.levelmode === "mapTier" && (q.levelmin || q.levelmax) ) {
       str += " and depth is null ";
     }
   }
