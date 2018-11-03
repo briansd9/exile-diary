@@ -447,7 +447,7 @@
           }
         }        
         
-        if(!remote.getGlobal("ssf")) {
+        if(remote.getGlobal("ssf")) {
           $("#itemsByValue").hide();
         } else {
           displayItemsByValue();
