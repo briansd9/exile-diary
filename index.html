@@ -35,12 +35,18 @@
       const moment = require('moment');
       const momentDurationFormatSetup = require("moment-duration-format");
       const Utils = require('./modules/Utils');
-      
+
+      const ssf = remote.getGlobal("ssf");
+
       var hasAreaInfo = false;
       var hasMapMods = false;
 
       $(document).ready(function () {
-        
+
+        if(ssf) {
+          $("#totalProfitCell").remove();
+        }
+    
         $("#sidenav").load("sidenav.html");
         $("#messages").load("messages.html");
 
@@ -79,7 +85,7 @@
           `, [runInfo.id], (err, row) => {
             if(row) {
               $("#lastMapsRows tr:last").remove();
-              Utils.addMapRow($("#lastMapsRows"), row, true);
+              Utils.addMapRow($("#lastMapsRows"), row, true, ssf);
             }
           });          
         });
@@ -119,7 +125,7 @@
         `, (err, rows) => {
           if(rows) {
             rows.forEach( row => {
-              Utils.addMapRow($("#lastMapsRows"), row);
+              Utils.addMapRow($("#lastMapsRows"), row, false, ssf);
             });
             //$("#lastMapsTable").tablesorter();              
           }
@@ -190,7 +196,7 @@
             <th>IIR</th>
             <th>Pack Size</th>
             <th>Time</th>
-            <th><img src='res/c.png'></th>
+            <th id='totalProfitCell'><img src='res/c.png'></th>
             <th>Deaths</th>
           </tr>
         </thead>
