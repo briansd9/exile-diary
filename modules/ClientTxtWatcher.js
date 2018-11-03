@@ -26,7 +26,7 @@ function start() {
 
     logger.info(`Watching ${settings.clientTxt}`);
 
-    tail = new Tail(`${settings.clientTxt}`, {usePolling: true});
+    tail = new Tail(`${settings.clientTxt}`, {usePolling: true, disableGlobbing: true});
     inv = new InventoryGetter();
 
     tail.on("line", (line) => {
@@ -35,13 +35,10 @@ function start() {
         RunParser.process();
       } else {
         var timestamp = line.substring(0, 19).replace(/[^0-9]/g, '');
-        //var str = "[" + ((new Date()).toISOString().replace(/T/, ' ').replace(/\..+/, '')) + "] " + line;
         var event = getEvent(line);
         if (event) {
-          //logger.info(`Found event: type [${event.type}]${ (event.text ? `, text [${event.text}]` : '') }`);
           insertEvent(event, timestamp);
           if (event.type === "entered") {
-            //logger.info("Zone changed, getting items picked up in previous zone...");
             inv.getInventoryDiffs(timestamp).then(async (diff) => {
               if (diff && Object.keys(diff).length > 0) {
                 await ItemParser.insertItems(diff, timestamp);
@@ -64,7 +61,7 @@ function insertEvent(event, timestamp) {
     if (err) {
       logger.info("Failed to insert event: " + err);
     } else {
-      //logger.info(`Inserted event ${timestamp} -> ${event.type} ${event.text}`);
+      logger.info(`Inserted event ${timestamp} -> ${event.type} ${event.text}`);
     }
   }
   );

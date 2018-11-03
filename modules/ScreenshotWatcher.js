@@ -27,7 +27,7 @@ function start() {
     logger.info("Watching " + settings.screenshotDir);
     watcher = chokidar.watch(
       `${settings.screenshotDir}`,
-      {usePolling: true, awaitWriteFinish: true, ignoreInitial: true}
+      {usePolling: true, awaitWriteFinish: true, ignoreInitial: true, disableGlobbing: true}
     );
     watcher.on("add", (path) => {
       logger.info("Cropping new screenshot: " + path);
