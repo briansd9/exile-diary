@@ -106,6 +106,9 @@ class Utils {
   
   static getItemValue(item, rates) {
     
+    // SSF - no item values
+    if(!rates) return 0;
+    
     var value = 0;
     
     if(item.sockets) {
@@ -131,7 +134,7 @@ class Utils {
     
   }
   
-  static addMapRow(rowsObject, map, first = false) {
+  static addMapRow(rowsObject, map, first = false, ssf = false) {
 
     var row = $("<tr class='mapRow'>");
     row.click(()=>{window.location.href=`map.html?id=${map.id}`});
@@ -150,9 +153,11 @@ class Utils {
 
     var runningTime = Utils.getRunningTime(map.firstevent, map.lastevent);
     row.append($("<td>").append(runningTime));
-
-    row.append($("<td>").append(Number(map.gained).toFixed(2)));
-
+    
+    if(!ssf) {
+      row.append($("<td>").append(Number(map.gained).toFixed(2)));
+    }
+    
     var deaths = Utils.getDeathCount(map.deaths);
     row.append($("<td>").append(deaths));
 

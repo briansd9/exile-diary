@@ -446,8 +446,12 @@
               );
           }
         }        
-
-        display();
+        
+        if(!remote.getGlobal("ssf")) {
+          $("#itemsByValue").hide();
+        } else {
+          displayItemsByValue();
+        }
         $(".eventsArea").show();
 
       }
@@ -476,7 +480,7 @@
 
       }
 
-      function display() {
+      function displayItemsByValue() {
 
         var items = itemsById;
         var tbl = $("#total");
@@ -672,22 +676,24 @@
       </div>
       <div class='eventsDiv' id='eventsDiv'></div>
       <hr class='eventsArea' style='border:1px solid #999;' />
-      <div id='netWorth' class='tableLink netWorth' onclick='$("#total").toggle()'></div>
-      <table id='total' style='display:block;'>
-        <thead>
-          <tr class='ui-text'>
-            <th>&nbsp;</th>
-            <th>&nbsp;</th>
-            <th>&nbsp;</th>
-            <th>Item</th>
-            <th>Unit</th>
-            <th>Value</th>
-          </tr>
-        </thead>
-        <tbody id="itemsTable">
-        </tbody>
-      </table>
-      <hr style='border:1px solid #999;' />
+      <div id='itemsByValue'>
+        <div id='netWorth' class='tableLink netWorth' onclick='$("#total").toggle()'></div>
+        <table id='total' style='display:block;'>
+          <thead>
+            <tr class='ui-text'>
+              <th>&nbsp;</th>
+              <th>&nbsp;</th>
+              <th>&nbsp;</th>
+              <th>Item</th>
+              <th>Unit</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody id="itemsTable">
+          </tbody>
+        </table>
+        <hr style='border:1px solid #999;' />
+      </div>
       <div id="myModal" class="modal">
         <div id="modalContent" class="modal-content">
           <table style="border-spacing: 20px;">
