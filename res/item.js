@@ -258,6 +258,9 @@ ItemData.getClass = function(data) {
   if(data.frameType === 8) {
     return "Prophecy";
   }
+  if(data.typeLine.includes("Reliquary Key")) {
+    return "Misc Map Items";
+  }
   
   var cat;
   cat = data.category;
