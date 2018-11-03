@@ -124,8 +124,10 @@ function getFor(timestamp) {
     DB.get("select distinct date from rates where date < ? order by date desc", [timestamp], (err, row) => {
       if(err) {
         logger.info(`Unable to get rates for ${timestamp}: ${err}`);
+        resolve(null);
       } else if(!row) {
         logger.info(`No rates found for ${timestamp}`);
+        resolve(null);
       } else {
         DB.all("select item, value from rates where date = ?", [row.date], (err, rows) => {
           if(err) {
