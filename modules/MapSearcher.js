@@ -140,7 +140,12 @@ async function getXP(mapID) {
   return new Promise( (resolve, reject) => {
     DB.all("select id, xp from mapruns where id <= ? order by id desc limit 2", [mapID], (err, rows) => {
       //logger.info(`XP earned for ${mapID} is ${rows[0].xp - rows[1].xp}`);
-      resolve(rows[0].xp - rows[1].xp);
+      if(rows[1].xp === 0) {
+        // to prevent spurious average xp values, don't count a run if the previous run had 0 xp
+        return 0;
+      } else {
+        resolve(rows[0].xp - rows[1].xp);
+      }
     })
   });
 }

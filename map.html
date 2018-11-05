@@ -348,7 +348,7 @@
 
         if(info.xp) {
           var f = new Intl.NumberFormat();
-          var xpgained = info.xp - info.prevxp;
+          var xpgained = (info.prevxp > 0 ? info.xp - info.prevxp : 0);
           $("#xp").html(
             f.format(info.xp)
             + (xpgained === 0 ? "" : ` (${Utils.formatSignedNumber(xpgained)})`)
