@@ -226,7 +226,7 @@
       }
       
       function showNavigation(run) {
-        if(run.nav.prev && run.nav.prev !== -1) {
+        if(run.nav.prev && run.nav.prev != -1) {
           $("#prevCell").html(`<a class='ui-text' id='prevMap' onclick='goToRun("${run.nav.prev}")'><< ${run.nav.prev}</a>`);
         }
         if(run.nav.next) {
