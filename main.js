@@ -59,7 +59,6 @@ function initWindow(window) {
   });
   OCRWatcher.emitter.on("areaInfoComplete", (info) => {
     addMessage(`Started tracking run in <span class='eventText'>${info.areaInfo.name}</span>`);
-    RunParser.process(info);
   });
   
   ScreenshotWatcher.emitter.removeAllListeners();
@@ -166,7 +165,6 @@ function addMessage(text) {
   mainWindow.webContents.send("message", msg);
   mainWindow.once('focus', () => mainWindow.flashFrame(false));
   mainWindow.flashFrame(true);
-  
 }
 
 function saveScreenshot(img) {
