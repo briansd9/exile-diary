@@ -318,7 +318,7 @@
           info.name = "The Lord's Labyrinth";
         }
         $("#name").html(info.name);
-        $("#level").html(`Monster Level: ${info.level}`);
+        $("#level").html(info.level ? `Monster Level: ${info.level}` : '');
         $("#depth").html(info.depth ? `Delve Depth: ${info.depth}` : '');
         $("#league").html(`${settings.activeProfile.league} League`);
         
@@ -331,7 +331,7 @@
         if (info.packsize) {
           $("#packSize").html(`Monster Pack Size<br/><span class='mapStatValue'>${info.packsize}%</span><br/>`);
         }
-
+        
         run.mods.forEach(mod => {
           $("#mods").append(
             $("<span>", {
@@ -342,8 +342,10 @@
         });
         if(run.mods.length > 0) {
           $("#mods").addClass('dropdown-content');
+          $("#mods").addClass('mapMod');
         } else {
-          $("#mods").hide();
+          $("#mods").removeClass('dropdown-content');
+          $("#mods").removeClass('mapMod');
         }
 
         if(info.xp) {
