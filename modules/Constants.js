@@ -12,7 +12,14 @@ const townstrings = [
   "Oriath",
   "The Templar Laboratory",
   "Crumbled Laboratory",
-  "Hideout"
+  "Unearthed Hideout",
+  "Enlightened Hideout",
+  "Coastal Hideout",
+  "Overgrown Hideout",
+  "Lush Hideout",
+  "Battle-scarred Hideout",
+  "Backstreet Hideout",
+  "Immaculate Hideout"
 ];
 
 const labAreas = [
