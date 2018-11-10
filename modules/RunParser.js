@@ -10,22 +10,143 @@ const https = require('https');
 var DB;
 var emitter = new EventEmitter();
 
-async function processAll() {
+async function tryProcess(event) {
   
   DB = require('./DB').getDB();
+  var lastUsedEvent = await getLastUsedEvent();
+  if(!lastUsedEvent) return;
   
-  DB.each(`
-    select areainfo.name, areainfo.id, mapruns.firstevent, mapruns.lastevent 
-    from areainfo, mapruns 
-    where mapruns.id = areainfo.id and mapruns.gained is null
-    limit 25
-  `, (err, row) => {
-      logger.info(JSON.stringify(row));
-      checkProfit( { id : row.id, name: row.name }, row.firstevent, row.lastevent );
+  var firstEvent = await getNextMapEvent(lastUsedEvent);
+  if(!firstEvent) return;
+  logger.info("Map event found:");
+  logger.info(JSON.stringify(firstEvent));
+  
+  if(Utils.isLabArea(event.area) && Utils.isLabArea(firstEvent.area)) {
+    logger.info("Still in lab, not processing");
+    return;
+  } else if(event.area === firstEvent.area) {
+    if(event.area === "Azurite Mine") {
+      logger.info("Still in delve, not processing");
+      return;
+    } else if(event.server === firstEvent.server) {
+      logger.info(`Still in same area ${event.area}, not processing`);
+      return;
     }
-  );
-    
+  }
+  
+  var lastEvent = await getLastTownEvent(event, firstEvent);
+  if(!lastEvent) return;
+  logger.info("Last town event found:");
+  logger.info(JSON.stringify(lastEvent));
+
+  
+  var mapStats;
+  var areaInfo = await getAreaInfo(firstEvent, lastEvent);
+  if(areaInfo) {
+    mapStats = getMapStats(await getMapMods(areaInfo.id));
+  } else {
+    areaInfo = { 
+      id: firstEvent.timestamp,
+      name: firstEvent.area
+    };
+    mapStats = {
+      iiq: null,
+      iir: null,
+      packsize: null
+    };
+    DB.run("insert into areainfo(id, name, level) values(?, ?, '')", [firstEvent.timestamp, firstEvent.area]);
+  }
+
+  var xp = await getXP(firstEvent.timestamp, lastEvent.timestamp);
+  
+  var runArr = [areaInfo.id, firstEvent.timestamp, lastEvent.timestamp, mapStats.iiq || null, mapStats.iir || null, mapStats.packsize || null, xp];
+  
+  insertEvent(runArr);
+  checkProfit(areaInfo, firstEvent.timestamp, lastEvent.timestamp);
+  
+  return 1;
+  
+  function getNextMapEvent(lastUsedEvent) {
+    return new Promise( (resolve, reject) => {
+      DB.all("select id, event_text, server from events where event_type='entered' and id > ? order by id", [lastUsedEvent], (err, rows) => {
+        if(err) {
+          logger.error(`Unable to get next map event: ${err}`);
+          resolve();
+        }
+        if(!rows) {
+          logger.info("No valid next map event found");
+          resolve();
+        } else {
+          var foundEvent = false;
+          for(var i = 0; i < rows.length; i++) {
+            if(!Utils.isTown(rows[i].event_text)) {
+              foundEvent = true;
+              resolve({
+                timestamp: rows[i].id,
+                area: rows[i].event_text,
+                server: rows[i].server
+              });
+            }
+          }
+          if(!foundEvent) {
+            logger.info("No valid next map event found");
+            resolve();
+          }
+        }
+      });    
+    });
+  }
+  
+  function getLastTownEvent(currEvent, mapEvent) {
+    return new Promise( (resolve, reject) => {
+      DB.all("select * from events where event_type='entered' and id > ? and id < ? order by id desc", [mapEvent.timestamp, currEvent.timestamp], (err, rows) => {
+        if(err) {
+          logger.error(`Unable to get last event: ${err}`);
+          resolve();
+        } else {
+          var lastTownVisit = null;
+          for(var i = 0; i < rows.length; i++) {
+            var row = rows[i];
+            if(Utils.isTown(row.event_text)) {
+              lastTownVisit = {
+                timestamp: rows[i].id,
+                area: rows[i].event_text,
+                server: rows[i].server
+              }
+            } else {
+              break;
+            }
+          }
+          if(!lastTownVisit) {
+            logger.info("No last event found!");
+            resolve();
+          } else {
+            resolve(lastTownVisit);
+          }
+        }
+      });    
+    });
+  }  
+  
+  function getAreaInfo(firstEvent, lastEvent) {
+    return new Promise( (resolve, reject) => {
+      DB.get("select * from areainfo where id > ? and id < ? and name = ? order by id desc", [firstEvent.timestamp, lastEvent.timestamp, firstEvent.area], (err, row) => {
+        if(err) {
+          logger.error(`Unable to get area info: ${err}`);
+          resolve();
+        }
+        if(!row) {
+          logger.info(`No area info found between ${firstEvent.timestamp} and ${lastEvent.timestamp}`);
+          resolve();
+        }
+        resolve(row);
+      });    
+    });
+  }
+  
 }
+
+
 
 async function process(runInfo) {
   
@@ -71,7 +192,7 @@ async function process(runInfo) {
 
 function isSameRun(run1, run2) {
   
-  // note: use of != is deliberate, areaInfo.level can be returned as either number or string
+  // use of != is deliberate, areaInfo.level can be returned as either number or string
   if(run1.areaInfo.name != run2.areaInfo.name || run1.areaInfo.level != run2.areaInfo.level) {
     return false;
   }
@@ -296,7 +417,7 @@ function getLastEvent(area, firstEvent) {
 
 function getCurrAreaInfo() {
   return new Promise( (resolve, reject) => {
-    DB.get("select * from areainfo where id not in (select id from mapruns) order by id", (err, row) => {
+    DB.get("select * from areainfo where id not in (select id from mapruns) order by id desc", (err, row) => {
       if(err) {
         logger.error(`Unable to get last area info: ${err}`);
         resolve();
@@ -306,22 +427,6 @@ function getCurrAreaInfo() {
         resolve();
       }
       resolve(row);
-    });    
-  });
-}
-
-function getLastUsedEvent() {
-  return new Promise( (resolve, reject) => {
-    DB.get("select max(lastevent) as lastevent from mapruns", (err, row) => {
-      if(err) {
-        logger.error(`Unable to get last used event: ${err}`);
-        resolve("");
-      }
-      if(!row) {
-        logger.info("No unused event found");
-        resolve("");
-      }
-      resolve(row.lastevent);
     });    
   });
 }
@@ -373,5 +478,5 @@ function getMapStats(arr) {
 }
 
 module.exports.process = process;
-module.exports.processAll = processAll;
+module.exports.tryProcess = tryProcess;
 module.exports.emitter = emitter;

@@ -18,11 +18,7 @@ class DB {
 
     var app = require('electron').app || require('electron').remote.app;
     
-//    sqlite3.verbose();
     var db = new sqlite3.cached.Database(path.join(app.getPath("userData"), settings.activeProfile.characterName + ".db"));
-//    db.on('trace', (e) => {
-//      logger.info("DB trace: " + e);
-//    });
     
     if(startup) {
       logger.info(`Initializing database for ${settings.activeProfile.characterName}`);
@@ -33,24 +29,28 @@ class DB {
 
   }
 
-  static init(db) {    
+  static init(db) {
     db.serialize(() => {
       for(var i = 0; i < initSQL.length; i++) {
-        db.run(initSQL[i]);
+        db.run(initSQL[i], (err) => {
+          if(err) {
+            if(!err.toString().includes("duplicate column name")) {
+              throw err;
+            }
+          }
+        });
       }
     });
   }
-
 }
-
-
+  
 const initSQL = [
 
   `
     create table if not exists areainfo (
       id text primary key not null,
       name text not null,
-      level number not null,
+      level number,
       depth number
     )
   `,
@@ -70,6 +70,7 @@ const initSQL = [
       primary key (id, event_type)
     )
   `,
+  `alter table events add column server text;`,    
   `
     create table if not exists items (
       event_id text not null, 
@@ -132,7 +133,6 @@ const initSQL = [
       value text not null
     )
   `
-
 ];
 
 module.exports = DB;
