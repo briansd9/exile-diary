@@ -93,8 +93,11 @@ class Utils {
   static getMapTierString(map) {
     if(map.depth) {
       return `D${map.depth}`;
+    } else if(map.level) {
+      return (map.level <= 67 ? `L${map.level}` : `T${map.level-67}`);
+    } else {
+      return "";      
     }
-    return (map.level <= 67 ? `L${map.level}` : `T${map.level-67}`);
   }
   
   static formatSignedNumber(n) {
