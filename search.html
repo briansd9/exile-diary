@@ -138,6 +138,7 @@
             $(`#${field}row`).show();
           });
           $("#mapnamerow").show();
+          $("#mapcountrow").show();
 
           $(".footer").hide();
           $("body").removeClass('bodyScreenshot');
@@ -173,6 +174,9 @@
         });
         if(!$("#mapname").val()) {
           $("#mapnamerow").hide();
+        }
+        if(!$("#mapcount").val()) {
+          $("#mapcountrow").hide();
         }
         
         $(".footer").show();
@@ -253,18 +257,22 @@
       }
       
       function displayName(i) {
-        var name = "";
-        if (!i.identified && i.frameType == 3 && i.typeLine.endsWith(" Map")) {
-          name = Utils.getUniqueMap(i.typeLine);
-          return name;
+        
+        if(i.typeLine.endsWith(" Map") && !i.identified && i.frameType == 3) {
+          return Utils.getUniqueMap(i.typeLine);
         }
+        
+        var name = "";
         if (i.hasOwnProperty("name")) {
           if (i.name.length > 0)
             name += i.name.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "") + ", ";
         }
         name += i.typeLine.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "");
         name = name.replace("Superior ", "");
-        return name;
+        
+        var magicMap = Utils.getBaseFromMagicMap(name);
+        return magicMap || name;
+        
       }
 
       function itemToString(i) {
