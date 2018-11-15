@@ -54,7 +54,7 @@ async function tryProcess(event) {
       iir: null,
       packsize: null
     };
-    DB.run("insert into areainfo(id, name, level) values(?, ?, '')", [firstEvent.timestamp, firstEvent.area]);
+    DB.run("insert into areainfo(id, name) values(?, ?)", [firstEvent.timestamp, firstEvent.area]);
   }
 
   var xp = await getXP(firstEvent.timestamp, lastEvent.timestamp);
