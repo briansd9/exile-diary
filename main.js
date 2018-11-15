@@ -55,24 +55,26 @@ function initWindow(window) {
   
   OCRWatcher.emitter.removeAllListeners();
   OCRWatcher.emitter.on("OCRError", () => {
-    webContents.send("OCRError");
+    addMessage("Error getting area info from screenshot. Please try again")
   });
   OCRWatcher.emitter.on("areaInfoComplete", (info) => {
-    addMessage(`Started tracking run in <span class='eventText'>${info.areaInfo.name}</span>`);
+    addMessage(`Got area info for <span class='eventText'>${info.areaInfo.name}</span>`);
   });
   
   ScreenshotWatcher.emitter.removeAllListeners();
   ScreenshotWatcher.emitter.on("OCRError", () => {
-    webContents.send("OCRError");
+    addMessage("Error getting area info from screenshot. Please try again")
   });  
   
   RunParser.emitter.removeAllListeners();
   RunParser.emitter.on("runProcessed", (run) => {
     addMessage(
-      `Completed run in <span class='eventText'>${run.name}</span> `
-      + `(${Utils.getRunningTime(run.firstevent, run.lastevent)}, `
-      + `${run.gained} <img src='res/c.png' style='vertical-align:middle'>, `
-      + `${new Intl.NumberFormat().format(run.xp)} XP)`
+      `<span style='cursor:pointer;' onclick='window.location.href="map.html?id=${run.id}";'>`      
+        + `Completed run in <span class='eventText'>${run.name}</span> `
+        + `(${Utils.getRunningTime(run.firstevent, run.lastevent)}, `
+        + `${run.gained} <img src='res/c.png' style='vertical-align:middle'>, `
+        + `${new Intl.NumberFormat().format(run.xp)} XP)`
+        + `</span>`
     );
     webContents.send("runProcessed", run);
   });

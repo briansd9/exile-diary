@@ -8,10 +8,6 @@
     $("#messages").scrollTop($("#messages")[0].scrollHeight);
   }
 
-  require('electron').ipcRenderer.on("OCRError", (event) => {
-    alert("Error getting area info from screenshot. Please try again");
-  });
-
   require('electron').ipcRenderer.on("message", (event, msg) => {
     addMessageRow(msg);
   });
