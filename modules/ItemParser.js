@@ -69,6 +69,8 @@ async function isDuplicateInventory(items) {
     query += ")";
     
     if(!checkDuplicates) resolve(false);
+    
+    if(numItemsToCheck < 1) resolve(false);
 
     logger.info(query);
     var DB = require('./DB').getDB();
