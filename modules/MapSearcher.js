@@ -89,7 +89,7 @@ async function getItemsFromEvent(eventID) {
               item.stackSize = 1;
               item.typeLine = "Divine Orb";
               item.chaosValue = await getItemValue(eventID, item);
-              item.typeLine = "6-link items";
+              item.typeLine = "6-link Items";
             } else {
               item.icon = "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketNumbers.png?scale=1&scaleIndex=0";
               item.name = "";
@@ -99,7 +99,7 @@ async function getItemsFromEvent(eventID) {
               item.typeLine = "Jeweller's Orb";
               item.chaosValue = await getItemValue(eventID, item);
               item.stackSize = 1;
-              item.typeLine = "6-socket items";
+              item.typeLine = "6-socket Items";
             }
             items.push(item);
           } else {
