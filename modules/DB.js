@@ -45,7 +45,6 @@ class DB {
 }
   
 const initSQL = [
-
   `
     create table if not exists areainfo (
       id text primary key not null,
@@ -67,10 +66,10 @@ const initSQL = [
       id text not null,
       event_type text not null,
       event_text text,
+      server text,
       primary key (id, event_type)
     )
   `,
-  `alter table events add column server text;`,    
   `
     create table if not exists items (
       event_id text not null, 
