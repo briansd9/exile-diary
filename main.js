@@ -27,27 +27,114 @@ var shouldQuit = app.makeSingleInstance(function (commandLine, workingDirectory)
   }
 });
 
+var characterCheckStatus;
+
+function checkCurrentCharacterLeague() {
+  return new Promise( async (resolve, reject) => {
+    
+    require("./modules/DB").getDB(true);
+    var settings = require("./modules/settings").get();
+    characterCheckStatus = null;
+    
+    logger.info("Checking current character league...");
+    if(!settings.accountName || !settings.poesessid || !settings.activeProfile || !settings.activeProfile.characterName) {
+      logger.info("Can't check, info missing from settings");
+      resolve();
+    }
+  
+    var requestParams = {
+      hostname: 'www.pathofexile.com',
+      path: `/character-window/get-characters?accountName=${settings.accountName}`,
+      method: 'GET',
+      headers: {
+        Referer: 'http://www.pathofexile.com/',
+        Cookie: `POESESSID=${settings.poesessid}`
+      }
+    };
+
+    var request = require('https').request(requestParams, (response) => {
+      var body = '';
+      response.setEncoding('utf8');
+      response.on('data', (chunk) => {
+        body += chunk;
+      });
+      response.on('end', () => {
+        try {
+          var foundChar = false;
+          var data = JSON.parse(body);
+          for(var i = 0; i < data.length; i++) {
+            if(data[i].name === settings.activeProfile.characterName) {
+              foundChar = true;
+              logger.info(JSON.stringify(data[i]));
+              if(data[i].league === settings.activeProfile.league) {
+                characterCheckStatus = "valid";
+              } else {
+                characterCheckStatus = "wrongLeague";
+              }
+              break;
+            }
+          }
+          if(!foundChar) {
+            characterCheckStatus = "notFound";
+          }
+          resolve();
+        } catch (err) {
+          logger.info(`Error checking character status: ${err}`);
+          characterCheckStatus = "error";
+          resolve();
+        }
+      });
+      response.on('error', (err) => {
+        logger.info(`Error checking character status: ${err}`);
+        characterCheckStatus = "error";
+        resolve();
+      });
+    });
+    request.on('error', (err) => {
+      logger.info(`Error checking character status: ${err}`);
+      characterCheckStatus = "error";
+      resolve();
+    });
+    request.end();
+    
+  });
+}
+
 function init() {
   
-  logger.info("Initializing components");
+  return new Promise((resolve, reject) => {
   
-  // remove settings file from cache, then restart all components 
-  // to make sure they're using the current settings file
-  
-  var settingsPath = path.join(app.getPath("userData"), "settings.json");
-  if(fs.existsSync(settingsPath)) {
-    delete require.cache[require.resolve(settingsPath)];
-    require("./modules/DB").getDB(true);
-    RateGetter.update();
-    StashGetter.get();
-    ClientTxtWatcher.start();
-    ScreenshotWatcher.start();
-    OCRWatcher.start();
-  }
+    logger.info("Initializing components");
 
-  global.messages = [];
+    global.messages = [];
+
+    // remove settings file from cache, then restart all components 
+    // to make sure they're using the current settings file
+    var settingsPath = path.join(app.getPath("userData"), "settings.json");
+    if(fs.existsSync(settingsPath)) {
+      delete require.cache[require.resolve(settingsPath)];
+      checkCurrentCharacterLeague().then(() => {
+        logger.info("Done checking, character status is " + characterCheckStatus);
+        if(characterCheckStatus !== "wrongLeague" && characterCheckStatus !== "notFound") {
+          logger.info("Starting components");
+          require("./modules/DB").getDB(true);
+          RateGetter.update();
+          StashGetter.get();
+          ClientTxtWatcher.start();
+          ScreenshotWatcher.start();
+          OCRWatcher.start();
+        }
+        resolve(true);
+      });
+    } else {
+      resolve(false);
+    }
+    
+  });
+
 
 }
+
 
 function initWindow(window) {
   
@@ -89,14 +176,14 @@ function initWindow(window) {
   
 }
 
-function createWindow() {
+async function createWindow() {
 
   logger.info("Starting");
   
-  init();
+  await init();
   
-  ipcMain.on("reinitialize", (event) => {
-    init();
+  ipcMain.on("reinitialize", async (event) => {
+    await init();
     event.sender.send("done-initializing");
   });
   ipcMain.on("searchMaps", (event, data) => {
@@ -105,37 +192,43 @@ function createWindow() {
   ipcMain.on("screenshotCaptured", (event, img) => {
     saveScreenshot(img);
   });
-  
+
   if (shouldQuit) {
     app.quit();
     return;
   }
-  
+
   require('./modules/electron-capture/src/main');
-  
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
     title: `Exile Diary v${app.getVersion()}`,
     minWidth: 1100,
     backgroundColor: `#000000`,
     show: false,
+    transparent: false,
     icon: path.join(__dirname, "res/icons/png/64x64.png"),
     webPreferences: {
         preload: __dirname + '/modules/electron-capture/src/preload.js'
     }
   });
-  
-  //mainWindow.setMenu(null);
+
+  addMessage(`Exile Diary v${app.getVersion()} started`);
 
   // and load the index.html of the app.
   var settings = require("./modules/settings").get();
   if(!settings) {
     mainWindow.loadFile('config.html');
+  } else if(characterCheckStatus === "wrongLeague" || characterCheckStatus === "notFound") {
+    global.validCharacter = false;
+    addMessage(`Character <span class='eventText'>${settings.activeProfile.characterName}</span> not found in <span class='eventText'>${settings.activeProfile.league}</span> league!`);
+    mainWindow.loadFile('config.html');
   } else {
-    mainWindow.loadFile('index.html');    
+    global.validCharacter = true;
     global.ssf = (settings.activeProfile && settings.activeProfile.league && settings.activeProfile.league.includes("SSF"));
+    mainWindow.loadFile('index.html');
   }
-  
+
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
     // Dereference the window object, usually you would store windows
@@ -143,18 +236,16 @@ function createWindow() {
     // when you should delete the corresponding element.
     mainWindow = null;
   });
-  
+
   mainWindow.webContents.on('new-window', function(event, urlToOpen) {
     event.preventDefault();
   });  
-  
+
   initWindow(mainWindow);
-  
-  addMessage(`Exile Diary v${app.getVersion()} started`);
-  
+
   mainWindow.maximize();
   mainWindow.show();
-  
+    
 }
 
 function addMessage(text) {
@@ -251,6 +342,8 @@ function saveToImgur(img) {
     });
   
 }
+
+app.disableHardwareAcceleration();
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

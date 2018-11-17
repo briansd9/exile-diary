@@ -39,14 +39,16 @@
       var requiresRestart = false;
 
       $(document).ready(function () {
-        
+
         var settingsPath = path.join(app.getPath("userData"), "settings.json");
         if(fs.existsSync(settingsPath)) {
           settings = require(settingsPath);
         }
+        
+        var validCharacter = require('electron').remote.getGlobal("validCharacter");
 
         $("#sidenav").load("sidenav.html", () => {
-          if(JSON.stringify(settings) === "{}") {
+          if(!validCharacter || JSON.stringify(settings) === "{}") {
             $("#sidenav-items").hide();
           } else {
             $("#sidenav-main").removeAttr("href");
@@ -54,9 +56,12 @@
           }
         });
 
+        $("#messages").load("messages.html");
+
         configKeys.forEach((key) => {
           $("#" + key).val(settings[key]);
         });
+        
         
         if(settings.activeProfile && settings.activeProfile.characterName) {
           $("#activeProfile").html(`${settings.activeProfile.characterName} (${settings.activeProfile.league} league)`);
@@ -385,5 +390,7 @@
         </td>
       </tr>
     </table>    
+    <div id="messagePadding" style="height:150px;visibility:hidden;">&nbsp;</div>
+    <div id="messages" class="messageSection"></div>
   </body>
 </html>
