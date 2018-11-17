@@ -30,7 +30,7 @@
         $("#messages").scrollTop($("#messages")[0].scrollHeight);
       }
     );
-    var messages = remote.getGlobal("messages");
+    var messages = require('electron').remote.getGlobal("messages");
     for(var i = 0; i < messages.length; i++) {
       addMessageRow(messages[i]);
     }
