@@ -14,8 +14,8 @@ var areaInfo;
 var mapMods;
 
 const watchPaths = [
-  path.join(app.getPath("temp"), "*.area.png"),
-  path.join(app.getPath("temp"), "*.mods.png"),
+  path.join(app.getPath('userData'), '.temp_capture', "*.area.png"),
+  path.join(app.getPath('userData'), '.temp_capture', "*.mods.png")
 ];
 
 function test(filename) {
@@ -112,8 +112,9 @@ function processImage(file) {
     }).catch(err => {
       cleanFailedOCR(err);
     }).finally(() => {
+      fs.unlinkSync(file);
       TesseractWorker.terminate();
-      logger.info("Completed OCR on " + file);
+      logger.info("Completed OCR on " + file, " deleting");
     });
 }
 

@@ -66,7 +66,7 @@ function process(file) {
           {apply: 'saturate', params: [100]},
         ]);
         enhanceImage(image, scaleFactor);
-        image.write(path.join(app.getPath("temp"), filename + "." + path.basename(file, ".png") + ".area.png"));
+        image.write(path.join(app.getPath('userData'), '.temp_capture', filename + "." + path.basename(file, ".png") + ".area.png"));
 
         image2.crop(xBounds, yBounds[0], image2.bitmap.width - xBounds, yBounds[1] - yBounds[0]);
         image2.color([
@@ -74,7 +74,7 @@ function process(file) {
           {apply: 'green', params: [-50]},
         ]);
         enhanceImage(image2, scaleFactor);
-        image2.write(path.join(app.getPath("temp"), filename + "." + path.basename(file, ".png") + ".mods.png"));
+        image2.write(path.join(app.getPath('userData'), '.temp_capture', filename + "." + path.basename(file, ".png") + ".mods.png"));
       } catch(e) {
         logFailedCapture(e);
       }
