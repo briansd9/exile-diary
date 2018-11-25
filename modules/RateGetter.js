@@ -46,7 +46,7 @@ async function update() {
 
 function getRates(date, league) {
   ratePaths.forEach(path => {
-    var fullPath = `${path}&league=${league}`;
+    var fullPath = `${path}&league=${league}&date=${moment().format("Y-MM-DD")}`;
     getRate(date, fullPath);
   });
 }
