@@ -70,7 +70,7 @@ function getNumTabs(s) {
     path: `/character-window/get-stash-items?league=${s.league}&accountName=${s.accountName}`,
     method: 'GET',
     headers: {
-      Referer: 'http://www.pathofexile.com/',
+      Referer: 'https://www.pathofexile.com/',
       Cookie: `POESESSID=${s.poesessid}`
     }
   };
@@ -88,17 +88,17 @@ function getNumTabs(s) {
           logger.info(`${s.accountName} has ${data.numTabs} tabs in ${s.league}`);
           resolve(data.numTabs);
         } catch(err) {
-          logger.info(`Failed to get current inventory: ${err}`);
+          logger.info(`Failed to get number of tabs: ${err}`);
           resolve();
         }
       });
       response.on('error', (err) => {
-        logger.info(`Failed to get current inventory: ${err}`);
+        logger.info(`Failed to get number of tabs: ${err}`);
         resolve();
       });
     });
     request.on('error', (err) => {
-      logger.info(`Failed to get current inventory: ${err}`);
+      logger.info(`Failed to get number of tabs: ${err}`);
       resolve();
     });
     request.end();
