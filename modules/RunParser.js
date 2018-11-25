@@ -287,7 +287,7 @@ async function checkProfit(area, firstevent, lastevent) {
     setTimeout(function() { checkProfit(area, firstevent, lastevent) }, 3000);
   } else {
     logger.info(`Getting chaos value of items from ${area.id} ${area.name}`);
-    var totalProfit = await getItemValues(area, firstevent, lastevent);
+    var totalProfit = await getItemValues(area.id, firstevent, lastevent);
     logger.info("Total profit is " + totalProfit);
     if(totalProfit) {
       var xp = await getXPDiff(area.id);
@@ -308,15 +308,16 @@ function getXPDiff(id) {
   });
 }
 
-function getItemValues(area, firstEvent, lastEvent) {
+function getItemValues(areaID, firstEvent, lastEvent) {
+  logger.info("Getting item values: " + areaID + " " + firstEvent + " " + lastEvent);
   return new Promise( async (resolve, reject) => {
-    var rates = await RateGetter.getFor(area.id);
+    var rates = await RateGetter.getFor(areaID);
     DB.all(
       " select id, event_text from events where id between ? and ? and event_type = 'entered' order by id ",
       [firstEvent, lastEvent],
       async (err, rows) => {
         if(err) {
-          logger.info(`Unable to get item values for ${area.id}: ${err}`);
+          logger.info(`Unable to get item values for ${areaID}: ${err}`);
           resolve(false);
         } else {
           var totalProfit = 0;
@@ -327,12 +328,12 @@ function getItemValues(area, firstEvent, lastEvent) {
             }
           }
           totalProfit = Number(totalProfit).toFixed(2);
-          DB.run(" update mapruns set gained = ? where id = ? ", [totalProfit, area.id], (err) => {
+          DB.run(" update mapruns set gained = ? where id = ? ", [totalProfit, areaID], (err) => {
             if(err) {
-              logger.info(`Unable to update total profit for ${area.id}: ${err}`);
+              logger.info(`Unable to update total profit for ${areaID}: ${err}`);
               resolve(false);
             } else {
-              logger.info(`Updated ${area.id} with ${totalProfit}`);
+              logger.info(`Updated ${areaID} with ${totalProfit}`);
               resolve(totalProfit);
             }
           });
