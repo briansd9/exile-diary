@@ -14,8 +14,8 @@ class InventoryGetter extends EventEmitter {
     this.settings = require('./settings').get();
 
     var league = this.settings.activeProfile.league;
-    var accountName = this.settings.accountName;
-    var characterName = this.settings.activeProfile.characterName;
+    var accountName = encodeURIComponent(this.settings.accountName);
+    var characterName = encodeURIComponent(this.settings.activeProfile.characterName);
 
     this.queryPath = `/character-window/get-items?league=${league}&accountName=${accountName}&character=${characterName}`;
 
