@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow, dialog, ipcMain} = require('electron');
+const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const logger = require("./modules/Log").getLogger(__filename);
 const ClientTxtWatcher = require("./modules/ClientTxtWatcher");
 const OCRWatcher = require("./modules/OCRWatcher");
@@ -7,7 +7,7 @@ const RateGetter = require("./modules/RateGetter");
 const RunParser = require('./modules/RunParser');
 const MapSearcher = require('./modules/MapSearcher');
 const ScreenshotWatcher = require("./modules/ScreenshotWatcher");
-
+const { autoUpdater } = require("electron-updater");
 const StashGetter = require("./modules/StashGetter");
 const Utils = require("./modules/Utils");
 const moment = require('moment');
