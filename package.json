@@ -1,6 +1,6 @@
 {
   "name": "exile-diary",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "main": "main.js",
   "build": {
     "appId": "com.pathofexile.exilediary",
@@ -8,6 +8,7 @@
     "win": {
       "target": "nsis",
       "icon": "./res/icons/win/ExileDiary.ico",
+      "publish": "onTag",
       "extraResources": [
         "eng.traineddata"
       ]
@@ -25,7 +26,8 @@
     "start": "electron .",
     "postinstall": "install-app-deps",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "release": "build"
   },
   "keywords": [
     "util",
@@ -35,6 +37,10 @@
     "browser"
   ],
   "author": "joshi",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/briansd9/exile-diary.git"
+  },
   "contributors": [],
   "dependencies": {
     "color-convert": "^1.9.3",
