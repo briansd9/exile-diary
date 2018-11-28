@@ -140,7 +140,10 @@ class Utils {
   static addMapRow(rowsObject, map, first = false, ssf = false) {
 
     var row = $("<tr class='mapRow'>");
-    row.click(()=>{window.location.href=`map.html?id=${map.id}`});
+    row.click(()=>{
+      window.location.href=`map.html?id=${map.id}`
+      //window.open(`map.html?id=${map.id}`); 
+    });
 
     var timestamp = moment(map.id, "YYYYMMDDHHmmss").format("YYYY-MM-DD HH:mm:ss");
     row.append($("<td>").append(timestamp));
@@ -156,6 +159,9 @@ class Utils {
 
     var runningTime = Utils.getRunningTime(map.firstevent, map.lastevent);
     row.append($("<td>").append(runningTime));
+    
+    var xpRate = (map.xpgained > 0 ? Utils.getXPRate(map.xpgained, map.firstevent, map.lastevent) : "-");
+    row.append($("<td>").append(xpRate));
     
     if(!ssf) {
       row.append($("<td>").append(Number(map.gained).toFixed(2)));
@@ -203,6 +209,12 @@ class Utils {
   
   static getRunningTime(firstevent, lastevent) {
     return moment.duration(moment(lastevent, "YYYYMMDDHHmmss").diff(moment(firstevent, "YYYYMMDDHHmmss"))).format();
+  }
+
+  static getXPRate(xp, firstevent, lastevent) {
+    var time = moment.duration(moment(lastevent, "YYYYMMDDHHmmss").diff(moment(firstevent, "YYYYMMDDHHmmss"))).format("s", {useGrouping: false});
+    var f = new Intl.NumberFormat();
+    return f.format(Math.round(xp * 3600 / time));
   }
 
 }

@@ -146,8 +146,16 @@
           logger.info("Done capturing");
         });        
         
+        $.tablesorter.addParser({ 
+            id: 'numbersOnly',
+            is: function(s) { return false; }, 
+            format: function(s) { return s.replace(/[^0-9]/g,'');}, 
+            type: 'numeric' 
+        });         
+        
         $("#mapTable").tablesorter({
-          emptyTo: "bottom"
+          emptyTo: "bottom",
+          headers: { 7: { sorter: "numbersOnly" } }
         });
         $("#items").tablesorter();
         
@@ -363,6 +371,7 @@
                 <th>IIR</th>
                 <th>Pack Size</th>
                 <th>Time</th>
+                <th>XP/hr</th>
                 <th id='totalProfitCell'><img src='res/c.png'></th>
                 <th>Deaths</th>
               </tr>

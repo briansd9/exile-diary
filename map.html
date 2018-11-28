@@ -350,10 +350,13 @@
 
         if(info.xp) {
           var f = new Intl.NumberFormat();
+          var events = run.events;
+          var eventTimes = Object.keys(events).sort();
+          
           var xpgained = (info.prevxp > 0 ? info.xp - info.prevxp : 0);
           $("#xp").html(
             f.format(info.xp)
-            + (xpgained === 0 ? "" : ` (${Utils.formatSignedNumber(xpgained)})`)
+            + (xpgained === 0 ? "" : ` (${Utils.formatSignedNumber(xpgained)})` + (xpgained > 0 ? ` - ${Utils.getXPRate(xpgained, eventTimes[0], eventTimes[eventTimes.length - 1])}/hr` : ""))
           );
           $("#xpDiv").css("display","block");
         }

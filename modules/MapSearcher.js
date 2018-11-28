@@ -175,6 +175,7 @@ function getSQL(q) {
   
   var str = ` 
     select areainfo.*, mapruns.*,
+    (mapruns.xp - (select xp from mapruns m where m.id < mapruns.id and xp is not null order by m.id desc limit 1)) xpgained,
     (select count(1) from events e where e.id between mapruns.firstevent and mapruns.lastevent and e.event_type = 'slain') deaths
     from areainfo,
   `;
