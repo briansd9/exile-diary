@@ -18,14 +18,17 @@ const path = require('path');
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
-var shouldQuit = app.makeSingleInstance(function (commandLine, workingDirectory) {
+const lock = app.requestSingleInstanceLock();
+if(!lock) {
+  app.quit();
+} else {
   // Someone tried to run a second instance, we should focus our window.
   if (mainWindow) {
     if (mainWindow.isMinimized())
       mainWindow.restore();
     mainWindow.focus();
   }
-});
+}
 
 var characterCheckStatus;
 
@@ -192,11 +195,6 @@ async function createWindow() {
   ipcMain.on("screenshotCaptured", (event, img) => {
     saveScreenshot(img);
   });
-
-  if (shouldQuit) {
-    app.quit();
-    return;
-  }
 
   require('./modules/electron-capture/src/main');
 
