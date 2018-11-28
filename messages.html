@@ -7,6 +7,13 @@
     }
     $("#messages").scrollTop($("#messages")[0].scrollHeight);
   }
+  
+  function downloadUpdate() {
+    require('electron').ipcRenderer.send("download-update");
+  }
+  function applyUpdate() {
+    require('electron').ipcRenderer.send("apply-update");
+  }
 
   require('electron').ipcRenderer.on("message", (event, msg) => {
     addMessageRow(msg);

@@ -195,6 +195,14 @@ async function createWindow() {
   ipcMain.on("screenshotCaptured", (event, img) => {
     saveScreenshot(img);
   });
+  ipcMain.on('download-update', function(event) {
+    logger.info("Now downloading update");
+    autoUpdater.downloadUpdate();
+  });  
+  ipcMain.on('apply-update', function(event) {
+    logger.info("Quitting to install update");
+    autoUpdater.quitAndInstall();
+  });  
 
   require('./modules/electron-capture/src/main');
 
@@ -212,6 +220,20 @@ async function createWindow() {
   });
 
   addMessage(`Exile Diary v${app.getVersion()} started`);
+  
+  autoUpdater.logger = logger;
+  autoUpdater.autoDownload = false;
+  autoUpdater.on('update-available', (info) => {
+    global.updateInfo = info;
+    logger.info(JSON.stringify(info));
+    addMessage(`<span class='eventText' style='cursor:pointer' onclick='downloadUpdate()'>An update to version ${info.version} is available, click here to download</span>`);
+  });
+  autoUpdater.on('update-downloaded', (info) => {
+    addMessage(`<span class='eventText' style='cursor:pointer' onclick='applyUpdate()'>Update to version ${info.version} has been downloaded, click here to install it now (requires restart)</span>`);
+  });
+  autoUpdater.checkForUpdates();
+    addMessage(`<span class='eventText' style='cursor:pointer' onclick='downloadUpdate()'>An update to version is available, click here to download</span>`);
+    addMessage(`<span class='eventText' style='cursor:pointer' onclick='applyUpdate()'>Update to version has been downloaded, click here to install it now (requires restart)</span>`);
 
   // and load the index.html of the app.
   var settings = require("./modules/settings").get();
@@ -340,8 +362,6 @@ function saveToImgur(img) {
     });
   
 }
-
-app.disableHardwareAcceleration();
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

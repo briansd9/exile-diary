@@ -2,7 +2,9 @@
   <img src="res/icons/png/128x128.png">
   Exile Diary v<span id='appVersion'></span>
   <script>
-    $("#appVersion").html(require('electron').remote.app.getVersion());
+    $(document).ready(() => {
+      $("#appVersion").html(require('electron').remote.app.getVersion());
+    });
   </script>
 </div>
 <div id='sidenav-items'>
