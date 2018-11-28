@@ -1,12 +1,13 @@
 {
   "name": "exile-diary",
-  "version": "0.1.8",
+  "version": "0.1.8.1",
   "main": "main.js",
   "build": {
     "appId": "com.pathofexile.exilediary",
     "productName": "Exile Diary",
     "win": {
       "target": "nsis",
+      "artifactName": "exile-diary-setup-${version}.${ext}",
       "icon": "./res/icons/win/ExileDiary.ico",
       "extraResources": [
         "eng.traineddata"
