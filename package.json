@@ -8,7 +8,6 @@
     "win": {
       "target": "nsis",
       "icon": "./res/icons/win/ExileDiary.ico",
-      "publish": "onTag",
       "extraResources": [
         "eng.traineddata"
       ]
@@ -26,8 +25,7 @@
     "start": "electron .",
     "postinstall": "install-app-deps",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder",
-    "release": "build"
+    "dist": "electron-builder"
   },
   "keywords": [
     "util",
@@ -38,8 +36,8 @@
   ],
   "author": "joshi",
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/briansd9/exile-diary.git"
+    "type": "git",
+    "url": "https://github.com/briansd9/exile-diary.git"
   },
   "contributors": [],
   "dependencies": {
@@ -59,7 +57,7 @@
     "winston": "^3.1.0"
   },
   "devDependencies": {
-    "electron": "^2.0.0",
+    "electron": "^3.0.10",
     "electron-builder": "^20.28.3"
   }
 }
