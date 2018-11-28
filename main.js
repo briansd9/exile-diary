@@ -232,8 +232,6 @@ async function createWindow() {
     addMessage(`<span class='eventText' style='cursor:pointer' onclick='applyUpdate()'>Update to version ${info.version} has been downloaded, click here to install it now (requires restart)</span>`);
   });
   autoUpdater.checkForUpdates();
-    addMessage(`<span class='eventText' style='cursor:pointer' onclick='downloadUpdate()'>An update to version is available, click here to download</span>`);
-    addMessage(`<span class='eventText' style='cursor:pointer' onclick='applyUpdate()'>Update to version has been downloaded, click here to install it now (requires restart)</span>`);
 
   // and load the index.html of the app.
   var settings = require("./modules/settings").get();
