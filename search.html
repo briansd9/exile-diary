@@ -112,11 +112,12 @@
           $("#mapTable").trigger("update");
           $("#searchButton").prop("value", `${rows.length} results found`);
           $("#searchResults").show();
+          $("#tabs").tabs("option", "active", 0);
         });
 
         ipcRenderer.on("mapSummaryResults", (event, data) => {
           var f = new Intl.NumberFormat();
-          $("#totalTime").html(moment.duration(data.totalTime, "seconds").format());
+          $("#totalTime").html(moment.duration(data.totalTime, "seconds").format("H:mm:ss"));
           $("#avgTime").html(moment.duration(data.totalTime / data.numMaps, "seconds").format());
           $("#totalXP").html(f.format(data.totalXP));
           $("#avgXP").html(f.format(Math.round(data.totalXP / data.numMaps)));
@@ -335,9 +336,9 @@
         <div id="mapSummary">
           <div id="summaryContentsLoading">Loading...</div>
           <div id="summaryContents" style="display:none;">
-            <div>Total time: <span id='totalTime'></span> (<span id='avgTime'></span> / map)</div>
-            <div>Total XP: <span id='totalXP'></span> (<span id='avgXP'></span> / map)</div>
-            <div id='totalProfitDiv'>Total profit: <span id='totalProfit'></span> <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&scaleIndex=3&&w=1&h=1'/> (<span id='avgProfit'></span> / map)</div>
+            <div>Total time: <span id='totalTime' class='eventText'></span> (<span id='avgTime'></span> / map)</div>
+            <div>Total XP: <span id='totalXP' class='eventText'></span> (<span id='avgXP'></span> / map)</div>
+            <div id='totalProfitDiv'>Total profit: <span id='totalProfit' class='eventText'></span> <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&scaleIndex=3&&w=1&h=1'/> (<span id='avgProfit'></span> / map)</div>
             <hr/>
             <div id='itemToggles'>
               <span class='itemToggle'><input type='checkbox' value='Currency'/> Currency</span>
