@@ -16,23 +16,27 @@ function search(formData) {
   logger.info(query.sql);
   logger.info(`Params: ${query.params}`);
   DB.all(query.sql, query.params, (err, rows) => {
+    var totalXP = 0;
     logger.info(`${rows.length} rows returned`);
-    rows.forEach(row => mapIDs.push(row.id));
+    rows.forEach((row) => {
+      totalXP += row.xpgained;
+      mapIDs.push(row.id);
+    });
     emitter.emit("mapSearchResults", rows);
-    getStatSummary(mapIDs);
+    getStatSummary(totalXP, mapIDs);
   });
 }
 
-async function getStatSummary(mapIDs) {
-  var totalXP = 0;
+async function getStatSummary(totalXP, mapIDs) {
   var totalTime = 0;
+  logger.info("Getting items for map summary");
   var allItems = [];
   for(var i = 0; i < mapIDs.length; i++) {
-    totalXP += await getXP(mapIDs[i]);
     totalTime += await getTime(mapIDs[i]);
     allItems = allItems.concat(await getItems(mapIDs[i]));
   }
   allItems = mergeItems(allItems);
+  logger.info("Done getting items");
   emitter.emit("mapSummaryResults", { numMaps : mapIDs.length, totalXP: totalXP, totalTime: totalTime, items: allItems });  
 }
 
@@ -104,11 +108,11 @@ async function getItemsFromEvent(eventID) {
             items.push(item);
           } else {
             item.chaosValue = await getItemValue(eventID, item);
-            items.push(item);
+            if(item.chaosValue) items.push(item);
           }
         } else {
           item.chaosValue = await getItemValue(eventID, item);
-          items.push(item);
+          if(item.chaosValue) items.push(item);
         }
       }
       resolve(items);
@@ -136,20 +140,6 @@ async function getItemValue(timestamp, item) {
   
 }
 
-async function getXP(mapID) {
-  return new Promise( (resolve, reject) => {
-    DB.all("select id, xp from mapruns where id <= ? order by id desc limit 2", [mapID], (err, rows) => {
-      //logger.info(`XP earned for ${mapID} is ${rows[0].xp - rows[1].xp}`);
-      if(rows[1].xp === 0) {
-        // to prevent spurious average xp values, don't count a run if the previous run had 0 xp
-        return 0;
-      } else {
-        resolve(rows[0].xp - rows[1].xp);
-      }
-    })
-  });
-}
-
 async function getTime(mapID) {
   return new Promise( (resolve, reject) => {
     DB.get("select firstevent, lastevent from mapruns where id = ?", [mapID], (err, row) => {
@@ -158,16 +148,7 @@ async function getTime(mapID) {
       var runningTime = endTime.diff(startTime, "seconds");
       //logger.info(`${startTime} ${endTime} ${runningTime}`);
       resolve(runningTime);
-    })
-  });
-}
-
-
-function convertNumeric(data) {
-  var keys = Object.keys(data);
-  keys.forEach(key => {
-    if(key === "mapname" || key === "levelmode") return;
-    if(data[key]) data[key] = Number(data[key]);
+    });
   });
 }
 
