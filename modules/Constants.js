@@ -993,7 +993,12 @@ const baseMaps = [
   "Ancient City Map",
   "Fields Map",
   "Moon Temple Map",
-  "Belfry Map"
+  "Belfry Map",
+  "Fungal Hollow Map",
+  "Glacier Map",
+  "Crater Map",
+  "Primordial Blocks Map",
+  "Acid Caverns Map"
 ];
 
 const areas = [
@@ -1411,7 +1416,13 @@ const areas = [
   "Estate Enclosure",
   "Estate Path",
   "Estate Walkways",
-  "Estate Crossing"
+  "Estate Crossing",
+  // 3.5
+  "Fungal Hollow",
+  "Glacier",
+  "Crater",
+  "Primordial Blocks",
+  "Acid Caverns"
 ];
 
 const mods = [
