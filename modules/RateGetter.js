@@ -39,7 +39,7 @@ async function update() {
     return;
   }
   
-  logger.info(`Getting new rates for ${today}`);
+  logger.info(`Getting new rates in ${league} for ${today}`);
   getRates(today, league);
 
 }
