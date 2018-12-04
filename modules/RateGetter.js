@@ -121,7 +121,7 @@ function getFor(timestamp) {
   
   DB = require('./DB').getDB();
   return new Promise((resolve, reject) => {
-    DB.get("select distinct date from rates where date < ? order by date desc", [timestamp], (err, row) => {
+    DB.get("select distinct date from rates where date <= ? order by date desc", [timestamp], (err, row) => {
       if(err) {
         logger.info(`Unable to get rates for ${timestamp}: ${err}`);
         resolve(null);
