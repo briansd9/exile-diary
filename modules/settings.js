@@ -24,7 +24,7 @@ function set(key, value) {
       if(err) {
         throw err;
       } else {
-        logger.info(`Set "${key}" to "${value}"`);
+        logger.info(`Set "${key}" to "${JSON.stringify(value)}"`);
       }
     });    
   }  
