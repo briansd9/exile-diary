@@ -25,6 +25,7 @@ class MapRun extends EventEmitter {
     this.mods = await getMods(mapID);
     this.events = await getEvents(mapID);
     this.items = await getItems(mapID);
+    this.league = await getLeague(mapID);
     this.emit("MapRunReady", mapID);
   }
 
@@ -136,6 +137,7 @@ async function getItems(mapID) {
           `, [mapID], async (err, rows) => {
       if (err) {
         logger.info(`Failed to get run events: ${err}`);
+        resolve(null);
       } else {
         for(var i = 0; i < rows.length; i++) {
           var row = rows[i];
@@ -156,7 +158,20 @@ async function getItems(mapID) {
       }
     });
   });
-
 }
+
+async function getLeague(mapID) {
+  return new Promise((resolve, reject) => {
+    DB.get(`select league from leagues where timestamp < ? order by timestamp desc limit 1`, [mapID], async (err, row) => {
+      if (err) {
+        logger.info(`Failed to get league: ${err}`);
+        resolve(null);
+      } else {
+        resolve(row.league);
+      }
+    });
+  });
+}
+
 
 module.exports = MapRun;

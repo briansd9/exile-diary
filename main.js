@@ -2,11 +2,13 @@
 const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const logger = require("./modules/Log").getLogger(__filename);
 const ClientTxtWatcher = require("./modules/ClientTxtWatcher");
+const DB = require("./modules/DB");
 const OCRWatcher = require("./modules/OCRWatcher");
 const RateGetter = require("./modules/RateGetter");
 const RunParser = require('./modules/RunParser');
 const MapSearcher = require('./modules/MapSearcher');
 const ScreenshotWatcher = require("./modules/ScreenshotWatcher");
+const Settings = require("./modules/settings");
 const { autoUpdater } = require("electron-updater");
 const StashGetter = require("./modules/StashGetter");
 const Utils = require("./modules/Utils");
@@ -35,8 +37,8 @@ var characterCheckStatus;
 function checkCurrentCharacterLeague() {
   return new Promise( async (resolve, reject) => {
     
-    require("./modules/DB").getDB(true);
-    var settings = require("./modules/settings").get();
+    DB.getDB(true);
+    var settings = Settings.get();
     characterCheckStatus = null;
     
     logger.info("Checking current character league...");
@@ -69,11 +71,8 @@ function checkCurrentCharacterLeague() {
             if(data[i].name === settings.activeProfile.characterName) {
               foundChar = true;
               logger.info(JSON.stringify(data[i]));
-              if(data[i].league === settings.activeProfile.league) {
-                characterCheckStatus = "valid";
-              } else {
-                characterCheckStatus = "wrongLeague";
-              }
+              checkLeague(settings, data[i].league);
+              characterCheckStatus = "valid";
               break;
             }
           }
@@ -103,6 +102,28 @@ function checkCurrentCharacterLeague() {
   });
 }
 
+function checkLeague(settings, foundLeague) {
+  
+  if(settings.activeProfile.league !== foundLeague) {
+    
+    logger.info(`Updating ${settings.activeProfile.characterName} from ${settings.activeProfile.league} to ${foundLeague}`);
+    settings.activeProfile.league = foundLeague;
+    Settings.set("activeProfile", settings.activeProfile);
+    
+    var db = DB.getDB(true);
+    db.run(
+      "insert into leagues(timestamp, league) values(?, ?)", 
+      [moment().format('YYYYMMDDHHmmss'), foundLeague], 
+      (err) => {
+        if(err) {
+          logger.info(`Error inserting new league: ${err}`);
+        }
+      }      
+    );
+    
+  }
+}
+
 function init() {
   
   return new Promise((resolve, reject) => {
@@ -118,9 +139,9 @@ function init() {
       delete require.cache[require.resolve(settingsPath)];
       checkCurrentCharacterLeague().then(() => {
         logger.info("Done checking, character status is " + characterCheckStatus);
-        if(characterCheckStatus !== "wrongLeague" && characterCheckStatus !== "notFound") {
+        if(characterCheckStatus !== "notFound") {
           logger.info("Starting components");
-          require("./modules/DB").getDB(true);
+          DB.getDB(true);
           RateGetter.update();
           StashGetter.get();
           ClientTxtWatcher.start();
@@ -234,10 +255,10 @@ async function createWindow() {
   autoUpdater.checkForUpdates();
 
   // and load the index.html of the app.
-  var settings = require("./modules/settings").get();
+  var settings = Settings.get();
   if(!settings) {
     mainWindow.loadFile('config.html');
-  } else if(characterCheckStatus === "wrongLeague" || characterCheckStatus === "notFound") {
+  } else if(characterCheckStatus === "notFound") {
     global.validCharacter = false;
     addMessage(`Character <span class='eventText'>${settings.activeProfile.characterName}</span> not found in <span class='eventText'>${settings.activeProfile.league}</span> league!`);
     mainWindow.loadFile('config.html');
@@ -282,7 +303,7 @@ function saveScreenshot(img) {
   
   img = (img.split(','))[1];
   
-  var settings = require('./modules/settings').get();
+  var settings = Settings.get();
   if(settings.screenshotMode) {
     switch(settings.screenshotMode) {
       case "local":
@@ -309,13 +330,13 @@ function saveScreenshot(img) {
     switch(buttonIndex) {
       case 0:
         if(checked) {
-          require('./modules/settings').set("screenshotMode", "local");
+          Settings.set("screenshotMode", "local");
         }
         saveLocal(img);
         break;
       case 1:
         if(checked) {
-          require('./modules/settings').set("screenshotMode", "imgur");
+          Settings.set("screenshotMode", "imgur");
         }
         saveToImgur(img);
         break;

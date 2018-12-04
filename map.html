@@ -320,7 +320,7 @@
         $("#name").html(info.name);
         $("#level").html(info.level ? `Monster Level: ${info.level}` : '');
         $("#depth").html(info.depth ? `Delve Depth: ${info.depth}` : '');
-        $("#league").html(`${settings.activeProfile.league} League`);
+        $("#league").html(`${run.league} League`);
         
         if (info.iiq) {
           $("#IIQ").html(`Item Quantity<br/><span class='mapStatValue'>${info.iiq}%</span><br/>`);
