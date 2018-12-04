@@ -212,7 +212,7 @@
         
         var requestParams = {
           hostname: 'www.pathofexile.com',
-          path: `/character-window/get-characters?accountName=${$("#accountName").val()}`,
+          path: `/character-window/get-characters?accountName=${encodeURIComponent($("#accountName").val())}`,
           method: 'GET',
           headers: {
             Referer: 'http://www.pathofexile.com/',

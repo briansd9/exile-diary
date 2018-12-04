@@ -222,7 +222,7 @@ async function getXP(firstEvent, lastEvent) {
 async function getXPManual() {
   var requestParams = {
     hostname: 'www.pathofexile.com',
-    path: '/character-window/get-characters?accountName=joshagarrado',
+    path: `/character-window/get-characters?accountName=${encodeURIComponent(settings.accountName)}`,
     method: 'GET',
     headers: {
       Referer: 'http://www.pathofexile.com/',

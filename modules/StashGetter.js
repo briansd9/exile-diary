@@ -67,7 +67,7 @@ function getNumTabs(s) {
   
   var requestParams = {
     hostname: 'www.pathofexile.com',
-    path: `/character-window/get-stash-items?league=${s.league}&accountName=${s.accountName}`,
+    path: `/character-window/get-stash-items?league=${encodeURIComponent(s.league)}&accountName=${encodeURIComponent(s.accountName)}`,
     method: 'GET',
     headers: {
       Referer: 'https://www.pathofexile.com/',
@@ -109,7 +109,7 @@ async function getTab(tabIndex, s) {
   
   var requestParams = {
     hostname: 'www.pathofexile.com',
-    path: `/character-window/get-stash-items?league=${s.league}&accountName=${s.accountName}&tabIndex=${tabIndex}`,
+    path: `/character-window/get-stash-items?league=${encodeURIComponent(s.league)}&accountName=${encodeURIComponent(s.accountName)}&tabIndex=${tabIndex}`,
     method: 'GET',
     headers: {
       Referer: 'http://www.pathofexile.com/',

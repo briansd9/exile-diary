@@ -47,7 +47,7 @@ function checkCurrentCharacterLeague() {
   
     var requestParams = {
       hostname: 'www.pathofexile.com',
-      path: `/character-window/get-characters?accountName=${settings.accountName}`,
+      path: `/character-window/get-characters?accountName=${encodeURIComponent(settings.accountName)}`,
       method: 'GET',
       headers: {
         Referer: 'http://www.pathofexile.com/',
