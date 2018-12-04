@@ -33,6 +33,17 @@ async function tryProcess(event) {
       return;
     }
   }
+
+  var prevMapStartEvent = await getPrevMapStartEvent();
+  logger.info("Prev map start event found:");
+  logger.info(JSON.stringify(prevMapStartEvent));
+  if(prevMapStartEvent.area === firstEvent.area && prevMapStartEvent.server === firstEvent.server) {
+    logger.info(`Previous map run in ${firstEvent.area} was already processed`);
+    logger.info(`prevmapstart: ${prevMapStartEvent.area} ${prevMapStartEvent.server}`);
+    logger.info(`firstevent: ${firstEvent.area} ${firstEvent.server}`);
+    logger.info(`event: ${event.area} ${event.server}`);
+    return;
+  }
   
   var lastEvent = await getLastTownEvent(event, firstEvent);
   if(!lastEvent) return;
@@ -68,7 +79,15 @@ async function tryProcess(event) {
   
   function getNextMapEvent(lastUsedEvent) {
     return new Promise( (resolve, reject) => {
-      DB.all("select id, event_text, server from events where event_type='entered' and id > ? order by id", [lastUsedEvent], (err, rows) => {
+      DB.all(
+        `
+          select id, event_text, server from events 
+          where event_type='entered' 
+          and event_text <> (select event_text from events, mapruns where mapruns.lastevent = ? and events.id = mapruns.firstevent)
+          and server <> (select event_text from events, mapruns where mapruns.lastevent = ? and events.id = mapruns.firstevent)
+          and id > ?
+          order by id
+        `, [lastUsedEvent, lastUsedEvent, lastUsedEvent], (err, rows) => {
         if(err) {
           logger.error(`Unable to get next map event: ${err}`);
           resolve();
@@ -448,6 +467,24 @@ function getLastUsedEvent() {
   });
 }
 
+function getPrevMapStartEvent() {
+  return new Promise( (resolve, reject) => {
+    DB.get("select * from events where id = (select firstevent from mapruns order by id desc limit 1);", (err, row) => {
+      if(err) {
+        logger.error(`Unable to get previous map start event: ${err}`);
+        resolve("");
+      } else if(!row) {
+        logger.info("No unused event found");
+        resolve("");
+      } else {
+        resolve({
+          area: row.event_text,
+          server: row.server
+        });
+      }
+    });    
+  });
+}
 function getMapMods(id) {
   return new Promise( (resolve, reject) => {
     DB.all("select mod from mapmods where area_id = ? order by cast(id as integer)", [id], (err, rows) => {
