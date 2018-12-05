@@ -134,8 +134,8 @@ const initSQL = [
   `,
   `
     create table if not exists leagues (
-      timestamp text primary key not null,
-      league text not null
+      timestamp text not null,
+      league text primary key not null
     )
   `
 ];

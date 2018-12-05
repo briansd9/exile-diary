@@ -105,23 +105,20 @@ function checkCurrentCharacterLeague() {
 function checkLeague(settings, foundLeague) {
   
   if(settings.activeProfile.league !== foundLeague) {
-    
     logger.info(`Updating ${settings.activeProfile.characterName} from ${settings.activeProfile.league} to ${foundLeague}`);
     settings.activeProfile.league = foundLeague;
     Settings.set("activeProfile", settings.activeProfile);
-    
-    var db = DB.getDB(true);
-    db.run(
-      "insert into leagues(timestamp, league) values(?, ?)", 
-      [moment().format('YYYYMMDDHHmmss'), foundLeague], 
-      (err) => {
-        if(err) {
-          logger.info(`Error inserting new league: ${err}`);
-        }
-      }      
-    );
-    
   }
+  var db = DB.getDB(true);
+  db.run(
+    "insert into leagues(timestamp, league) values(?, ?)", 
+    [moment().format('YYYYMMDDHHmmss'), foundLeague], 
+    (err) => {
+      if(err && err.code !== "SQLITE_CONSTRAINT") {
+        logger.info(`Error inserting new league: ${JSON.stringify(err)}`);
+      }
+    }      
+  );
 }
 
 function init() {
