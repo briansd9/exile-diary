@@ -21,6 +21,7 @@ async function tryProcess(event) {
   logger.info("Map event found:");
   logger.info(JSON.stringify(firstEvent));
   
+  logger.info(`${event.area} -> ${firstEvent.area}`);
   if(Utils.isLabArea(event.area) && Utils.isLabArea(firstEvent.area)) {
     logger.info("Still in lab, not processing");
     return;
@@ -65,7 +66,11 @@ async function tryProcess(event) {
       iir: null,
       packsize: null
     };
-    DB.run("insert into areainfo(id, name) values(?, ?)", [firstEvent.timestamp, firstEvent.area]);
+    DB.run("insert into areainfo(id, name) values(?, ?)", [firstEvent.timestamp, firstEvent.area], (err) => {
+      if (err) {
+        logger.info(`Error manually inserting areainfo (${firstEvent.timestamp} ${firstEvent.area}): ${err}`);
+      }        
+    });
   }
 
   var xp = await getXP(firstEvent.timestamp, lastEvent.timestamp);
@@ -295,6 +300,7 @@ async function checkProfit(area, firstevent, lastevent) {
   var lastinv = await new Promise( async (resolve, reject) => {
       DB.get("select timestamp from lastinv", (err, row) => {
         if(err) {
+          logger.info(`Error getting timestamp for last inventory: ${err}`);
           resolve(-1);
         } else {
           resolve(row.timestamp);
@@ -322,7 +328,7 @@ function getXPDiff(id) {
       if(!err) {
         resolve(rows[0].xp - rows[1].xp);
       } else {
-        logger.info("Error: " + err);
+        logger.info(`Error getting XP gained for map ${id}: ${err}`);
       }
     });
   });
@@ -366,6 +372,10 @@ function getItemValuesFor(event, rates) {
   var value = 0;
   return new Promise( (resolve, reject) => {
     DB.all( " select typeline, stacksize, identified, sockets, rarity from items where event_id = ? ", [event], (err, rows) => {
+      if (err) {
+        logger.info(`Error getting item values for ${event}: ${err}`);
+        resolve(null);
+      }        
       rows.forEach( (item) => {
         value += Utils.getItemValue(item, rates);
         //logger.info(`After ${name} value is now ${value}`);
@@ -378,7 +388,7 @@ function getItemValuesFor(event, rates) {
 function insertEvent(arr) {
   DB.run(" insert into mapruns(id, firstevent, lastevent, iiq, iir, packsize, xp) values (?, ?, ?, ?, ?, ?, ?) ", arr, (err) => {
     if(err) {
-      logger.error(`Unable to insert event: ${err}`);
+      logger.error(`Unable to insert event ${JSON.stringify(arr)}: ${err}`);
     }
   });
 }

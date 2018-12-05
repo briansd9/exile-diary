@@ -133,8 +133,16 @@ function cleanFailedOCR(e, timestamp) {
   emitter.emit("OCRError");
   if(timestamp) {
     DB.serialize(() => {
-      DB.run("delete from areainfo where id = ?", [timestamp]);
-      DB.run("delete from mapmods where area_id = ?", [timestamp]);
+      DB.run("delete from areainfo where id = ?", [timestamp], (err) => {
+        if(err) {
+          logger.info(`Error cleaning areainfo for failed OCR: ${err}`);
+        }        
+      });
+      DB.run("delete from mapmods where area_id = ?", [timestamp], (err) => {
+        if(err) {
+          logger.info(`Error cleaning mapmods for failed OCR: ${err}`);
+        }        
+      });
     });
   }
 }

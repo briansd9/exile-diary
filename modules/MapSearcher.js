@@ -16,6 +16,10 @@ function search(formData) {
   logger.info(query.sql);
   logger.info(`Params: ${query.params}`);
   DB.all(query.sql, query.params, (err, rows) => {
+    if(err) {
+      logger.info(`Error retrieving search results: ${err}`);
+      return;
+    }
     var totalXP = 0;
     logger.info(`${rows.length} rows returned`);
     rows.forEach((row) => {
@@ -66,6 +70,10 @@ async function getItems(mapID) {
       from mapruns m, events e 
       where m.id = ? and e.id between m.firstevent and m.lastevent and e.event_type='entered'
     `, [mapID], async (err, rows) => {
+      if(err) {
+        logger.info(`Error getting items: ${err}`);
+        resolve(null);
+      }
       for(var i = 1; i < rows.length; i++) {
         if(!Utils.isTown(rows[i-1].event_text)) {
           items = items.concat(await getItemsFromEvent(rows[i].id));
@@ -80,6 +88,10 @@ async function getItemsFromEvent(eventID) {
   var items = [];
   return new Promise( (resolve, reject) => {
     DB.all("select rawdata from items where event_id = ?", [eventID], async (err, rows) => {
+      if(err) {
+        logger.info(`Error getting items: ${err}`);
+        resolve(null);
+      }
       for(var i = 0; i < rows.length; i++) {
         var item = JSON.parse(rows[i].rawdata);
         var sockets = Utils.getSockets(item);
@@ -143,6 +155,10 @@ async function getItemValue(timestamp, item) {
 async function getTime(mapID) {
   return new Promise( (resolve, reject) => {
     DB.get("select firstevent, lastevent from mapruns where id = ?", [mapID], (err, row) => {
+      if(err) {
+        logger.info(`Error getting running time: ${err}`);
+        resolve(null);
+      }
       var startTime = moment(row.firstevent, "YYYYMMDDHHmmss");
       var endTime = moment(row.lastevent, "YYYYMMDDHHmmss");
       var runningTime = endTime.diff(startTime, "seconds");

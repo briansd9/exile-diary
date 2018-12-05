@@ -45,7 +45,11 @@ async function get() {
   
   if(tabs.items.length > 0) {
     logger.info(`Total value ${tabs.value} in ${tabs.items.length} items`);
-    DB.run(" insert into stashes(timestamp, items, value) values(?, ?, ?) ", [timestamp, JSON.stringify(tabs.items), tabs.value] );
+    DB.run(" insert into stashes(timestamp, items, value) values(?, ?, ?) ", [timestamp, JSON.stringify(tabs.items), tabs.value], (err) => {
+      if(err) {      
+        logger.info(`Error inserting stash ${timestamp} with value ${tabs.value}: ${err}`);
+      }
+    });
   }
 
 }

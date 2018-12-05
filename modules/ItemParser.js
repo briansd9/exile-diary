@@ -14,7 +14,11 @@ async function insertItems(items, timestamp) {
     } else {
       logger.info(`Inserting items for ${timestamp}`);
       DB.serialize(function() {
-        DB.run("begin transaction");
+        DB.run("begin transaction", (err) => {
+          if(err) {
+            logger.info(`Error beginning transaction to insert items: ${err}`);
+          }
+        });
         var stmt = DB.prepare(
           `
             insert into items (id, event_id, icon, name, rarity, category, identified, typeline, sockets, stacksize, rawdata)
@@ -27,9 +31,17 @@ async function insertItems(items, timestamp) {
         stmt.finalize( (err) => {
           if(err) {
             logger.warn(`Error inserting items for ${timestamp}: ${err}`);
-            DB.run("rollback");
+            DB.run("rollback", (err) => {
+              if (err) {
+                logger.info(`Error rolling back failed item insert: ${err}`);
+              }        
+            });
           } else {
-            DB.run("commit");
+            DB.run("commit", (err) => {
+              if (err) {
+                logger.info(`Error committing item insert: ${err}`);
+              }        
+            });
           }
         });
         logger.info(`Done inserting items for ${timestamp}`);
@@ -206,18 +218,5 @@ function getCategory(item) {
       logger.warn(JSON.stringify(item));
   }
 }
-
-/*
-function checkSockets(item) {
-  logger.info("Item id is " + item.id);
-  var sockets = getSockets(item);
-  logger.info("Item sockets is " + sockets);
-  var DB = require('./DB').getDB();
-  DB.run("update items set sockets = ? where id = ?", [sockets, item.id]);
-}
-*/
-
-
-
 
 module.exports.insertItems = insertItems;

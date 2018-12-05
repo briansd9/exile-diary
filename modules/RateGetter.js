@@ -78,7 +78,11 @@ function getRate(date, path) {
 
 function insertRate(date, data) {
   DB.serialize(() => {
-    DB.run("begin transaction");
+    DB.run("begin transaction", (err) => {
+        if(err) {
+          logger.info(`Error beginning transaction for inserting rates: ${err}`);
+        }        
+    });
     data.lines.forEach( line => {
 
       var item = line.currencyTypeName || line.name;
@@ -94,17 +98,25 @@ function insertRate(date, data) {
       
       DB.run("insert into rates(date, item, value) values(?, ?, ?)", [date, item, value], (err) => {
         if(err) {
-          logger.info(`${err} -> [${date}] [${item}] [${value}]`);
+          logger.info(`Error inserting rates: ${err} -> [${date}] [${item}] [${value}]`);
         }
       });
     });
-    DB.run("commit");
+    DB.run("commit", (err) => {
+      if(err) {
+        logger.info(`Error committing inserted rates: ${err}`);
+      }        
+    });
+      
   });
 }
 
 function hasExistingRates(date) {
   return new Promise((resolve, reject) => {
     DB.all("select * from rates where date = ? limit 1", [date], (err, row) => {
+      if (err) {
+        logger.info(`Error getting rates for ${date}: ${err}`);
+      }
       if (row && row.length > 0) {
         resolve(true);
       } else {

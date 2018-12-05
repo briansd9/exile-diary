@@ -135,7 +135,11 @@ class InventoryGetter extends EventEmitter {
   updateLastInventory(data) {
     var dataString = JSON.stringify(data);
     DB.serialize(() => {
-      DB.run("delete from lastinv");
+      DB.run("delete from lastinv", (err) => {
+        if (err) {
+          logger.info(`Unable to delete last inventory: ${err}`);
+        }        
+      });
       DB.run(
         "insert into lastinv(timestamp, inventory) values(?, ?)",
         [moment().format('YYYYMMDDHHmmss'), dataString],
