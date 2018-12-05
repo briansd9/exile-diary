@@ -78,13 +78,14 @@ async function tryProcess(event) {
   return 1;
   
   function getNextMapEvent(lastUsedEvent) {
+    logger.info(`Last used event is ${lastUsedEvent}`);
     return new Promise( (resolve, reject) => {
       DB.all(
         `
           select id, event_text, server from events 
           where event_type='entered' 
-          and event_text <> (select event_text from events, mapruns where mapruns.lastevent = ? and events.id = mapruns.firstevent)
-          and server <> (select server from events, mapruns where mapruns.lastevent = ? and events.id = mapruns.firstevent)
+          and event_text <> ifnull((select event_text from events, mapruns where mapruns.lastevent = ? and events.id = mapruns.firstevent), '')
+          and server <> ifnull((select server from events, mapruns where mapruns.lastevent = ? and events.id = mapruns.firstevent), '')
           and id > ?
           order by id
         `, [lastUsedEvent, lastUsedEvent, lastUsedEvent], (err, rows) => {
