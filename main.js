@@ -206,6 +206,8 @@ async function createWindow() {
   
   await init();
   
+  var downloadingUpdate = false;
+  
   ipcMain.on("reinitialize", async (event) => {
     await init();
     event.sender.send("done-initializing");
@@ -217,8 +219,12 @@ async function createWindow() {
     saveScreenshot(img);
   });
   ipcMain.on('download-update', function(event) {
-    logger.info("Now downloading update");
-    autoUpdater.downloadUpdate();
+    if(!downloadingUpdate) {
+      downloadingUpdate = true;
+      addMessage(`<span class='eventText'>Downloading...</span>`);
+      logger.info("Now downloading update");
+      autoUpdater.downloadUpdate();
+    }
   });  
   ipcMain.on('apply-update', function(event) {
     logger.info("Quitting to install update");
