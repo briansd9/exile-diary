@@ -24,6 +24,7 @@ const townstrings = [
 
 const labAreas = [
   "Aspirants' Plaza",
+  "Aspirant's Trial",
   "Sepulchre Annex",
   "Sepulchre Passage",
   "Sepulchre Halls",
