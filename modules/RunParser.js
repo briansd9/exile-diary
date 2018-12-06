@@ -3,7 +3,6 @@ const Utils = require('./Utils');
 const EventEmitter = require('events');
 const ClientTxtWatcher = require('./ClientTxtWatcher');
 const RateGetter = require('./RateGetter');
-const settings = require('./settings').get();
 const OCRWatcher = require('./OCRWatcher');
 const https = require('https');
 
@@ -245,6 +244,7 @@ async function getXP(firstEvent, lastEvent) {
   
   
 async function getXPManual() {
+  var settings = require('./settings').get();  
   var requestParams = {
     hostname: 'www.pathofexile.com',
     path: `/character-window/get-characters?accountName=${encodeURIComponent(settings.accountName)}`,
@@ -303,7 +303,12 @@ async function checkProfit(area, firstevent, lastevent) {
           logger.info(`Error getting timestamp for last inventory: ${err}`);
           resolve(-1);
         } else {
-          resolve(row.timestamp);
+          if(!row) {
+            logger.info("No last inventory yet");
+            resolve(-1);
+          } else {
+            resolve(row.timestamp);
+          }
         }
       })
     });
@@ -335,7 +340,7 @@ function getXPDiff(id) {
 }
 
 function getItemValues(areaID, firstEvent, lastEvent) {
-  logger.info(`Getting item values: for map with ID ${areaID} (event bounds: ${firstEvent} -> ${lastEvent}`);
+  logger.info(`Getting item values for map with ID ${areaID} (event bounds: ${firstEvent} -> ${lastEvent}`);
   return new Promise( async (resolve, reject) => {
     var rates = await RateGetter.getFor(areaID);
     DB.all(
