@@ -302,6 +302,10 @@ input {
   color: #FFF8E1;
 }
 
+input.invalid {
+  outline: 1px dashed #cc0000;
+}
+
 input.number {
   text-align: center;
 }
