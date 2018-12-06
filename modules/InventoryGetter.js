@@ -1,21 +1,24 @@
 const logger = require("./Log").getLogger(__filename);
-const DB = require('./DB').getDB();
 const https = require('https');
 const moment = require('moment');
 const XPTracker = require('./XPTracker');
 const EventEmitter = require('events');
+
+var DB;
+var settings;
 
 class InventoryGetter extends EventEmitter {
 
   constructor() {
 
     super();
+    
+    DB = require('./DB').getDB();
+    settings = require('./settings').get();
 
-    this.settings = require('./settings').get();
-
-    var league = this.settings.activeProfile.league;
-    var accountName = encodeURIComponent(this.settings.accountName);
-    var characterName = encodeURIComponent(this.settings.activeProfile.characterName);
+    var league = settings.activeProfile.league;
+    var accountName = encodeURIComponent(settings.accountName);
+    var characterName = encodeURIComponent(settings.activeProfile.characterName);
 
     this.queryPath = `/character-window/get-items?league=${league}&accountName=${accountName}&character=${characterName}`;
 
@@ -99,7 +102,7 @@ class InventoryGetter extends EventEmitter {
         method: 'GET',
         headers: {
           Referer: 'http://www.pathofexile.com/',
-          Cookie: `POESESSID=${this.settings.poesessid}`
+          Cookie: `POESESSID=${settings.poesessid}`
         }
       };
     return new Promise((resolve, reject) => {
