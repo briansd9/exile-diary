@@ -166,8 +166,7 @@
           if(inputField.val()) {
             settings[key] = inputField.val();
             inputField.removeClass("invalid");
-          } else {            
-            document.getElementById(key).setCustomValidity("Required field");
+          } else if(key !== 'screenshotDir') {
             inputField.addClass("invalid");
             valid = false;
           }          
