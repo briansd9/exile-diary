@@ -335,7 +335,7 @@ function getXPDiff(id) {
 }
 
 function getItemValues(areaID, firstEvent, lastEvent) {
-  logger.info("Getting item values: " + areaID + " " + firstEvent + " " + lastEvent);
+  logger.info(`Getting item values: for map with ID ${areaID} (event bounds: ${firstEvent} -> ${lastEvent}`);
   return new Promise( async (resolve, reject) => {
     var rates = await RateGetter.getFor(areaID);
     DB.all(
