@@ -16,7 +16,7 @@ class InventoryGetter extends EventEmitter {
     DB = require('./DB').getDB();
     settings = require('./settings').get();
 
-    var league = settings.activeProfile.league;
+    var league = encodeURIComponent(settings.activeProfile.league);
     var accountName = encodeURIComponent(settings.accountName);
     var characterName = encodeURIComponent(settings.activeProfile.characterName);
 
@@ -143,14 +143,15 @@ class InventoryGetter extends EventEmitter {
           logger.info(`Unable to delete last inventory: ${err}`);
         }        
       });
+      var timestamp = moment().format('YYYYMMDDHHmmss')
       DB.run(
         "insert into lastinv(timestamp, inventory) values(?, ?)",
-        [moment().format('YYYYMMDDHHmmss'), dataString],
+        [timestamp, dataString],
         (err) => {
         if (err) {
           logger.info(`Unable to update last inventory: ${err}`);
         } else {
-          //logger.info(`Updated last inventory`);
+          logger.info(`Updated last inventory at ${timestamp}`);
         }
       }
       );

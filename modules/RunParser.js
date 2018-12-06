@@ -313,7 +313,7 @@ async function checkProfit(area, firstevent, lastevent) {
       })
     });
   
-  if(lastinv < lastevent) {
+  if(lastinv < lastevent && lastinv !== -1) {
     logger.info(`Last inventory not yet processed (${lastinv} < ${lastevent}), waiting 3 seconds`);
     setTimeout(function() { checkProfit(area, firstevent, lastevent) }, 3000);
   } else {
