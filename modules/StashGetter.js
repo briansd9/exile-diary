@@ -21,6 +21,9 @@ async function get() {
   }
   
   rates = await RateGetter.getFor(timestamp);
+  if(!rates) {
+    return;
+  }
   
   var params = {
     league : settings.activeProfile.league,
