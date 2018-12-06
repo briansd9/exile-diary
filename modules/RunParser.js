@@ -76,7 +76,7 @@ async function tryProcess(event) {
   
   var runArr = [areaInfo.id, firstEvent.timestamp, lastEvent.timestamp, mapStats.iiq || null, mapStats.iir || null, mapStats.packsize || null, xp];
   
-  insertEvent(runArr);
+  insertMapRun(runArr);
   checkProfit(areaInfo, firstEvent.timestamp, lastEvent.timestamp);
   
   return 1;
@@ -207,7 +207,7 @@ async function process(runInfo) {
   
   var runArr = [currArea.id, firstEvent, lastEvent, mapStats.iiq, mapStats.iir, mapStats.packsize, xp];
   
-  insertEvent(runArr);
+  insertMapRun(runArr);
   checkProfit(currArea, firstEvent, lastEvent);
   
   return 1;
@@ -268,13 +268,13 @@ async function getXPManual() {
           data.forEach(char => {
             if(char.name === settings.activeProfile.characterName && char.league === settings.activeProfile.league) {
               xp = char.experience;
-              //logger.info("Got xp: " + xp);
             }
           });
           if(xp === -1) {
             logger.info('Failed to get xp!');
             resolve(null);
           } else {
+            logger.info("Manually retrieved xp: " + xp);
             resolve(xp);
           }
         } catch(err) {
@@ -390,10 +390,12 @@ function getItemValuesFor(event, rates) {
   });
 }
 
-function insertEvent(arr) {
+function insertMapRun(arr) {
   DB.run(" insert into mapruns(id, firstevent, lastevent, iiq, iir, packsize, xp) values (?, ?, ?, ?, ?, ?, ?) ", arr, (err) => {
     if(err) {
-      logger.error(`Unable to insert event ${JSON.stringify(arr)}: ${err}`);
+      logger.error(`Unable to insert map run ${JSON.stringify(arr)}: ${err}`);
+    } else {
+      logger.error(`Map run processed successfully: ${JSON.stringify(arr)}`);
     }
   });
 }
