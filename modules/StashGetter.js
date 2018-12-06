@@ -33,6 +33,10 @@ async function get() {
   };
   
   var numTabs = await getNumTabs(params);
+  if(!numTabs) {
+    return;
+  }
+  
   var tabs = {
     value : 0,
     items : []
@@ -92,8 +96,13 @@ function getNumTabs(s) {
       response.on('end', () => {
         try {
           var data = JSON.parse(body);
-          logger.info(`${s.accountName} has ${data.numTabs} tabs in ${s.league}`);
-          resolve(data.numTabs);
+          if(data.numTabs) {
+            logger.info(`${s.accountName} has ${data.numTabs} tabs in ${s.league}`);
+            resolve(data.numTabs);
+          } else {
+            logger.info(`Error getting number of tabs; data follows: ${body}`);
+            resolve();
+          }
         } catch(err) {
           logger.info(`Failed to get number of tabs: ${err}`);
           resolve();

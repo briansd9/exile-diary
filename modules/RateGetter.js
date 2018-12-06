@@ -25,7 +25,10 @@ async function update() {
   DB = require('./DB').getDB();
   
   var league = settings.activeProfile.league;
-
+  
+  if(!league) {
+    return;
+  }
   // no need for exchange rates in SSF
   if (league.includes("SSF")) {
     return;
@@ -64,7 +67,12 @@ function getRate(date, path) {
       body += chunk;
     });
     response.on('end', () => {
-      insertRate(date, JSON.parse(body));
+      try {
+        var data = JSON.parse(body);
+        insertRate(date, data);
+      } catch(e) {
+        logger.info(`Failed to get rates for ${date}: ${e}`);
+      }
     });
     response.on('error', (e) => {
       logger.info(`Failed to get rates for ${date}: ${e}`);

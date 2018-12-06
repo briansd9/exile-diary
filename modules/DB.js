@@ -11,7 +11,7 @@ class DB {
       logger.info("No settings file found, can't initialize DB");
       return null;
     }
-    if (!settings.activeProfile) {
+    if (!settings.activeProfile || !settings.activeProfile.characterName) {
       logger.info("No active profile selected, can't initialize DB");
       return null;
     }

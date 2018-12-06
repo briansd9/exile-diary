@@ -44,6 +44,7 @@ function checkCurrentCharacterLeague() {
     logger.info("Checking current character league...");
     if(!settings.accountName || !settings.poesessid || !settings.activeProfile || !settings.activeProfile.characterName) {
       logger.info("Can't check, info missing from settings");
+      characterCheckStatus = "error";
       resolve();
     }
   
@@ -136,7 +137,7 @@ function init() {
       delete require.cache[require.resolve(settingsPath)];
       checkCurrentCharacterLeague().then(() => {
         logger.info("Done checking, character status is " + characterCheckStatus);
-        if(characterCheckStatus !== "notFound") {
+        if(characterCheckStatus === "valid") {
           logger.info("Starting components");
           DB.getDB(true);
           RateGetter.update();
@@ -264,6 +265,10 @@ async function createWindow() {
   } else if(characterCheckStatus === "notFound") {
     global.validCharacter = false;
     addMessage(`Character <span class='eventText'>${settings.activeProfile.characterName}</span> not found in <span class='eventText'>${settings.activeProfile.league}</span> league!`);
+    mainWindow.loadFile('config.html');
+  } else if(characterCheckStatus === "error") {
+    global.validCharacter = false;
+    addMessage(`Error getting account info, please check your configuration`);
     mainWindow.loadFile('config.html');
   } else {
     global.validCharacter = true;
