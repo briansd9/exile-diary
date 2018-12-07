@@ -49,9 +49,8 @@ function start() {
             if(!Utils.isTown(event.text)) {
               logger.info(`Entered map area ${event.text}, will try processing previous area`);
               RunParser.tryProcess({
-                timestamp: timestamp,
-                area: event.text,
-                server: event.instanceServer
+                event: { timestamp: timestamp, area: event.text, server: event.instanceServer },
+                mode: "automatic"
               });
             }
             inv.getInventoryDiffs(timestamp).then(async (diff) => {

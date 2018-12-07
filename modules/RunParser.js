@@ -9,7 +9,10 @@ const https = require('https');
 var DB;
 var emitter = new EventEmitter();
 
-async function tryProcess(event) {
+async function tryProcess(obj) {
+  
+  var event = obj.event;
+  var mode = obj.mode;
   
   DB = require('./DB').getDB();
   var lastUsedEvent = await getLastUsedEvent();
@@ -45,7 +48,7 @@ async function tryProcess(event) {
     return;
   }
   
-  var lastEvent = await getLastTownEvent(event, firstEvent);
+  var lastEvent = await getLastTownEvent(event, firstEvent, mode);
   if(!lastEvent) return;
   logger.info("Last town event found:");
   logger.info(JSON.stringify(lastEvent));
@@ -121,9 +124,23 @@ async function tryProcess(event) {
     });
   }
   
-  function getLastTownEvent(currEvent, mapEvent) {
+  function getLastTownEvent(currEvent, mapEvent, mode) {
+    
+    var sql;
+    switch(mode) {
+      case "automatic":
+        sql = "select * from events where event_type='entered' and id > ? and id < ? order by id desc";
+        break;
+      case "manual":
+        sql = "select * from events where event_type='entered' and id > ? and id <= ? order by id desc";
+        break;
+      default:
+        logger.info(`Invalid mode for getLastTownEvent: ${mode}`);
+        return;
+    }
+    
     return new Promise( (resolve, reject) => {
-      DB.all("select * from events where event_type='entered' and id > ? and id < ? order by id desc", [mapEvent.timestamp, currEvent.timestamp], (err, rows) => {
+      DB.all(sql, [mapEvent.timestamp, currEvent.timestamp], (err, rows) => {
         if(err) {
           logger.error(`Unable to get last event: ${err}`);
           resolve();
@@ -172,24 +189,46 @@ async function tryProcess(event) {
 
 
 
-async function process(runInfo) {
+async function process() {
   
   DB = require('./DB').getDB();
 
   var currArea = await getCurrAreaInfo();
-  if(!currArea) return;
+  if(!currArea) {
+    logger.info("No unprocessed area info found");
+    var lastEvent = await new Promise( async (resolve, reject) => {
+      DB.get(" select * from events where event_type='entered' order by id desc ", (err, row) => {
+        if(err) {
+          logger.info(`Error getting last inserted event: ${err}`);
+          resolve();
+        } else {
+          if(!row) {
+            logger.info("No last inserted event found!");
+            resolve();
+          } else {
+            resolve({
+              timestamp: row.id,
+              area: row.event_text,
+              server: row.server
+            });
+          }
+        }
+      })
+    });
+    if(lastEvent) {
+      logger.info("Will try processing from event: " + JSON.stringify(lastEvent));
+      tryProcess({
+        event: lastEvent,
+        mode: "manual"
+      });
+    }
+    return;
+    
+  }
 
   var mods = await getMapMods(currArea.id);
   if(!mods) return;
-  
-  if(runInfo) {
-    var currentRun = { areaInfo: currArea, mapMods: mods };
-    if(isSameRun(currentRun, runInfo)) {
-      logger.info("No new run started yet, will not automatically process previous run");
-      return;
-    }      
-  }
-  
+
   logger.info(`Processing run in ${currArea.name}`);
   
   var mapStats = getMapStats(mods);
@@ -214,19 +253,6 @@ async function process(runInfo) {
   
 }
 
-function isSameRun(run1, run2) {
-  
-  // use of != is deliberate, areaInfo.level can be returned as either number or string
-  if(run1.areaInfo.name != run2.areaInfo.name || run1.areaInfo.level != run2.areaInfo.level) {
-    return false;
-  }
-  
-  if(JSON.stringify(run1.mapMods) !== JSON.stringify(run2.mapMods)) {
-    return false;
-  }
-  
-  return true;  
-}
 
 async function getXP(firstEvent, lastEvent) {
   return new Promise( async (resolve, reject) => {
@@ -455,13 +481,9 @@ function getLastEvent(area, firstEvent) {
 
 function getCurrAreaInfo() {
   return new Promise( (resolve, reject) => {
-    DB.get("select * from areainfo where id not in (select id from mapruns) order by id desc", (err, row) => {
+    DB.get("select * from areainfo where id > (select max(id) from mapruns) order by id desc", (err, row) => {
       if(err) {
         logger.error(`Unable to get last area info: ${err}`);
-        resolve();
-      }
-      if(!row) {
-        logger.info("No unprocessed map runs found");
         resolve();
       }
       resolve(row);
