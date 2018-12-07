@@ -88,8 +88,8 @@ async function tryProcess(event) {
         `
           select id, event_text, server from events 
           where event_type='entered' 
-          and event_text <> ifnull((select event_text from events, mapruns where mapruns.lastevent = ? and events.id = mapruns.firstevent), '')
-          and server <> ifnull((select server from events, mapruns where mapruns.lastevent = ? and events.id = mapruns.firstevent), '')
+          and (event_text <> ifnull((select event_text from events, mapruns where mapruns.lastevent = ? and events.id = mapruns.firstevent), '')
+          or server <> ifnull((select server from events, mapruns where mapruns.lastevent = ? and events.id = mapruns.firstevent), ''))
           and id > ?
           order by id
         `, [lastUsedEvent, lastUsedEvent, lastUsedEvent], (err, rows) => {
