@@ -452,7 +452,7 @@
           }
         }        
         
-        if(remote.getGlobal("ssf")) {
+        if(!rates || remote.getGlobal("ssf")) {
           $("#itemsByValue").hide();
         } else {
           displayItemsByValue();
@@ -486,7 +486,7 @@
       }
 
       function displayItemsByValue() {
-
+        
         var items = itemsById;
         var tbl = $("#total");
 
