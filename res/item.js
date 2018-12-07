@@ -332,6 +332,8 @@ ItemData.getClass = function(data) {
     case "maps":
       if(data.typeLine.indexOf("Map") !== -1) return "Maps";
       return "Map Fragments";
+    case "fragment":
+      return "Map Fragments";
     case "piece":
       return "Harbinger Item Piece";
     default:
