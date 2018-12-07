@@ -1,6 +1,7 @@
 const URL = require('url');
 const Query = require('querystring');
 const Constants = require('./Constants');
+const logger = require("./Log").getLogger(__filename);
 const moment = require('moment');
 const momentDurationFormatSetup = require("moment-duration-format");
 
@@ -121,6 +122,11 @@ class Utils {
           value = rates["Divine Orb"];
         } else {
           value = 7 * rates["Jeweller's Orb"];
+        }
+      } else {
+        var s = sockets.replace(/-/g, "");
+        if(s.includes("RGB") || s.includes("RBG") || s.includes("BGR") || s.includes("BRG") || s.includes("GRB") || s.includes("GBR")) {
+          value = rates["Chromatic Orb"];
         }
       }
     } else {

@@ -96,7 +96,9 @@ async function getItemsFromEvent(eventID) {
         var item = JSON.parse(rows[i].rawdata);
         var sockets = Utils.getSockets(item);
         if(sockets) {
+          // check if item has 6 sockets (filter out delve sockets by replacing "DV")
           if(sockets.replace(/[DV\- ]/g, "").length === 6) {
+            // check if item has 6 links (links are indicated by a - between sockets)
             if(sockets.replace(/[RGBWDV ]/g, "").length === 5) {
               item.icon = "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyModValues.png?scale=1&scaleIndex=0";
               item.name = "";
@@ -119,10 +121,26 @@ async function getItemsFromEvent(eventID) {
             }
             items.push(item);
           } else {
-            item.chaosValue = await getItemValue(eventID, item);
-            if(item.chaosValue) items.push(item);
+            // item has less than 6 sockets - check if it has RGB links
+            var s = sockets.replace(/-/g, "");
+            if(s.includes("RGB") || s.includes("RBG") || s.includes("BGR") || s.includes("BRG") || s.includes("GRB") || s.includes("GBR")) {
+              item.icon = "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketColours.png?scale=1&scaleIndex=0";
+              item.name = "";
+              item.w = 1;
+              item.h = 1;
+              item.stackSize = 1;
+              item.typeLine = "Chromatic Orb";
+              item.chaosValue = await getItemValue(eventID, item);
+              item.typeLine = "R-G-B linked Items";
+              items.push(item);
+            } else {
+              // default fallthrough case - delve socketed items go here
+              item.chaosValue = await getItemValue(eventID, item);
+              if(item.chaosValue) items.push(item);
+            }
           }
         } else {
+          // non-socketed items
           item.chaosValue = await getItemValue(eventID, item);
           if(item.chaosValue) items.push(item);
         }

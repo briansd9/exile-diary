@@ -494,6 +494,7 @@
         
         var sixSocketItems = 0;
         var sixLinkItems = 0;
+        var rgbLinkedItems = 0;
 
         Object.keys(items).forEach(function (k) {
           var item = items[k];
@@ -506,13 +507,22 @@
               sixSocketItems++;
             }            
           } else {
-            totalValue += Number.parseFloat(setValue(item));            
-            item.icon = (item.icon.replace(/stackSize=\d+/, "")) + (item.stackSize ? (item.stackSize > 1 ? "&stackSize=" + item.stackSize : "") : "");
+            if(
+              sockets.includes("RGB") || sockets.includes("RBG") || sockets.includes("BGR")
+              || sockets.includes("BRG") || sockets.includes("GRB") || sockets.includes("GBR")
+            ) {
+              logger.info("Chrom recipe: " + sockets);
+              rgbLinkedItems++;
+            } else {
+              totalValue += Number.parseFloat(setValue(item));            
+              item.icon = (item.icon.replace(/stackSize=\d+/, "")) + (item.stackSize ? (item.stackSize > 1 ? "&stackSize=" + item.stackSize : "") : "");
+            }
           }
         });
         
         if(sixSocketItems > 0) {
           var tempItem = {
+            id: "6S",
             displayName: "6-socket Items",
             w: 1,
             h: 1,
@@ -526,15 +536,30 @@
         }
         if(sixLinkItems > 0) {
           var tempItem = {
+            id: "6L",
             displayName: "6-link Items",
             w: 1,
             h: 1,
             stackSize: sixLinkItems,
             unitValue: (rates["Divine Orb"]).toFixed(2),
             chaosValue: (sixLinkItems * rates["Divine Orb"]).toFixed(2),
-            icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyModValues.png?scale=1&scaleIndex=0"
+            icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyModValues.png?scale=1&scaleIndex=0&stackSize=" + (sixLinkItems === 1 ? "" : "&stackSize=" + sixLinkItems)
           };
           itemsById["6L"] = tempItem;
+          totalValue += Number.parseFloat(tempItem.chaosValue);
+        }
+        if(rgbLinkedItems > 0) {
+          var tempItem = {
+            id: "RGB",
+            displayName: "R-G-B linked Items",
+            w: 1,
+            h: 1,
+            stackSize: rgbLinkedItems,
+            unitValue: (rates["Chromatic Orb"]).toFixed(2),
+            chaosValue: (rgbLinkedItems * rates["Chromatic Orb"]).toFixed(2),
+            icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketColours.png?scale=1&scaleIndex=0" + (rgbLinkedItems === 1 ? "" : "&stackSize=" + rgbLinkedItems)
+          };
+          itemsById["RGB"] = tempItem;
           totalValue += Number.parseFloat(tempItem.chaosValue);
         }
         
