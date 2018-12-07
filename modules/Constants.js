@@ -1489,6 +1489,7 @@ const mods = [
   "Area contains Elreon",
   "Area contains Haku",
   "Area contains Hunted Traitors",
+  "Area contains Immortal Syndicate activity",
   "Area contains many Totems",
   "Area contains no monsters",
   "Area contains Slipstreams",
