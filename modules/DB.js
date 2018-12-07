@@ -35,7 +35,7 @@ class DB {
         db.run(initSQL[i], (err) => {
           if(err) {
             if(!err.toString().includes("duplicate column name")) {
-              throw err;
+              logger.info(`Error initializing DB: ${err}`);
             }
           }
         });
