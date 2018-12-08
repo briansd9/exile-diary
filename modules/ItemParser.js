@@ -26,7 +26,13 @@ async function insertItems(items, timestamp) {
           `
         );
         Object.keys(items).forEach((key) => {
-          stmt.run(parseItem(items[key], timestamp));
+          var itemToInsert = parseItem(items[key], timestamp);
+          stmt.run(itemToInsert, (err) => {
+            if(err) {
+              logger.info(`Error inserting item: ${err}`);
+              logger.info(JSON.stringify(itemToInsert));
+            }
+          });
         });
         stmt.finalize( (err) => {
           if(err) {
@@ -210,6 +216,8 @@ function getCategory(item) {
     case "maps":
       if (item.typeLine.includes("Map"))
         return "Maps";
+      return "Map Fragments";
+    case "fragment":
       return "Map Fragments";
     case "piece":
       return "Harbinger Item Piece";
