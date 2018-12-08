@@ -134,12 +134,12 @@ class Utils {
       var stacksize = (item.stacksize || item.stackSize || 1);
       if (name === "Chaos Orb") {
         value = stacksize;
-      } else if (rates[name]) {
+      } else if(rates[name]) {
         value = rates[name] * stacksize;
       }
     }
     
-    return Number(value.toFixed(2));
+    return (value ? Number(value.toFixed(2)) : 0);
     
   }
   

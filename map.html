@@ -527,8 +527,8 @@
             w: 1,
             h: 1,
             stackSize: sixSocketItems,
-            unitValue: (7 * rates["Jeweller's Orb"]).toFixed(2),
-            chaosValue: (sixSocketItems * 7 * rates["Jeweller's Orb"]).toFixed(2),
+            unitValue: (rates["Jeweller's Orb"] ? (7 * rates["Jeweller's Orb"]).toFixed(2) : 0),
+            chaosValue: (rates["Jeweller's Orb"] ? (sixSocketItems * 7 * rates["Jeweller's Orb"]).toFixed(2) : 0),
             icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketNumbers.png?scale=1&scaleIndex=0"
           };
           itemsById["6S"] = tempItem;
@@ -541,8 +541,8 @@
             w: 1,
             h: 1,
             stackSize: sixLinkItems,
-            unitValue: (rates["Divine Orb"]).toFixed(2),
-            chaosValue: (sixLinkItems * rates["Divine Orb"]).toFixed(2),
+            unitValue: (rates["Divine Orb"] ? (rates["Divine Orb"]).toFixed(2) : 0),
+            chaosValue: (rates["Divine Orb"] ? (sixLinkItems * rates["Divine Orb"]).toFixed(2) : 0),
             icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyModValues.png?scale=1&scaleIndex=0&stackSize=" + (sixLinkItems === 1 ? "" : "&stackSize=" + sixLinkItems)
           };
           itemsById["6L"] = tempItem;
@@ -555,8 +555,8 @@
             w: 1,
             h: 1,
             stackSize: rgbLinkedItems,
-            unitValue: (rates["Chromatic Orb"]).toFixed(2),
-            chaosValue: (rgbLinkedItems * rates["Chromatic Orb"]).toFixed(2),
+            unitValue: (rates["Chromatic Orb"] ? (rates["Chromatic Orb"]).toFixed(2) : 0),
+            chaosValue: (rates["Chromatic Orb"] ? (rgbLinkedItems * rates["Chromatic Orb"]).toFixed(2) : 0),
             icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketColours.png?scale=1&scaleIndex=0" + (rgbLinkedItems === 1 ? "" : "&stackSize=" + rgbLinkedItems)
           };
           itemsById["RGB"] = tempItem;
