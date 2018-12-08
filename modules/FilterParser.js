@@ -852,7 +852,7 @@ function ElderMapFilter (value) {
 
 function HasExplicitModFilter (mods) {
     this.match = function (item) {
-        return mods.some( function(mod) { item.hasExplicitMod( mod ); } );
+        return mods.some( function(mod) { return item.hasExplicitMod( mod ); } );
     }
 }
 
