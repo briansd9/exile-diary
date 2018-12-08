@@ -364,6 +364,8 @@ function Item (itemdata)
 	this.shapedMap = ItemData.isShapedMap(itemdata);
 	this.elderMap = ItemData.isElderMap(itemdata);
 	this.stackSize = itemdata.stackSize;
+
+  this.veiled = itemdata.veiled;
   
   if(this.itemClass === "Prophecy") {
     this.name = this.baseType;
@@ -398,7 +400,11 @@ function Item (itemdata)
 	}
   
 	this.hasExplicitMod = function(mod) {
-	    return this.explicitMods && this.explicitMods.includes( mod );
+      if(mod === "Veil" && this.veiled) {
+        return true;
+      } else {
+        return this.explicitMods && this.explicitMods.includes( mod );
+      }
 	}  
 
 	this.draw = function() {
@@ -409,15 +415,19 @@ function Item (itemdata)
 		itemDiv.className = 'item';
 
     var influenceDiv = document.createElement( 'span' );
-    switch(this.influence) {
-      case Influence.Shaper:
-        influenceDiv.innerHTML = "<img src='res/shaper.png' style='width:24px;height:24px;margin:4px 0px 0px 0px'/>";
-        break;
-      case Influence.Elder:
-        influenceDiv.innerHTML = "<img src='res/elder.png' style='width:24px;height:24px;margin:4px 0px 0px 0px'/>";
-        break;
-      default:
+    if(this.veiled) {
+      influenceDiv.innerHTML = "<img src='res/veiled.png' style='width:24px;height:24px;margin:4px 4px 0px 0px'/>";
+    } else {
+      switch(this.influence) {
+        case Influence.Shaper:
+          influenceDiv.innerHTML = "<img src='res/shaper.png' style='width:24px;height:24px;margin:4px 4px 0px 0px'/>";
           break;
+        case Influence.Elder:
+          influenceDiv.innerHTML = "<img src='res/elder.png' style='width:24px;height:24px;margin:4px 4px 0px 0px'/>";
+          break;
+        default:
+            break;
+      }
     }
     itemDiv.append(influenceDiv);
 
