@@ -6,6 +6,7 @@ const EventEmitter = require('events');
 
 var DB;
 var settings;
+var emitter = new EventEmitter();
 
 class InventoryGetter extends EventEmitter {
 
@@ -115,8 +116,13 @@ class InventoryGetter extends EventEmitter {
         response.on('end', () => {
           try {
             var data = JSON.parse(body);
-            ig.emit("xp", timestamp, data.character.experience);
-            resolve(this.getMainInventory(data));
+            if(data.error && data.error.message === "Forbidden") {
+              emitter.emit("invalidSessionID");
+              resolve({});
+            } else {
+              ig.emit("xp", timestamp, data.character.experience);
+              resolve(this.getMainInventory(data));
+            }
           } catch(err) {
             logger.info(`Failed to get current inventory: ${err}`);
             resolve({});
@@ -151,7 +157,7 @@ class InventoryGetter extends EventEmitter {
         if (err) {
           logger.info(`Unable to update last inventory: ${err}`);
         } else {
-          logger.info(`Updated last inventory at ${timestamp}`);
+          logger.info(`Updated last inventory at ${timestamp} (length: ${dataString.length})`);
         }
       }
       );
@@ -171,3 +177,4 @@ class InventoryGetter extends EventEmitter {
 }
 
 module.exports = InventoryGetter;
+module.exports.emitter = emitter;

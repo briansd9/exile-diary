@@ -6,6 +6,7 @@ const DB = require("./modules/DB");
 const OCRWatcher = require("./modules/OCRWatcher");
 const RateGetter = require("./modules/RateGetter");
 const RunParser = require('./modules/RunParser');
+const InventoryGetter = require('./modules/InventoryGetter');
 const MapSearcher = require('./modules/MapSearcher');
 const ScreenshotWatcher = require("./modules/ScreenshotWatcher");
 const Settings = require("./modules/settings");
@@ -68,19 +69,24 @@ function checkCurrentCharacterLeague() {
         try {
           var foundChar = false;
           var data = JSON.parse(body);
-          for(var i = 0; i < data.length; i++) {
-            if(data[i].name === settings.activeProfile.characterName) {
-              foundChar = true;
-              logger.info(JSON.stringify(data[i]));
-              checkLeague(settings, data[i].league);
-              characterCheckStatus = "valid";
-              break;
+          if(data.error && data.error.message === "Forbidden") {
+            characterCheckStatus = "error";
+            resolve();
+          } else {
+            for(var i = 0; i < data.length; i++) {
+              if(data[i].name === settings.activeProfile.characterName) {
+                foundChar = true;
+                logger.info(JSON.stringify(data[i]));
+                checkLeague(settings, data[i].league);
+                characterCheckStatus = "valid";
+                break;
+              }
             }
+            if(!foundChar) {
+              characterCheckStatus = "notFound";
+            }
+            resolve();
           }
-          if(!foundChar) {
-            characterCheckStatus = "notFound";
-          }
-          resolve();
         } catch (err) {
           logger.info(`Error checking character status: ${err}`);
           characterCheckStatus = "error";
@@ -161,6 +167,15 @@ function init() {
 function initWindow(window) {
   
   var webContents = window.webContents;
+  
+  StashGetter.emitter.removeAllListeners();
+  StashGetter.emitter.on("invalidSessionID", () => {
+    addMessage(`<span class='eventText'>Unable to get stash information. Please check your POESESSID</span>`);
+  });
+  InventoryGetter.emitter.removeAllListeners();
+  InventoryGetter.emitter.on("invalidSessionID", () => {
+    addMessage(`<span class='eventText'>Unable to get inventory information. Please check your POESESSID</span>`);
+  });
   
   OCRWatcher.emitter.removeAllListeners();
   OCRWatcher.emitter.on("OCRError", () => {
@@ -268,7 +283,7 @@ async function createWindow() {
     mainWindow.loadFile('config.html');
   } else if(characterCheckStatus === "error") {
     global.validCharacter = false;
-    addMessage(`Error getting account info, please check your configuration`);
+    addMessage(`<span class='eventText'>Error getting account info. Please check your character name and POESESSID</span>`);
     mainWindow.loadFile('config.html');
   } else {
     global.validCharacter = true;

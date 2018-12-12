@@ -1,3 +1,4 @@
+const EventEmitter = require('events');
 const logger = require("./Log").getLogger(__filename);
 const moment = require('moment');
 const https = require('https');
@@ -6,6 +7,7 @@ const RateGetter = require('./RateGetter');
 
 var DB;
 var settings;
+var emitter = new EventEmitter();
 
 async function get() {
 
@@ -96,7 +98,10 @@ function getNumTabs(s) {
       response.on('end', () => {
         try {
           var data = JSON.parse(body);
-          if(data.numTabs) {
+          if(data.error && data.error.message === "Forbidden") {
+            emitter.emit("invalidSessionID");
+            resolve();
+          } else if(data.numTabs) {
             logger.info(`${s.accountName} has ${data.numTabs} tabs in ${s.league}`);
             resolve(data.numTabs);
           } else {
@@ -183,3 +188,4 @@ function parseTab(items, rates) {
 }
 
 module.exports.get = get;
+module.exports.emitter = emitter;
