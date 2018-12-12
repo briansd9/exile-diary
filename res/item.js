@@ -233,6 +233,17 @@ ItemData.getInfluence = function(data) {
   else return Influence.None;
 }
 
+ItemData.getMapTier = function(data) {
+  if(!data.properties) return null;
+  for(i = 0; i < data.properties.length; i++) {
+    if(data.properties[i].name === "Map Tier") {
+      return (data.properties[i].values[0][0]);
+    }
+  }
+  return null;
+}
+
+
 ItemData.isShapedMap = function(data) {
   if(!data.properties) return false;
   for(i = 0; i < data.properties.length; i++) {
@@ -363,6 +374,7 @@ function Item (itemdata)
 	this.influence = ItemData.getInfluence(itemdata);
 	this.shapedMap = ItemData.isShapedMap(itemdata);
 	this.elderMap = ItemData.isElderMap(itemdata);
+  this.mapTier = ItemData.getMapTier(itemdata);
 	this.stackSize = itemdata.stackSize;
 
   this.veiled = itemdata.veiled;

@@ -858,7 +858,7 @@ function HasExplicitModFilter (mods) {
 
 function MapTierFilter (comparer, tier) {
     this.match = function (item) {
-        return item.mapTier !== 0 && comparer( item.mapTier, tier );
+        return comparer( item.mapTier, tier );
     }
 }
 
