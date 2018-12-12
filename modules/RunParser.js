@@ -421,7 +421,7 @@ function insertMapRun(arr) {
     if(err) {
       logger.error(`Unable to insert map run ${JSON.stringify(arr)}: ${err}`);
     } else {
-      logger.error(`Map run processed successfully: ${JSON.stringify(arr)}`);
+      logger.info(`Map run processed successfully: ${JSON.stringify(arr)}`);
     }
   });
 }
