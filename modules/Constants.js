@@ -1449,7 +1449,9 @@ const areas = [
   "Glacier",
   "Crater",
   "Primordial Blocks",
-  "Acid Caverns"
+  "Acid Caverns",
+  // Betrayal
+  "Syndicate Hideout"
 ];
 
 const mods = [
