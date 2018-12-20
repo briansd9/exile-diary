@@ -50,7 +50,7 @@ async function update() {
 
 function getRates(date, league) {
   ratePaths.forEach(path => {
-    var fullPath = `${path}&league=${league}&date=${moment().format("Y-MM-DD")}`;
+    var fullPath = `${path}&league=${encodeURIComponent(league)}&date=${moment().format("Y-MM-DD")}`;
     getRate(date, fullPath);
   });
 }
@@ -138,17 +138,24 @@ function hasExistingRates(date) {
 /*
  * get rates for a specific date from DB
  */
-function getFor(timestamp) {
-  
+function getFor(timestamp, repeatCount) {
   DB = require('./DB').getDB();
+  repeatCount = repeatCount || 1;
   return new Promise((resolve, reject) => {
-    DB.get("select distinct date from rates where date <= ? order by date desc", [timestamp], (err, row) => {
+    DB.get("select distinct date from rates where date <= ? order by date desc", [timestamp], async (err, row) => {
       if(err) {
         logger.info(`Unable to get rates for ${timestamp}: ${err}`);
         resolve(null);
       } else if(!row) {
-        logger.info(`No rates found for ${timestamp}`);
-        resolve(null);
+        if(repeatCount > 5) {
+          logger.info(`Unable to get rates for ${timestamp} after 5 tries, giving up`);
+          resolve(null);
+        }
+        else {
+          logger.info(`No rates found for ${timestamp}, will attempt to retrieve`);
+          await update();
+          resolve(getFor(timestamp, repeatCount + 1));
+        }
       } else {
         DB.all("select item, value from rates where date = ?", [row.date], (err, rows) => {
           if(err) {
