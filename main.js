@@ -318,8 +318,6 @@ function addMessage(text) {
   global.messages.push(msg);
   global.messages = global.messages.slice(-10);
   mainWindow.webContents.send("message", msg);
-  mainWindow.once('focus', () => mainWindow.flashFrame(false));
-  mainWindow.flashFrame(true);
 }
 
 function saveScreenshot(img) {
