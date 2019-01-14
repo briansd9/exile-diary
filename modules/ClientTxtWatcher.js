@@ -75,7 +75,9 @@ function insertEvent(event, timestamp) {
     if (err) {
       logger.info("Failed to insert event: " + err);
     } else {
-      logger.info(`Inserted event ${timestamp} -> ${event.type} ${event.text} ${event.instanceServer}`);
+      if(event.type !== "chat") {
+        logger.info(`Inserted event ${timestamp} -> ${event.type} ${event.text} ${event.instanceServer}`);
+      }
     }
   }
   );
