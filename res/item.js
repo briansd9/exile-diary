@@ -347,6 +347,8 @@ ItemData.getClass = function(data) {
       return "Map Fragments";
     case "piece":
       return "Harbinger Item Piece";
+    case "monsters":
+      return "Captured Beast"
     default:
       console.log("No item class found! category: " + cat);
       console.log(data);

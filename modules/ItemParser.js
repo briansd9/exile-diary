@@ -221,6 +221,8 @@ function getCategory(item) {
       return "Map Fragments";
     case "piece":
       return "Harbinger Item Piece";
+    case "monsters":
+      return "Captured Beast";
     default:
       logger.warn("No item class found! category: " + cat);
       logger.warn(JSON.stringify(item));
