@@ -78,7 +78,7 @@ function Parser() {
 	var FILTER_TOKENS = [
 	    'ItemLevel', 'DropLevel', 'Quality', 'Rarity', 'Class', 'BaseType', 'Sockets', 'LinkedSockets', 'SocketGroup',
 	    'Width', 'Height', 'Identified', 'Corrupted', 'ElderItem', 'ShaperItem', 'ShapedMap', 'HasExplicitMod', 'MapTier',
-	    'GemLevel', 'StackSize', 'ElderMap'];
+	    'GemLevel', 'StackSize', 'ElderMap', 'Prophecy'];
 	var MODIFIER_TOKENS = [
 	    'SetBackgroundColor', 'SetBorderColor', 'SetTextColor', 'PlayAlertSound', 'PlayAlertSoundPositional',
 	    'SetFontSize', 'DisableDropSound', 'CustomAlertSound', 'MinimapIcon', 'PlayEffect' ];
@@ -237,6 +237,7 @@ function Parser() {
 			'MapTier': MapTierFilter,
 			'GemLevel': GemLevelFilter,
 			'StackSize': StackSizeFilter,
+      'Prophecy': ProphecyFilter
 		};
 
 		switch (token) {
@@ -260,6 +261,7 @@ function Parser() {
 			case 'Class':
 			case 'BaseType':
 			case 'HasExplicitMod':
+      case 'Prophecy':
 				parseMultiStringFilter( self, filters[token], arguments );
 				return;
 
@@ -872,6 +874,12 @@ function StackSizeFilter (comparer, size) {
     this.match = function (item) {
         return comparer( item.stackSize, size );
     }
+}
+
+function ProphecyFilter (prophecyTypes) {
+	this.match = function (item) {
+		return item.baseType === "Prophecy" && prophecyTypes.some( function (p) { return StrUtils.contains( p, item.name ); } );
+	};
 }
 
 // ------------------------ Modifiers --------------------------------------
