@@ -52,7 +52,6 @@ async function tryProcess(obj) {
   if(!lastEvent) return;
   logger.info("Last town event found:");
   logger.info(JSON.stringify(lastEvent));
-
   
   var mapStats;
   var areaInfo = await getAreaInfo(firstEvent, lastEvent);
@@ -68,19 +67,35 @@ async function tryProcess(obj) {
       iir: null,
       packsize: null
     };
-    DB.run("insert into areainfo(id, name) values(?, ?)", [firstEvent.timestamp, firstEvent.area], (err) => {
-      if (err) {
-        logger.info(`Error manually inserting areainfo (${firstEvent.timestamp} ${firstEvent.area}): ${err}`);
-      }        
-    });
   }
-
+  
+  
   var xp = await getXP(firstEvent.timestamp, lastEvent.timestamp);
+  var xpDiff = await getXPDiff(xp);
+  var items = await checkItems(areaInfo, firstEvent.timestamp, lastEvent.timestamp);
   
-  var runArr = [areaInfo.id, firstEvent.timestamp, lastEvent.timestamp, mapStats.iiq || null, mapStats.iir || null, mapStats.packsize || null, xp];
+  // if no items picked up and no xp gained, don't log map run
+  // this is to prevent unwanted logging of menagerie visits, etc.
+  if(items.count === 0 && xpDiff === 0) {
+    logger.info("No items or xp gained, not logging map run");
+    return;
+  }
   
-  insertMapRun(runArr);
-  checkProfit(areaInfo, firstEvent.timestamp, lastEvent.timestamp);
+  DB.run("insert into areainfo(id, name) values(?, ?)", [firstEvent.timestamp, firstEvent.area], (err) => {
+    if (err) {
+      logger.info(`Error manually inserting areainfo (${firstEvent.timestamp} ${firstEvent.area}): ${err}`);
+    }        
+  });
+  
+  var runArr = [
+    areaInfo.id, firstEvent.timestamp, lastEvent.timestamp, mapStats.iiq || null, mapStats.iir || null, mapStats.packsize || null, items.value, xp
+  ];
+  insertMapRun(runArr).then(() => {
+    emitter.emit(
+      "runProcessed", 
+      {name: areaInfo.name, id: areaInfo.id, gained: items.value, xp: xpDiff, firstevent: firstEvent.timestamp, lastevent: lastEvent.timestamp}
+    );
+  });
   
   return 1;
   
@@ -243,11 +258,23 @@ async function process() {
   if(!lastEvent) return;
   
   var xp = await getXP(firstEvent, lastEvent);
+  var xpDiff = await getXPDiff(xp);
+  var items = await checkItems(currArea, firstEvent, lastEvent);
+  // if no items picked up and no xp gained, don't log map run
+  // this is to prevent unwanted logging of menagerie visits, etc.
+  if(items.count === 0 && xpDiff === 0) {
+    logger.info("No items or xp gained, not logging map run");
+    return;
+  }
   
-  var runArr = [currArea.id, firstEvent, lastEvent, mapStats.iiq, mapStats.iir, mapStats.packsize, xp];
+  var runArr = [currArea.id, firstEvent, lastEvent, mapStats.iiq, mapStats.iir, mapStats.packsize, items.value, xp];
+  insertMapRun(runArr).then(() => {
+    emitter.emit(
+      "runProcessed", 
+      {name: currArea.name, id: currArea.id, gained: items.value, xp: xpDiff, firstevent: firstEvent, lastevent: lastEvent}
+    );
+  });
   
-  insertMapRun(runArr);
-  checkProfit(currArea, firstEvent, lastEvent);
   
   return 1;
   
@@ -321,51 +348,66 @@ async function getXPManual() {
   });
 }
 
-async function checkProfit(area, firstevent, lastevent) {
-
-  var lastinv = await new Promise( async (resolve, reject) => {
-      DB.get("select timestamp from lastinv", (err, row) => {
-        if(err) {
-          logger.info(`Error getting timestamp for last inventory: ${err}`);
+async function getLastInventoryTimestamp() {
+  return new Promise( async (resolve, reject) => {
+    DB.get("select timestamp from lastinv", (err, row) => {
+      if(err) {
+        logger.info(`Error getting timestamp for last inventory: ${err}`);
+        resolve(-1);
+      } else {
+        if(!row) {
+          logger.info("No last inventory yet");
           resolve(-1);
         } else {
-          if(!row) {
-            logger.info("No last inventory yet");
-            resolve(-1);
-          } else {
-            resolve(row.timestamp);
-          }
+          resolve(row.timestamp);
         }
-      })
-    });
-  
-  if(lastinv < lastevent && lastinv !== -1) {
-    logger.info(`Last inventory not yet processed (${lastinv} < ${lastevent}), waiting 3 seconds`);
-    setTimeout(function() { checkProfit(area, firstevent, lastevent) }, 3000);
-  } else {
-    logger.info(`Getting chaos value of items from ${area.id} ${area.name}`);
-    var totalProfit = await getItemValues(area.id, firstevent, lastevent);
-    logger.info("Total profit is " + totalProfit);
-    if(totalProfit) {
-      var xp = await getXPDiff(area.id);
-      emitter.emit("runProcessed", {name: area.name, id: area.id, gained: totalProfit, xp: xp, firstevent: firstevent, lastevent: lastevent});
-    }
-  }
+      }
+    })
+  });  
 }
 
-function getXPDiff(id) {
+async function checkItems(area, firstevent, lastevent) {
+
+  var lastinv;
+
+  while(true) {
+    logger.info("Getting inventory timestamp");
+    lastinv = await getLastInventoryTimestamp();
+    logger.info("Got " + lastinv);
+    if(lastinv > lastevent) {
+      break;
+    } else {
+      logger.info(`Last inventory not yet processed (${lastinv} < ${lastevent}), waiting 3 seconds`);
+      await sleep(3000);
+    }
+  }
+  
+  logger.info(`Getting chaos value of items from ${area.id} ${area.name}`);
+  var allItems = await getItems(area.id, firstevent, lastevent);
+  logger.info(`Total profit is ${allItems.value} in ${allItems.count} items`);
+  return allItems;
+
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+  
+}
+
+function getXPDiff(currentXP) {
   return new Promise( (resolve, reject) => {
-    DB.all( " select xp from mapruns where id <= ? order by id desc limit 2", [id], (err, rows) => {
+    DB.get( " select xp from mapruns order by id desc limit 1 ", (err, row) => {
       if(!err) {
-        resolve(rows[0].xp - rows[1].xp);
+        logger.info(`current xp: ${currentXP}, previous: ${row.xp}`)
+        resolve(currentXP - row.xp);
       } else {
-        logger.info(`Error getting XP gained for map ${id}: ${err}`);
+        logger.info(`Error getting XP gained: ${err}`);
+        resolve(null);
       }
     });
   });
 }
 
-function getItemValues(areaID, firstEvent, lastEvent) {
+function getItems(areaID, firstEvent, lastEvent) {
   logger.info(`Getting item values for map with ID ${areaID} (event bounds: ${firstEvent} -> ${lastEvent}`);
   return new Promise( async (resolve, reject) => {
     var rates = await RateGetter.getFor(areaID);
@@ -377,29 +419,25 @@ function getItemValues(areaID, firstEvent, lastEvent) {
           logger.info(`Unable to get item values for ${areaID}: ${err}`);
           resolve(false);
         } else {
+          var numItems = 0;
           var totalProfit = 0;
           for(var i = 1; i < rows.length; i++) {
             var prevRow = rows[i - 1];
             if(!Utils.isTown(prevRow.event_text)) {
-              totalProfit += Number.parseFloat(await getItemValuesFor(rows[i].id, rates));
+              var items = await getItemsFor(rows[i].id, rates);
+              numItems += items.count;
+              totalProfit += Number.parseFloat(items.value);
             }
           }
           totalProfit = Number(totalProfit).toFixed(2);
-          DB.run(" update mapruns set gained = ? where id = ? ", [totalProfit, areaID], (err) => {
-            if(err) {
-              logger.info(`Unable to update total profit for ${areaID}: ${err}`);
-              resolve(false);
-            } else {
-              logger.info(`Updated ${areaID} with ${totalProfit}`);
-              resolve(totalProfit);
-            }
-          });
+          resolve({count: numItems, value: totalProfit});
         }   
       });
   });
 }
 
-function getItemValuesFor(event, rates) {
+function getItemsFor(event, rates) {
+  var count = 0;
   var value = 0;
   return new Promise( (resolve, reject) => {
     DB.all( " select typeline, stacksize, identified, sockets, rarity from items where event_id = ? ", [event], (err, rows) => {
@@ -408,21 +446,25 @@ function getItemValuesFor(event, rates) {
         resolve(null);
       }        
       rows.forEach( (item) => {
+        count++;
         value += Utils.getItemValue(item, rates);
         //logger.info(`After ${name} value is now ${value}`);
       });
-      resolve(value);
+      resolve({count: count, value: value});
     });
   });
 }
 
-function insertMapRun(arr) {
-  DB.run(" insert into mapruns(id, firstevent, lastevent, iiq, iir, packsize, xp) values (?, ?, ?, ?, ?, ?, ?) ", arr, (err) => {
-    if(err) {
-      logger.error(`Unable to insert map run ${JSON.stringify(arr)}: ${err}`);
-    } else {
-      logger.info(`Map run processed successfully: ${JSON.stringify(arr)}`);
-    }
+async function insertMapRun(arr) {
+  return new Promise( (resolve, reject) => {
+    DB.run(" insert into mapruns(id, firstevent, lastevent, iiq, iir, packsize, gained, xp) values (?, ?, ?, ?, ?, ?, ?, ?) ", arr, (err) => {
+      if(err) {
+        logger.error(`Unable to insert map run ${JSON.stringify(arr)}: ${err}`);
+      } else {
+        logger.info(`Map run processed successfully: ${JSON.stringify(arr)}`);
+      }
+      resolve();
+    });
   });
 }
 
