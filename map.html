@@ -199,11 +199,23 @@
       }
       
       function clearCurrentMap() {
-        ["itemsTable", "prevCell", "nextCell", "IIQ", "IIR", "packSize", "eventsDiv", "mods"].forEach( str => {
+        
+        [
+          "itemsTable", "prevCell", "nextCell", 
+          "IIQ", "IIR", "packSize", "eventsDiv", "mods", 
+          "beastCount", "incursionCount", "sulphiteCount"
+        ].forEach( str => {
           $(`#${str}`).empty();
         });
+        
+        $("#masterDiv").hide();
+        ["Zana", "Einhar", "Alva", "Niko"].forEach( str => {
+          $(`#${str}Icon`).hide();
+        });
+        
         itemsByType = {};
         itemsById = {};
+        
       }
       
       
@@ -366,6 +378,8 @@
       function getEventString(e) {
 
         var eventType = e.event_type;
+        if(eventType === "master") return;
+        
         var eventText;
 
         switch (eventType) {
@@ -421,6 +435,52 @@
         for (var i = 0; i < eventTimes.length; i++) {
           eventTime = "[" + eventTimes[i].substring(8, 10) + ":" + eventTimes[i].substring(10, 12) + ":" + eventTimes[i].substring(12, 14) + "]";
           var currEvent = events[eventTimes[i]];
+          
+          if(currEvent.event_type === "master") {
+            if(currEvent.event_text.includes("Zana")) {
+              $("#masterDiv").show();
+              $(`#ZanaIcon`).show();
+            }
+            if(currEvent.event_text.includes("Niko")) {
+              $("#masterDiv").show();
+              $(`#NikoIcon`).show();
+              $(`#sulphiteCount`).append($('<img>', {src: 'res/sulphite.png'}));
+            }
+            if(currEvent.event_text.includes("Alva") && !mapRun.info.name.includes("Atzoatl")) {
+              if(currEvent.event_text.includes("Good job")) {
+                $("#masterDiv").show();
+                $(`#AlvaIcon`).show();
+                $(`#incursionCount`).append($('<img>', {src: 'res/incursion.png'}));
+              }
+            }
+            if(currEvent.event_text.includes("Einhar") && !mapRun.info.name.includes("Menagerie")) {
+              [
+                "Off you go, little beast! Away!",
+                "We will be best friends beast! Until we slaughter you!",
+                "The First Ones look upon this capture with pride, Exile. You hunt well.",
+                "Do not worry little beast! We are friends now!",
+                "This one is captured. Einhar will take it.",
+                "You have been captured, beast. You will be a survivor, or you will be food.",
+                "Haha! You are captured, stupid beast.",
+                "Survivor! You are well prepared for the end. This is a fine capture.",
+                "What? Do you not have nets, exile?",
+                "Great job, Exile! Einhar will take the captured beast to the Menagerie.",
+                "Ohhh... That was a juicy one, exile.",
+                "There are no more worthy beasts nearby, so Einhar will go feed the ones we caught.",
+                "That was a hunt you will not soon forget! You're welcome! Goodbye!",
+                "An exhilarating hunt, exile! Now it is time for Einhar to go do Einhar business.",
+                "That was a great hunt, exile! Einhar will write a mighty poem about it."
+              ].forEach(str => {
+                if(currEvent.event_text.includes(str)) {
+                  $("#masterDiv").show();
+                  $(`#EinharIcon`).show();
+                  $(`#beastCount`).append($('<img>', {src: 'res/beast.png'}));
+                }
+              });
+            }
+            continue;
+          }
+          
           if (i > 0 && !lastEnteredTown(events, eventTimes, i)) {
             var lootString = getInventoryDiffs(mapRun.items, eventTimes[i]);
             if (lootString.length > 0) {
@@ -442,7 +502,7 @@
           }
           
           var eventString = getEventString(currEvent);
-          if (eventString.length > 0) {
+          if (eventString && eventString.length > 0) {
             $("#eventsDiv").append(
               "<div class='eventInfo'>"
               + "<span class='eventTime'>" + eventTime + "</span> "
@@ -737,7 +797,7 @@
                   <div id='depth'></div>
                   <div id='league'></div>
                 </div>
-              </td>				
+              </td>
               <td class='mapStat' id='IIQ'>
               </td>
               <td class='mapStat' id='IIR'>
@@ -750,10 +810,31 @@
           </table>
         </div>
         <div id='mods' class='mapMod'></div>
+        <hr class='mapArea' style='border:1px solid #999;' />
       </div>						
-      <hr class='mapArea' style='border:1px solid #999;' />
-      <div id='xpDiv' style='display:none'>
+      <div id='xpDiv' style='display:none;'>
         Experience Points: <span id='xp'></span>
+        <hr style='border:1px solid #999;' />
+      </div>
+      <div id="masterDiv" style="display:none;">
+        <div id='ZanaIcon' style='display:none;'>
+          <img src='res/zana.png'/>
+        </div>
+        <div id='EinharIcon' style='display:none;'>
+          <img src='res/einhar.png'/>
+          <div id='beastCount' style='display:inline;'>
+          </div>          
+        </div>
+        <div id='AlvaIcon' style='display:none;'>
+          <img src='res/alva.png'/>
+          <div id='incursionCount' style='display:inline;'>
+          </div>          
+        </div>
+        <div id='NikoIcon' style='display:none;'>
+          <img src='res/niko.png'/>
+          <div id='sulphiteCount' style='display:inline;'>
+          </div>        
+        </div>
         <hr style='border:1px solid #999;' />
       </div>
       <div class='eventsDiv' id='eventsDiv'></div>

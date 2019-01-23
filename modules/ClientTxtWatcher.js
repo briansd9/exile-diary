@@ -72,19 +72,27 @@ function insertEvent(event, timestamp) {
     "insert into events(id, event_type, event_text, server) values(?, ?, ?, ?)",
     [timestamp, event.type, event.text, event.instanceServer],
     (err) => {
-    if (err) {
-      logger.info("Failed to insert event: " + err);
-    } else {
-      if(event.type !== "chat") {
-        logger.info(`Inserted event ${timestamp} -> ${event.type} ${event.text} ${event.instanceServer}`);
+      if (err) {
+        logger.info("Failed to insert event: " + err);
+      } else {
+        if(event.type !== "chat") {
+          logger.info(`Inserted event ${timestamp} -> ${event.type} ${event.text} ${event.instanceServer}`);
+        }
       }
     }
-  }
   );
 }
 
-function getEvent(str) {
-  if (str.indexOf("] :") > -1 || str.indexOf("] @") > -1) {
+function getEvent(arg) {
+  var str = arg.substring(arg.indexOf("] ") + 2);
+  if(hasMaster(str)) {
+    return {
+      type: "master",
+      text: str.trim(),
+      instanceServer: ""
+    };
+  }
+  else if(str.startsWith(":")) {
     if (str.indexOf("You have entered") > -1) {
       str = str.trim();
       var area = str.substring(str.indexOf("You have entered") + 17);
@@ -108,21 +116,74 @@ function getEvent(str) {
         text: Number.parseInt(str.substring(str.indexOf("is now level") + 12)),
         instanceServer: ""
       };
-    } else if (str.indexOf("@From") > -1 || str.indexOf("@To") > -1) {
-      if(str.indexOf(`@From ${settings.activeProfile.characterName}`) > 0) {
-        return;
-      }
-      if(str.indexOf(`@To ${settings.activeProfile.characterName}`) > 0) {
-        return;
-      }
-      return {
-        type: "chat",
-        text: str.substring(str.indexOf("@")).trim(),
-        instanceServer: ""
-      };
     }
+  } else if(str.startsWith("@") && str.indexOf("@From") > -1 || str.indexOf("@To") > -1) {
+    if(str.indexOf(`@From ${settings.activeProfile.characterName}`) > 0) {
+      return;
+    }
+    if(str.indexOf(`@To ${settings.activeProfile.characterName}`) > 0) {
+      return;
+    }
+    return {
+      type: "chat",
+      text: str.substring(str.indexOf("@")).trim(),
+      instanceServer: ""
+    };
   }
 }
 
+function hasMaster(str) {
+  
+  if(str.startsWith("Einhar") || str.startsWith("Niko") || str.startsWith("Alva")) return true;
+  
+  // filter out shaper/elder fight dialogue
+  if(str.startsWith("Zana") && str.includes("Still sane, exile?")) return true;
+  
+  return false;
+  
+}
+
+async function getOldMasterEvents() {
+  
+  DB = require('./DB').getDB();
+  settings = require('./settings').get();
+
+  var fs = require('fs');
+  var readline = require('readline');
+  
+  var minTimestamp = await new Promise((resolve, reject) => {
+    DB.get("select min(id) as id from events", (err, row) => { resolve(row.id); })
+  });
+  
+  console.log(`Min timestamp is ${minTimestamp}`);
+
+  var rl = readline.createInterface({
+      input: fs.createReadStream(settings.clientTxt),
+      terminal: false
+  });
+    
+  rl.on('line', function(line) {
+    var str = line.substring(line.indexOf("] ") + 2);
+    if(hasMaster(str)) {
+      var timestamp = line.substring(0, 19).replace(/[^0-9]/g, '');
+      if(timestamp > minTimestamp) {
+        var text = str.trim();
+        DB.run(
+          "insert into events(id, event_type, event_text, server) values(?, ?, ?, ?)",
+          [timestamp, "master", text, ""],
+          (err) => {
+            if (err) {
+              logger.info("Failed to insert event: " + err);
+            } else {
+              logger.info(`Inserted event ${timestamp} -> ${text}`);
+            }
+          }
+        );        
+      }
+    }
+  });
+  
+}
 
 module.exports.start = start;
+module.exports.getOldMasterEvents = getOldMasterEvents;
