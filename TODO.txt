@@ -1,9 +1,4 @@
-- fix OCR error if area has no mods
-- filter by league
-- way to delete / reset character data
-- troubleshooting: auto-send last n bytes of log.txt?
 - cron job: get stash and rates every x hours (configurable), select stash tabs to track
-- sales history
 - open maps in modal window?
 - zip stashes in db
 - sqlite pragma db version

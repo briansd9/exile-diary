@@ -14,8 +14,6 @@ class StringMatcher {
     }
     var ret = "";
     ret = this.getClosest(str, Constants.mods);
-    
-    
     if (ret.indexOf("#") > -1) {
       var matches = str.match(/[1-9][0-9]*/g);
       if (matches) {

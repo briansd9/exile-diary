@@ -1364,7 +1364,7 @@ const areas = [
   "Lair of the Hydra",
   "Maze of the Minotaur",
   "Pit of the Chimera",
-  "Vaal Temple",
+  "Vaal Temple ",
   "The Apex of Sacrifice",
   "The Pale Court",
   "The Alluring Abyss",

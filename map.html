@@ -571,6 +571,7 @@
               sockets.includes("RGB") || sockets.includes("RBG") || sockets.includes("BGR")
               || sockets.includes("BRG") || sockets.includes("GRB") || sockets.includes("GBR")
             ) {
+              logger.info("Chrom recipe: " + sockets);
               rgbLinkedItems++;
             } else {
               totalValue += Number.parseFloat(setValue(item));            
@@ -654,13 +655,11 @@
       }
 
       function processItem(item) {
-        var typeLine =  item.typeLine.replace("Superior ", "");
-        if (!itemsByType[typeLine]) {
+        if (!itemsByType[item.typeLine] || !item.stackSize) {
           itemsById[item.id] = item;
-          itemsByType[typeLine] = item.id;
-          itemsById[item.id].stackSize = item.stackSize || 1;
+          itemsByType[item.typeLine] = item.id;
         } else {
-          itemsById[itemsByType[typeLine]].stackSize += item.stackSize || 1;
+          itemsById[itemsByType[item.typeLine]].stackSize += item.stackSize;
         }
       }
 

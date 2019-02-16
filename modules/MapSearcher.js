@@ -57,6 +57,7 @@ function mergeItems(arr) {
     } else {
       items[typeLine] = item;
     }
+      //logger.info(`${item.typeLine} ${stackableItems[item.typeLine].stackSize} -> ${stackableItems[item.typeLine].chaosValue}`);
   }
   return Object.values(items);
 }
