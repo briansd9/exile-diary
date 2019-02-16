@@ -57,7 +57,6 @@ function mergeItems(arr) {
     } else {
       items[typeLine] = item;
     }
-      //logger.info(`${item.typeLine} ${stackableItems[item.typeLine].stackSize} -> ${stackableItems[item.typeLine].chaosValue}`);
   }
   return Object.values(items);
 }
@@ -160,7 +159,6 @@ async function getItemValue(timestamp, item) {
   return new Promise( (resolve, reject) => {
     DB.get("select value from rates where date <= ? and item = ? order by date desc limit 1", [timestamp, baseName], (err, row) => {
       if(row) {
-        //logger.info(`${timestamp} : ${baseName} x ${stackSize} = ${row.value * stackSize}`);
         resolve(row.value * stackSize);
       } else {
         resolve(null);
@@ -180,7 +178,6 @@ async function getTime(mapID) {
       var startTime = moment(row.firstevent, "YYYYMMDDHHmmss");
       var endTime = moment(row.lastevent, "YYYYMMDDHHmmss");
       var runningTime = endTime.diff(startTime, "seconds");
-      //logger.info(`${startTime} ${endTime} ${runningTime}`);
       resolve(runningTime);
     });
   });
