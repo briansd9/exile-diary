@@ -374,7 +374,7 @@ async function checkItems(area, firstevent, lastevent) {
     logger.info("Getting inventory timestamp");
     lastinv = await getLastInventoryTimestamp();
     logger.info("Got " + lastinv);
-    if(lastinv > lastevent) {
+    if(lastinv >= lastevent) {
       break;
     } else {
       logger.info(`Last inventory not yet processed (${lastinv} < ${lastevent}), waiting 3 seconds`);
