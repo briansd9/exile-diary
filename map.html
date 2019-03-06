@@ -188,7 +188,7 @@
       }
       
       function loadMap(mapRun) {
-        clearCurrentMap();        
+        clearCurrentMap();
         parser = mapRun.parser;
         rates = mapRun.rates;
         showNavigation(mapRun);
@@ -558,7 +558,8 @@
 
         Object.keys(items).forEach(function (k) {
           var item = items[k];
-          item.displayName = displayName(item);
+          //item.displayName = displayName(item);
+          item.displayName = Utils.getBaseName(item);
           var sockets = ItemData.getSockets(item);
           if(ItemData.countSockets(sockets) === 6) {
             if(sockets.length === 1) {
@@ -654,7 +655,7 @@
       }
 
       function processItem(item) {
-        var typeLine =  item.typeLine.replace("Superior ", "");
+        var typeLine = item.typeLine.replace("Superior ", "");
         if (!itemsByType[typeLine]) {        
           itemsById[item.id] = item;
           itemsByType[typeLine] = item.id;
