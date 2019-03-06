@@ -78,7 +78,7 @@ function Parser() {
 	var FILTER_TOKENS = [
 	    'ItemLevel', 'DropLevel', 'Quality', 'Rarity', 'Class', 'BaseType', 'Sockets', 'LinkedSockets', 'SocketGroup',
 	    'Width', 'Height', 'Identified', 'Corrupted', 'ElderItem', 'ShaperItem', 'ShapedMap', 'HasExplicitMod', 'MapTier',
-	    'GemLevel', 'StackSize', 'ElderMap', 'Prophecy'];
+	    'GemLevel', 'StackSize', 'ElderMap', 'Prophecy', 'FracturedItem', 'SynthesisedItem', 'AnyEnchantment', 'HasEnchantment'];
 	var MODIFIER_TOKENS = [
 	    'SetBackgroundColor', 'SetBorderColor', 'SetTextColor', 'PlayAlertSound', 'PlayAlertSoundPositional',
 	    'SetFontSize', 'DisableDropSound', 'CustomAlertSound', 'MinimapIcon', 'PlayEffect' ];
@@ -237,7 +237,11 @@ function Parser() {
 			'MapTier': MapTierFilter,
 			'GemLevel': GemLevelFilter,
 			'StackSize': StackSizeFilter,
-      'Prophecy': ProphecyFilter
+      'Prophecy': ProphecyFilter,
+      'FracturedItem': FracturedItemFilter,
+      'SynthesisedItem': SynthesisedItemFilter,
+      'AnyEnchantment': AnyEnchantmentFilter,
+      'HasEnchantment': HasEnchantmentFilter
 		};
 
 		switch (token) {
@@ -262,6 +266,7 @@ function Parser() {
 			case 'BaseType':
 			case 'HasExplicitMod':
       case 'Prophecy':
+			case 'HasEnchantment':
 				parseMultiStringFilter( self, filters[token], arguments );
 				return;
 
@@ -275,6 +280,9 @@ function Parser() {
 			case 'ShaperItem':
 			case 'ShapedMap':
       case 'ElderMap':
+			case 'FracturedItem':
+			case 'SynthesisedItem':
+      case 'AnyEnchantment':
 				parseBoolFilter( self, filters[token], arguments );
 				return;
 
@@ -880,6 +888,31 @@ function ProphecyFilter (prophecyTypes) {
 	this.match = function (item) {
 		return item.baseType === "Prophecy" && prophecyTypes.some( function (p) { return StrUtils.contains( p, item.name ); } );
 	};
+}
+
+function FracturedItemFilter (value) {
+    this.match = function (item) {
+        return item.fractured === value;
+    };
+}
+
+function SynthesisedItemFilter (value) {
+    this.match = function (item) {
+        return item.synthesised === value;
+    };
+}
+
+function AnyEnchantmentFilter (value) {
+    this.match = function (item) {
+        return (item.enchantMods && item.enchantMods.length > 0) === value;
+    };
+}
+
+
+function HasEnchantmentFilter (mods) {
+    this.match = function (item) {
+        return mods.some( function(mod) { return item.hasEnchantment( mod ); } );
+    }
 }
 
 // ------------------------ Modifiers --------------------------------------

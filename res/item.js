@@ -380,6 +380,11 @@ function Item (itemdata)
 	this.stackSize = itemdata.stackSize;
 
   this.veiled = itemdata.veiled;
+  this.synthesised = itemdata.synthesised || false;
+  this.fractured  = itemdata.fractured || false;
+  
+  this.explicitMods = itemdata.explicitMods;
+  this.enchantMods = itemdata.enchantMods;
   
   if(this.itemClass === "Prophecy") {
     this.name = this.baseType;
@@ -414,11 +419,21 @@ function Item (itemdata)
 	}
   
 	this.hasExplicitMod = function(mod) {
-      if(mod === "Veil" && this.veiled) {
-        return true;
-      } else {
-        return this.explicitMods && this.explicitMods.includes( mod );
-      }
+    if(mod === "Veil" && this.veiled) {
+      return true;
+    } else {
+      return this.explicitMods && this.explicitMods.includes( mod );
+    }
+	}  
+
+	this.hasEnchantment = function(mod) {
+    if(!this.enchantMods) {
+      return false;
+    }
+    var str = mod.replace("Enchantment ", "");
+    return this.enchantMods.some(function(mod) {
+      return mod.includes(str);
+    });
 	}  
 
 	this.draw = function() {
@@ -428,29 +443,14 @@ function Item (itemdata)
 		var itemDiv = document.createElement( 'div' );
 		itemDiv.className = 'item';
 
-    var influenceDiv = document.createElement( 'span' );
-    if(this.veiled) {
-      influenceDiv.innerHTML = "<img src='res/veiled.png' style='width:24px;height:24px;margin:4px 4px 0px 0px'/>";
-    } else {
-      switch(this.influence) {
-        case Influence.Shaper:
-          influenceDiv.innerHTML = "<img src='res/shaper.png' style='width:24px;height:24px;margin:4px 4px 0px 0px'/>";
-          break;
-        case Influence.Elder:
-          influenceDiv.innerHTML = "<img src='res/elder.png' style='width:24px;height:24px;margin:4px 4px 0px 0px'/>";
-          break;
-        default:
-            break;
-      }
+    var iconDiv = this.getItemIcon();
+    if(iconDiv) {
+      itemDiv.append(iconDiv);
     }
-    itemDiv.append(influenceDiv);
 
 		var itemName = document.createElement( 'span' );
     itemName.id = this.id;
     itemName.classList.add('item-name');
-		if(this.influence == Influence.Shaper || this.influence == Influence.Elder) {
-		  itemName.classList.add('influenced');
-		}
 		itemName.innerHTML = this.getDisplayName();
                 
 		itemDiv.appendChild( itemName );
@@ -468,6 +468,35 @@ function Item (itemdata)
 		return outerDiv;
 
 	}
+  
+  this.getItemIcon = function() {
+    var icon = null;
+    if(this.veiled) {
+      icon = "veiled";
+    } else if(this.synthesised) {
+      icon = "synthesised";
+    } else if(this.fractured) {
+      icon = "fractured";
+    } else {
+      switch(this.influence) {
+        case Influence.Shaper:
+          icon = "shaper";
+          break;
+        case Influence.Elder:
+          icon = "elder";
+          break;
+        default:
+          break;
+      }
+    }
+    if(icon) {
+      var iconDiv = document.createElement('span');
+      iconDiv.innerHTML = `<img src='res/${icon}.png' style='width:24px;height:24px;margin:4px 4px 0px 0px'/>`;
+      return iconDiv;
+    } else {
+      return null;
+    }    
+  }
 
 	this.setVisibility = function (visibility) {
 		if (this.itemClass === 'Quest Items' || this.itemClass === 'Labyrinth Item' || this.itemClass === 'Labyrinth Trinket') {
