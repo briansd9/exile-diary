@@ -11,7 +11,11 @@ class Log {
     return winston.createLogger({
       level: "verbose",
       transports: [
-        new winston.transports.File({ filename: path.join(app.getPath("userData"), "log.txt") }),
+        new winston.transports.File({ 
+          filename: path.join(app.getPath("userData"), "log.txt"),
+          maxsize: 5242880,
+          maxFiles: 2
+        }),
         new winston.transports.Console()
       ],
       format: winston.format.combine(
