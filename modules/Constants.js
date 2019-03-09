@@ -867,7 +867,24 @@ const uniqueIcons = {
   "https://web.poecdn.com/image/Art/2DItems/Jewels/UnnaturalInstinct.png" : "Unnatural Instinct",
   "https://web.poecdn.com/image/Art/2DItems/Rings/GreenComponent2.png" : "Uzaza's Meadow",
   "https://web.poecdn.com/image/Art/2DItems/Rings/GreenComponent.png" : "Uzaza's Mountain",
-  "https://web.poecdn.com/image/Art/2DItems/Rings/GreenComponent3.png" : "Uzaza's Valley"
+  "https://web.poecdn.com/image/Art/2DItems/Rings/GreenComponent3.png" : "Uzaza's Valley",
+  // Synthesis
+  "https://web.poecdn.com/image/Art/2DItems/Rings/SynthesisFire.png" : "Circle of Anguish",
+  "https://web.poecdn.com/image/Art/2DItems/Rings/SynthesisCold.png" : "Circle of Fear",
+  "https://web.poecdn.com/image/Art/2DItems/Rings/SynthesisPhysical2.png" : "Circle of Guilt",
+  "https://web.poecdn.com/image/Art/2DItems/Rings/SynthesisPhysical.png" : "Circle of Nostalgia",
+  "https://web.poecdn.com/image/Art/2DItems/Rings/SynthesisLightning.png" : "Circle of Regret",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/TheTemplarsRobes.png" : "Garb of the Ephemeral",
+  "https://web.poecdn.com/image/Art/2DItems/Amulets/SynthesisAccuracyAmulet.png" : "Hyrri's Truth",
+  "https://web.poecdn.com/image/Art/2DItems/Quivers/TriggerQuiverBase.png" : "Maloney's Mechanism",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/AuraBoots.png" : "March of the Legion",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/HelmetOfDominance2.png" : "Mask of the Tribunal", 
+  "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Scepters/SceptreOfMemories.png" : "Nebulis",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/GripOfTheCobra.png" : "Offering to the Serpent",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/LightningShield.png" : "Perepiteia",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/StormGloves.png" : "Storm's Gift",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/MantleOfDismantling.png" : "The Eternity Shroud",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/VixensEntrapment.png" : "Vixen's Entrapment"
 };
 
 const baseMaps = [
