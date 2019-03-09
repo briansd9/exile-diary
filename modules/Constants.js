@@ -1594,6 +1594,7 @@ const mods = [
   "Areas can contain Breaches",
   "Areas can contain Essences",
   "Areas contain deposits of Voltaxic Sulphite",
+  "Areas contain Memory Fragments",
   "Areas contain Temporal Incursions",
   "Cannot Leech Life from Monsters",
   "Cannot Leech Mana from Monsters",
