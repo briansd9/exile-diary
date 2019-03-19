@@ -97,10 +97,6 @@ function insertRate(date, data) {
       var item = line.currencyTypeName || line.name;
       var value = line.chaosValue || line.chaosEquivalent;
       
-      // ugly hacks for maps not uniquely identified by name
-      if(item.endsWith("Map") && line.variant !== "Atlas2") {
-        return;
-      }
       if(item === "The Beachhead") {
         item += " (" + line.variant + ")";
       }
