@@ -31,7 +31,10 @@ async function tryProcess(obj) {
     if(event.area === "Azurite Mine") {
       logger.info("Still in delve, not processing");
       return;
-    } else if(event.server === firstEvent.server) {
+    } else if(event.area === "Memory Void") {
+      logger.info("Still in memory, not processing");
+      return;
+    }else if(event.server === firstEvent.server) {
       logger.info(`Still in same area ${event.area}, not processing`);
       return;
     }
