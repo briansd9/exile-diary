@@ -34,7 +34,7 @@ class StringMatcher {
       var score = levenshtein(str.toUpperCase(), match.toUpperCase());
       if (score === 0) {
         return match;
-      } else if (score < minLevenshtein) {
+      } else if (score < minLevenshtein || (score === minLevenshtein && match.indexOf("#") < 0) ) {
         minLevenshtein = score;
         ret = match;
       }
