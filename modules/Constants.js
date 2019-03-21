@@ -1,6 +1,32 @@
 const logger = require("./Log").getLogger(__filename);
 const path = require('path');
 
+const masters = [
+  "Einhar, Beastmaster",
+  "Alva, Master Explorer",
+  "Niko, Master of the Depths"
+];
+
+const syndicateMembers = [
+  "Aisling Laffrey, The Silent Butcher",
+  "Cameria the Coldblooded",
+  "Elreon, Light's Judge",
+  "Gravicius Reborn",
+  "Guff \"Tiny\" Grenn",
+  "Haku, Warmaster",
+  "Hillock, the Blacksmith",
+  "It That Fled",
+  "Janus Perandus",
+  "Korell Goya, Son of Stone",
+  "Leo, Wolf of the Pits",
+  "Riker Maloney, Midnight Tinkerer",
+  "Rin Yuushu",
+  "Thane Jorgin the Banished",
+  "Tora, the Culler",
+  "Vagan, Victory's Herald",
+  "Vorici, Silent Brother"
+];
+
 const townstrings = [
   "Lioneye's Watch",
   "The Forest Encampment",
@@ -1764,23 +1790,17 @@ const mods = [
   "100% increased Experience from Monsters Slain in Memories placed on this Location",
   "100% increased Quantity of Items Dropped by Synthesised Magic Monsters",
   "100% increased Rarity of Items Dropped by Synthesised Magic Monsters",
-  "100% increased Rarity of Items found in this Area",
   "15% increased Size of Synthesised Monster Packs",
-  "150% increased Rarity of Items found in this Area",
   "20% chance for Synthesised Packs to be upgraded to Magic",
   "20% chance for Synthesised Packs to be upgraded to Rare",
-  "25% increased Quantity of Items found in this Area",
   "30% increased Size of Synthesised Monster Packs",
   "300% increased Experience from Monsters Slain in Memories placed on this Location",
   "50% chance for Synthesised Rare Packs to have an additional Rare Monster",
   "50% increased Experience from Monsters Slain in Memories placed on this Location",
   "50% increased Quantity of Items Dropped by Synthesised Monsters",
-  "50% increased Quantity of Items found in this Area",
   "50% increased Rarity of Items Dropped by Synthesised Monsters",
-  "50% increased Rarity of Items found in this Area",
   "500% increased Quantity of Items Dropped by Synthesised Rare Monsters",
   "500% increased Rarity of Items Dropped by Synthesised Rare Monsters",
-  "75% increased Quantity of Items found in this Area",
   "Area contains 3 additional Synthesised Chests which contain Rare Monsters",
   "Area contains 4 additional Synthesised Chests which contain Magic Monsters",
   "Area contains 5 additional Synthesised Chests which contain Normal Monsters",
@@ -1872,6 +1892,8 @@ function getItemName(icon) {
   }
 }
 
+module.exports.masters = masters;
+module.exports.syndicateMembers = syndicateMembers;
 module.exports.townstrings = townstrings;
 module.exports.uniqueMaps = uniqueMaps;
 module.exports.baseMaps = baseMaps;
