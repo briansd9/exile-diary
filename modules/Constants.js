@@ -1519,7 +1519,8 @@ const areas = [
   "Syndicate Hideout",
   "Mastermind's Lair",
   // Synthesis
-  "Memory Void"
+  "Memory Void",
+  "Distant Memory"
 ];
 
 const mods = [
