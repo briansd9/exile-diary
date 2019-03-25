@@ -212,8 +212,18 @@ function getYBounds(image) {
 function isBlue(pixel) {
   var rgba = Jimp.intToRGBA(pixel);
   var hsv = convert.rgb.hsl([rgba.r, rgba.g, rgba.b]);
-  // blue pixels: hue 240 and saturation + value > 40
-  return (hsv[0] < 242 && hsv[0] > 238 && hsv[1] + hsv[2] > 40);
+  // map mod blue:
+  // hue 240
+  // saturation + value > 40
+  // red and green components equal and both > 70
+  
+  return (
+    hsv[0] < 242 
+    && hsv[0] > 238 
+    && hsv[1] + hsv[2] > 40
+    && rgba.r === rgba.g
+    && rgba.r > 70
+  );
 }
 
 function isBlack(pixel, tolerance) {
