@@ -135,6 +135,13 @@ function hasExistingRates(date) {
  * get rates for a specific date from DB
  */
 function getFor(timestamp, repeatCount) {
+  
+  settings = require('./settings').get();
+  var league = settings.activeProfile.league;
+  if (league.includes("SSF")) {
+    return;
+  }  
+
   DB = require('./DB').getDB();
   repeatCount = repeatCount || 1;
   return new Promise((resolve, reject) => {
