@@ -16,10 +16,12 @@ const Utils = require("./modules/Utils");
 const moment = require('moment');
 const fs = require('fs');
 const path = require('path');
+const activeWin = require('active-win');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
+let overlayWindow;
 
 const lock = app.requestSingleInstanceLock();
 if(!lock) {
@@ -179,15 +181,15 @@ function initWindow(window) {
   
   OCRWatcher.emitter.removeAllListeners();
   OCRWatcher.emitter.on("OCRError", () => {
-    addMessage("Error getting area info from screenshot. Please try again")
+    addMessage("Error getting area info from screenshot. Please try again", true)
   });
   OCRWatcher.emitter.on("areaInfoComplete", (info) => {
-    addMessage(`Got area info for <span class='eventText'>${info.areaInfo.name}</span>`);
+    addMessage(`Got area info for <span class='eventText'>${info.areaInfo.name}</span>`, true);
   });
   
   ScreenshotWatcher.emitter.removeAllListeners();
   ScreenshotWatcher.emitter.on("OCRError", () => {
-    addMessage("Error getting area info from screenshot. Please try again")
+    addMessage("Error getting area info from screenshot. Please try again", true);
   });  
   
   RunParser.emitter.removeAllListeners();
@@ -198,7 +200,8 @@ function initWindow(window) {
         + `(${Utils.getRunningTime(run.firstevent, run.lastevent)}, `
         + `${run.gained} <img src='res/c.png' style='vertical-align:middle'>, `
         + `${new Intl.NumberFormat().format(run.xp)} XP)`
-        + `</span>`
+        + `</span>`,
+      true
     );
     webContents.send("runProcessed", run);
   });
@@ -231,6 +234,9 @@ async function createWindow() {
   ipcMain.on("screenshotCaptured", (event, img) => {
     saveScreenshot(img);
   });
+  ipcMain.on("hideOverlay", () => {
+    overlayWindow.hide();
+  });
   ipcMain.on('download-update', function(event) {
     if(!downloadingUpdate) {
       downloadingUpdate = true;
@@ -258,6 +264,24 @@ async function createWindow() {
         preload: __dirname + '/modules/electron-capture/src/preload.js'
     }
   });
+  
+  overlayWindow = new BrowserWindow({
+    maxHeight: 40,
+    x: 0,
+    y: 100,
+    frame: false,
+    isMovable: true,
+    alwaysOnTop: true,
+    closable: false,
+    //resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    opacity: 0.75,
+    show: false,
+    skipTaskbar: true
+  });
+  overlayWindow.loadFile("overlay.html");
 
   addMessage(`Exile Diary v${app.getVersion()} started`);
   
@@ -293,9 +317,8 @@ async function createWindow() {
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
+    overlayWindow.destroy();
+    overlayWindow = null;
     mainWindow = null;
   });
 
@@ -310,7 +333,8 @@ async function createWindow() {
     
 }
 
-function addMessage(text) {
+function addMessage(text, sendToOverlay = false) {
+    
   var msg = {
     timestamp: moment().format("YYYY-MM-DD hh:mm:ss"),
     text: text
@@ -318,6 +342,17 @@ function addMessage(text) {
   global.messages.push(msg);
   global.messages = global.messages.slice(-10);
   mainWindow.webContents.send("message", msg);
+  
+  var settings = Settings.get();
+  if(sendToOverlay && settings.overlayEnabled) { 
+    (async () => {
+      var win = await activeWin();
+      if(win.title === "Path of Exile" && win.owner.name.startsWith("PathOfExile")) {
+        overlayWindow.webContents.send("message", msg);
+        overlayWindow.show();
+      }
+    })();
+  }
 }
 
 function saveScreenshot(img) {
