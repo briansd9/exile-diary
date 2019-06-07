@@ -27,6 +27,31 @@ const syndicateMembers = [
   "Vorici, Silent Brother"
 ];
 
+const templeRoomQuotes = {
+  "What on earth did they need this much energy for?" : "Conduit of Lightning",
+  "Whew... I'm sweating like a hog in heat." : "Crucible of Flame",
+  "Oh gods, eggs everywhere! Why would you want this, exile!?" : "Hybridisation Chamber",
+  "The waters look clean enough. Couldn't pay me to drink it, though." : "Sanctum of Immortality",
+  "I just got goosebumps." : "Temple Nexus",
+  "Colour me impressed, Exile. This is elaborate." : "Factory",
+  "I'm not one for stereotypes, but damn, I do love jewellery." : "Glittering Halls",
+  "By the gods... Exile, you're a genius." : "Wealth of the Vaal",
+  "Goodness, if Chitus had ever found these... he'd have been unstoppable." : "Doryani's Institute",
+  "From crimson blood to purple flame, this cult must be put to rest." : "House of the Others",
+  "They trained an army. But why? To protect from you?" : "Hall of War",
+  "For a relatively peaceful empire they sure made a lot of weapons." : "Hall of Champions",
+  "You must've really shaken them, Exile. Look how much they wanted to protect themselves." : "Chamber of Iron",
+  "I suppose they wanted to use these explosives to mine more gems." : "Shrine of Unmaking",
+  "Ugh... Something about this place feels... wrong." : "Locus of Corruption",
+  "What a pack-rat! These relics will fetch a pretty penny back home!" : "Museum of Artifacts",
+  "How is this possible!? She should be long dead!" : "Throne of Atziri",
+  "Madness spread. These maps, all the places on them... None of them exist!" : "Atlas of Worlds",
+  "Remind me again why you let them fill this place with traps?" : "Defense Research Lab",
+  "There was so much potential for good here. What a waste." : "Storm of Corruption",
+  "So many dead... Let's please not end up like that." : "Apex of Ascension",
+  "Maybe they'd not have killed so many of each other if they'd grown fruit instead." : "Toxic Grove"
+};
+
 const townstrings = [
   "Lioneye's Watch",
   "The Forest Encampment",
@@ -1740,6 +1765,7 @@ const mods = [
   "Rogue Exiles drop 2 additional Jewels",
   "Rogue Exiles have 20% increased Maximum Life",
   "Slaying Enemies close together can attract monsters from Beyond",
+  "Slaying Enemies close together has a #% chance to attract monsters from Beyond",
   "Stashes cannot be used",
   "Strongbox Monsters are Enraged",
   "Strongbox Monsters have 500% increased Item Quantity",
@@ -1881,6 +1907,7 @@ function getItemName(icon) {
 
 module.exports.masters = masters;
 module.exports.syndicateMembers = syndicateMembers;
+module.exports.templeRoomQuotes = templeRoomQuotes;
 module.exports.townstrings = townstrings;
 module.exports.uniqueMaps = uniqueMaps;
 module.exports.baseMaps = baseMaps;
