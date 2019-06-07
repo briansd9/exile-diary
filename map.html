@@ -441,19 +441,23 @@
               $("#masterDiv").show();
               $(`#ZanaIcon`).show();
             }
-            if(currEvent.event_text.includes("Niko")) {
+            else if(currEvent.event_text.includes("Jun")) {
+              $("#masterDiv").show();
+              $(`#JunIcon`).show();
+            }
+            else if(currEvent.event_text.includes("Niko")) {
               $("#masterDiv").show();
               $(`#NikoIcon`).show();
               $(`#sulphiteCount`).append($('<img>', {src: 'res/sulphite.png'}));
             }
-            if(currEvent.event_text.includes("Alva") && !mapRun.info.name.includes("Atzoatl")) {
+            else if(currEvent.event_text.includes("Alva") && !mapRun.info.name.includes("Atzoatl")) {
               if(currEvent.event_text.includes("Good job")) {
                 $("#masterDiv").show();
                 $(`#AlvaIcon`).show();
                 $(`#incursionCount`).append($('<img>', {src: 'res/incursion.png'}));
               }
             }
-            if(currEvent.event_text.includes("Einhar") && !mapRun.info.name.includes("Menagerie")) {
+            else if(currEvent.event_text.includes("Einhar") && !mapRun.info.name.includes("Menagerie")) {
               [
                 "Off you go, little beast! Away!",
                 "We will be best friends beast! Until we slaughter you!",
@@ -575,7 +579,6 @@
               rgbLinkedItems++;
             } else {
               totalValue += Number.parseFloat(setValue(item));            
-              item.icon = (item.icon.replace(/stackSize=\d+/, "")) + (item.stackSize ? (item.stackSize > 1 ? "&stackSize=" + item.stackSize : "") : "");
             }
           }
         });
@@ -603,7 +606,7 @@
             stackSize: sixLinkItems,
             unitValue: (rates["Divine Orb"] ? (rates["Divine Orb"]).toFixed(2) : 0),
             chaosValue: (rates["Divine Orb"] ? (sixLinkItems * rates["Divine Orb"]).toFixed(2) : 0),
-            icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyModValues.png?scale=1&scaleIndex=0&stackSize=" + (sixLinkItems === 1 ? "" : "&stackSize=" + sixLinkItems)
+            icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyModValues.png?scale=1&scaleIndex=0"
           };
           itemsById["6L"] = tempItem;
           totalValue += Number.parseFloat(tempItem.chaosValue);
@@ -617,7 +620,7 @@
             stackSize: rgbLinkedItems,
             unitValue: (rates["Chromatic Orb"] ? (rates["Chromatic Orb"]).toFixed(2) : 0),
             chaosValue: (rates["Chromatic Orb"] ? (rgbLinkedItems * rates["Chromatic Orb"]).toFixed(2) : 0),
-            icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketColours.png?scale=1&scaleIndex=0" + (rgbLinkedItems === 1 ? "" : "&stackSize=" + rgbLinkedItems)
+            icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketColours.png?scale=1&scaleIndex=0"
           };
           itemsById["RGB"] = tempItem;
           totalValue += Number.parseFloat(tempItem.chaosValue);
@@ -655,13 +658,19 @@
       }
 
       function processItem(item) {
-        var typeLine = item.typeLine.replace("Superior ", "");
-        if (!itemsByType[typeLine]) {        
+        
+        // need to identify by both type and rarity, otherwise unique and normal maps of the same basetype will be grouped together
+        var typeIdentifier  = item.typeLine.replace("Superior ", "") + "_" + item.frameType;
+        
+        if(item.typeLine.includes("Map")) {
+          console.log(item);
+        }
+        if (!itemsByType[typeIdentifier]) {
           itemsById[item.id] = item;
-          itemsByType[typeLine] = item.id;
+          itemsByType[typeIdentifier] = item.id;
           itemsById[item.id].stackSize = item.stackSize || 1;
         } else {
-          itemsById[itemsByType[typeLine]].stackSize += item.stackSize || 1;
+          itemsById[itemsByType[typeIdentifier]].stackSize += item.stackSize || 1;
         }
       }
 
@@ -684,11 +693,9 @@
         if (!i.chaosValue)
           return;
         
-        if(i.displayName === "6-socket Items") {
-          i.icon = i.icon.replace(/stackSize=\d+/, "") + "&stackSize=" + i.stackSize * 7;
-        }
+        var displayStackSize = (i.displayName === "6-socket Items") ? i.stackSize * 7 : i.stackSize;
         
-        var str = "<tr><td bgcolor=0 style='min-width:60px'><img class='lazy' style='height:" + (i.h * 40) + "px;width:" + (i.w * 40) + "px;' data-src='" + i.icon + "'/></td>";
+        var str = "<tr><td bgcolor=0 style='min-width:60px;position:relative;'><img class='lazy' style='height:" + (i.h * 40) + "px;width:" + (i.w * 40) + "px;' data-src='" + i.icon + "'/><span class='stackSize'>" + (displayStackSize || "") + "</span></td>";
         str += "<td style='text-align: right;'>" + (i.stackSize || "&nbsp;") + "</td>";
         str += "<td style='padding-left:10px;padding-right:10px'>" + (i.stackSize ? "x" : "&nbsp;") + "</td>";
         str += "<td style='padding-left:10px;padding-right:10px;min-width:300px'>" + i.displayName + "</td>";
@@ -836,6 +843,9 @@
           <img src='res/niko.png'/>
           <div id='sulphiteCount' style='display:inline;'>
           </div>        
+        </div>
+        <div id='JunIcon' style='display:none;'>
+          <img src='res/jun.png'/>
         </div>
         <hr style='border:1px solid #999;' />
       </div>
