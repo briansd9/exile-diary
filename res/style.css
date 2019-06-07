@@ -469,3 +469,14 @@ div.message {
 .itemToggle {
   padding-right: 10px;
 }
+
+
+span.stackSize {
+  font-size: 18px;
+  font-weight: normal;
+  color: #fff8e1;
+  position: absolute;
+  top: -1px;
+  left: 4px;
+  text-shadow: -1px -1px 0 #000, 0 -1px 0 #000, 1px -1px 0 #000, 1px 0 0 #000, 1px 1px 0 #000, 0 1px 0 #000, -1px 1px 0 #000, -1px 0 0 #000, -1px -1px 3px #000, 0 -1px 3px #000, 1px -1px 0 #000, 1px 0 3px #000, 1px 1px 3px #000, 0 1px 3px #000, -1px 1px 3px #000, -1px 0 3px #000;
+}
