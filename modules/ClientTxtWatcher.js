@@ -134,7 +134,7 @@ function getEvent(arg) {
 
 function hasMaster(str) {
   
-  if(str.startsWith("Einhar") || str.startsWith("Niko") || str.startsWith("Alva")) return true;
+  if(str.startsWith("Einhar") || str.startsWith("Niko") || str.startsWith("Alva") || str.startsWith("Jun")) return true;
   
   // filter out shaper/elder fight dialogue
   if(str.startsWith("Zana") && str.includes("Still sane, exile?")) return true;
