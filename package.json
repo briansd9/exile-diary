@@ -1,6 +1,6 @@
 {
   "name": "exile-diary",
-  "version": "0.2.21",
+  "version": "0.2.22",
   "main": "main.js",
   "build": {
     "appId": "com.pathofexile.exilediary",
@@ -42,6 +42,7 @@
   },
   "contributors": [],
   "dependencies": {
+    "active-win": "^5.0.0",
     "color-convert": "^1.9.3",
     "d3": "^5.9.1",
     "electron-updater": "^4.0.4",
