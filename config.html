@@ -31,7 +31,7 @@
       const {ipcRenderer} = require('electron');
       const fs = require('fs');
       const logger = require('./modules/Log').getLogger(__filename);
-      const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir"];
+      const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled"];
       //const profileKeys = ["accountName", "characterName", "league"];
 
       var settings = {};
@@ -59,7 +59,11 @@
         $("#messages").load("messages.html");
 
         configKeys.forEach((key) => {
-          $("#" + key).val(settings[key]);
+          if(key === "overlayEnabled") {
+            $("#" + key).prop("checked", settings[key]);
+          } else {
+            $("#" + key).val(settings[key]);
+          }
         });
         
         
@@ -140,12 +144,8 @@
 
       function changeProfile() {
         var profileId = $("#activeProfile").val();
-        console.log("Selected " + profileId);
         if (profileId in settings.profiles) {
-          console.log(settings.profiles[profileId]);
-          console.log(Object.keys(settings.profiles[profileId]));
           Object.keys(settings.profiles[profileId]).forEach((key) => {
-            console.log(key + "=>" + settings.profiles[profileId][key]);
             $("#" + key).val(settings.profiles[profileId][key]);
           });
         } else {
@@ -163,7 +163,9 @@
         
         configKeys.forEach((key) => {
           var inputField = $("#" + key);
-          if(inputField.val()) {
+          if(key === 'overlayEnabled') {
+            settings[key] = inputField.is(':checked');
+          } else if(inputField.val()) {
             settings[key] = inputField.val();
             inputField.removeClass("invalid");
           } else if(key !== 'screenshotDir') {
@@ -405,6 +407,20 @@
       </tr>
       <tr>
         <td colspan="2">
+          <hr>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <div class='configLabel ui-text'>
+            Enable overlay popup messages (experimental)
+            <input style='margin-left:20px;' name='overlayEnabled' id='overlayEnabled' type='checkbox'/>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <hr>
           <br/>
           <button class='ui-text' style='width:48%;float:left;' id='saveSettings' onclick='saveSettings()'>Save</button>
           <button class='ui-text' style='width:48%;float:right;' onclick='backToMain()'>Back to Main</button>
