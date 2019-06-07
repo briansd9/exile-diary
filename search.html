@@ -234,10 +234,6 @@
         items.forEach(item => {
           totalValue += item.chaosValue;
           item.displayName = displayName(item);
-          item.icon = (
-            item.icon.replace(/stackSize=\d+/, "")) 
-            + (item.stackSize ? (item.stackSize > 1 ? "&stackSize=" + item.stackSize * (item.displayName === "6-socket Items" ? 7 : 1) : "") : "")
-          ;
         });
 
         items.sort(itemCompare);
@@ -288,7 +284,10 @@
         if (!i.chaosValue)
           return;
         var item = new Item(i);
-        var str = `<tr data-itemclass="${item.itemClass}"><td bgcolor=0 style='min-width:60px'><img class='lazy' style='height:${i.h * 40}"px;width:${i.w * 40}px;' data-src='${i.icon}'/></td>`;
+        
+        var displayStackSize = (i.displayName === "6-socket Items") ? i.stackSize * 7 : i.stackSize;
+        
+        var str = `<tr data-itemclass="${item.itemClass}"><td bgcolor=0 style='position:relative;min-width:60px'><img class='lazy' style='height:${i.h * 40}"px;width:${i.w * 40}px;' data-src='${i.icon}'/><span class='stackSize'>${(displayStackSize || "")}</span></td>`;
         str += `<td style='text-align: right;'>${i.stackSize || "&nbsp;"}</td>`;
         str += `<td style='padding-left:10px;padding-right:10px'>${i.stackSize ? "x" : "&nbsp;"}</td>`;
         str += `<td style='padding-left:10px;padding-right:10px;min-width:300px'>${i.displayName}</td>`;
