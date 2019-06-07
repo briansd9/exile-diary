@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="res/style.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.min.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.structure.min.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.theme.min.css" />
+
+    <script>if (typeof module === 'object') {
+        window.module = module;
+        module = undefined;
+      }</script>
+
+    <!-- normal script imports etc  -->
+    <script src="res/jquery-3.3.1.min.js"></script>
+
+    <!-- Insert this line after script imports -->
+    <script>if (window.module)
+        module = window.module;</script>
+    
+    <script>
+      const logger = require('./modules/Log').getLogger(__filename);
+      
+      var renderer = require('electron').ipcRenderer;
+      
+      function hideOverlay() {
+        renderer.send("hideOverlay");
+      }
+      
+      $(document).ready(function () {
+        
+        renderer.on("message", (event, msg) => {
+
+          var msgDiv = $("#messages");
+          msgDiv.html(`<span class='message'>${msg.text}</span>`);
+          msgDiv.fadeIn(500);
+          
+          var messageWidth = document.getElementById("messages").scrollWidth + (msgDiv.has("img").length ? 40 : 0);
+          window.resizeTo(messageWidth, 40);
+          
+          setTimeout(() => { msgDiv.fadeOut(500, hideOverlay); }, 4000);
+          
+        });
+      });
+    </script>
+    
+    <style>
+      div.cover {
+        position:absolute;
+        overflow:hidden;
+        x:0;
+        y:0;
+        height:100%;
+        width:100%;
+        -webkit-user-select: none;
+        -webkit-app-region:drag;
+      }
+      div.overlayMessage {
+        padding-left:10px;
+        padding-right:10px;
+        display:none;
+        line-height:40px;
+        width:auto;
+        white-space:nowrap;
+        overflow:hidden;
+        vertical-align:middle;        
+      }
+    </style>		    
+    
+  </head>
+  <body style="overflow:hidden;" onmouseover="hideOverlay()">
+    <div class="cover">&nbsp;</div>
+    <div id="messages" class="overlayMessage messageSection"></div>
+  </body>
+</html>
