@@ -19,7 +19,13 @@ class StringMatcher {
       if (matches) {
         ret = ret.replace("#", matches.pop());
       } else {
-        throw new Error(`No number replacement found: [${str}] -> [${ret}]`);
+        var tempStr = str.replace("S", "5");
+        var tempMatches = tempStr.match(/[1-9][0-9]*/g);
+        if(tempMatches) {
+          ret = ret.replace("#", tempMatches.pop());
+        } else {
+          throw new Error(`No number replacement found: [${str}] -> [${ret}]`);
+        }
       }
     }
     return ret;
