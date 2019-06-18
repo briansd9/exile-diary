@@ -348,7 +348,9 @@ ItemData.getClass = function(data) {
     case "piece":
       return "Harbinger Item Piece";
     case "monsters":
-      return "Captured Beast"
+      return "Captured Beast";
+    case "incubator":
+      return "Incubator";
     default:
       console.log("No item class found! category: " + cat);
       console.log(data);
