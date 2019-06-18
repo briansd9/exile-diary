@@ -223,6 +223,8 @@ function getCategory(item) {
       return "Harbinger Item Piece";
     case "monsters":
       return "Captured Beast";
+    case "incubator":
+      return "Incubator";
     default:
       logger.warn("No item class found! category: " + cat);
       logger.warn(JSON.stringify(item));
