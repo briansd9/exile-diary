@@ -209,7 +209,7 @@
         });
         
         $("#masterDiv").hide();
-        ["Zana", "Einhar", "Alva", "Niko"].forEach( str => {
+        ["Zana", "Einhar", "Alva", "Niko", "Jun"].forEach( str => {
           $(`#${str}Icon`).hide();
         });
         
@@ -562,21 +562,20 @@
 
         Object.keys(items).forEach(function (k) {
           var item = items[k];
-          //item.displayName = displayName(item);
           item.displayName = Utils.getBaseName(item);
           var sockets = ItemData.getSockets(item);
           if(ItemData.countSockets(sockets) === 6) {
             if(sockets.length === 1) {
-              sixLinkItems++;
+              sixLinkItems += (item.stackSize || 1);
             } else {
-              sixSocketItems++;
+              sixSocketItems += (item.stackSize || 1);
             }            
           } else {
             if(
               sockets.includes("RGB") || sockets.includes("RBG") || sockets.includes("BGR")
               || sockets.includes("BRG") || sockets.includes("GRB") || sockets.includes("GBR")
             ) {
-              rgbLinkedItems++;
+              rgbLinkedItems += (item.stackSize || 1);
             } else {
               totalValue += Number.parseFloat(setValue(item));            
             }
@@ -662,9 +661,9 @@
         // need to identify by both type and rarity, otherwise unique and normal maps of the same basetype will be grouped together
         var typeIdentifier  = item.typeLine.replace("Superior ", "") + "_" + item.frameType;
         
-        if(item.typeLine.includes("Map")) {
-          console.log(item);
-        }
+//        if(item.typeLine.includes("Map")) {
+//          console.log(item);
+//        }
         if (!itemsByType[typeIdentifier]) {
           itemsById[item.id] = item;
           itemsByType[typeIdentifier] = item.id;
