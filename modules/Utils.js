@@ -47,8 +47,8 @@ class Utils {
   // for items in JSON format
   static getBaseNameJSON(item) {
     var name = item.typeLine.replace("Superior ", "");
-    if (!item.identified && item.frameType === 3 && item.typeLine.endsWith(" Map")) {
-      name = this.getUniqueMap(name);
+    if(item.frameType === 3 && item.typeLine.endsWith(" Map")) {
+      name = (item.identified ? item.name : this.getUniqueMap(name));
     }
     if (item.identified && item.frameType === 1 && item.typeLine.includes(" Map")) {
       name = this.getBaseFromMagicMap(name);
