@@ -11,7 +11,9 @@ const ratePaths = [
   "/api/data/itemoverview?type=DivinationCard",
   "/api/data/itemoverview?type=UniqueMap",
   "/api/data/itemoverview?type=Map",
-  "/api/data/itemoverview?type=Scarab"
+  "/api/data/itemoverview?type=Scarab",
+  "/api/data/itemoverview?type=Prophecy",
+  "/api/data/itemoverview?type=Incubator",
 ];
 
 var DB;
