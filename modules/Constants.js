@@ -1545,7 +1545,10 @@ const areas = [
   "Mastermind's Lair",
   // Synthesis
   "Memory Void",
-  "Distant Memory"
+  "Distant Memory",
+  // Legion
+  "Domain of Timeless Conflict"
+  
 ];
 
 const mods = [
