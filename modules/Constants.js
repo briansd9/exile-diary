@@ -4,7 +4,9 @@ const path = require('path');
 const masters = [
   "Einhar, Beastmaster",
   "Alva, Master Explorer",
-  "Niko, Master of the Depths"
+  "Niko, Master of the Depths",
+  "Zana, Master Cartographer",
+  "Jun, Veiled Master"
 ];
 
 const syndicateMembers = [
@@ -956,7 +958,21 @@ const uniqueIcons = {
   "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/LightningShield.png" : "Perepiteia",
   "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/StormGloves.png" : "Storm's Gift",
   "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/MantleOfDismantling.png" : "The Eternity Shroud",
-  "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/VixensEntrapment.png" : "Vixen's Entrapment"
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/VixensEntrapment.png" : "Vixen's Entrapment",
+  // Legion
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/AukunasWill.png" : "Aukuna's Will",
+  "https://web.poecdn.com/image/Art/2DItems/Jewels/MarakethCivilization.png" : "Brutal Restraint",
+  "https://web.poecdn.com/image/Art/2DItems/Jewels/SpectralThrowThreshold.png" : "Divide and Conquer",
+  "https://web.poecdn.com/image/Art/2DItems/Jewels/EternalEmpireCivilization.png" : "Elegant Hubris",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/Fractalthoughts.png" : "Fractal Thoughts",
+  "https://web.poecdn.com/image/Art/2DItems/Jewels/VaalCivilization.png" : "Glorious Vanity",
+  "https://web.poecdn.com/image/Art/2DItems/Jewels/KaruiCivilization.png" : "Lethal Pride",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/MawOfConquest.png" : "Maw of Conquest",
+  "https://web.poecdn.com/image/Art/2DItems/Jewels/TemplarCivilization.png" : "Militant Faith",
+  "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Scepters/ScepterOfSuffering.png" : "Sign of the Sin Eater",
+  "https://web.poecdn.com/image/Art/2DItems/Amulets/Tavukai.png" : "Tavukai",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/Wreath_of_Phrecia.png" : "Wreath of Phrecia"
+  
 };
 
 const baseMaps = [
@@ -1929,13 +1945,12 @@ const mods = [
 ];
 
 function getItemName(icon) {
-  if(uniqueIcons[icon]) {
-    return uniqueIcons[icon];
-  } else {
-    return null;
-  }
+  return uniqueIcons[icon] || null;
 }
 
+function getTempleRoom(q) {
+  return templeRoomQuotes[q] || null;
+}
 module.exports.masters = masters;
 module.exports.syndicateMembers = syndicateMembers;
 module.exports.templeRoomQuotes = templeRoomQuotes;
@@ -1946,3 +1961,4 @@ module.exports.areas = areas;
 module.exports.labAreas = labAreas;
 module.exports.mods = mods;
 module.exports.getItemName = getItemName;
+module.exports.getTempleRoom  = getTempleRoom;
