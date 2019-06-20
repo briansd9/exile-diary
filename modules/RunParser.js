@@ -76,6 +76,7 @@ async function tryProcess(obj) {
   var xp = await getXP(firstEvent.timestamp, lastEvent.timestamp);
   var xpDiff = await getXPDiff(xp);
   var items = await checkItems(areaInfo, firstEvent.timestamp, lastEvent.timestamp);
+  var killCount  = await getKillCount(firstEvent.timestamp, lastEvent.timestamp);
   
   // if no items picked up and no xp gained, don't log map run
   // this is to prevent unwanted logging of menagerie visits, etc.
@@ -91,12 +92,19 @@ async function tryProcess(obj) {
   });
   
   var runArr = [
-    areaInfo.id, firstEvent.timestamp, lastEvent.timestamp, mapStats.iiq || null, mapStats.iir || null, mapStats.packsize || null, items.value, xp
+    areaInfo.id, 
+    firstEvent.timestamp, lastEvent.timestamp, 
+    mapStats.iiq || null, mapStats.iir || null, mapStats.packsize || null, 
+    items.value, xp, killCount
   ];
   insertMapRun(runArr).then(() => {
     emitter.emit(
       "runProcessed", 
-      {name: areaInfo.name, id: areaInfo.id, gained: items.value, xp: xpDiff, firstevent: firstEvent.timestamp, lastevent: lastEvent.timestamp}
+      {
+        name: areaInfo.name, id: areaInfo.id, 
+        gained: items.value, xp: xpDiff, kills: killCount,
+        firstevent: firstEvent.timestamp, lastevent: lastEvent.timestamp
+      }
     );
   });
   
@@ -263,6 +271,7 @@ async function process() {
   var xp = await getXP(firstEvent, lastEvent);
   var xpDiff = await getXPDiff(xp);
   var items = await checkItems(currArea, firstEvent, lastEvent);
+  var killCount  = await getKillCount(firstEvent, lastEvent);
   // if no items picked up and no xp gained, don't log map run
   // this is to prevent unwanted logging of menagerie visits, etc.
   if(items.count === 0 && xpDiff === 0) {
@@ -270,11 +279,20 @@ async function process() {
     return;
   }
   
-  var runArr = [currArea.id, firstEvent, lastEvent, mapStats.iiq, mapStats.iir, mapStats.packsize, items.value, xp];
+  var runArr = [
+    currArea.id, 
+    firstEvent, lastEvent, 
+    mapStats.iiq, mapStats.iir, mapStats.packsize, 
+    items.value, xp, killCount
+  ];
   insertMapRun(runArr).then(() => {
     emitter.emit(
       "runProcessed", 
-      {name: currArea.name, id: currArea.id, gained: items.value, xp: xpDiff, firstevent: firstEvent, lastevent: lastEvent}
+      {
+        name: currArea.name, id: currArea.id, 
+        gained: items.value, xp: xpDiff, kills: killCount,
+        firstevent: firstEvent, lastevent: lastEvent
+      }
     );
   });
   
@@ -283,6 +301,44 @@ async function process() {
   
 }
 
+async function getKillCount(firstEvent, lastEvent) {
+  logger.info(`Kill count between ${firstEvent} and ${lastEvent}`);
+  return new Promise((resolve, reject) => {
+    var totalKillCount = 0;
+    DB.all(`
+      select * from incubators where incubators.timestamp = (select max(timestamp) from incubators where timestamp <= ?)
+      union all
+      select * from incubators where incubators.timestamp between ? and ?
+      order by timestamp
+    `, [firstEvent, firstEvent, lastEvent], (err, rows) => {
+      if (err) {
+        logger.info(`Failed to get kill count: ${err}`);
+      } else {
+        if(rows.length > 1) {
+          var incubators = [];
+          rows.forEach((row) => {
+            incubators.push(JSON.parse(row.data));
+          });
+          for(var i = 1; i < incubators.length; i++) {
+            //logger.info(`in period ${i}`);
+            var prev = incubators[i-1];
+            var curr = incubators[i];
+            var killCount = 0;
+            Object.keys(prev).forEach((key) => {
+              if(curr[key] && curr[key].progress - prev[key].progress > killCount) {
+                killCount = curr[key].progress - prev[key].progress;
+                //logger.info(`item ${key} curr ${curr[key].progress}, prev ${prev[key].progress}, killCount ${killCount}`);
+              }
+            });
+            totalKillCount += killCount;
+          }
+        }
+      }
+      logger.info(`Total kill count is ${totalKillCount}`);
+      resolve(totalKillCount > 0 ? totalKillCount : null);
+    });
+  });
+}
 
 async function getXP(firstEvent, lastEvent) {
   return new Promise( async (resolve, reject) => {
@@ -460,7 +516,9 @@ function getItemsFor(event, rates) {
 
 async function insertMapRun(arr) {
   return new Promise( (resolve, reject) => {
-    DB.run(" insert into mapruns(id, firstevent, lastevent, iiq, iir, packsize, gained, xp) values (?, ?, ?, ?, ?, ?, ?, ?) ", arr, (err) => {
+    DB.run(`
+      insert into mapruns(id, firstevent, lastevent, iiq, iir, packsize, gained, xp, kills) values (?, ?, ?, ?, ?, ?, ?, ?, ?) 
+    `, arr, (err) => {
       if(err) {
         logger.error(`Unable to insert map run ${JSON.stringify(arr)}: ${err}`);
       } else {

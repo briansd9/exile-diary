@@ -137,6 +137,9 @@ const initSQL = [
       timestamp text not null,
       league text primary key not null
     )
+  `,
+  `
+    alter table mapruns add kills number
   `
 ];
 

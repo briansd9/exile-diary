@@ -199,6 +199,7 @@ function initWindow(window) {
         + `Completed run in <span class='eventText'>${run.name}</span> `
         + `(${Utils.getRunningTime(run.firstevent, run.lastevent)}, `
         + `${run.gained} <img src='res/c.png' style='vertical-align:middle'>, `
+        + (run.kills ? `${run.kills} kills, ` : "")
         + `${new Intl.NumberFormat().format(run.xp)} XP)`
         + `</span>`,
       true

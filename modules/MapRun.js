@@ -60,13 +60,12 @@ async function getNextMap(mapID) {
 async function getInfo(mapID) {
   return new Promise((resolve, reject) => {
     DB.get(`
-      select name, level, depth, iiq, iir, packsize, xp,
-      (mapruns.xp - (select xp from mapruns m where m.id < mapruns.id and xp is not null order by m.id desc limit 1)) xpgained,
+      select name, level, depth, iiq, iir, packsize, xp, kills,
       (select xp from mapruns m where m.id < mapruns.id and xp is not null order by m.id desc limit 1) prevxp
       from areainfo, mapruns where mapruns.id = ? and areainfo.id = ?
     `, [mapID, mapID], (err, row) => {
       if (err) {
-        logger.error(`Unable to get next map: ${err}`);
+        logger.error(`Unable to get map info: ${err}`);
         resolve(null);
       } else {
         resolve({
@@ -77,7 +76,8 @@ async function getInfo(mapID) {
           iir: row.iir,
           packsize: row.packsize,
           xp: row.xp,
-          prevxp: row.prevxp
+          prevxp: row.prevxp,
+          kills: row.kills
         });
       }
     });
@@ -123,7 +123,6 @@ async function getEvents(mapID) {
       }
     });
   });
-
 }
 
 async function getItems(mapID) {

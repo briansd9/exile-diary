@@ -40,6 +40,7 @@
       const Parser = require('./modules/FilterParser');
       const RunParser = require('./modules/RunParser');
       const DB = require('./modules/DB').getDB();
+      const Constants = require('./modules/Constants');
       const {ipcRenderer} = require('electron');
       const remote = require('electron').remote;
       
@@ -326,6 +327,8 @@
       function showInfo(run) {
         
         var info = run.info;
+        var f = new Intl.NumberFormat();
+        
         if (Utils.isLabArea(info.name)) {
           info.name = "The Lord's Labyrinth";
         }
@@ -359,40 +362,57 @@
           $("#mods").removeClass('dropdown-content');
           $("#mods").removeClass('mapMod');
         }
+        
+        if(run.info.kills) {
+          $("#killCount").html(f.format(run.info.kills));
+          $("#killCountDiv").css("display","block");
+        }
+        else {
+          $("#killCountDiv").css("display","none");
+        }
 
         if(info.xp) {
-          var f = new Intl.NumberFormat();
           var events = run.events;
           var eventTimes = Object.keys(events).sort();
           
           var xpgained = (info.prevxp > 0 ? info.xp - info.prevxp : 0);
           $("#xp").html(
-            f.format(info.xp)
-            + (xpgained === 0 ? "" : ` (${Utils.formatSignedNumber(xpgained)})` + (xpgained > 0 ? ` - ${Utils.getXPRate(xpgained, eventTimes[0], eventTimes[eventTimes.length - 1])}/hr` : ""))
+            "<span class='eventText'>" + f.format(info.xp) + "</span> xp" 
+            + (xpgained === 0 ? "" : ` · ${Utils.formatSignedNumber(xpgained)}` + (xpgained > 0 ? ` · ${Utils.getXPRate(xpgained, eventTimes[0], eventTimes[eventTimes.length - 1])}/hr` : ""))
           );
           $("#xpDiv").css("display","block");
         }
         $(".mapArea").show();
       }
-
+      
       function getEventString(e) {
 
         var eventType = e.event_type;
-        if(eventType === "master") return;
+        var eventText = e.event_text;
         
-        var eventText;
-
+        if(eventType === "master") {
+          if(eventText.startsWith("Alva")) {
+            var templeRoom = Constants.getTempleRoom(eventText.substring(eventText.indexOf(":") + 1).trim());
+            if(templeRoom) {
+              return(`<span class='eventType'>Found T3 temple room</span> <span class='eventText'>${templeRoom}</span></div>`);
+            } else {
+              return null;
+            }
+          } else {
+            return null;
+          }
+        }
+        
         switch (eventType) {
-          case "entered":
-          case "level":
-            eventText = e.event_text;
-            break;
           case "note":
             eventType = "";
-            eventText = e.event_text;
+            break;
+          case "entered":
+          case "level":
             break;
           default:
             eventText = "";
+            break;
         }
         return(`<span class='eventType'>${eventType}</span> <span class='eventText'>${eventText}</span></div>`);
       }
@@ -482,7 +502,6 @@
                 }
               });
             }
-            continue;
           }
           
           if (i > 0 && !lastEnteredTown(events, eventTimes, i)) {
@@ -821,31 +840,34 @@
         <hr class='mapArea' style='border:1px solid #999;' />
       </div>						
       <div id='xpDiv' style='display:none;'>
-        Experience Points: <span id='xp'></span>
-        <hr style='border:1px solid #999;' />
+        <span id='xp'></span>
       </div>
+      <div id='killCountDiv' style='font-size:smaller;display:none;'>
+        <span id='killCount' class='eventText'></span> monsters slain
+      </div>
+      <hr style='border:1px solid #999;' />
       <div id="masterDiv" style="display:none;">
-        <div id='ZanaIcon' style='display:none;'>
+        <span id='ZanaIcon' style='display:none;'>
           <img src='res/zana.png'/>
-        </div>
-        <div id='EinharIcon' style='display:none;'>
+        </span>
+        <span id='EinharIcon' style='display:none;'>
           <img src='res/einhar.png'/>
           <div id='beastCount' style='display:inline;'>
           </div>          
-        </div>
-        <div id='AlvaIcon' style='display:none;'>
+        </span>
+        <span id='AlvaIcon' style='display:none;'>
           <img src='res/alva.png'/>
           <div id='incursionCount' style='display:inline;'>
           </div>          
-        </div>
-        <div id='NikoIcon' style='display:none;'>
+        </span>
+        <span id='NikoIcon' style='display:none;'>
           <img src='res/niko.png'/>
           <div id='sulphiteCount' style='display:inline;'>
           </div>        
-        </div>
-        <div id='JunIcon' style='display:none;'>
+        </span>
+        <span id='JunIcon' style='display:none;'>
           <img src='res/jun.png'/>
-        </div>
+        </span>
         <hr style='border:1px solid #999;' />
       </div>
       <div class='eventsDiv' id='eventsDiv'></div>

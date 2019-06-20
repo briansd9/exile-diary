@@ -2,6 +2,7 @@ const logger = require("./Log").getLogger(__filename);
 const https = require('https');
 const moment = require('moment');
 const XPTracker = require('./XPTracker');
+const KillTracker = require('./KillTracker');
 const EventEmitter = require('events');
 
 var DB;
@@ -24,6 +25,7 @@ class InventoryGetter extends EventEmitter {
     this.queryPath = `/character-window/get-items?league=${league}&accountName=${accountName}&character=${characterName}`;
 
     this.on("xp", XPTracker.logXP);
+    this.on("equipment", KillTracker.logKillCount);
 
     logger.info(`Inventory getter started with query path ${this.queryPath}`);
 
@@ -120,8 +122,10 @@ class InventoryGetter extends EventEmitter {
               emitter.emit("invalidSessionID");
               resolve({});
             } else {
+              var inv = this.getInventory(data);
               ig.emit("xp", timestamp, data.character.experience);
-              resolve(this.getMainInventory(data));
+              ig.emit("equipment", timestamp, inv.equippedItems);
+              resolve(inv.mainInventory);
             }
           } catch(err) {
             logger.info(`Failed to get current inventory: ${err}`);
@@ -164,14 +168,20 @@ class InventoryGetter extends EventEmitter {
     });
   }
 
-  getMainInventory(inv) {
-    var items = {};
+  getInventory(inv) {
+    var mainInventory = {};
+    var equippedItems = {};
     inv.items.forEach(item => {
       if (item.inventoryId === "MainInventory") {
-        items[item.id] = item;
+        mainInventory[item.id] = item;
+      } else {
+        equippedItems[item.id] = item;
       }
     });
-    return items;
+    return {
+      mainInventory: mainInventory,
+      equippedItems: equippedItems
+    };
   }
 
 }
