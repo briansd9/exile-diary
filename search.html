@@ -120,6 +120,10 @@
           $("#totalTime").html(moment.duration(data.totalTime, "seconds").format("H:mm:ss"));
           $("#avgTime").html(moment.duration(data.totalTime / data.numMaps, "seconds").format());
           $("#totalXP").html(f.format(data.totalXP));
+          if(data.totalKills) {
+            $("#totalKills").html(f.format(data.totalKills));
+            $("#kills").show();
+          }
           $("#avgXP").html(f.format(Math.round(data.totalXP / data.numMaps)));
           display(data);
           $("#items").trigger("update");
@@ -337,6 +341,7 @@
           <div id="summaryContents" style="display:none;">
             <div>Total time: <span id='totalTime' class='eventText'></span> (<span id='avgTime'></span> / map)</div>
             <div>Total XP: <span id='totalXP' class='eventText'></span> (<span id='avgXP'></span> / map)</div>
+            <div id="kills" style="display:none;">Monsters slain: <span id='totalKills' class='eventText'></span></div>
             <div id='totalProfitDiv'>Total profit: <span id='totalProfit' class='eventText'></span> <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&scaleIndex=3&&w=1&h=1'/> (<span id='avgProfit'></span> / map)</div>
             <hr/>
             <div id='itemToggles'>
@@ -374,6 +379,7 @@
                 <th>XP/hr</th>
                 <th id='totalProfitCell'><img src='res/c.png'></th>
                 <th>Deaths</th>
+                <th>Kills</th>
               </tr>
             </thead>
             <tbody id='mapRows'>

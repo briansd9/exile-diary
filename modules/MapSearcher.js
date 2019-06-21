@@ -21,17 +21,19 @@ function search(formData) {
       return;
     }
     var totalXP = 0;
+    var totalKills = 0;
     logger.info(`${rows.length} rows returned`);
     rows.forEach((row) => {
       totalXP += row.xpgained;
+      totalKills += row.kills || 0;
       mapIDs.push(row.id);
     });
     emitter.emit("mapSearchResults", rows);
-    getStatSummary(totalXP, mapIDs);
+    getStatSummary(totalXP, totalKills, mapIDs);
   });
 }
 
-async function getStatSummary(totalXP, mapIDs) {
+async function getStatSummary(totalXP, totalKills, mapIDs) {
   var totalTime = 0;
   logger.info("Getting items for map summary");
   var allItems = [];
@@ -41,7 +43,7 @@ async function getStatSummary(totalXP, mapIDs) {
   }
   allItems = mergeItems(allItems);
   logger.info("Done getting items");
-  emitter.emit("mapSummaryResults", { numMaps : mapIDs.length, totalXP: totalXP, totalTime: totalTime, items: allItems });  
+  emitter.emit("mapSummaryResults", { numMaps : mapIDs.length, totalXP: totalXP, totalKills: totalKills, totalTime: totalTime, items: allItems });  
 }
 
 function mergeItems(arr) {
@@ -193,7 +195,7 @@ function getSQL(q) {
   `;
   
   if(q.mapcount) {
-    str += ` (select * from mapruns order by id desc limit ${q.mapcount} ) mapruns `
+    str += ` (select * from mapruns order by id desc limit ${q.mapcount} ) mapruns `;
   } else {
     str += " mapruns ";
   }

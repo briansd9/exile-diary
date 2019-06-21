@@ -80,7 +80,7 @@
           DB.get(`
             select mapruns.id, name, level, depth, iiq, iir, packsize, firstevent, lastevent, 
             (mapruns.xp - (select xp from mapruns m where m.id < mapruns.id and xp is not null order by m.id desc limit 1)) xpgained,
-            gained,
+            gained, kills,
             (select count(1) from events where event_type='slain' and events.id between firstevent and lastevent) deaths
             from areainfo, mapruns
             where mapruns.id = ? and areainfo.id = mapruns.id;
@@ -122,7 +122,7 @@
         DB.all(`
           select mapruns.id, name, level, depth, iiq, iir, packsize, firstevent, lastevent, 
           (mapruns.xp - (select xp from mapruns m where m.id < mapruns.id and xp is not null order by m.id desc limit 1)) xpgained,    
-          gained,
+          gained, kills,
           (select count(1) from events where event_type='slain' and events.id between firstevent and lastevent) deaths
           from areainfo, mapruns
           where areainfo.id = mapruns.id
@@ -205,6 +205,7 @@
             <th>XP/hr</th>
             <th id='totalProfitCell'><img src='res/c.png'></th>
             <th>Deaths</th>
+            <th>Kills</th>
           </tr>
         </thead>
         <tbody id='lastMapsRows'>

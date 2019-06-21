@@ -176,6 +176,8 @@ class Utils {
     var deaths = Utils.getDeathCount(map.deaths);
     row.append($("<td>").append(deaths));
 
+    row.append($("<td>").append(map.kills > 0 ? (new Intl.NumberFormat()).format(map.kills) : "-"));
+
     if(first) {
       rowsObject.prepend(row);
     } else {
