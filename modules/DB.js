@@ -139,6 +139,12 @@ const initSQL = [
     )
   `,
   `
+    create table if not exists incubators ( 
+      timestamp text primary key not null,
+      data text not null
+    )
+  `
+  `
     alter table mapruns add kills number
   `
 ];
