@@ -22,7 +22,6 @@ async function logKillCount(timestamp, eqp) {
   } else {
     DB.run("insert into incubators(timestamp, data) values(?, ?)", [timestamp, currIncubators], (err) => {
       if(err) {
-        logger.info(data);
         logger.info(`Error inserting incubator data for ${timestamp}): ${err}`);
       }
     });
