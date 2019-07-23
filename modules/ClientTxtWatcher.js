@@ -75,8 +75,8 @@ function insertEvent(event, timestamp) {
       if (err) {
         logger.info("Failed to insert event: " + err);
       } else {
-        if(event.type !== "chat") {
-          logger.info(`Inserted event ${timestamp} -> ${event.type} ${event.text} ${event.instanceServer}`);
+        if(event.type !== "chat" && event.type !== "note") {
+          logger.info(`Inserted event ${timestamp} -> ${event.type} ${event.text} ${event.instanceServer || ""}`);
         }
       }
     }
@@ -118,10 +118,14 @@ function getEvent(arg) {
       };
     }
   } else if(str.startsWith("@") && str.indexOf("@From") > -1 || str.indexOf("@To") > -1) {
-    if(str.indexOf(`@From ${settings.activeProfile.characterName}`) > 0) {
-      return;
+    var fromString = `@from ${settings.activeProfile.characterName.toLowerCase()}:`;
+    if(str.toLowerCase().indexOf(fromString) > -1) {
+      return {
+        type: "note",
+        text: str.substring(str.toLowerCase().indexOf(fromString) + fromString.length).trim()
+      };
     }
-    if(str.indexOf(`@To ${settings.activeProfile.characterName}`) > 0) {
+    if(str.toLowerCase().indexOf(`@to ${settings.activeProfile.characterName.toLowerCase()}`) > -1) {
       return;
     }
     return {
