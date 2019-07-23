@@ -378,7 +378,7 @@
           var xpgained = (info.prevxp > 0 ? info.xp - info.prevxp : 0);
           $("#xp").html(
             "<span class='eventText'>" + f.format(info.xp) + "</span> xp" 
-            + (xpgained === 0 ? "" : ` · ${Utils.formatSignedNumber(xpgained)}` + (xpgained > 0 ? ` · ${Utils.getXPRate(xpgained, eventTimes[0], eventTimes[eventTimes.length - 1])}/hr` : ""))
+            + (xpgained === 0 ? " · +0" : ` · ${Utils.formatSignedNumber(xpgained)}` + (xpgained > 0 ? ` · ${Utils.getXPRate(xpgained, eventTimes[0], eventTimes[eventTimes.length - 1])}/hr` : ""))
           );
           $("#xpDiv").css("display","block");
         }
@@ -678,11 +678,11 @@
       function processItem(item) {
         
         // need to identify by both type and rarity, otherwise unique and normal maps of the same basetype will be grouped together
-        var typeIdentifier  = item.typeLine.replace("Superior ", "") + "_" + item.frameType;
+        var typeIdentifier  = item.typeLine.replace("Superior ", "");
+        if(item.frameType === 3) {
+          typeIdentifier += "_unique";
+        }
         
-//        if(item.typeLine.includes("Map")) {
-//          console.log(item);
-//        }
         if (!itemsByType[typeIdentifier]) {
           itemsById[item.id] = item;
           itemsByType[typeIdentifier] = item.id;
