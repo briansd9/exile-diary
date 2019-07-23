@@ -16,6 +16,8 @@ const ratePaths = [
   "/api/data/itemoverview?type=Incubator",
 ];
 
+const CURRENT_ATLAS_SERIES = "Legion";
+
 var DB;
 var settings;
 
@@ -95,6 +97,12 @@ function insertRate(date, data) {
         }        
     });
     data.lines.forEach( line => {
+      
+      // for maps, only get values for the current atlas series, as those are the only ones that can drop
+      if(line.mapTier > 0 && line.itemClass == 2 && line.variant !== CURRENT_ATLAS_SERIES) {
+        logger.info(`Bypassing previous map series: ${line.name} from ${line.variant}`);
+        return;
+      }
 
       var item = line.currencyTypeName || line.name;
       var value = line.chaosValue || line.chaosEquivalent;
