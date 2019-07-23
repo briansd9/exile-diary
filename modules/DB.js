@@ -143,7 +143,7 @@ const initSQL = [
       timestamp text primary key not null,
       data text not null
     )
-  `
+  `,
   `
     alter table mapruns add kills number
   `
