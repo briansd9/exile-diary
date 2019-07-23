@@ -147,6 +147,9 @@ async function getItems(mapID) {
             var data = JSON.parse(row.rawdata);
             var secretName = Constants.getItemName(row.icon);
             if(secretName) {
+              if(secretName === "Starforge" && data.elder) {
+                secretName = "Voidforge";
+              }
               data.secretName = secretName;
               row.rawdata = JSON.stringify(data);
             }            
