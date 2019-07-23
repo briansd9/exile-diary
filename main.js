@@ -313,6 +313,7 @@ async function createWindow() {
   } else {
     global.validCharacter = true;
     global.ssf = (settings.activeProfile && settings.activeProfile.league && settings.activeProfile.league.includes("SSF"));
+    global.hardcore = (settings.activeProfile && settings.activeProfile.league && settings.activeProfile.league.includes("Hardcore"));
     mainWindow.loadFile('index.html');
   }
 

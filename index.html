@@ -37,6 +37,8 @@
       const Utils = require('./modules/Utils');
 
       const ssf = remote.getGlobal("ssf");
+      const hardcore = remote.getGlobal("hardcore");
+      logger.info("Hardcore is " + hardcore);
 
       var hasAreaInfo = false;
       var hasMapMods = false;
@@ -45,6 +47,9 @@
 
         if(ssf) {
           $("#totalProfitCell").remove();
+        }
+        if(hardcore) {
+          $("#deathCount").remove();
         }
     
         $("#sidenav").load("sidenav.html");
@@ -89,7 +94,7 @@
               if($("#lastMapsRows tr").length > 10) {
                 $("#lastMapsRows tr:last").remove();
               }
-              Utils.addMapRow($("#lastMapsRows"), row, true, ssf);
+              Utils.addMapRow($("#lastMapsRows"), row, true, ssf, hardcore);
             }
           });          
         });
@@ -131,7 +136,7 @@
         `, (err, rows) => {
           if(rows) {
             rows.forEach( row => {
-              Utils.addMapRow($("#lastMapsRows"), row, false, ssf);
+              Utils.addMapRow($("#lastMapsRows"), row, false, ssf, hardcore);
             });
             //$("#lastMapsTable").tablesorter();              
           }
@@ -204,7 +209,7 @@
             <th>Time</th>
             <th>XP/hr</th>
             <th id='totalProfitCell'><img src='res/c.png'></th>
-            <th>Deaths</th>
+            <th id='deathCount'>Deaths</th>
             <th>Kills</th>
           </tr>
         </thead>

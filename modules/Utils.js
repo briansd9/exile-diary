@@ -59,7 +59,7 @@ class Utils {
   // for items in DB row format
   static getBaseNameDB(item) {
     var name = item.typeline.replace("Superior ", "");
-    if (!item.identified && item.rarity === "Unique" && item.typeline.endsWith(" Map")) {
+    if (item.rarity === "Unique" && item.typeline.endsWith(" Map")) {
       name = this.getUniqueMap(name);
     } else if (item.identified && item.rarity === "Magic" && item.typeline.includes(" Map")) {
       name = this.getBaseFromMagicMap(name);
@@ -129,7 +129,9 @@ class Utils {
           value = rates["Chromatic Orb"];
         }
       }
-    } else {
+    }
+    
+    if(!value) {
       var name = Utils.getBaseName(item);
       var stacksize = (item.stacksize || item.stackSize || 1);
       if (name === "Chaos Orb") {
@@ -143,7 +145,7 @@ class Utils {
     
   }
   
-  static addMapRow(rowsObject, map, first = false, ssf = false) {
+  static addMapRow(rowsObject, map, first = false, ssf = false, hardcore = false) {
 
     var row = $("<tr class='mapRow'>");
     row.click(()=>{
@@ -173,8 +175,10 @@ class Utils {
       row.append($("<td>").append(Number(map.gained).toFixed(2)));
     }
     
-    var deaths = Utils.getDeathCount(map.deaths);
-    row.append($("<td>").append(deaths));
+    if(!hardcore) {
+      var deaths = Utils.getDeathCount(map.deaths);
+      row.append($("<td>").append(deaths));
+    }
 
     row.append($("<td>").append(map.kills > 0 ? (new Intl.NumberFormat()).format(map.kills) : "-"));
 

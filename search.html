@@ -36,6 +36,8 @@
       const remote = require('electron').remote;
       
       const ssf = remote.getGlobal("ssf");
+      const hardcore = remote.getGlobal("hardcore");
+      logger.info("Hardcore is " + hardcore);
 
       $(document).ready(function() {
         
@@ -44,6 +46,10 @@
           $("#totalProfitCell").remove();
           $("#itemValue").remove();
         }
+        if(hardcore) {
+          $("#deathCount").remove();
+        }
+          
 
         $("#sidenav").load("sidenav.html", () => {
           $("#sidenav").append("<div><a class='ui-text' onclick='screenshot()'>Screenshot</a></div>");
@@ -58,7 +64,9 @@
         if(!ssf) {
           $("#mapFilters").append(numberInput("Profit (<img style='vertical-align:middle;' src='res/c.png'/>)", "profit", 5));
         }
-        $("#mapFilters").append(numberInput("Deaths", "deaths"));
+        if(!hardcore) {
+          $("#mapFilters").append(numberInput("Deaths", "deaths"));
+        }
         
         $("#levellabel").html(`
           <select name='levelmode' id='levelmode'>
@@ -107,7 +115,7 @@
         ipcRenderer.on("mapSearchResults", (event, rows) => {
           $("#mapRows").empty();
           rows.forEach(row => {
-            Utils.addMapRow($("#mapRows"), row, false, ssf);
+            Utils.addMapRow($("#mapRows"), row, false, ssf, hardcore);
           })
           $("#mapTable").trigger("update");
           $("#searchButton").prop("value", `${rows.length} results found`);
@@ -140,6 +148,7 @@
 //          $("#mapSummary").hide();
           var numberFields = ['iiq', 'iir', 'packsize', 'level', 'playerlevel', 'profit', 'deaths'];
           numberFields.forEach(field => {
+            if(field === 'deaths' && hardcore) return;
             $(`#${field}row`).show();
           });
           $("#mapnamerow").show();
@@ -181,6 +190,7 @@
         
         var numberFields = ['iiq', 'iir', 'packsize', 'level', 'playerlevel', 'profit', 'deaths'];
         numberFields.forEach(field => {
+          if(field === 'deaths' && hardcore) return;
           if(!$(`#${field}max`).val() && !$(`#${field}min`).val()) {
             $(`#${field}row`).hide();
           }
@@ -378,7 +388,7 @@
                 <th>Time</th>
                 <th>XP/hr</th>
                 <th id='totalProfitCell'><img src='res/c.png'></th>
-                <th>Deaths</th>
+                <th id='deathCount'>Deaths</th>
                 <th>Kills</th>
               </tr>
             </thead>
