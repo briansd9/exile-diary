@@ -1952,7 +1952,12 @@ const mods = [
   "Area contains an extra Resonating Shrine",
   "Monsters Imprisoned by Essences have a 50% chance to contain a Remnant of Corruption",
   "Area contains a Forsaken Master",
-  "20% increased Quantity of Items dropped by Unique Boss"
+  "20% increased Quantity of Items dropped by Unique Boss",
+  "The First 10 Possessed Monsters drop an additional Rusted Scarab",
+  "The First 10 Possessed Monsters drop an additional Polished Scarab",
+  "The First 10 Possessed Monsters drop an additional Gilded Scarab",
+  "The First 10 Possessed Monsters have a 25% chance to drop an additional Map",
+  "The First 10 Possessed Monsters drop an additional Unique Item"
 ];
 
 function getItemName(icon) {
