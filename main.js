@@ -235,6 +235,9 @@ async function createWindow() {
   ipcMain.on("screenshotCaptured", (event, img) => {
     saveScreenshot(img);
   });
+  ipcMain.on("exportSheetReady", (event, sheetData) => {
+    saveExport(sheetData);
+  });
   ipcMain.on("hideOverlay", () => {
     overlayWindow.hide();
   });
@@ -338,7 +341,7 @@ async function createWindow() {
 function addMessage(text, sendToOverlay = false) {
     
   var msg = {
-    timestamp: moment().format("YYYY-MM-DD hh:mm:ss"),
+    timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
     text: text
   };
   global.messages.push(msg);
@@ -418,6 +421,22 @@ function saveLocal(img) {
       }
     }
   );
+}
+
+function saveExport(sheetData) {
+  var fileName = `export-${moment().format("YYYYMMDDhhmmss")}.xlsx`;
+  dialog.showSaveDialog(
+    {
+      defaultPath: fileName,
+      filters: [{ name: 'XLSX', extensions: ['xlsx'] }]
+    },
+    (savePath) => { 
+      if(savePath) {
+        const XLSX = require('xlsx');
+        XLSX.writeFile(sheetData, savePath);
+      }
+    }
+  );          
 }
 
 function saveToImgur(img) {
