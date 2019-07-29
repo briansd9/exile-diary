@@ -1,6 +1,6 @@
 {
   "name": "exile-diary",
-  "version": "0.2.25",
+  "version": "0.2.26",
   "main": "main.js",
   "build": {
     "appId": "com.pathofexile.exilediary",
@@ -57,7 +57,8 @@
     "request": "^2.0.0",
     "sqlite3": "^4.0.2",
     "tesseract.js": "^1.0.10",
-    "winston": "^3.1.0"
+    "winston": "^3.1.0",
+    "xlsx": "^0.14.4"
   },
   "devDependencies": {
     "electron": "^3.0.10",
