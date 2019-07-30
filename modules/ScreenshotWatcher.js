@@ -42,22 +42,23 @@ function process(file) {
   var filename = moment().format("YMMDDHHmmss");
   if (file.length > 0) {
     Jimp.read(file).then(image => {
-
+      
       try {
         // 1920 x 1080 image scaled up 3x;
         // scale differently sized images proportionately
         var scaleFactor = 3 * (1920 / image.bitmap.width);
-
+        
         var yBounds = getYBounds(image);
         var xBounds = getXBounds(image, yBounds);
 
         var image2 = image.clone();
 
+        // take only rightmost 14% of screen for area info (no area name is longer than this)
+        var areaInfoWidth = Math.floor(image.bitmap.width * 0.14);
         // chop off top 24px of area info - blank
         image.crop(xBounds, 24, image.bitmap.width - xBounds, yBounds[0] - 24);
-        // then take only rightmost 260px of area info (no area name is longer than this)
-        if (image.bitmap.width > 260) {
-          image.crop(image.bitmap.width - 260, 0, 260, image.bitmap.height);
+        if (image.bitmap.width > areaInfoWidth) {
+          image.crop(image.bitmap.width - areaInfoWidth, 0, areaInfoWidth, image.bitmap.height);
         }
         image.color([
           {apply: 'red', params: [99]},
@@ -144,8 +145,8 @@ function getXBounds(image, yBounds) {
  */
 function getYBounds(image) {
 
-  var numRows = 20;
-  var numCols = 200;
+  var numRows = Math.floor(image.bitmap.width / 100);
+  var numCols = Math.floor(image.bitmap.width / 10);
   var pixArray = [];
   var blueArray = [];
   var blueStarted = false;
@@ -181,7 +182,7 @@ function getYBounds(image) {
       var blueAvg = blueArray.reduce((acc, curr) => {
         return acc + curr;
       }) / numRows;
-
+      
       if (totalAvg > (numRows * 0.95)) {
         if (blueAvg > 25 && !blueStarted) {
           // if the top of the mod list has not already been found, 
@@ -218,10 +219,10 @@ function isBlue(pixel) {
   // red and green components equal and both > 70
   
   return (
-    hsv[0] < 242 
-    && hsv[0] > 238 
+    hsv[0] <= 250 
+    && hsv[0] >= 235 
     && hsv[1] + hsv[2] > 40
-    && rgba.r === rgba.g
+    && Math.abs(rgba.r - rgba.g) <= 10
     && rgba.r > 70
   );
 }
