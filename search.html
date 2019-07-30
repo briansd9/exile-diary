@@ -118,11 +118,26 @@
         ipcRenderer.on("mapSearchResults", (event, rows) => {
           $("#mapRows").empty();
           
-          exportData.mapList = [];
-    
+          exportData.mapList = {
+            data: [],
+            colWidths: [],
+            addRow : (row) => {
+              exportData.mapList.data.push(row);
+              Object.keys(row).forEach(key => {
+                exportData.mapList.addColWidth(key, row[key]);
+              });
+            },
+            addColWidth : (a, b) => {
+              if(!exportData.mapList.colWidths[a]) {
+                exportData.mapList.colWidths[a] = -1;
+              }
+              exportData.mapList.colWidths[a] = Math.max(exportData.mapList.colWidths[a], a.length, (new String(b)).length);
+            }
+          };
+          
           rows.forEach(row => {
             Utils.addMapRow($("#mapRows"), row, false, ssf, hardcore);
-            exportData.mapList.push({
+            exportData.mapList.addRow({
               timestamp: row.firstevent,
               area: row.name,
               level: row.level,
@@ -130,11 +145,11 @@
               iiq: row.iiq,
               iir: row.iir,
               packsize: row.packsize,
-              time: Utils.getRunningTime(row.firstevent, row.lastevent),
+              time: parseInt(Utils.getRunningTime(row.firstevent, row.lastevent, "s")),
               xp: row.xpgained,
               deaths: row.deaths,
               kills: row.kills,
-              profit: row.gained
+              profit: parseFloat(Number(row.gained).toFixed(2))
             });
           });
           
@@ -146,6 +161,24 @@
 
         ipcRenderer.on("mapSummaryResults", (event, data) => {
           exportData.itemList = [];
+          
+          exportData.itemList = {
+            data : [],
+            colWidths: [],
+            addRow : (row) => {
+              exportData.itemList.data.push(row);
+              Object.keys(row).forEach(key => {
+                exportData.itemList.addColWidth(key, row[key]);
+              });
+            },
+            addColWidth : (a, b) => {
+              if(!exportData.itemList.colWidths[a]) {
+                exportData.itemList.colWidths[a] = -1;
+              }
+              exportData.itemList.colWidths[a] = Math.max(exportData.itemList.colWidths[a], a.length, (new String(b)).length);
+            }
+          };
+                    
           var f = new Intl.NumberFormat();
           $("#totalTime").html(moment.duration(data.totalTime, "seconds").format("H:mm:ss"));
           $("#avgTime").html(moment.duration(data.totalTime / data.numMaps, "seconds").format());
@@ -157,17 +190,30 @@
           $("#avgXP").html(f.format(Math.round(data.totalXP / data.numMaps)));
           display(data);
           data.items.forEach(item => {
-            exportData.itemList.push({
+            exportData.itemList.addRow({
               count: item.stackSize,
               item: item.displayName,
-              value: item.chaosValue
+              value: parseFloat(Number(item.chaosValue).toFixed(2))
             });
           });
           
-//          var wb = XLSX.utils.book_new();
-//          XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportData.mapList), "Maps");
-//          XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(exportData.itemList), "Items");
-//          ipcRenderer.send("exportSheetReady", wb);
+          var wb = XLSX.utils.book_new();
+          
+          var mapSheet = XLSX.utils.json_to_sheet(exportData.mapList.data);
+          mapSheet["!cols"] = [];
+          Object.keys(exportData.mapList.colWidths).forEach(key => {
+            mapSheet["!cols"].push({ wch: exportData.mapList.colWidths[key] + 5 });
+          });
+          XLSX.utils.book_append_sheet(wb, mapSheet, "Maps");
+
+          var itemSheet = XLSX.utils.json_to_sheet(exportData.itemList.data);
+          itemSheet["!cols"] = [];
+          Object.keys(exportData.itemList.colWidths).forEach(key => {
+            itemSheet["!cols"].push({ wch: exportData.itemList.colWidths[key] + 5 });
+          });
+          XLSX.utils.book_append_sheet(wb, itemSheet, "Items");
+    
+          ipcRenderer.send("exportSheetReady", wb);
           
           $("#items").trigger("update");
           $("#summaryContentsLoading").hide();
