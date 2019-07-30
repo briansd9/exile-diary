@@ -219,8 +219,8 @@ class Utils {
 
   }
   
-  static getRunningTime(firstevent, lastevent) {
-    return moment.duration(moment(lastevent, "YYYYMMDDHHmmss").diff(moment(firstevent, "YYYYMMDDHHmmss"))).format();
+  static getRunningTime(firstevent, lastevent, format = null) {
+    return moment.duration(moment(lastevent, "YYYYMMDDHHmmss").diff(moment(firstevent, "YYYYMMDDHHmmss"))).format(format);
   }
 
   static getXPRate(xp, firstevent, lastevent) {
