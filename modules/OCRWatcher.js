@@ -74,7 +74,6 @@ function processImage(file) {
             } else {
               areaInfo = area;
               checkAreaInfoComplete();
-              //emitter.emit("areaInfo", area);
             }
           }
         );
@@ -100,7 +99,6 @@ function processImage(file) {
           } else {
             mapMods = mods;
             checkAreaInfoComplete();
-            //emitter.emit("mapMods", mods);
           }
         }
         catch(e) {

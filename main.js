@@ -38,6 +38,7 @@ if(!lock) {
 var characterCheckStatus;
 
 function checkCurrentCharacterLeague() {
+  
   return new Promise( async (resolve, reject) => {
     
     DB.getDB(true);
