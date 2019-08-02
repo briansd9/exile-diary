@@ -1628,6 +1628,7 @@ const mods = [
   "Area contains additional Monsters that deal Physical Damage",
   "Area contains additional Monsters that Heal",
   "Area contains additional Normal Monsters",
+  "Area contains # additional packs with a Rare monster",
   "Area contains an extra Strongbox",
   "Area contains Alva",
   "Area contains additional Packs with Mirrored Rare Monsters",
