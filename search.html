@@ -197,23 +197,23 @@
             });
           });
           
-          var wb = XLSX.utils.book_new();
-          
-          var mapSheet = XLSX.utils.json_to_sheet(exportData.mapList.data);
-          mapSheet["!cols"] = [];
-          Object.keys(exportData.mapList.colWidths).forEach(key => {
-            mapSheet["!cols"].push({ wch: exportData.mapList.colWidths[key] + 5 });
-          });
-          XLSX.utils.book_append_sheet(wb, mapSheet, "Maps");
-
-          var itemSheet = XLSX.utils.json_to_sheet(exportData.itemList.data);
-          itemSheet["!cols"] = [];
-          Object.keys(exportData.itemList.colWidths).forEach(key => {
-            itemSheet["!cols"].push({ wch: exportData.itemList.colWidths[key] + 5 });
-          });
-          XLSX.utils.book_append_sheet(wb, itemSheet, "Items");
-    
-          ipcRenderer.send("exportSheetReady", wb);
+//          var wb = XLSX.utils.book_new();
+//          
+//          var mapSheet = XLSX.utils.json_to_sheet(exportData.mapList.data);
+//          mapSheet["!cols"] = [];
+//          Object.keys(exportData.mapList.colWidths).forEach(key => {
+//            mapSheet["!cols"].push({ wch: exportData.mapList.colWidths[key] + 5 });
+//          });
+//          XLSX.utils.book_append_sheet(wb, mapSheet, "Maps");
+//
+//          var itemSheet = XLSX.utils.json_to_sheet(exportData.itemList.data);
+//          itemSheet["!cols"] = [];
+//          Object.keys(exportData.itemList.colWidths).forEach(key => {
+//            itemSheet["!cols"].push({ wch: exportData.itemList.colWidths[key] + 5 });
+//          });
+//          XLSX.utils.book_append_sheet(wb, itemSheet, "Items");
+//    
+//          ipcRenderer.send("exportSheetReady", wb);
           
           $("#items").trigger("update");
           $("#summaryContentsLoading").hide();
