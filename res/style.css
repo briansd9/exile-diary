@@ -464,6 +464,7 @@ div.messageSection {
 
 div.message {
   font-family: Fontin !important;
+  margin-left: 5px;
 }
 
 .itemToggle {
