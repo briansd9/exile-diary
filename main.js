@@ -195,14 +195,15 @@ function initWindow(window) {
   
   RunParser.emitter.removeAllListeners();
   RunParser.emitter.on("runProcessed", (run) => {
+    var f = new Intl.NumberFormat();
     addMessage(
       `<span style='cursor:pointer;' onclick='window.location.href="map.html?id=${run.id}";'>`      
         + `Completed run in <span class='eventText'>${run.name}</span> `
-        + `(${Utils.getRunningTime(run.firstevent, run.lastevent)}, `
-        + `${run.gained} <img src='res/c.png' style='vertical-align:middle'>, `
-        + (run.kills ? `${run.kills} kills, ` : "")
-        + `${new Intl.NumberFormat().format(run.xp)} XP)`
-        + `</span>`,
+        + `(${Utils.getRunningTime(run.firstevent, run.lastevent)}`
+        + (run.gained ? `, ${run.gained} <img src='res/c.png' style='vertical-align:middle'>` : "")
+        + (run.kills ? `, ${f.format(run.kills)} kills` : "")
+        + (run.xp ? `, ${f.format(run.xp)} XP)` : "")
+        + `)</span>`,
       true
     );
     webContents.send("runProcessed", run);
@@ -270,6 +271,17 @@ async function createWindow() {
     }
   });
   
+  var windowMoving;
+  function saveWindowBounds() {
+    clearTimeout(windowMoving);
+    windowMoving = setTimeout(writeBounds, 1000);
+    function writeBounds() {
+      Settings.set("mainWindowBounds", mainWindow.getBounds());
+    }
+  }
+  mainWindow.on("resize", saveWindowBounds);
+  mainWindow.on("move", saveWindowBounds);
+  
   overlayWindow = new BrowserWindow({
     maxHeight: 40,
     x: 0,
@@ -333,8 +345,12 @@ async function createWindow() {
   });  
 
   initWindow(mainWindow);
-
-  mainWindow.maximize();
+  
+  if(settings && settings.mainWindowBounds) {
+    mainWindow.setBounds(settings.mainWindowBounds);
+  } else {
+    mainWindow.maximize();
+  }
   mainWindow.show();
     
 }
