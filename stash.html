@@ -1,0 +1,283 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="res/style.css" />
+    <link rel="stylesheet" type="text/css" href="res/poedit.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.min.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.structure.min.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.theme.min.css" />
+
+    <script>if (typeof module === 'object') {
+        window.module = module;
+        module = undefined;
+      }</script>
+
+    <script src="res/jquery-3.3.1.min.js"></script>
+    <script src="res/jquery.lazy.js"></script>
+    <script src="res/jquery-ui.js"></script>
+    <script src="res/utils.js"></script>
+    <script src="res/item.js"></script>
+    <script src="res/page-utils.js"></script>
+
+    <!-- Insert this line after script imports -->
+    <script>if (window.module)
+        module = window.module;</script>
+    
+    <script>
+    
+      const Constants = require('./modules/Constants');
+      const DB = require('./modules/DB').getDB();
+      const d3 = require('d3');
+      const logger = require('./modules/Log').getLogger(__filename);
+      const Utils = require('./modules/Utils');
+      const RateGetter = require('./modules/RateGetter');
+      
+      var chaosNetWorth, exaltNetWorth, rates, itemsByType, itemsById;
+
+      $(document).ready( async () => {
+
+        $("#sidenav").load("sidenav.html");
+        $("#messages").load("messages.html");
+        
+        var stashID = await getStashID();
+        loadStash(stashID);
+        
+      });
+      
+      document.onkeydown = function (e) {
+        switch (e.key) {
+          case "ArrowLeft":
+            if (document.getElementById("prevStash")) {
+              $("#prevStash")[0].click();
+            }
+            break;
+          case "ArrowRight":
+            if (document.getElementById("nextStash")) {
+              $("#nextStash")[0].click();
+            }
+            break;
+        }
+      }
+      
+      
+      async function loadStash(id) {
+        clearCurrent();
+        rates = await RateGetter.getFor(id);
+        loadStashList(id);
+        loadNavLinks(id);
+        getStashItems(id);
+      }
+      
+      function clearCurrent() {
+        ["itemsTable", "prevCell", "nextCell"].forEach( str => {
+          $(`#${str}`).empty();
+        });
+        $("#itemsHeader").hide();
+        chaosNetWorth = 0;
+        exaltNetWorth = 0;
+        itemsByType = {};
+        itemsById = {};
+      }
+      
+      function processItem(item) {
+        // need to identify by both type and rarity, otherwise unique and normal maps of the same basetype will be grouped together
+        var typeIdentifier  = item.typeLine.replace("Superior ", "");
+        if(item.frameType === 3) {
+          typeIdentifier += "_unique";
+        }
+        if (!itemsByType[typeIdentifier]) {
+          itemsById[item.id] = item;
+          itemsByType[typeIdentifier] = item.id;
+          itemsById[item.id].stackSize = item.stackSize || 1;
+        } else {
+          itemsById[itemsByType[typeIdentifier]].stackSize += item.stackSize || 1;
+        }
+      }
+      
+      
+      function getStashItems(id) {
+        
+        DB.get(`select items, value from stashes where timestamp = ?`, [id], (err, row) => {
+          
+          var items = JSON.parse(row.items);
+          items.forEach(processItem);
+          
+          Object.keys(itemsById).forEach(k => {
+            
+            var item = itemsById[k];
+            item.displayName = Utils.getBaseName(item);
+            
+            var sockets = ItemData.getSockets(item);
+            if(sockets.length > 0 && !sockets.includes("DV")) {
+              return;
+            }
+            
+            item.chaosValue = Utils.getItemValue(item, rates);
+            
+            if(item.chaosValue) {
+              
+              item.chaosValue = Number(item.chaosValue).toFixed(2);
+              var name = Utils.getBaseName(item);
+              if (name === "Chaos Orb") {
+                item.unitValue = (1).toFixed(2);
+              } else if (rates[name]) {
+                item.unitValue = (rates[name] * 1).toFixed(2);
+              }
+            }
+          });
+          
+          var values = Object.values(itemsById);
+          values.sort((a, b) => {
+            a1 = (a.chaosValue || -1);
+            b1 = (b.chaosValue || -1);
+            return (b1 === a1 ? a.displayName.localeCompare(b.displayName) : (b1 - a1));
+          });
+
+          for (var v of values) {
+            $("#total").append(itemToString(v));
+          }
+          
+          var chaosString, exaltString;
+          
+          chaosNetWorth = row.value;
+          chaosString = `${Number(chaosNetWorth).toFixed(2)} <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&w=1&h=1'/>`;
+          if(chaosNetWorth > rates["Exalted Orb"]) {
+            exaltNetWorth = chaosNetWorth / rates["Exalted Orb"];
+            exaltString = `${Number(exaltNetWorth).toFixed(2)} <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyAddModToRare.png?scale=1&w=1&h=1'/>`;
+          }
+          
+          $("#netWorth").html(`Net Worth: ${chaosString} ${exaltString ? `(${exaltString})` : ""}`);
+          $("#itemsHeader").show();
+      
+        });
+        
+      }
+      
+      function itemToString(i) {
+        if (!i.chaosValue)
+          return;
+        
+        var displayStackSize = (i.displayName === "6-socket Items") ? i.stackSize * 7 : i.stackSize;
+        
+        var str = "<tr><td bgcolor=0 style='min-width:60px;position:relative;'><img style='height:" + (i.h * 40) + "px;width:" + (i.w * 40) + "px;' src='" + i.icon + "'/><span class='stackSize'>" + (displayStackSize || "") + "</span></td>";
+        str += "<td style='text-align: right;'>" + (i.stackSize || "&nbsp;") + "</td>";
+        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.stackSize ? "x" : "&nbsp;") + "</td>";
+        str += "<td style='padding-left:10px;padding-right:10px;min-width:300px'>" + i.displayName + "</td>";
+        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.unitValue ? i.unitValue + "" : "&nbsp;") + "</td>";
+        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.chaosValue ? i.chaosValue + "" : "&nbsp;") + "</td>";
+        return str;
+        
+      }
+
+      
+      function loadStashList(id) {
+        DB.all(`select timestamp, value from stashes order by timestamp`, (err, rows) => {
+          rows.forEach(row => {
+            $("#stashes").append(
+              $("<option>")
+                .html(`${row.timestamp} - ${row.value}C`)
+                .val(row.timestamp)
+                .attr("selected", row.timestamp === id)
+            );
+          });
+        })
+      }
+      
+      function loadNavLinks(id) {
+        DB.get(` 
+          select 
+          (select max(timestamp) from stashes where timestamp < ?) as prev,
+          (select min(timestamp) from stashes where timestamp > ?) as next
+        `, [id, id], (err, row) => {
+            if(row.prev) {
+              $("#prevCell").html(`<a class='ui-text' id='prevStash' onclick='goToStash("${row.prev}")'><< ${row.prev}</a>`);
+            }
+            if(row.next) {
+              $("#nextCell").html(`<a class='ui-text' id='nextStash' onclick='goToStash("${row.next}")'>${row.next} >></a>`);
+            }      
+        });
+      }
+      
+      function goToStash(id) {
+        window.history.pushState("", "", `stash.html?id=${id}`);
+        loadStash(id);
+      }      
+        
+      function getStashID() {
+        var params = Utils.getParams(window.location.toString());
+        var id = params['id'];
+        if(id) {
+          return id;
+        } else {
+          return new Promise( (resolve, reject) => {
+            DB.get(" select max(timestamp) as id from stashes ", (err, row) => {
+              if(err) {
+                logger.info(`Unable to get latest stash: ${err}`);
+              } else if(row) {
+                resolve(row.id);
+              }
+            });
+          });
+        }
+      }
+      
+      function showNavigation(stash) {
+        if(stash.nav.prev && stash.nav.prev != -1) {
+          $("#prevCell").html(`<a class='ui-text' id='prevStash' onclick='goToStash("${stash.nav.prev}")'><< ${stash.nav.prev}</a>`);
+        }
+        if(run.nav.next) {
+          $("#nextCell").html(`<a class='ui-text' id='nextStash' onclick='goToStash("${stash.nav.next}")'>${stash.nav.next} >></a>`);
+        }
+      }
+      
+      function getSelectStashOption(row) {
+      }      
+      
+    </script>
+
+  </head>
+  <body>
+    
+    <div class='sidenav' id='sidenav'></div>
+    
+    <table id='topnav' style='width:100%;'>
+      <tr>
+        <td id='prevCell' style='text-align:left;width:25%;'/>
+        <td style='text-align:center;'>
+          <select class='ui-text' id='stashes' style='width:100%;' onchange='goToStash($("#stashes").val());'>
+          </select>
+        </td>
+        <td id='nextCell' style='text-align:right;width:25%;'/>
+      </tr>
+    </table>
+    <hr style='border:1px solid #999;' />
+    
+    <div id='itemsByValue'>
+      <div id='netWorth' class='tableLink netWorth' onclick='$("#total").toggle()'></div>
+      <table id='total' style='display:block;'>
+        <thead id="itemsHeader">
+          <tr class='ui-text'>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+            <th>&nbsp;</th>
+            <th>Item</th>
+            <th>Unit</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody id="itemsTable">
+        </tbody>
+      </table>
+      
+    </div>
+    
+    
+    <div class="footer">
+      Generated by Exile Diary v<span id='appVersionFooter'></span> https://github.com/briansd9/exile-diary
+      <script>
+        $("#appVersionFooter").html(require('electron').remote.app.getVersion());
+      </script>      
+    </div>
+    <div id="messagePadding" style="height:150px;visibility:hidden;">&nbsp;</div>
+    <div id="messages" class="messageSection"></div>
+  </body>
+</html>
