@@ -261,7 +261,6 @@ async function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     title: `Exile Diary v${app.getVersion()}`,
-    minWidth: 1100,
     backgroundColor: `#000000`,
     show: false,
     transparent: false,
@@ -281,6 +280,18 @@ async function createWindow() {
   }
   mainWindow.on("resize", saveWindowBounds);
   mainWindow.on("move", saveWindowBounds);
+  
+  var windowScaling;
+  function scaleWindow() {
+    clearTimeout(windowScaling);
+    windowScaling = setTimeout(setZoom, 250);
+    function setZoom() {
+      var width = mainWindow.getBounds().width;
+      mainWindow.webContents.send("rescale", Math.min(width, 1100) / 1100);
+    }
+  }
+  mainWindow.on("resize", scaleWindow);
+    
   
   overlayWindow = new BrowserWindow({
     maxHeight: 40,
