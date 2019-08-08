@@ -16,6 +16,7 @@
     <script src="res/jquery-ui.js"></script>
     <script src="res/utils.js"></script>
     <script src="res/item.js"></script>
+    <script src="res/page-utils.js"></script>
 
     <!-- Insert this line after script imports -->
     <script>if (window.module)
@@ -565,9 +566,11 @@
         var inventoryDiv = document.createElement("div");
         items[timestamp].forEach( rawdata => {
           var item = JSON.parse(rawdata);
-          processItem(item);
-          var itemDiv = getItemDiv(item);
-          inventoryDiv.appendChild(itemDiv);
+          if(item.inventoryId === "MainInventory") {
+            processItem(item);
+            var itemDiv = getItemDiv(item);
+            inventoryDiv.appendChild(itemDiv);
+          }
         });
         return (`<span class='eventType'>Picked up:</span> <span class='eventText'>${inventoryDiv.outerHTML}</span></div>`);
 
