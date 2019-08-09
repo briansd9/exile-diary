@@ -139,10 +139,10 @@
           var chaosString, exaltString;
           
           chaosNetWorth = row.value;
-          chaosString = `${Number(chaosNetWorth).toFixed(2)} <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&w=1&h=1'/>`;
+          chaosString = `${Number(chaosNetWorth).toFixed(2)} <img style='vertical-align:middle;' src='res/c.png'/>`;
           if(chaosNetWorth > rates["Exalted Orb"]) {
             exaltNetWorth = chaosNetWorth / rates["Exalted Orb"];
-            exaltString = `${Number(exaltNetWorth).toFixed(2)} <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyAddModToRare.png?scale=1&w=1&h=1'/>`;
+            exaltString = `${Number(exaltNetWorth).toFixed(2)} <img style='vertical-align:middle;' src='res/ex.png'/>`;
           }
           
           $("#netWorth").html(`Net Worth: ${chaosString} ${exaltString ? `(${exaltString})` : ""}`);
@@ -158,12 +158,16 @@
         
         var displayStackSize = (i.displayName === "6-socket Items") ? i.stackSize * 7 : i.stackSize;
         
-        var str = "<tr><td bgcolor=0 style='min-width:60px;position:relative;'><img style='height:" + (i.h * 40) + "px;width:" + (i.w * 40) + "px;' src='" + i.icon + "'/><span class='stackSize'>" + (displayStackSize || "") + "</span></td>";
-        str += "<td style='text-align: right;'>" + (i.stackSize || "&nbsp;") + "</td>";
-        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.stackSize ? "x" : "&nbsp;") + "</td>";
-        str += "<td style='padding-left:10px;padding-right:10px;min-width:300px'>" + i.displayName + "</td>";
-        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.unitValue ? i.unitValue + "" : "&nbsp;") + "</td>";
-        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.chaosValue ? i.chaosValue + "" : "&nbsp;") + "</td>";
+        var str = `
+          <tr>
+            <td bgcolor=0 style='min-width:60px;position:relative;'>
+              <img onerror='this.style.visibility="hidden"'; style='height:${i.h * 40}px;width:${i.w * 40}px;' src='${i.icon}'/>
+              <span class='stackSize'>${displayStackSize || ""}</span>
+            </td>
+            <td style='padding-left:10px;padding-right:10px;min-width:300px'>${i.displayName}</td>
+            <td style='padding-left:10px;padding-right:10px'>${i.unitValue ? i.unitValue + "" : "&nbsp;"}</td>
+            <td style='padding-left:10px;padding-right:10px'>${i.chaosValue ? i.chaosValue + "" : "&nbsp;"}</td>
+          `;
         return str;
         
       }
@@ -256,8 +260,6 @@
       <table id='total' style='display:block;'>
         <thead id="itemsHeader">
           <tr class='ui-text'>
-            <th>&nbsp;</th>
-            <th>&nbsp;</th>
             <th>&nbsp;</th>
             <th>Item</th>
             <th>Unit</th>

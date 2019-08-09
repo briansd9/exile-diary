@@ -203,7 +203,7 @@
       function clearCurrentMap() {
         
         [
-          "itemsTable", "prevCell", "nextCell", 
+          "itemsTable", "prevCell", "nextCell",
           "IIQ", "IIR", "packSize", "eventsDiv", "mods", 
           "beastCount", "incursionCount", "sulphiteCount"
         ].forEach( str => {
@@ -579,7 +579,7 @@
       function displayItemsByValue() {
         
         var items = itemsById;
-        var tbl = $("#total");
+        var tbl = $("#itemsTable");
 
         var totalValue = 0;
         
@@ -668,12 +668,8 @@
         }
         
         $("#netWorth").html(
-          "Gained: "
-          + totalValue.toFixed(2)
-          + " <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&scaleIndex=3&&w=1&h=1'/> "
-          );
-        
-        $(".lazy").Lazy();
+          `Gained: ${totalValue.toFixed(2)} <img style='vertical-align:middle;' src='res/c.png'/>`
+        );
         
         function itemCompare(a, b) {
           a1 = (a.chaosValue || -1);
@@ -721,13 +717,18 @@
         
         var displayStackSize = (i.displayName === "6-socket Items") ? i.stackSize * 7 : i.stackSize;
         
-        var str = "<tr><td bgcolor=0 style='min-width:60px;position:relative;'><img class='lazy' style='height:" + (i.h * 40) + "px;width:" + (i.w * 40) + "px;' data-src='" + i.icon + "'/><span class='stackSize'>" + (displayStackSize || "") + "</span></td>";
-        str += "<td style='text-align: right;'>" + (i.stackSize || "&nbsp;") + "</td>";
-        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.stackSize ? "x" : "&nbsp;") + "</td>";
-        str += "<td style='padding-left:10px;padding-right:10px;min-width:300px'>" + i.displayName + "</td>";
-        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.unitValue ? i.unitValue + "" : "&nbsp;") + "</td>";
-        str += "<td style='padding-left:10px;padding-right:10px'>" + (i.chaosValue ? i.chaosValue + "" : "&nbsp;") + "</td>";
+        var str = `
+          <tr>
+            <td bgcolor=0 style='min-width:60px;position:relative;'>
+              <img onerror='this.style.visibility="hidden";' style='height:${i.h * 40}px;width:${i.w * 40}px;' src='${i.icon}'/>
+              <span class='stackSize'>${displayStackSize || ""}</span>
+            </td>
+            <td style='padding-left:10px;padding-right:10px;min-width:300px'>${i.displayName}</td>
+            <td style='padding-left:10px;padding-right:10px'>${i.unitValue ? i.unitValue + "" : "&nbsp;"}</td>
+            <td style='padding-left:10px;padding-right:10px'>${i.chaosValue ? i.chaosValue + "" : "&nbsp;"}</td>
+          `;
         return str;
+        
       }
 
 
@@ -885,8 +886,6 @@
         <table id='total' style='display:block;'>
           <thead>
             <tr class='ui-text'>
-              <th>&nbsp;</th>
-              <th>&nbsp;</th>
               <th>&nbsp;</th>
               <th>Item</th>
               <th>Unit</th>
