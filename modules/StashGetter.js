@@ -85,7 +85,7 @@ async function get() {
       } else {
         logger.info(`Total value ${tabs.value} in ${tabs.items.length} items`);
         emitter.emit("netWorthUpdated", {
-          value: tabs.value,
+          value: Number(tabs.value).toFixed(2),
           count: tabs.items.length
         });
       }
