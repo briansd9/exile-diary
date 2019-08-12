@@ -175,7 +175,10 @@ function initWindow(window) {
     addMessage(`<span class='eventText'>Unable to get stash information. Please check your POESESSID</span>`);
   });
   StashGetter.emitter.on("netWorthUpdated", (info) => {
-    addMessage(`Net worth update: <span class='eventText'>${info.value}</span> <img src='res/c.png' style='vertical-align:middle'> in ${info.count} items`);
+    addMessage(
+      `Net worth update: <span class='eventText'>${info.value}</span> <img src='res/c.png' style='vertical-align:middle'> in ${info.count} items`,
+      true
+    );
   });
   
   InventoryGetter.emitter.removeAllListeners();

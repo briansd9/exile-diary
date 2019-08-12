@@ -70,7 +70,6 @@ async function get() {
   
   for(var i = 0; i < tabList.length; i++) {
     var t = tabList[i];
-    logger.info(`Retrieving tab ${t.index} named "${t.name}" of type ${t.type}`);
     var tabData = await getTab(t, params);
     if(tabData.items.length > 0) {
       tabs.value += Number(tabData.value);
