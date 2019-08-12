@@ -36,21 +36,24 @@
       //const profileKeys = ["accountName", "characterName", "league"];
 
       var settings = {};
+      var tabList = {};
       var filterData = null;
       var requiresRestart = false;
 
       $(document).ready(function () {
-
+        
         var settingsPath = path.join(app.getPath("userData"), "settings.json");
         if(fs.existsSync(settingsPath)) {
           settings = require(settingsPath);
         }
-        
+
         var validCharacter = require('electron').remote.getGlobal("validCharacter");
 
         $("#sidenav").load("sidenav.html", () => {
           if(!validCharacter || JSON.stringify(settings) === "{}") {
-            $("#sidenav-items").hide();
+            ["sidenav-items", "stashLink", "stashTab"].forEach(str => {
+              $(`#${str}`).hide();
+            });
           } else {
             $("#sidenav-main").removeAttr("href");
             $("#sidenav-main").click(backToMain);
@@ -58,26 +61,8 @@
         });
 
         $("#messages").load("messages.html");
-
-        configKeys.forEach((key) => {
-          if(key === "overlayEnabled") {
-            $("#" + key).prop("checked", settings[key]);
-          } else {
-            $("#" + key).val(settings[key]);
-          }
-        });
         
-        
-        if(settings.activeProfile && settings.activeProfile.characterName) {
-          $("#activeProfile").html(`${settings.activeProfile.characterName} (${settings.activeProfile.league} league)`);
-          $("#selectedName").val(settings.activeProfile.characterName);
-          $("#selectedLeague").val(settings.activeProfile.league);
-          $("#uploadFilter").attr('placeholder', `Click to upload new item filter for ${settings.activeProfile.characterName}`);
-        } else {
-          $("#activeProfile").html(`None`);
-          $("#uploadFilter").hide();
-        }
-
+        loadSettings();
 
         $("#clientTxt").click(function () {
           dialog.showOpenDialog(
@@ -117,10 +102,43 @@
             }
           );
         });
-
+        
+        $("#tabs").tabs({
+          active: 0,
+          disabled: [1]
+        });
         $("#body").show();
-
+        
       });
+      
+      function loadSettings() {
+
+        configKeys.forEach((key) => {
+          if(key === "overlayEnabled") {
+            $("#" + key).prop("checked", settings[key]);
+          } else {
+            $("#" + key).val(settings[key]);
+          }
+        });
+        
+        if(settings.activeProfile && settings.activeProfile.characterName) {
+          $("#activeProfile").html(`${settings.activeProfile.characterName} (${settings.activeProfile.league} league)`);
+          $("#selectedName").val(settings.activeProfile.characterName);
+          $("#selectedLeague").val(settings.activeProfile.league);
+          $("#uploadFilter").attr('placeholder', `Click to upload new item filter for ${settings.activeProfile.characterName}`);
+          getTabList();
+        } else {
+          $("#activeProfile").html(`None`);
+          $("#uploadFilter").hide();
+        }
+        
+        if(settings.activeProfile && settings.activeProfile.stashCheckInterval) {
+          $("#stashCheckInterval").val(settings.activeProfile.stashCheckInterval);
+        } else {
+          $("#stashCheckInterval").val(24);
+        }
+
+      }
       
       function processFilter(path) {
         logger.info("Getting filter file " + path);
@@ -186,11 +204,18 @@
           return;
         }
         
+        var tabs = [];
+        $("input[name='tabList']:checked").each((i, elem) => {
+          tabs.push($(elem).val());
+        })
+    
         settings.activeProfile = {
           characterName: $("#selectedName").val(),
-          league: $("#selectedLeague").val()
+          league: $("#selectedLeague").val(),
+          tabs: tabs,
+          stashCheckInterval: $("#stashCheckInterval").val()
         };
-
+        
         var filename = path.join(app.getPath("userData"), "settings.json");
         fs.writeFile(filename, JSON.stringify(settings), (err) => {
           if (err) throw err;
@@ -225,7 +250,74 @@
         });
 
       }
+      
+      function getTabList() {
+        
+        var requestParams = {
+          hostname: 'www.pathofexile.com',
+          path: `/character-window/get-stash-items?accountName=${encodeURIComponent(settings.accountName)}&league=${settings.activeProfile.league}&tabs=1`,
+          method: 'GET',
+          headers: {
+            Referer: 'http://www.pathofexile.com/',
+            Cookie: `POESESSID=${$("#poesessid").val()}`
+          }
+        };
+        
+        var request = https.request(requestParams, (response) => {
+          var body = '';
+          response.setEncoding('utf8');
+          response.on('data', (chunk) => {
+            body += chunk;
+          });
+          response.on('end', () => {
+            try {
+              var data = JSON.parse(body);
+              listTabs(data);
+            } catch (err) {
+              tabListError(err);
+            }
+          });
+          response.on('error', (err) => {
+            tabListError(err);
+          });
+        });
+        request.on('error', tabListError);
+        request.end();
+        
+        function tabListError(err) {
+          alert(`Failed to get tab list for ${$("#accountName").val()}. Have you entered your account name and POESESSID correctly?`);
+        }        
+        
+      }
+      
+      function listTabs(data) {
+        var div = $("#tabList");
+        data.tabs.forEach(tab => {
+          if(tab.type === "MapStash") return;
+          var color = `#${toHex(tab.colour.r)}${toHex(tab.colour.g)}${toHex(tab.colour.b)}`;
+          var checked = settings.activeProfile.tabs && settings.activeProfile.tabs.includes(tab.id);
+          div.append(`
+            <div onclick='selectTab("${tab.id}");' class='stashTab' style='background-color:${color};'>
+              <input type='checkbox' onclick='selectTab("${tab.id}")' name='tabList' ${checked ? "checked='checked'" : ""} id='${tab.id}' value='${tab.id}'>
+              <img style='margin-bottom:-8px;margin-right:8px' src="res/tabicons/${tab.type}.png"/>
+              <span>${tab.n}</span>
+            </div>
+          `);
+        });
+        $("#stashLink").html("Stash");
+        $("#tabs").tabs("enable", 1);
+        
+        function toHex(c) {
+          var hex = c.toString(16);
+          return hex.length === 1 ? "0" + hex : hex;
+        }
 
+      }
+
+      function selectTab(id) {
+        $(`#${id}`).prop("checked", !$(`#${id}`).prop("checked"));
+      }
+      
       function getCharacters() {
         
         if(!$("#accountName").val() || !$("#poesessid").val()) {
@@ -275,7 +367,6 @@
       
       function listCharacters(data) {
         var charList = [];
-        var activeChar = "";
         data.forEach( char => {
           var obj = {
             label: `${char.name} (Level ${char.level} ${char.class} in ${char.league})`,
@@ -355,79 +446,98 @@
 
     <div class='sidenav' id='sidenav'></div>    
     
-    <div class='sectionHeader ui-text'>
-      Configuration
+    <div id="tabs">    
+      <ul>
+        <li><a id="accountLink" href="#account">Account</a></li>
+        <li><a id="stashLink" href="#stash">Stash (Loading...)</a></li>
+      </ul>
+      <div id="account">
+        <table id='mapFilters'>
+          <tr>
+            <td><div class='configLabel ui-text'>Account Name</div></td>
+            <td><input class='configInput' name='accountName' id='accountName' type='text' maxlength='50' size='80' /></td>
+          </tr>
+          <tr>
+            <td><div class='configLabel ui-text'>POESESSID</div></td>
+            <td><input class='configInput' name='poesessid' id='poesessid' type='password' maxlength='50' size='80' /></td>
+          </tr>
+          <tr>
+            <td style='vertical-align:middle;'>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <hr>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              Currently active character: <span id='activeProfile'/>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <input class='configInput' readonly name='uploadFilter' id='uploadFilter' type='text' style='width:100%'/>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <input class='configInput' onclick='getCharacters()' name='characterList' id='characterList' type='text' style='width:100%' placeholder='Click to change active character (requires restart)' />
+              <input type='hidden' id='selectedName' />
+              <input type='hidden' id='selectedLeague' />
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <hr>
+            </td>
+          </tr>
+          <tr>
+            <td><div class='configLabel ui-text'>Client.txt Location</div></td>
+            <td><input class='configInput' name='clientTxt' id='clientTxt' readonly type='text' maxlength='50' size='80' /></td>
+          </tr>
+          <tr>
+            <td><div class='configLabel ui-text'>Screenshot Directory</div></td>
+            <td><input class='configInput' name='screenshotDir' id='screenshotDir' readonly type='text' maxlength='50' size='80' /></td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <hr>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <div class='configLabel ui-text'>
+                Enable overlay popup messages (experimental)
+                <input style='margin-left:20px;' name='overlayEnabled' id='overlayEnabled' type='checkbox'/>
+              </div>
+            </td>
+          </tr>
+        </table>    
+      </div>
+      <div id="stash">
+        <div>
+          Check Net Worth every
+          <select class='ui-text' style='margin-left:10px;font-family:FontinSmallCaps;' id="stashCheckInterval">
+            <option value="0.5">1/2 hour</option>
+            <option value="1">1 hour</option>
+            <option value='2'>2 hours</option>
+            <option value='3'>3 hours</option>
+            <option value='4'>4 hours</option>
+            <option value='6'>6 hours</option>
+            <option value='8'>8 hours</option>
+            <option value='12'>12 hours</option>
+            <option value='24'>24 hours</option>
+          </select>
+        <hr>
+        </div>
+        <hr>
+        <div id="note">Select Stash Tabs to Monitor (Map tabs not yet supported)</div>
+        <div id="tabList" style="max-height:65%;overflow-y:auto;"></div>
+      </div>
     </div>
-    <table id='mapFilters'>
-      <tr>
-        <td><div class='configLabel ui-text'>Account Name</div></td>
-        <td><input class='configInput' name='accountName' id='accountName' type='text' maxlength='50' size='80' /></td>
-      </tr>
-      <tr>
-        <td><div class='configLabel ui-text'>POESESSID</div></td>
-        <td><input class='configInput' name='poesessid' id='poesessid' type='password' maxlength='50' size='80' /></td>
-      </tr>
-      <tr>
-        <td style='vertical-align:middle;'>
-        </td>
-      </tr>
-      <tr>
-        <td colspan="2">
-          <hr>
-        </td>
-      </tr>
-      <tr>
-        <td colspan="2">
-          Currently active character: <span id='activeProfile'/>
-        </td>
-      </tr>
-      <tr>
-        <td colspan="2">
-          <input class='configInput' readonly name='uploadFilter' id='uploadFilter' type='text' style='width:100%'/>
-        </td>
-      </tr>
-      <tr>
-        <td colspan="2">
-          <input class='configInput' onclick='getCharacters()' name='characterList' id='characterList' type='text' style='width:100%' placeholder='Click to change active character (requires restart)' />
-          <input type='hidden' id='selectedName' />
-          <input type='hidden' id='selectedLeague' />
-        </td>
-      </tr>
-      <tr>
-        <td colspan="2">
-          <hr>
-        </td>
-      </tr>
-      <tr>
-        <td><div class='configLabel ui-text'>Client.txt Location</div></td>
-        <td><input class='configInput' name='clientTxt' id='clientTxt' readonly type='text' maxlength='50' size='80' /></td>
-      </tr>
-      <tr>
-        <td><div class='configLabel ui-text'>Screenshot Directory</div></td>
-        <td><input class='configInput' name='screenshotDir' id='screenshotDir' readonly type='text' maxlength='50' size='80' /></td>
-      </tr>
-      <tr>
-        <td colspan="2">
-          <hr>
-        </td>
-      </tr>
-      <tr>
-        <td colspan="2">
-          <div class='configLabel ui-text'>
-            Enable overlay popup messages (experimental)
-            <input style='margin-left:20px;' name='overlayEnabled' id='overlayEnabled' type='checkbox'/>
-          </div>
-        </td>
-      </tr>
-      <tr>
-        <td colspan="2">
-          <hr>
-          <br/>
-          <button class='ui-text' style='width:48%;float:left;' id='saveSettings' onclick='saveSettings()'>Save</button>
-          <button class='ui-text' style='width:48%;float:right;' onclick='backToMain()'>Back to Main</button>
-        </td>
-      </tr>
-    </table>    
+              <button class='ui-text' style='width:48%;float:left;' id='saveSettings' onclick='saveSettings()'>Save</button>
+              <button class='ui-text' style='width:48%;float:right;' onclick='backToMain()'>Back to Main</button>
     <div id="messagePadding" style="height:150px;visibility:hidden;">&nbsp;</div>
     <div id="messages" class="messageSection"></div>
   </body>

@@ -150,7 +150,6 @@ function init() {
           logger.info("Starting components");
           DB.getDB(true);
           RateGetter.update();
-          StashGetter.get();
           ClientTxtWatcher.start();
           ScreenshotWatcher.start();
           OCRWatcher.start();
@@ -175,6 +174,10 @@ function initWindow(window) {
   StashGetter.emitter.on("invalidSessionID", () => {
     addMessage(`<span class='eventText'>Unable to get stash information. Please check your POESESSID</span>`);
   });
+  StashGetter.emitter.on("netWorthUpdated", (info) => {
+    addMessage(`Net worth update: <span class='eventText'>${info.value}</span> <img src='res/c.png' style='vertical-align:middle'> in ${info.count} items`);
+  });
+  
   InventoryGetter.emitter.removeAllListeners();
   InventoryGetter.emitter.on("invalidSessionID", () => {
     addMessage(`<span class='eventText'>Unable to get inventory information. Please check your POESESSID</span>`);
@@ -195,6 +198,9 @@ function initWindow(window) {
   
   RunParser.emitter.removeAllListeners();
   RunParser.emitter.on("runProcessed", (run) => {
+    
+    StashGetter.tryGet();
+
     var f = new Intl.NumberFormat();
     addMessage(
       `<span style='cursor:pointer;' onclick='window.location.href="map.html?id=${run.id}";'>`      
@@ -207,6 +213,7 @@ function initWindow(window) {
       true
     );
     webContents.send("runProcessed", run);
+    
   });
   
   MapSearcher.emitter.removeAllListeners();
