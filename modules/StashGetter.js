@@ -82,10 +82,17 @@ async function get() {
       if(err) {      
         logger.info(`Error inserting stash ${timestamp} with value ${tabs.value}: ${err}`);
       } else {
-        logger.info(`Total value ${tabs.value} in ${tabs.items.length} items`);
-        emitter.emit("netWorthUpdated", {
-          value: Number(tabs.value).toFixed(2),
-          count: tabs.items.length
+        logger.info(`Inserted stash ${timestamp} with value ${tabs.value}`);
+        DB.get(" select value from stashes where timestamp < ? order by timestamp desc limit 1 ", [timestamp], (err, row) => {
+          if(err) {
+            logger.info(`Error getting previous stash before ${timestamp}: ${err}`);
+          } else {
+            logger.info(`Gained ${tabs.value - row.value} since last check`);
+            emitter.emit("netWorthUpdated", {
+              value: Number(tabs.value).toFixed(2),
+              change: Number(tabs.value - row.value).toFixed(2)
+            });
+          }
         });
       }
     });
