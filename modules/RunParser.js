@@ -274,7 +274,7 @@ async function process() {
   var killCount  = await getKillCount(firstEvent, lastEvent);
   // if no items picked up and no xp gained, don't log map run
   // this is to prevent unwanted logging of menagerie visits, etc.
-  if(items.count === 0 && xpDiff === 0) {
+  if(!items.count && !xpDiff && !killCount) {
     logger.info("No items or xp gained, not logging map run");
     return;
   }
