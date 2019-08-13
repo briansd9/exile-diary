@@ -101,11 +101,11 @@ class Utils {
     }
   }
   
-  static formatSignedNumber(n) {
+  static formatSignedNumber(n, parens = false) {
     var f = new Intl.NumberFormat();
     var sign = (n > 0 ? "+" : "");
     var css = (n < 0 ? "negative" : "positive");
-    return `<span class='${css}'>${sign}${f.format(n)}</span>`;
+    return `<span class='${css}'>${parens ? '(' : ''}${sign}${f.format(n)}${parens ? ')' : ''}</span>`;
   }
   
   static getItemValue(item, rates) {
