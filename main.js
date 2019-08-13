@@ -174,9 +174,13 @@ function initWindow(window) {
   StashGetter.emitter.on("invalidSessionID", () => {
     addMessage(`<span class='eventText'>Unable to get stash information. Please check your POESESSID</span>`);
   });
-  StashGetter.emitter.on("netWorthUpdated", (info) => {
+  StashGetter.emitter.on("netWorthUpdated", (data) => {
     addMessage(
-      `Net worth update: <span class='eventText'>${info.value}</span> <img src='res/c.png' style='vertical-align:middle'> in ${info.count} items`,
+      `
+        Net worth update: 
+        <span class='eventText'>${data.value}</span> <img src='res/c.png' style='vertical-align:middle'>
+        ${data.change === 0 ? "" : `(${Utils.formatSignedNumber(data.change)})`}
+      `,
       true
     );
   });
