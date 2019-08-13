@@ -31,8 +31,95 @@
       const Utils = require('./modules/Utils');
       const RateGetter = require('./modules/RateGetter');
       
-      var chaosNetWorth, exaltNetWorth, rates, itemsByType, itemsById;
+      class Stash {
+        
+        constructor(id) {
+          this.id = id;
+          this.value = 0;
+          this.itemsByType = [];
+          this.itemsById = [];
+        }
+        
+        getStashItems() {
+          return new Promise( (resolve, reject) => {
+            DB.get(`select items, value from stashes where timestamp = ?`, [this.id], async (err, row) => {
+              this.value = row.value;
+              var items = JSON.parse(row.items);
+              for(var i = 0; i < items.length; i++) {
+                this.processItem(items[i]);
+              }
+              resolve();
+            });
+          });
+        }
+        
+        processItem(item) {          
+          // need to identify by both type and rarity, otherwise unique and normal maps of the same basetype will be grouped together
+          var typeIdentifier  = item.typeLine.replace("Superior ", "");
+          if(item.frameType === 3) {
+            typeIdentifier += "_unique";
+          }
+          if (!this.itemsByType[typeIdentifier]) {
+            this.itemsById[item.id] = item;
+            this.itemsByType[typeIdentifier] = item.id;
+            this.itemsById[item.id].stackSize = item.stackSize || 1;
+          } else {
+            this.itemsById[this.itemsByType[typeIdentifier]].stackSize += item.stackSize || 1;
+          }          
+        }
+        
+        getSortedItems() {          
+          var values = Object.values(this.itemsById);
+          values.sort((a, b) => {
+            var a1 = (a.chaosValue || -1);
+            var b1 = (b.chaosValue || -1);
+            return (b1 === a1 ? a.displayName.localeCompare(b.displayName) : (b1 - a1));
+          });
+          return values;
+        }
+        
+        compareTo(stash) {
+          
+          var curr = this;
+          var prev = stash;
+          
+          var currKeys = Object.keys(curr.itemsByType);
+          var prevKeys = Object.keys(prev.itemsByType);
+          var allKeys = currKeys.concat(prevKeys.filter(i => { return !currKeys.includes(i) }));
+          
+          allKeys.forEach(key => {
+            if (!prevKeys.includes(key)) {
+              curr.itemsById[curr.itemsByType[key]].change = curr.itemsById[curr.itemsByType[key]].stackSize;
+            } else if(!currKeys.includes(key)) {
+              // todo: how to handle items that disappeared completely from current stash?
+//              var lostItem = Object.assign({}, prev.itemsById[prev.itemsByType[key]]);
+//              lostItem.change = -lostItem.stackSize;
+//              lostItem.stackSize = 0;
+//              curr.itemsByType[key] = lostItem.id;
+//              curr.itemsById[curr.itemsByType[key]] = lostItem;
+            } else {
+              var diff = getDifference(prev.itemsById[prev.itemsByType[key]], curr.itemsById[curr.itemsByType[key]]);
+              if (diff) {
+                curr.itemsById[curr.itemsByType[key]].change = diff;
+              }
+            }
+          });
+          
+          function getDifference(prevItem, currItem) {
+            if (prevItem.stackSize && currItem.stackSize && prevItem.stackSize !== currItem.stackSize) {
+              return currItem.stackSize - prevItem.stackSize;
+              //var obj = Object.assign({}, currItem);
+              //obj.stackSize -= prevItem.stackSize;
+              //return obj;
+            }
+            return 0;
+          }        
 
+        }
+
+        
+      }
+      
       $(document).ready( async () => {
 
         $("#sidenav").load("sidenav.html");
@@ -58,111 +145,95 @@
         }
       }
       
-      
       async function loadStash(id) {
-        clearCurrent();
-        rates = await RateGetter.getFor(id);
-        loadStashList(id);
-        loadNavLinks(id);
-        getStashItems(id);
-      }
-      
-      function clearCurrent() {
+        
         ["itemsTable", "prevCell", "nextCell"].forEach( str => {
           $(`#${str}`).empty();
         });
         $("#itemsHeader").hide();
-        chaosNetWorth = 0;
-        exaltNetWorth = 0;
-        itemsByType = {};
-        itemsById = {};
-      }
-      
-      function processItem(item) {
-        // need to identify by both type and rarity, otherwise unique and normal maps of the same basetype will be grouped together
-        var typeIdentifier  = item.typeLine.replace("Superior ", "");
-        if(item.frameType === 3) {
-          typeIdentifier += "_unique";
-        }
-        if (!itemsByType[typeIdentifier]) {
-          itemsById[item.id] = item;
-          itemsByType[typeIdentifier] = item.id;
-          itemsById[item.id].stackSize = item.stackSize || 1;
-        } else {
-          itemsById[itemsByType[typeIdentifier]].stackSize += item.stackSize || 1;
-        }
-      }
-      
-      
-      function getStashItems(id) {
         
-        DB.get(`select items, value from stashes where timestamp = ?`, [id], (err, row) => {
-          
-          var items = JSON.parse(row.items);
-          items.forEach(processItem);
-          
-          Object.keys(itemsById).forEach(k => {
-            
-            var item = itemsById[k];
-            item.displayName = Utils.getBaseName(item);
-            
-            var sockets = ItemData.getSockets(item);
-            if(sockets.length > 0 && !sockets.includes("DV")) {
-              return;
-            }
-            
-            item.chaosValue = Utils.getItemValue(item, rates);
-            
-            if(item.chaosValue) {
-              
-              item.chaosValue = Number(item.chaosValue).toFixed(2);
-              var name = Utils.getBaseName(item);
-              if (name === "Chaos Orb") {
-                item.unitValue = (1).toFixed(2);
-              } else if (rates[name]) {
-                item.unitValue = (rates[name] * 1).toFixed(2);
-              }
-            }
-          });
-          
-          var values = Object.values(itemsById);
-          values.sort((a, b) => {
-            a1 = (a.chaosValue || -1);
-            b1 = (b.chaosValue || -1);
-            return (b1 === a1 ? a.displayName.localeCompare(b.displayName) : (b1 - a1));
-          });
+        loadStashList(id);
+        loadNavLinks(id);
+        
+        var currStash, prevStash;
+        
+        currStash = new Stash(id);
+        await currStash.getStashItems();
+        
+        var prevStashID = await getPrevStashID(id);
+        if(prevStashID) {
+          prevStash = new Stash(prevStashID);
+          await prevStash.getStashItems();
+        }
+        if(prevStash) {
+          currStash.compareTo(prevStash);
+        }
+        
+        displayItems(currStash);
+        
+      }
+      
+      async function displayItems(s) {
+        
+        var rates = await RateGetter.getFor(s.id);
+        
+        Object.keys(s.itemsById).forEach(k => {
 
-          for (var v of values) {
-            $("#itemsTable").append(itemToString(v));
+          var item = s.itemsById[k];
+          item.displayName = Utils.getBaseName(item);
+
+          var sockets = ItemData.getSockets(item);
+          if(sockets.length > 0 && !sockets.includes("DV")) {
+            return;
+          }
+
+          item.chaosValue = Utils.getItemValue(item, rates);
+
+          if(item.chaosValue) {
+            item.chaosValue = Number(item.chaosValue).toFixed(2);
+            var name = Utils.getBaseName(item);
+            if (name === "Chaos Orb") {
+              item.unitValue = (1).toFixed(2);
+            } else if (rates[name]) {
+              item.unitValue = (rates[name] * 1).toFixed(2);
+            }
           }
           
-          var chaosString, exaltString;
-          
-          chaosNetWorth = row.value;
-          chaosString = `${Number(chaosNetWorth).toFixed(2)} <img style='vertical-align:middle;' src='res/c.png'/>`;
-          if(chaosNetWorth > rates["Exalted Orb"]) {
-            exaltNetWorth = chaosNetWorth / rates["Exalted Orb"];
-            exaltString = `${Number(exaltNetWorth).toFixed(2)} <img style='vertical-align:middle;' src='res/ex.png'/>`;
-          }
-          
-          $("#netWorth").html(`Net Worth: ${chaosString} ${exaltString ? `(${exaltString})` : ""}`);
-          $("#itemsHeader").show();
-      
         });
+
         
+        var items = s.getSortedItems();
+        for (var i of items) {
+          $("#itemsTable").append(itemToString(i));
+        }
+
+
+        var chaosString, exaltString;
+        chaosString = `${Number(s.value).toFixed(2)} <img style='vertical-align:middle;' src='res/c.png'/>`;
+        
+        if(s.value > rates["Exalted Orb"]) {
+          var exaltValue = s.value / rates["Exalted Orb"];
+          exaltString = `${Number(exaltValue).toFixed(2)} <img style='vertical-align:middle;' src='res/ex.png'/>`;
+        }        
+
+        $("#netWorth").html(`Net Worth: ${chaosString} ${exaltString ? `(${exaltString})` : ""}`);
+        $("#itemsHeader").show();
+      
       }
       
       function itemToString(i) {
-        if (!i.chaosValue)
+        if (!i.chaosValue || !i.stackSize) {
           return;
+        }
         
         var displayStackSize = (i.displayName === "6-socket Items") ? i.stackSize * 7 : i.stackSize;
+        var changeString = (i.change ? `${Utils.formatSignedNumber(i.change, true).replace(',', '')}` : "");
         
         var str = `
           <tr>
-            <td bgcolor=0 style='min-width:60px;position:relative;'>
+            <td bgcolor=0 style='min-width:120px;position:relative;'>
               <img onerror='this.style.visibility="hidden"'; style='height:${i.h * 40}px;width:${i.w * 40}px;' src='${i.icon}'/>
-              <span class='stackSize'>${displayStackSize || ""}</span>
+              <span class='stackSize'>${displayStackSize} ${changeString}</span><br/>
             </td>
             <td style='padding-left:10px;padding-right:10px;min-width:300px'>${i.displayName}</td>
             <td style='padding-left:10px;padding-right:10px'>${i.unitValue ? i.unitValue + "" : "&nbsp;"}</td>
@@ -223,6 +294,18 @@
             });
           });
         }
+      }
+      
+      function getPrevStashID(id) {
+        return new Promise( (resolve, reject) => {
+          DB.get(" select max(timestamp) as id from stashes where timestamp < ?", [id], (err, row) => {
+            if(err) {
+              logger.info(`Unable to get previous stash before ${id}: ${err}`);
+            } else if(row) {
+              resolve(row.id);
+            }
+          });
+        });
       }
       
       function showNavigation(stash) {
