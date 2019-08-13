@@ -177,9 +177,12 @@ function initWindow(window) {
   StashGetter.emitter.on("netWorthUpdated", (data) => {
     addMessage(
       `
+        <span style='cursor:pointer;' onclick='window.location.href="stash.html";'>
         Net worth update: 
-        <span class='eventText'>${data.value}</span> <img src='res/c.png' style='vertical-align:middle'>
+        <span class='eventText'>${data.value}</span>
+        <img src='res/c.png' style='vertical-align:middle'>
         ${data.change === 0 ? "" : `(${Utils.formatSignedNumber(data.change)})`}
+        </span>
       `,
       true
     );
