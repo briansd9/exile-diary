@@ -1,4 +1,5 @@
 const moment = require('moment');
+const Constants = require('./Constants');
 const logger = require("./Log").getLogger(__filename);
 const https = require('https');
 
@@ -98,10 +99,23 @@ function insertRate(date, data) {
     });
     data.lines.forEach( line => {
       
-      // for maps, only get values for the current atlas series, as those are the only ones that can drop
-      if(line.mapTier > 0 && line.itemClass == 2 && line.variant !== CURRENT_ATLAS_SERIES) {
-        logger.info(`Bypassing previous map series: ${line.name} from ${line.variant}`);
-        return;
+      // special handling for maps (itemclass !== 5 filters out essences, which also have a tier)
+      if(line.mapTier > 0 && line.itemClass !== 5) {
+        if(line.itemClass !== 3 && line.variant !== CURRENT_ATLAS_SERIES) {
+          // for non-unique maps, only get values for the current atlas series, as those are the only ones that can drop
+          // logger.info(`Bypassing previous map series: ${line.name} from ${line.variant} (value ${line.chaosValue || line.chaosEquivalent})`);
+          return;
+        } else if(line.itemClass === 3 && line.name !== "The Beachhead") {
+          // unique maps currently store no information about their atlas series. GGG plz
+          var currentAtlasMap = Constants.uniqueMapsCurrentAtlas[line.name];
+          if(line.mapTier !== currentAtlasMap.mapTier || line.baseType !== currentAtlasMap.baseType) {
+//            logger.info(
+//              `Bypassing old unique map type: ${line.name}, tier ${line.mapTier} ${line.baseType} `
+//              + `(expected: tier ${currentAtlasMap.mapTier} ${currentAtlasMap.baseType})`
+//            );
+            return;
+          }
+        }
       }
 
       var item = line.currencyTypeName || line.name;
