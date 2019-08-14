@@ -70,6 +70,7 @@ async function get() {
   
   for(var i = 0; i < tabList.length; i++) {
     var t = tabList[i];
+    logger.info(`Checking tab ${t.name} of type ${t.type}`);
     var tabData = await getTab(t, params);
     if(tabData.items.length > 0) {
       tabs.value += Number(tabData.value);
@@ -96,6 +97,8 @@ async function get() {
         });
       }
     });
+  } else {
+    logger.info("No items found, returning");
   }
 
 }
