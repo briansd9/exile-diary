@@ -96,9 +96,6 @@ function getEvent(arg) {
     if (str.indexOf("You have entered") > -1) {
       str = str.trim();
       var area = str.substring(str.indexOf("You have entered") + 17);
-      if (area.indexOf("Maelstr") > -1) {
-        area = "Maelstrom of Chaos ";
-      }
       return {
         type: "entered",
         text: area.substring(0, area.length - 1),
