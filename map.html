@@ -250,37 +250,6 @@
         }
       }
 
-
-      async function getItemInfo(id) {
-        await fetch("item.php?id=" + id)
-          .then(function (response) {
-            return response.json();
-          })
-          .then(function (data) {
-            if (data.itemdata.artFilename) {
-              $("#itemInfoIcon").empty().html("<img src='https://web.poecdn.com/image/gen/divination_cards/" + data.itemdata.artFilename + ".png'/>");
-            } else {
-              $("#itemInfoIcon").empty().html("<img src='" + data.itemdata.icon + "'/>");
-            }
-            f = new Intl.NumberFormat();
-            $("#itemInfoName").empty().html(displayInfoName(data));
-            $("#itemInfoCount").empty().html(f.format(data.count) + " found");
-            $("#itemInfoPrevCount").empty();
-            if (data.prevcount) {
-              $("#itemInfoPrevCount").html(" (" + f.format(data.prevcount) + " previously)");
-            }
-            $("#itemInfoLastFound").empty();
-            if (data.lastfound) {
-              data.lastfound.forEach(drawFoundItem);
-            }
-            $("#itemInfoLastFound").append("<tr><td colspan=3><hr></td></tr>");
-            if (data.nextfound) {
-              data.nextfound.forEach(drawFoundItem);
-            }
-            $("#myModal").css({display: "block"});
-          });
-      }
-
       function displayInfoName(i) {
 
         var name = displayName(i.itemdata);
@@ -791,7 +760,7 @@
             //break;
           case "Escape":
           case "Esc":
-            $("#myModal").css({display: "none"});
+            $("#myModal").hide();
             break;
         }
       }
@@ -800,7 +769,7 @@
         if (e.target.classList.contains("item-name")) {
           await getItemInfo(e.target.id);
         } else if (e.target.classList.contains("modal")) {
-          $("#myModal").css({display: "none"});
+          $("#myModal").hide();
         }
       }
 
@@ -896,24 +865,6 @@
           </tbody>
         </table>
         <hr style='border:1px solid #999;' />
-      </div>
-      <div id="myModal" class="modal">
-        <div id="modalContent" class="modal-content">
-          <table style="border-spacing: 20px;">
-            <tr>
-              <td>
-                <div id="itemInfoIcon"></div>
-              </td>
-              <td style="vertical-align:middle;">
-                <div id="itemInfoName"></div>
-                <span id="itemInfoCount"></span> <span id="itemInfoPrevCount"></span>
-              </td>
-            </tr>
-          </table>
-          <table id="itemInfoLastFound">
-            <tbody></tbody>
-          </table>
-        </div>
       </div>
     </div>
     <div class="footer">
