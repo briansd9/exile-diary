@@ -132,8 +132,8 @@
           $("#uploadFilter").hide();
         }
         
-        if(settings.activeProfile && settings.activeProfile.stashCheckInterval) {
-          $("#stashCheckInterval").val(settings.activeProfile.stashCheckInterval);
+        if(settings.stashCheckInterval) {
+          $("#stashCheckInterval").val(settings.stashCheckInterval);
         } else {
           $("#stashCheckInterval").val(24);
         }
@@ -204,17 +204,25 @@
           return;
         }
         
-        var tabs = [];
-        $("input[name='tabList']:checked").each((i, elem) => {
-          tabs.push($(elem).val());
-        })
-    
         settings.activeProfile = {
           characterName: $("#selectedName").val(),
-          league: $("#selectedLeague").val(),
-          tabs: tabs,
-          stashCheckInterval: $("#stashCheckInterval").val()
+          league: $("#selectedLeague").val()
         };
+        settings.stashCheckInterval = $("#stashCheckInterval").val();
+        
+        if(!requiresRestart) {
+          
+          var tabs = [];
+          $("input[name='tabList']:checked").each((i, elem) => {
+            tabs.push($(elem).val());
+          })
+          
+          if(!settings.tabs) {
+            settings.tabs = {};
+          }
+          settings.tabs[settings.activeProfile.league] = tabs;
+          
+        }
         
         var filename = path.join(app.getPath("userData"), "settings.json");
         fs.writeFile(filename, JSON.stringify(settings), (err) => {
@@ -255,7 +263,7 @@
         
         var requestParams = {
           hostname: 'www.pathofexile.com',
-          path: `/character-window/get-stash-items?accountName=${encodeURIComponent(settings.accountName)}&league=${settings.activeProfile.league}&tabs=1`,
+          path: `/character-window/get-stash-items?accountName=${encodeURIComponent(settings.accountName)}&league=${encodeURIComponent(settings.activeProfile.league)}&tabs=1`,
           method: 'GET',
           headers: {
             Referer: 'http://www.pathofexile.com/',
@@ -285,7 +293,7 @@
         request.end();
         
         function tabListError(err) {
-          alert(`Failed to get tab list for ${$("#accountName").val()}. Have you entered your account name and POESESSID correctly?`);
+         alert(`Failed to get tab list for ${$("#accountName").val()}. Have you entered your account name and POESESSID correctly?`);
         }        
         
       }
@@ -295,7 +303,7 @@
         data.tabs.forEach(tab => {
           if(tab.type === "MapStash") return;
           var color = `#${toHex(tab.colour.r)}${toHex(tab.colour.g)}${toHex(tab.colour.b)}`;
-          var checked = settings.activeProfile.tabs && settings.activeProfile.tabs.includes(tab.id);
+          var checked = settings.tabs && settings.tabs[settings.activeProfile.league] && settings.tabs[settings.activeProfile.league].includes(tab.id);
           div.append(`
             <div onclick='selectTab("${tab.id}");' class='stashTab' style='background-color:${color};'>
               <input type='checkbox' onclick='selectTab("${tab.id}")' name='tabList' ${checked ? "checked='checked'" : ""} id='${tab.id}' value='${tab.id}'>

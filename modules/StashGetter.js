@@ -25,12 +25,13 @@ async function tryGet() {
     var then  = moment(row.timestamp, 'YYYYMMDDHHmmss');
     var diff = moment.duration(now.diff(then)).asHours();
     // if no interval found in settings, default to once a day
-    var interval = settings.activeProfile.stashCheckInterval || 24;
+    var interval = settings.stashCheckInterval || 24;
+
+    logger.info(`Last retrieved stash ${row.timestamp} is ${diff} hours old, min interval ${interval} )`);
     
     if(diff < interval) {
       return;
     } else {
-      logger.info(`Last retrieved stash ${row.timestamp} is ${diff} hours old ( > min interval ${interval} )`);
       get();
     }
     
@@ -50,9 +51,16 @@ async function get() {
     return;
   }
   
+  var tabs = null;
+  if(settings.tabs && settings.tabs[settings.activeProfile.league]) {
+    tabs = settings.tabs[settings.activeProfile.league];
+  } else {
+    logger.info("Tabs to monitor not yet set, will retrieve all");
+  }
+  
   var params = {
     league : settings.activeProfile.league,
-    tabs : settings.activeProfile.tabs || [],
+    tabs : tabs,
     accountName : settings.accountName,
     poesessid : settings.poesessid,
     rates : rates
@@ -131,7 +139,8 @@ function getTabList(s) {
           } else if(data.tabs) {
             var tabList = [];
             data.tabs.forEach(tab => {
-              if(s.tabs.includes(tab.id)) {
+              // if tabs to watch not yet set, default to previous behavior (get all tabs)
+              if( s.tabs === null || s.tabs.includes(tab.id)) {
                 tabList.push({ index: tab.i, name: tab.n, type: tab.type });
               }
             });
