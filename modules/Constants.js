@@ -140,6 +140,7 @@ const labAreas = [
   "Estate Crossing"
 ];
 
+// only stores the latest 
 const uniqueMaps = {
   "Chateau Map": "The Perandus Manor",
   "Museum Map": "The Putrid Cloister",
@@ -158,9 +159,90 @@ const uniqueMaps = {
   "Overgrown Shrine Map": "Acton's Nightmare",
   "Necropolis Map": "Death and Taxes",
   "Dunes Map": "Pillars of Arun",
-  "Atoll Map": "Maelstrom of Chaos",
-  "Strand Map": "Whakawairua Tuahu"
+  "Atoll Map": "Maelström of Chaos",
+  "Strand Map": "Whakawairua Tuahu",
+  "Maze Map": "Doryani's Machinarium"
 };
+
+const uniqueMapsCurrentAtlas = {
+  "Acton's Nightmare" : {
+    baseType: "Overgrown Shrine Map",
+    mapTier: 7
+  },
+  "Caer Blaidd, Wolfpack's Den" : {
+    baseType: "Underground River Map",
+    mapTier: 9
+  },
+  "Death and Taxes" : {
+      baseType: "Necropolis Map",
+      mapTier: 8
+  },
+  "Doryani's Machinarium" : {
+    baseType: "Maze Map",
+    mapTier: 6
+  },
+  "Hall of Grandmasters" : {
+    baseType: "Promenade Map",
+    mapTier: 6
+  },
+  "Hallowed Ground" : {
+    baseType: "Cemetery Map",
+    mapTier: 12
+  },
+  "Maelström of Chaos" : {
+    baseType: "Atoll Map",
+    mapTier: 6
+  },
+  "Mao Kun" : {
+    // should be a Shore map - workaround for poe.ninja bug
+    baseType: "Reef Map",
+    mapTier: 9
+  },
+  "Oba's Cursed Trove" : {
+    baseType: "Underground Sea Map",
+    mapTier: 9
+  },
+  "Olmec's Sanctum" : {
+    baseType: "Bone Crypt Map",
+    mapTier: 8
+  },
+  "Pillars of Arun" : {
+    baseType: "Dunes Map",
+    mapTier: 8
+  },
+  "Poorjoy's Asylum" : {
+    baseType: "Temple Map",
+    mapTier: 10
+  },
+  "The Coward's Trial" : {
+    baseType: "Cursed Crypt Map",
+    mapTier: 4
+  },
+  "The Perandus Manor" : {
+    baseType: "Chateau Map",
+    mapTier: 8
+  },  
+  "The Putrid Cloister" : {
+    baseType: "Museum Map",
+    mapTier: 11
+  },
+  "The Twilight Temple" : {
+    baseType: "Moon Temple Map",
+    mapTier: 9
+  },
+  "The Vinktar Square" : {
+    baseType: "Courtyard Map",
+    mapTier: 6
+  },
+  "Vaults of Atziri" : {
+    baseType: "Vaal Pyramid Map",
+    mapTier: 12
+  },  
+  "Whakawairua Tuahu" : {
+    baseType: "Strand Map",
+    mapTier: 4
+  } 
+}
 
 const uniqueIcons = {
   "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/AbberathsHooves.png" : "Abberath's Hooves",
@@ -1395,7 +1477,7 @@ const areas = [
   "Arachnid Nest",
   "Arena",
   "Atoll",
-  "Maelstrom of Chaos",
+  "Maelström of Chaos",
   "Barrows",
   "Bog",
   "Cemetery",
@@ -1564,8 +1646,7 @@ const areas = [
   "Memory Void",
   "Distant Memory",
   // Legion
-  "Domain of Timeless Conflict"
-  
+  "Domain of Timeless Conflict"  
 ];
 
 const mods = [
@@ -2083,3 +2164,4 @@ module.exports.mods = mods;
 module.exports.xpLevels = xpLevels;
 module.exports.getItemName = getItemName;
 module.exports.getTempleRoom  = getTempleRoom;
+module.exports.uniqueMapsCurrentAtlas = uniqueMapsCurrentAtlas;
