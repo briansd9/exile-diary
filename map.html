@@ -68,6 +68,27 @@
         $("#messages").load("messages.html");
       });
       
+      $(document).keydown(e => {
+        switch (e.key) {
+          case "ArrowLeft":
+            $("#prevMap")[0].click();
+            break;
+          case "ArrowRight":
+            if (document.getElementById("nextMap")) {
+              $("#nextMap")[0].click();
+            }
+            break;
+          //case "End":
+            //window.location.href = "map.html";
+            //break;
+          case "Escape":
+          case "Esc":
+            $("#myModal").hide();
+            break;
+        }
+      });
+      
+      
       function screenshot() {
         $("#sidenav").hide();
         $("#messages").hide();
@@ -743,34 +764,6 @@
           window.history.pushState("", "", `map.html?id=${id}`);
           loadMap(m);
         });
-      }
-
-      document.onkeydown = function (e) {
-        switch (e.key) {
-          case "ArrowLeft":
-            $("#prevMap")[0].click();
-            break;
-          case "ArrowRight":
-            if (document.getElementById("nextMap")) {
-              $("#nextMap")[0].click();
-            }
-            break;
-          //case "End":
-            //window.location.href = "map.html";
-            //break;
-          case "Escape":
-          case "Esc":
-            $("#myModal").hide();
-            break;
-        }
-      }
-
-      document.onclick = async e => {
-        if (e.target.classList.contains("item-name")) {
-          await getItemInfo(e.target.id);
-        } else if (e.target.classList.contains("modal")) {
-          $("#myModal").hide();
-        }
       }
 
     </script>
