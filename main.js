@@ -218,7 +218,7 @@ function initWindow(window) {
         + `(${Utils.getRunningTime(run.firstevent, run.lastevent)}`
         + (run.gained ? `, ${run.gained} <img src='res/c.png' style='vertical-align:middle'>` : "")
         + (run.kills ? `, ${f.format(run.kills)} kills` : "")
-        + (run.xp ? `, ${f.format(run.xp)} XP)` : "")
+        + (run.xp ? `, ${f.format(run.xp)} XP` : "")
         + `)</span>`,
       true
     );
