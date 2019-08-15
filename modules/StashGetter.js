@@ -14,29 +14,67 @@ async function tryGet() {
   settings = require('./settings').get();
   DB = require('./DB').getDB();
 
-  DB.get("select max(timestamp) as timestamp from stashes", (err, row) => {
-    
-    if(err) {      
-      logger.info(`Error getting latest stash: ${err}`);
-      return;
-    }
-    
-    var now = moment();
-    var then  = moment(row.timestamp, 'YYYYMMDDHHmmss');
-    var diff = moment.duration(now.diff(then)).asHours();
-    // if no interval found in settings, default to once a day
-    var interval = settings.stashCheckInterval || 24;
+  var interval, units;
+  try {
+    interval = settings.stashCheck.interval;
+    units = settings.stashCheck.units;
+  } catch(e) {
+    interval = 24;
+    units = "hours";
+  }
 
-    logger.info(`Last retrieved stash ${row.timestamp} is ${diff} hours old, min interval ${interval} )`);
-    
-    if(diff < interval) {
+  var shouldGet;
+  switch(units) {
+    case "hours":
+      shouldGet = await reachedTimeLimit(interval);
+      break;
+    case "maps":
+      shouldGet = await reachedMapLimit(interval);
+      break;
+    default:
+      logger.info(`Invalid stash check interval: [${interval}] [${units}]`);
       return;
-    } else {
-      get();
-    }
+  }
+
+  if(shouldGet) {
+    get();
+  }
     
+}
+
+function reachedTimeLimit(interval) {
+  return new Promise((resolve, reject) => {
+    DB.get("select max(timestamp) as timestamp from stashes", (err, row) => {
+      if(err) {      
+        logger.info(`Error getting latest stash: ${err}`);
+        resolve(false);
+      }
+      var now = moment();
+      var then  = moment(row.timestamp, 'YYYYMMDDHHmmss');
+      var diff = moment.duration(now.diff(then)).asHours();
+      logger.info(`Last retrieved stash ${row.timestamp} is ${diff} hours old (min interval ${interval})`);
+      resolve(diff > interval);
+    });
   });
+}
 
+function reachedMapLimit(limit) {
+  return new Promise((resolve, reject) => {
+    DB.get("select max(timestamp) as timestamp from stashes", (err, row) => {
+      if(err) {      
+        logger.info(`Error getting latest stash: ${err}`);
+        resolve(false);
+      }
+      DB.get("select count(1) as count from mapruns where id > ?", [row.timestamp], (err, maps) => {
+        if(err) {      
+          logger.info(`Error getting map count: ${err}`);
+          resolve(false);
+        }
+        logger.info(`${maps.count} map runs since last retrieved stash (set to retrieve every ${limit})`);
+        resolve(maps.count >= limit);
+      });
+    });
+  });
 }
 
 async function get() {

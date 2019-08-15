@@ -64,7 +64,7 @@
         
         loadSettings();
 
-        $("#clientTxt").click(function () {
+        $("#clientTxt").click(() => {
           dialog.showOpenDialog(
             require('electron').remote.getCurrentWindow(),
             {properties: ['openFile']},
@@ -76,7 +76,7 @@
           );
         });
         
-        $("#uploadFilter").click(function () {
+        $("#uploadFilter").click(() => {
           dialog.showOpenDialog(
             require('electron').remote.getCurrentWindow(),
             {
@@ -91,7 +91,7 @@
           );
         });        
 
-        $("#screenshotDir").click(function () {
+        $("#screenshotDir").click(() => {
           dialog.showOpenDialog(
             require('electron').remote.getCurrentWindow(),
             {properties: ['openDirectory']},
@@ -101,6 +101,19 @@
               }
             }
           );
+        });
+        
+        $("#stashCheckUnits").change(() => {
+          switch($("#stashCheckUnits").val()) {
+            case "hours":
+              $("#stashCheckMaps").hide();
+              $("#stashCheckHours").show();
+              break;
+            case "maps":
+              $("#stashCheckHours").hide();
+              $("#stashCheckMaps").show();
+              break;
+          }
         });
         
         $("#tabs").tabs({
@@ -132,10 +145,26 @@
           $("#uploadFilter").hide();
         }
         
-        if(settings.stashCheckInterval) {
-          $("#stashCheckInterval").val(settings.stashCheckInterval);
+        if(settings.stashCheck) {
+          var value = settings.stashCheck.interval;
+          var units = settings.stashCheck.units;
+          $("#stashCheckUnits").val(units);
+          switch(units) {
+            case "hours":
+              $("#stashCheckMaps").hide();
+              $("#stashCheckHours").show();
+              $("#stashCheckHours").val(value);
+              break;
+            case "maps":
+              $("#stashCheckHours").hide();
+              $("#stashCheckMaps").show();
+              $("#stashCheckMaps").val(value);
+              break;
+          }
         } else {
-          $("#stashCheckInterval").val(24);
+          $("#stashCheckMaps").hide();
+          $("#stashCheckHours").val(24);
+          $("#stashCheckUnits").val("hours");
         }
 
       }
@@ -208,7 +237,21 @@
           characterName: $("#selectedName").val(),
           league: $("#selectedLeague").val()
         };
-        settings.stashCheckInterval = $("#stashCheckInterval").val();
+        
+        var stashCheckUnits = $("#stashCheckUnits").val();
+        var stashCheckInterval;
+        switch(stashCheckUnits) {
+          case "hours":
+            stashCheckInterval = $("#stashCheckHours").val();
+            break;
+          case "maps":
+            stashCheckInterval = $("#stashCheckMaps").val();
+            break;
+        }
+        settings.stashCheck = {
+          interval: stashCheckInterval,
+          units: stashCheckUnits
+        }
         
         if(!requiresRestart) {
           
@@ -526,16 +569,27 @@
       <div id="stash">
         <div>
           Check Net Worth every
-          <select class='ui-text' style='margin-left:10px;font-family:FontinSmallCaps;' id="stashCheckInterval">
-            <option value="0.5">1/2 hour</option>
-            <option value="1">1 hour</option>
-            <option value='2'>2 hours</option>
-            <option value='3'>3 hours</option>
-            <option value='4'>4 hours</option>
-            <option value='6'>6 hours</option>
-            <option value='8'>8 hours</option>
-            <option value='12'>12 hours</option>
-            <option value='24'>24 hours</option>
+          <select class='ui-text' style='margin-left:10px;font-family:FontinSmallCaps;' id="stashCheckHours">
+            <option value="0.5">1/2</option>
+            <option value="1">1</option>
+            <option value='2'>2</option>
+            <option value='3'>3</option>
+            <option value='4'>4</option>
+            <option value='6'>6</option>
+            <option value='8'>8</option>
+            <option value='12'>12</option>
+            <option value='24'>24</option>
+          </select>
+          <select class='ui-text' style='margin-left:10px;font-family:FontinSmallCaps;' id="stashCheckMaps">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value='20'>20</option>
+            <option value='50'>50</option>
+            <option value='100'>100</option>
+          </select>
+          <select class='ui-text' style='font-family:FontinSmallCaps;' id="stashCheckUnits">
+            <option value="hours">hours</option>
+            <option value="maps">maps</option>
           </select>
         </div>
         <hr>
