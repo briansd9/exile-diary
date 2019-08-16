@@ -34,7 +34,7 @@ function start() {
     inv = new InventoryGetter();
 
     tail.on("line", (line) => {
-      if(line.toLowerCase().endsWith(`] @from ${settings.activeProfile.characterName.toLowerCase()}: end`)) {
+      if(line.toLowerCase().endsWith(`] @to ${settings.activeProfile.characterName.toLowerCase()}: end`)) {
         logger.info("Detected map end signal, processing last map run");
         RunParser.process();
       } else if(line.includes("Connecting to instance server at")) {
