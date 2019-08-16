@@ -33,8 +33,7 @@
       const DB = require('./modules/DB').getDB();
       const moment = require('moment');
       const momentDurationFormatSetup = require("moment-duration-format");
-      const {ipcRenderer} = require('electron');
-      const remote = require('electron').remote;
+      const {ipcRenderer, remote} = require('electron');
       const XLSX = require('xlsx');
       
       const ssf = remote.getGlobal("ssf");

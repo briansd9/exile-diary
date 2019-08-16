@@ -42,8 +42,7 @@
       const RunParser = require('./modules/RunParser');
       const DB = require('./modules/DB').getDB();
       const Constants = require('./modules/Constants');
-      const {ipcRenderer} = require('electron');
-      const remote = require('electron').remote;
+      const {ipcRenderer, remote} = require('electron');
       
       var maprun, parser, rates, itemsByType, itemsById, currScroll;
       
