@@ -4,6 +4,7 @@ const moment = require('moment');
 const https = require('https');
 const Utils = require('./Utils');
 const RateGetter = require('./RateGetter');
+const zlib = require('zlib');
 
 var DB;
 var settings;
@@ -125,7 +126,8 @@ async function get() {
   };
   
   if(tabs.items.length > 0) {
-    DB.run(" insert into stashes(timestamp, items, value) values(?, ?, ?) ", [timestamp, JSON.stringify(tabs.items), tabs.value], (err) => {
+    var rawdata = await compress(tabs.items);
+    DB.run(" insert into stashes(timestamp, items, value) values(?, ?, ?) ", [timestamp, rawdata, tabs.value], (err) => {
       if(err) {      
         logger.info(`Error inserting stash ${timestamp} with value ${tabs.value}: ${err}`);
       } else {
@@ -147,6 +149,21 @@ async function get() {
     logger.info("No items found, returning");
   }
 
+}
+
+function compress(data) {
+  var json = JSON.stringify(data);
+  return new Promise((resolve, reject) => {
+    zlib.deflate(json, (err, buffer) => {
+      if(err) {
+        logger.info(`Error compressing stash data: ${err}`);
+        throw err;
+      } else {
+        logger.info(`Stash data successfully compressed (${json.length} to ${buffer.length} bytes)`);
+        resolve(buffer);
+      }
+    });
+  });
 }
 
 function getTabList(s) {

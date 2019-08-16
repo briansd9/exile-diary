@@ -30,6 +30,7 @@
       const logger = require('./modules/Log').getLogger(__filename);
       const Utils = require('./modules/Utils');
       const RateGetter = require('./modules/RateGetter');
+      const zlib = require('zlib');      
       
       class Stash {
         
@@ -44,11 +45,24 @@
           return new Promise( (resolve, reject) => {
             DB.get(`select items, value from stashes where timestamp = ?`, [this.id], async (err, row) => {
               this.value = row.value;
-              var items = JSON.parse(row.items);
+              var items = await this.getItemsFromData(row.items);
               for(var i = 0; i < items.length; i++) {
                 this.processItem(items[i]);
               }
               resolve();
+            });
+          });
+        }
+        
+        getItemsFromData(data) {
+          return new Promise( (resolve, reject) => {
+            zlib.inflate(data, (err, buffer) => {
+              if(err) {
+                // old data - compression not implemented yet, just parse directly
+                resolve(JSON.parse(data));
+              } else {
+                resolve(JSON.parse(buffer));
+              }
             });
           });
         }
