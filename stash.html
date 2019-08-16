@@ -31,6 +31,7 @@
       const Utils = require('./modules/Utils');
       const RateGetter = require('./modules/RateGetter');
       const zlib = require('zlib');      
+      const {ipcRenderer, remote} = require('electron');
       
       class Stash {
         
@@ -136,13 +137,48 @@
       
       $(document).ready( async () => {
 
-        $("#sidenav").load("sidenav.html");
+        $("#sidenav").load("sidenav.html", () => {
+          $("#sidenav-items").append("<div><a class='ui-text' onclick='screenshot()'>Screenshot</a></div>");
+        });
         $("#messages").load("messages.html");
         
         var stashID = await getStashID();
         loadStash(stashID);
         
       });
+      
+      var currScroll;
+      ipcRenderer.on("done-capturing", () => { 
+        $("#sidenav").show();
+        $("#messages").show();
+        $("#messagePadding").show();
+        $("#topnav").show();
+        $("#mods").removeClass('mapModScreenshot');
+        $("#mods").addClass('dropdown-content');
+        $("#mods").addClass('mapMod');
+        $("body").removeClass('bodyScreenshot');
+        $(".footer").hide();
+        $(document).scrollTop(currScroll);
+        logger.info("Done capturing");
+      });
+
+        function screenshot() {
+        $("#sidenav").hide();
+        $("#messages").hide();
+        $("#messagePadding").hide();
+        $("#topnav").hide();
+        $("#mods").removeClass('dropdown-content');
+        $("#mods").removeClass('mapMod');
+        $("#mods").addClass('mapModScreenshot');
+        $("body").addClass('bodyScreenshot');
+        $(".footer").show();
+        currScroll = $(document).scrollTop();
+        remote.getCurrentWindow().captureFullPage(img => { 
+          img.getBase64('image/png', (err, imgdata) => {
+            ipcRenderer.send("screenshotCaptured", imgdata);
+          });
+        });
+      }
       
       document.onkeydown = function (e) {
         switch (e.key) {
