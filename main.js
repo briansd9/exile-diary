@@ -291,8 +291,11 @@ async function createWindow() {
   function saveWindowBounds() {
     clearTimeout(windowMoving);
     windowMoving = setTimeout(writeBounds, 1000);
-    function writeBounds() {
-      Settings.set("mainWindowBounds", mainWindow.getBounds());
+    function writeBounds() {      
+      try {
+        Settings.set("mainWindowBounds", mainWindow.getBounds());
+      } catch(e) {}
+      // swallow exception that occurs on closing app
     }
   }
   mainWindow.on("resize", saveWindowBounds);
