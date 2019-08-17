@@ -116,6 +116,10 @@ async function get() {
   };
   
   for(var i = 0; i < tabList.length; i++) {
+    if(i > 0) {
+      // 1.5 sec delay to prevent hitting stash API rate limit (45 in 60 sec)
+      await timer(1500);
+    }
     var t = tabList[i];
     logger.info(`Checking tab ${t.name} of type ${t.type}`);
     var tabData = await getTab(t, params);
@@ -150,6 +154,11 @@ async function get() {
   }
 
 }
+
+function timer(ms) {
+  return new Promise(res => setTimeout(res, ms));
+}
+
 
 function compress(data) {
   var json = JSON.stringify(data);
