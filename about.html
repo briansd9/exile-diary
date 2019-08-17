@@ -1,0 +1,67 @@
+<script>
+
+  $(document).on("click", ".aboutlink", (event) => {
+    var target = "" + event.target;
+    event.preventDefault();
+    openLink(target);      
+  });
+  
+  function openLink(href) {
+    var opn = require('opn');
+    opn(href);
+  }
+    
+  $(document).ready(() => {
+    $("#appVersionAbout").html(require('electron').remote.app.getVersion());
+  });
+  
+</script>
+<div style="background-color:black;">
+  <table style='width:100%;'>
+    <tr style='width:100%;'>
+      <td>
+        <div class='aboutInfo' style='display:inline-block;'>
+         <span class='eventText' style='font-family:FontinSmallCaps;'>Exile Diary v<span id='appVersionAbout'></span></span>
+         <span style='font-size:smaller;'>made with love by <a style="font-size:100%;" class='aboutlink' href="https://www.reddit.com/message/compose/?to=briansd9">/u/briansd9</a></span>
+       </div>
+       <div class='aboutInfo'>
+         <span style='font-family:FontinSmallCaps;'>GitHub:</span> <a style="font-size:100%;" class='aboutlink' href="https://github.com/briansd9/exile-diary/">https://github.com/briansd9/exile-diary/</a>
+       </div>
+      </td>
+      <td style='text-align:right;'>
+        <img onclick='openLink("https://patreon.com/briansd9");' src='res/patreon.png'/>
+      </td>
+    </tr>
+  </table>
+  
+  <hr style='border:1px solid #333'/>
+  Change log:
+  <textarea class='changelog' readonly>
+v0.2.29 (2019-08-17)
+  • added: changelog
+  • added: net worth configuration; select stash tabs to watch and refresh interval (Settings -> Stash)
+  • fixed: unique map drops now properly priced in standard
+  • fixed: map runs can now be manually ended even if you're in a guild
+
+v0.2.28 (2019-08-08)
+  • added: display net worth, based on stash contents (map tabs not yet included)
+  • fixed: removed minimum window width, scale window contents down instead
+  • fixed: equipment taken off being displayed as map loot
+
+v0.2.27 (2019-08-02)
+  • fixed: screenshot extraction now works for 4K resolution
+  • fixed: remember window position and size
+
+v0.2.26 (2019-07-29)
+  • added: support for notes (send @ message to yourself, will show up as a map event)
+  • added: preliminary support for exporting to xls
+  • fixed: don't display death count in hardcore
+  • fixed: auto-identifying unided voidforge
+
+v0.2.22 (2019-06-08)
+  • added: experimental overlay popup (off by default)
+  • added: betrayal encounter tracking
+  • fixed: item images from PoE servers no longer include stacksize; now displayed manually
+
+  </textarea>
+</div>

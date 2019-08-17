@@ -1,16 +1,48 @@
 <div style='text-align:center;font-size:16px'>
-  <img src="res/icons/png/128x128.png">
+  <img src="res/icons/png/128x128.png"/>
   Exile Diary v<span id='appVersion'></span>
   <script>
     $(document).ready(() => {
       $("#appVersion").html(require('electron').remote.app.getVersion());
+      $("#myModal").click(hideModal);
+      $("#myModal").appendTo($("body"));
     });
+    
+    $(document).keydown(e => {
+        switch (e.key) {
+          case "Escape":
+          case "Esc":
+            $("#myModal").hide();
+            break;
+        }
+      });
+    
+    
+    function about() {
+      $("#modalContent").load("about.html", () => {
+        $("#myModal").show();
+      });
+    }
+    
+    function hideModal(e) {
+      if(e.target.id === "myModal") $("#myModal").hide();
+    }
+    
   </script>
 </div>
+
 <div id='sidenav-items'>
   <hr style='border:1px solid #333'/>
   <div><a class='ui-text' id='sidenav-main' href="index.html">Main</a></div>
   <div><a class='ui-text' href="stash.html">Net Worth</a></div>
   <div><a class='ui-text' href="search.html">Search</a></div>
   <div><a class='ui-text' href="config.html">Settings</a></div>
+</div>
+
+<hr style='border:1px solid #333'/>
+<div><a class='ui-text' onclick='about()'>About</a></div>
+
+<div id="myModal" class="modal">
+  <div id="modalContent" class="modal-content">
+  </div>
 </div>
