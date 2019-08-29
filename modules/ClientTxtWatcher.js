@@ -93,28 +93,27 @@ function getEvent(arg) {
     };
   }
   else if(str.startsWith(":")) {
-    if (str.indexOf("You have entered") > -1) {
-      str = str.trim();
+    if (str.includes("You have entered")) {
       var area = str.substring(str.indexOf("You have entered") + 17);
       return {
         type: "entered",
         text: area.substring(0, area.length - 1),
         instanceServer: lastInstanceServer
       };
-    } else if (str.indexOf("has been slain") > -1) {
+    } else if(str.includes(`${settings.activeProfile.characterName} has been slain`)) {
       return {
         type: "slain",
         text: "",
         instanceServer: ""
       };
-    } else if (str.indexOf("is now level") > -1) {
+    } else if(str.includes("is now level")) {
       return {
         type: "level",
         text: Number.parseInt(str.substring(str.indexOf("is now level") + 12)),
         instanceServer: ""
       };
     }
-  } else if(str.startsWith("@") && str.indexOf("@From") > -1 || str.indexOf("@To") > -1) {
+  } else if(str.startsWith("@") && (str.includes("@From") || str.includes("@To"))) {
     var fromString = `@from ${settings.activeProfile.characterName.toLowerCase()}:`;
     if(str.toLowerCase().indexOf(fromString) > -1) {
       return {
@@ -122,10 +121,10 @@ function getEvent(arg) {
         text: str.substring(str.toLowerCase().indexOf(fromString) + fromString.length).trim()
       };
     }
-    if(str.toLowerCase().indexOf(`@to ${settings.activeProfile.characterName.toLowerCase()}`) > -1) {
+    if(str.toLowerCase().includes(`@to ${settings.activeProfile.characterName.toLowerCase()}`)) {
       return;
     }
-    return {
+    return {  
       type: "chat",
       text: str.substring(str.indexOf("@")).trim(),
       instanceServer: ""
