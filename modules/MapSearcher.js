@@ -29,7 +29,11 @@ function search(formData) {
       mapIDs.push(row.id);
     });
     emitter.emit("mapSearchResults", rows);
-    getStatSummary(totalXP, totalKills, mapIDs);
+    if(data.getItems) {
+      getStatSummary(totalXP, totalKills, mapIDs);
+    } else {
+      logger.info("Not getting items");
+    }
   });
 }
 

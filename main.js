@@ -271,7 +271,13 @@ async function createWindow() {
   ipcMain.on('apply-update', function(event) {
     logger.info("Quitting to install update");
     autoUpdater.quitAndInstall();
-  });  
+  });
+  ipcMain.on('pastebin-success', (event, url) => {
+    addMessage(`Map list uploaded to <a class='opn-link' href='${url}'>${url}</a>`);
+  });
+  ipcMain.on('pastebin-error', () => {
+    addMessage(`Error uploading map list, please try again`);
+  });
 
   require('./modules/electron-capture/src/main');
 

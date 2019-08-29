@@ -40,6 +40,7 @@
       const hardcore = remote.getGlobal("hardcore");
       
       var exportData = null;
+      var mapDataList = null;
 
       $(document).ready(function() {
         
@@ -64,7 +65,7 @@
         $("#mapFilters").append(numberInput("Level", "level"));
         $("#mapFilters").append(numberInput("Player Level", "playerlevel"));
         if(!ssf) {
-          $("#mapFilters").append(numberInput("Profit (<img style='vertical-align:middle;' src='res/c.png'/>)", "profit", 5));
+          $("#mapFilters").append(numberInput("Profit (<img style='vertical-align:middle;' src='res/img/c.png'/>)", "profit", 5));
         }
         if(!hardcore) {
           $("#mapFilters").append(numberInput("Deaths", "deaths"));
@@ -86,6 +87,7 @@
         $("#form").submit(function(event) {
           event.preventDefault();
           exportData = {};
+          mapDataList = null;
           $("#searchButton").prop("value", "Searching...");
           var data = $(this).serialize();
           ipcRenderer.send("searchMaps", data);
@@ -116,68 +118,91 @@
         });
         
         ipcRenderer.on("mapSearchResults", (event, rows) => {
+          
           $("#mapRows").empty();
           
-          exportData.mapList = {
-            data: [],
-            colWidths: [],
-            addRow : (row) => {
-              exportData.mapList.data.push(row);
-              Object.keys(row).forEach(key => {
-                exportData.mapList.addColWidth(key, row[key]);
-              });
-            },
-            addColWidth : (a, b) => {
-              if(!exportData.mapList.colWidths[a]) {
-                exportData.mapList.colWidths[a] = -1;
-              }
-              exportData.mapList.colWidths[a] = Math.max(exportData.mapList.colWidths[a], a.length, (new String(b)).length);
-            }
-          };
+          var mapData = [];
           
           rows.forEach(row => {
-            Utils.addMapRow($("#mapRows"), row, false, ssf, hardcore);
-            exportData.mapList.addRow({
-              timestamp: row.firstevent,
-              area: row.name,
-              level: row.level,
-              depth: row.depth,
-              iiq: row.iiq,
-              iir: row.iir,
-              packsize: row.packsize,
-              time: parseInt(Utils.getRunningTime(row.firstevent, row.lastevent, "s")),
-              xp: row.xpgained,
-              deaths: row.deaths,
+            mapData.push({
+              name: row.name,
+              tier: row.level,
+              time: moment.duration(moment(row.lastevent, "YYYYMMDDHHmmss").diff(moment(row.firstevent, "YYYYMMDDHHmmss"))).asSeconds(),
+              id: row.id,
+              gained: row.gained,
               kills: row.kills,
-              profit: parseFloat(Number(row.gained).toFixed(2))
-            });
+              xp: row.xp
+            });          
+          });
+          
+          mapDataList = JSON.stringify(mapData);
+          
+//          exportData.mapList = {
+//            data: [],
+//            colWidths: [],
+//            addRow : (row) => {
+//              exportData.mapList.data.push(row);
+//              Object.keys(row).forEach(key => {
+//                exportData.mapList.addColWidth(key, row[key]);
+//              });
+//            },
+//            addColWidth : (a, b) => {
+//              if(!exportData.mapList.colWidths[a]) {
+//                exportData.mapList.colWidths[a] = -1;
+//              }
+//              exportData.mapList.colWidths[a] = Math.max(exportData.mapList.colWidths[a], a.length, (new String(b)).length);
+//            }
+//          };
+//          
+          rows.forEach(row => {
+            Utils.addMapRow($("#mapRows"), row, false, ssf, hardcore);
+//            exportData.mapList.addRow({
+//              timestamp: row.firstevent,
+//              area: row.name,
+//              level: row.level,
+//              depth: row.depth,
+//              iiq: row.iiq,
+//              iir: row.iir,
+//              packsize: row.packsize,
+//              time: parseInt(Utils.getRunningTime(row.firstevent, row.lastevent, "s")),
+//              xp: row.xpgained,
+//              deaths: row.deaths,
+//              kills: row.kills,
+//              profit: parseFloat(Number(row.gained).toFixed(2))
+//            });
           });
           
           $("#mapTable").trigger("update");
           $("#searchButton").prop("value", `${rows.length} results found`);
+          if(!$("#getItems").prop("checked")) {
+            $("#mapSummaryTab").hide();
+            $("#mapSummary").hide();
+          } else {
+            $("#mapSummaryTab").show();
+          }
+          
           $("#searchResults").show();
           $("#tabs").tabs("option", "active", 0);
         });
 
         ipcRenderer.on("mapSummaryResults", (event, data) => {
-          exportData.itemList = [];
           
-          exportData.itemList = {
-            data : [],
-            colWidths: [],
-            addRow : (row) => {
-              exportData.itemList.data.push(row);
-              Object.keys(row).forEach(key => {
-                exportData.itemList.addColWidth(key, row[key]);
-              });
-            },
-            addColWidth : (a, b) => {
-              if(!exportData.itemList.colWidths[a]) {
-                exportData.itemList.colWidths[a] = -1;
-              }
-              exportData.itemList.colWidths[a] = Math.max(exportData.itemList.colWidths[a], a.length, (new String(b)).length);
-            }
-          };
+//          exportData.itemList = {
+//            data : [],
+//            colWidths: [],
+//            addRow : (row) => {
+//              exportData.itemList.data.push(row);
+//              Object.keys(row).forEach(key => {
+//                exportData.itemList.addColWidth(key, row[key]);
+//              });
+//            },
+//            addColWidth : (a, b) => {
+//              if(!exportData.itemList.colWidths[a]) {
+//                exportData.itemList.colWidths[a] = -1;
+//              }
+//              exportData.itemList.colWidths[a] = Math.max(exportData.itemList.colWidths[a], a.length, (new String(b)).length);
+//            }
+//          };
                     
           var f = new Intl.NumberFormat();
           $("#totalTime").html(moment.duration(data.totalTime, "seconds").format("H:mm:ss"));
@@ -189,13 +214,13 @@
           }
           $("#avgXP").html(f.format(Math.round(data.totalXP / data.numMaps)));
           display(data);
-          data.items.forEach(item => {
-            exportData.itemList.addRow({
-              count: item.stackSize,
-              item: item.displayName,
-              value: parseFloat(Number(item.chaosValue).toFixed(2))
-            });
-          });
+//          data.items.forEach(item => {
+//            exportData.itemList.addRow({
+//              count: item.stackSize,
+//              item: item.displayName,
+//              value: parseFloat(Number(item.chaosValue).toFixed(2))
+//            });
+//          });
           
 //          var wb = XLSX.utils.book_new();
 //          
@@ -225,6 +250,7 @@
           $("#sidenav").show();
           $("#messages").show();
           $("#messagePadding").show();
+          $("#export").show();
 //          $("ul").show();
 //          $("#mapList").show();
 //          $("#mapSummary").hide();
@@ -265,6 +291,7 @@
         $("#sidenav").hide();
         $("#messages").hide();
         $("#messagePadding").hide();
+        $("#export").hide();
 //        $("ul").hide();
 //        $("#mapList").show();
 //        $("#mapSummary").show();
@@ -392,6 +419,21 @@
         }
         return str;
       }
+      
+      function uploadMapList() {
+        logger.info("Creating paste");
+        var PastebinAPI = require('pastebin-js'), pastebin = new PastebinAPI('5d7f037b8fc68a841d496bfc1023e185');
+        logger.info(`Data size is ${mapDataList.length}`);
+        pastebin.createPaste({ text: mapDataList, expiration: '1W' })
+          .then(url  => {
+            logger.info("Created successfully: " + url);
+            ipcRenderer.send("pastebin-success", url);
+          })
+          .fail(err => {
+            logger.info(`Error uploading to pastebin: ${err.message}`);
+            ipcRenderer.send("pastebin-error");
+          });
+      }
 
     </script>    
   </head>
@@ -414,6 +456,9 @@
               <td><input name='mapcount' id='mapcount' class='number' type='text'min='0' pattern='[0-9]+' maxlength='5' size='5' /> <span style='padding-left:8px;' class='searchLabel'>maps</span></td>
             </tr>
           </table>
+          <div id='getItems' style='padding:10px 0px'>
+            <span class='itemToggle'><input type='checkbox' id='getItems' name='getItems' value='true'/> Also retrieve items (may be very slow)</span>
+          </div>
           <div id='mapFilterButtons'>
             <input id='searchButton' style='float:left;width:85%' type='submit' value='Search'/>
             <input id='resetButton' style='float:right;width:10%' type='reset' value='Clear Filters'/>
@@ -425,8 +470,9 @@
       <hr/>
       <div id="tabs">
         <ul>
-          <li><a href="#mapList">Map List</a></li>
-          <li><a href="#mapSummary">Summary</a></li>
+          <li id='mapListTab'><a href="#mapList">Map List</a></li>
+          <li id='mapSummaryTab'><a href="#mapSummary">Summary</a></li>
+          <li id='exportTab'><a href="#export">Export</a></li>
         </ul>
         <div id="mapSummary">
           <div id="summaryContentsLoading">Loading...</div>
@@ -461,15 +507,15 @@
           <table class='searchResults' id='mapTable' style='width:100%;border-spacing:0px 6px;'>
             <thead>
               <tr>
-                <th>Date</th>
-                <th>Name</th>
-                <th>Tier</th>
-                <th>IIQ</th>
-                <th>IIR</th>
-                <th>Pack Size</th>
-                <th>Time</th>
-                <th>XP/hr</th>
-                <th id='totalProfitCell'><img src='res/c.png'></th>
+                <th id="mapDate">Date</th>
+                <th id="mapName">Name</th>
+                <th id="mapTier">Tier</th>
+                <th id="mapIIQ">IIQ</th>
+                <th id="mapIIR">IIR</th>
+                <th id="mapPackSize">Pack Size</th>
+                <th id="mapTime">Time</th>
+                <th id="mapXpRate">XP/hr</th>
+                <th id='totalProfitCell'><img src='res/img/c.png'></th>
                 <th id='deathCount'>Deaths</th>
                 <th>Kills</th>
               </tr>
@@ -478,6 +524,11 @@
             </tbody>
           </table>
         </div>
+        <div id="export">
+          <div style='width: 60%;'>
+          <button id='uploadMapList' onclick='uploadMapList()'>Upload Map List to Pastebin</button>
+          </div>
+        </div>        
       </div>
     </div>
     <div class="footer">
