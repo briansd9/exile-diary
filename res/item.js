@@ -441,6 +441,7 @@ function Item (itemdata)
 	this.draw = function() {
 		var outerDiv = document.createElement( 'div' );
 		outerDiv.className = 'item-container';
+    outerDiv.id = this.id;
 
 		var itemDiv = document.createElement( 'div' );
 		itemDiv.className = 'item';
@@ -451,7 +452,6 @@ function Item (itemdata)
     }
 
 		var itemName = document.createElement( 'span' );
-    itemName.id = this.id;
     itemName.classList.add('item-name');
 		itemName.innerHTML = this.getDisplayName();
                 
@@ -493,7 +493,7 @@ function Item (itemdata)
     }
     if(icon) {
       var iconDiv = document.createElement('span');
-      iconDiv.innerHTML = `<img src='res/${icon}.png' style='width:24px;height:24px;margin:4px 4px 0px 0px'/>`;
+      iconDiv.innerHTML = `<img src='res/img/${icon}.png' style='width:24px;height:24px;margin:4px 4px 0px 0px'/>`;
       return iconDiv;
     } else {
       return null;

@@ -26,7 +26,6 @@
     
       const Constants = require('./modules/Constants');
       const DB = require('./modules/DB').getDB();
-      const d3 = require('d3');
       const logger = require('./modules/Log').getLogger(__filename);
       const Utils = require('./modules/Utils');
       const RateGetter = require('./modules/RateGetter');
@@ -259,11 +258,11 @@
 
 
         var chaosString, exaltString;
-        chaosString = `${Number(s.value).toFixed(2)} <img style='vertical-align:middle;' src='res/c.png'/>`;
+        chaosString = `${Number(s.value).toFixed(2)} <img style='vertical-align:middle;' src='res/img/c.png'/>`;
         
         if(s.value > rates["Exalted Orb"]) {
           var exaltValue = s.value / rates["Exalted Orb"];
-          exaltString = `${Number(exaltValue).toFixed(2)} <img style='vertical-align:middle;' src='res/ex.png'/>`;
+          exaltString = `${Number(exaltValue).toFixed(2)} <img style='vertical-align:middle;' src='res/img/ex.png'/>`;
         }        
 
         $("#netWorth").html(`Net Worth: ${chaosString} ${exaltString ? `(${exaltString})` : ""}`);

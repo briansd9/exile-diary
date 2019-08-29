@@ -463,13 +463,13 @@
             else if(currEvent.event_text.includes("Niko")) {
               $("#masterDiv").show();
               $(`#NikoIcon`).show();
-              $(`#sulphiteCount`).append($('<img>', {src: 'res/sulphite.png'}));
+              $(`#sulphiteCount`).append($('<img>', {src: 'res/img/sulphite.png'}));
             }
             else if(currEvent.event_text.includes("Alva") && !mapRun.info.name.includes("Atzoatl")) {
               if(currEvent.event_text.includes("Good job")) {
                 $("#masterDiv").show();
                 $(`#AlvaIcon`).show();
-                $(`#incursionCount`).append($('<img>', {src: 'res/incursion.png'}));
+                $(`#incursionCount`).append($('<img>', {src: 'res/img/incursion.png'}));
               }
             }
             else if(currEvent.event_text.includes("Einhar") && !mapRun.info.name.includes("Menagerie")) {
@@ -493,7 +493,7 @@
                 if(currEvent.event_text.includes(str)) {
                   $("#masterDiv").show();
                   $(`#EinharIcon`).show();
-                  $(`#beastCount`).append($('<img>', {src: 'res/beast.png'}));
+                  $(`#beastCount`).append($('<img>', {src: 'res/img/beast.png'}));
                 }
               });
             }
@@ -657,7 +657,7 @@
         }
         
         $("#netWorth").html(
-          `Gained: ${totalValue.toFixed(2)} <img style='vertical-align:middle;' src='res/c.png'/>`
+          `Gained: ${totalValue.toFixed(2)} <img style='vertical-align:middle;' src='res/img/c.png'/>`
         );
         
         function itemCompare(a, b) {
@@ -818,25 +818,25 @@
       <hr style='border:1px solid #999;' />
       <div id="masterDiv" style="display:none;">
         <span id='ZanaIcon' style='display:none;'>
-          <img src='res/zana.png'/>
+          <img src='res/img/zana.png'/>
         </span>
         <span id='EinharIcon' style='display:none;'>
-          <img src='res/einhar.png'/>
+          <img src='res/img/einhar.png'/>
           <div id='beastCount' style='display:inline;'>
           </div>          
         </span>
         <span id='AlvaIcon' style='display:none;'>
-          <img src='res/alva.png'/>
+          <img src='res/img/alva.png'/>
           <div id='incursionCount' style='display:inline;'>
           </div>          
         </span>
         <span id='NikoIcon' style='display:none;'>
-          <img src='res/niko.png'/>
+          <img src='res/img/niko.png'/>
           <div id='sulphiteCount' style='display:inline;'>
           </div>        
         </span>
         <span id='JunIcon' style='display:none;'>
-          <img src='res/jun.png'/>
+          <img src='res/img/jun.png'/>
         </span>
         <hr style='border:1px solid #999;' />
       </div>

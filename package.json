@@ -1,6 +1,6 @@
 {
   "name": "exile-diary",
-  "version": "0.2.28",
+  "version": "0.2.29",
   "main": "main.js",
   "build": {
     "appId": "com.pathofexile.exilediary",
@@ -8,7 +8,7 @@
     "win": {
       "target": "nsis",
       "artifactName": "exile-diary-setup-${version}.${ext}",
-      "icon": "./res/icons/win/ExileDiary.ico",
+      "icon": "./res/img/icons/win/ExileDiary.ico",
       "extraResources": [
         "eng.traineddata"
       ]
@@ -17,9 +17,9 @@
       "oneClick": "false",
       "allowElevation": "false",
       "allowToChangeInstallationDirectory": "true",
-      "installerIcon": "./res/icons/win/ExileDiary.ico",
-      "uninstallerIcon": "./res/icons/win/ExileDiary.ico",
-      "installerHeaderIcon": "./res/icons/win/ExileDiary.ico"
+      "installerIcon": "./res/img/icons/win/ExileDiary.ico",
+      "uninstallerIcon": "./res/img/icons/win/ExileDiary.ico",
+      "installerHeaderIcon": "./res/img/icons/win/ExileDiary.ico"
     }
   },
   "scripts": {
@@ -44,7 +44,6 @@
   "dependencies": {
     "active-win": "^5.0.0",
     "color-convert": "^1.9.3",
-    "d3": "^5.9.1",
     "electron-updater": "^4.0.4",
     "imgur": "^0.3.1",
     "jimp": "^0.4.0",
