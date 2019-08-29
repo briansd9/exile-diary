@@ -1697,6 +1697,7 @@ const mods = [
   "Area contains # additional Red Beasts",
   "Area contains # extra Shrines",
   "Area contains # extra Strongboxes",
+  "Area contains 3 additional Magic Monster packs",
   "Area contains 30 additional Clusters of Mysterious Barrels",
   "Area contains a Large Chest",
   "Area contains a Voidspawn of Abaxoth Bloodline Pack",
