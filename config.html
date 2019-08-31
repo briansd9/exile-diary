@@ -283,7 +283,7 @@
                 [moment().format('YYYYMMDDHHmmss'), filterData],
                 (err) => {
                   if(err) {                
-                    logger.info("Error inserting filter: " + err);
+                    logger.info("Error inserting filter: " + err.message);
                   }
                   ipcRenderer.once("done-initializing", () => {
                     window.location.reload();
@@ -336,7 +336,8 @@
         request.end();
         
         function tabListError(err) {
-         alert(`Failed to get tab list for ${$("#accountName").val()}. Have you entered your account name and POESESSID correctly?`);
+          logger.info(`Failed to get tab list: ${err.message}`);
+          alert(`Failed to get tab list for ${$("#accountName").val()}. Have you entered your account name and POESESSID correctly?`);
         }        
         
       }
