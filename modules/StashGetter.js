@@ -45,35 +45,45 @@ async function tryGet() {
 
 function reachedTimeLimit(interval) {
   return new Promise((resolve, reject) => {
-    DB.get("select max(timestamp) as timestamp from stashes", (err, row) => {
+    DB.get("select ifnull(max(timestamp), -1) as timestamp from stashes", (err, row) => {
       if(err) {      
         logger.info(`Error getting latest stash: ${err}`);
         resolve(false);
       }
-      var now = moment();
-      var then  = moment(row.timestamp, 'YYYYMMDDHHmmss');
-      var diff = moment.duration(now.diff(then)).asHours();
-      logger.info(`Last retrieved stash ${row.timestamp} is ${diff} hours old (min interval ${interval})`);
-      resolve(diff > interval);
+      if(row.timestamp == -1) {
+        logger.info("No stashes found in db - will retrieve now");
+        resolve(true);
+      } else {
+        var now = moment();
+        var then  = moment(row.timestamp, 'YYYYMMDDHHmmss');
+        var diff = moment.duration(now.diff(then)).asHours();
+        logger.info(`Last retrieved stash ${row.timestamp} is ${diff} hours old (min interval ${interval})`);
+        resolve(diff > interval);
+      }
     });
   });
 }
 
 function reachedMapLimit(limit) {
   return new Promise((resolve, reject) => {
-    DB.get("select max(timestamp) as timestamp from stashes", (err, row) => {
+    DB.get("select ifnull(max(timestamp), -1) as timestamp from stashes", (err, row) => {
       if(err) {      
         logger.info(`Error getting latest stash: ${err}`);
         resolve(false);
       }
-      DB.get("select count(1) as count from mapruns where id > ?", [row.timestamp], (err, maps) => {
-        if(err) {      
-          logger.info(`Error getting map count: ${err}`);
-          resolve(false);
-        }
-        logger.info(`${maps.count} map runs since last retrieved stash (set to retrieve every ${limit})`);
-        resolve(maps.count >= limit);
-      });
+      if(row.timestamp == -1) {
+        logger.info("No stashes found in db - will retrieve now");
+        resolve(true);
+      } else {
+        DB.get("select count(1) as count from mapruns where id > ?", [row.timestamp], (err, maps) => {
+          if(err) {      
+            logger.info(`Error getting map count: ${err}`);
+            resolve(false);
+          }
+          logger.info(`${maps.count} map runs since last retrieved stash (set to retrieve every ${limit})`);
+          resolve(maps.count >= limit);
+        });
+      }
     });
   });
 }
@@ -140,11 +150,17 @@ async function get() {
           if(err) {
             logger.info(`Error getting previous stash before ${timestamp}: ${err}`);
           } else {
-            logger.info(`Gained ${tabs.value - row.value} since last check`);
-            emitter.emit("netWorthUpdated", {
-              value: Number(tabs.value).toFixed(2),
-              change: Number(tabs.value - row.value).toFixed(2)
-            });
+            if(row && row.value) {
+              emitter.emit("netWorthUpdated", {
+                value: Number(tabs.value).toFixed(2),
+                change: Number(tabs.value - row.value).toFixed(2)
+              });
+            } else {
+              emitter.emit("netWorthUpdated", {
+                value: Number(tabs.value).toFixed(2),
+                change: 0
+              });
+            }
           }
         });
       }
