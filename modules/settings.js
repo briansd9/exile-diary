@@ -22,9 +22,10 @@ function set(key, value) {
     settings[key] = value;
     fs.writeFile(settingsPath, JSON.stringify(settings), (err) => {
       if(err) {
+        logger.info("Error writing settings! " + err.message);
         throw err;
       } else {
-        logger.info(`Set "${key}" to "${JSON.stringify(value)}"`);
+        logger.info(`Set "${key}" to ${JSON.stringify(value)}`);
       }
     });    
   }  

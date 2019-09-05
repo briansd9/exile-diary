@@ -8,22 +8,32 @@ const EventEmitter = require('events');
 
 var settings;
 var watcher;
+var currentWatchDirectory;
+
 var app = require('electron').app || require('electron').remote.app;
 var emitter = new EventEmitter();
 
-function start() {
-
-  settings = require('./settings').get();
-  
+function tryClose() {
   if(watcher) {
     try {
       watcher.close();
-      watcher.unwatch(settings.screenshotDir);
+      watcher.unwatch(currentWatchDirectory);
+      watcher = null;
+      currentWatchDirectory = null;
     } 
-    catch(err) {}
+    catch(err) {
+      logger.info("Error closing screenshot watcher: " + err.message);
+    }
   }  
+}
 
-  if (settings.screenshotDir) {
+function start() {
+  
+  tryClose();
+
+  settings = require('./settings').get();
+
+  if (settings.screenshotDir !== "disabled") {
     logger.info("Watching " + settings.screenshotDir);
     watcher = chokidar.watch(
       `${settings.screenshotDir}`,
@@ -33,6 +43,9 @@ function start() {
       logger.info("Cropping new screenshot: " + path);
       process(path);
     });
+    currentWatchDirectory = settings.screenshotDir;
+  } else {
+    logger.info("Screenshot directory is disabled");
   }
 
 }
