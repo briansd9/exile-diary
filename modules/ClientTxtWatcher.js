@@ -116,10 +116,15 @@ function getEvent(arg) {
   } else if(str.startsWith("@") && (str.includes("@From") || str.includes("@To"))) {
     var fromString = `@from ${settings.activeProfile.characterName.toLowerCase()}:`;
     if(str.toLowerCase().indexOf(fromString) > -1) {
-      return {
-        type: "note",
-        text: str.substring(str.toLowerCase().indexOf(fromString) + fromString.length).trim()
-      };
+      var msg = str.substring(str.toLowerCase().indexOf(fromString) + fromString.length).trim();
+      if(msg === "end") {
+        return;
+      } else {
+        return {
+          type: "note",
+          text: msg
+        };
+      }
     }
     if(str.toLowerCase().includes(`@to ${settings.activeProfile.characterName.toLowerCase()}`)) {
       return;
