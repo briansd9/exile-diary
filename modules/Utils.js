@@ -36,8 +36,6 @@ class Utils {
   static getBaseName(item) {
     if(item.typeLine) {
       return Utils.getBaseNameJSON(item);
-    } else if(item.typeline) {
-      return Utils.getBaseNameDB(item);
     } else {
       logger.info("Invalid item format:");
       logger.info(JSON.stringify(item, null, " "));
@@ -49,19 +47,7 @@ class Utils {
     var name = item.typeLine.replace("Superior ", "");
     if(item.frameType === 3 && item.typeLine.endsWith(" Map")) {
       name = (item.identified ? item.name : this.getUniqueMap(name));
-    }
-    if (item.identified && item.frameType === 1 && item.typeLine.includes(" Map")) {
-      name = this.getBaseFromMagicMap(name);
-    }
-    return name;
-  }
-
-  // for items in DB row format
-  static getBaseNameDB(item) {
-    var name = item.typeline.replace("Superior ", "");
-    if (item.rarity === "Unique" && item.typeline.endsWith(" Map")) {
-      name = this.getUniqueMap(name);
-    } else if (item.identified && item.rarity === "Magic" && item.typeline.includes(" Map")) {
+    } else if (item.identified && item.frameType === 1 && item.typeLine.includes(" Map")) {
       name = this.getBaseFromMagicMap(name);
     }
     return name;
@@ -134,11 +120,40 @@ class Utils {
     if(!value) {
       var name = Utils.getBaseName(item);
       var stacksize = (item.stacksize || item.stackSize || 1);
-      if (name === "Chaos Orb") {
-        value = stacksize;
-      } else if(rates[name]) {
-        value = rates[name] * stacksize;
+      
+      // item names requiring special handling
+      
+      switch(name) {
+        case "Chaos Orb":
+          value = stacksize;
+          break;
+        case "The Beachhead":
+          for(var i = 0; i < item.properties.length; i++) {
+            var prop = item.properties[i];
+            if(prop.name === "Map Tier") {
+              value = rates[`${name} (T${prop.values[0][0]})`];
+              break;
+            }
+          }
+          break;
+        case "A Master Seeks Help":
+          var masters = ["Alva", "Niko", "Einhar", "Jun", "Zana"];
+          for(var i = 0; i < masters.length; i++) {
+            if(item.prophecyText && item.prophecyText.includes(masters[i])) {
+              value = rates[`${name} (${masters[i]})`];
+              break;
+            }
+          }
+          break;
+        case "Rebirth":
+        case "The Twins":
+          value = rates[`${name} (${item.prophecyText ? "Prophecy" : "Divination Card"})`] * stacksize;
+          break;
+        default:
+          value = rates[name] * stacksize;
+          break;
       }
+      
     }
     
     return (value ? Number(value.toFixed(2)) : 0);

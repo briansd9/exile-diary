@@ -499,14 +499,14 @@ function getItemsFor(event, rates) {
   var count = 0;
   var value = 0;
   return new Promise( (resolve, reject) => {
-    DB.all( " select typeline, stacksize, identified, sockets, rarity from items where event_id = ? ", [event], (err, rows) => {
+    DB.all( " select rawdata from items where event_id = ? ", [event], (err, rows) => {
       if (err) {
         logger.info(`Error getting item values for ${event}: ${err}`);
         resolve(null);
       }        
-      rows.forEach( (item) => {
+      rows.forEach( (row) => {
         count++;
-        value += Utils.getItemValue(item, rates);
+        value += Utils.getItemValue(JSON.parse(row.rawdata), rates);
         //logger.info(`After ${name} value is now ${value}`);
       });
       resolve({count: count, value: value});

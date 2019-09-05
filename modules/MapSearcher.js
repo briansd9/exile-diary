@@ -158,8 +158,38 @@ async function getItemsFromEvent(eventID) {
 async function getItemValue(timestamp, item) {
   
   var baseName = Utils.getBaseName(item);
-  if(baseName === "Chaos Orb") return item.stackSize;
   
+  // item names requiring special handling
+  switch(baseName) {
+    case "Chaos Orb":
+      return item.stackSize;
+      break;
+    case "The Beachhead":
+      for(var i = 0; i < item.properties.length; i++) {
+        var prop = item.properties[i];
+        if(prop.name === "Map Tier") {
+          baseName = `${baseName} (T${prop.values[0][0]})`;
+          break;
+        }
+      }
+      break;
+    case "A Master Seeks Help":
+      var masters = ["Alva", "Niko", "Einhar", "Jun", "Zana"];
+      for(var i = 0; i < masters.length; i++) {
+        if(item.prophecyText && item.prophecyText.includes(masters[i])) {
+          baseName = `${baseName} (${masters[i]})`;
+          break;
+        }
+      }
+      break;
+    case "Rebirth":
+    case "The Twins":
+      baseName = `${baseName} (${item.prophecyText ? "Prophecy" : "Divination Card"})`;
+      break;
+    default:
+      break;
+  }
+          
   var stackSize = item.stackSize || 1;
   
   return new Promise( (resolve, reject) => {

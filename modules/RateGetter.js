@@ -121,10 +121,19 @@ function insertRate(date, data) {
       var item = line.currencyTypeName || line.name;
       var value = line.chaosValue || line.chaosEquivalent;
       
-      if(item === "The Beachhead") {
-        item += " (" + line.variant + ")";
+      switch(item) {
+        case "The Beachhead":
+        case "A Master Seeks Help":
+          item += " (" + line.variant + ")";
+          break;
+        case "Rebirth":
+        case "The Twins":
+          item += (line.prophecyText ? " (Prophecy)" : " (Divination Card)");
+          break;
+        default:
+          break;
       }
-      
+        
       DB.run("insert into rates(date, item, value) values(?, ?, ?)", [date, item, value], (err) => {
         if(err) {
           logger.info(`Error inserting rates: ${err} -> [${date}] [${item}] [${value}]`);
