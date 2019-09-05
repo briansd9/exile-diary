@@ -2,10 +2,19 @@
   <img src="res/img/icons/png/128x128.png"/>
   Exile Diary v<span id='appVersion'></span>
   <script>
+    
     $(document).ready(() => {
-      $("#appVersion").html(require('electron').remote.app.getVersion());
+      
+      var version = require('electron').remote.app.getVersion();
+      $("#appVersion").html(version);
       $("#myModal").click(hideModal);
       $("#myModal").appendTo($("body"));
+      
+      var settings = require("./modules/settings").get();
+      if(!settings.version || settings.version !== version) {
+        $("#newVersion").show();
+      }
+      
     });
     
     $(document).keydown(e => {
@@ -21,6 +30,13 @@
     function about() {
       $("#modalContent").load("about.html", () => {
         $("#myModal").show();
+        $("#newVersion").hide();        
+        var settings = require("./modules/settings").get();
+        var version = require('electron').remote.app.getVersion();
+        if(!settings.version || settings.version !== version) {
+          require("./modules/settings").set("version", version);
+        }
+        
       });
     }
     
@@ -40,7 +56,12 @@
 </div>
 
 <hr style='border:1px solid #333'/>
-<div><a class='ui-text' onclick='about()'>About</a></div>
+<div>
+  <a class='ui-text' onclick='about()'>
+    About
+    <img id='newVersion' src="res/img/!.png" style="display:none;height:25px;width:25px;vertical-align:middle;"/>
+  </a>
+</div>
 
 <div id="myModal" class="modal">
   <div id="modalContent" class="modal-content">
