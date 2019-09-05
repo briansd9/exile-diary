@@ -92,7 +92,7 @@
           var data = $(this).serialize();
           ipcRenderer.send("searchMaps", data);
           $("#searchResults").hide();
-          $("input[type=checkbox]").each(function() {
+          $("input.itemToggleCheckbox[type=checkbox]").each(function() {
             $(this).prop("checked", false);
           });
           
@@ -100,9 +100,9 @@
           $("#summaryContents").hide();
         });
         
-        $("input[type=checkbox]").click(function() {
+        $("input.itemToggleCheckbox[type=checkbox]").click(function() {
           var itemTypes = [];
-          $("input[type=checkbox]").each(function() {
+          $("input.itemToggleCheckbox[type=checkbox]").each(function() {
             if(this.checked) {
               itemTypes.push(this.value);
             }
@@ -174,7 +174,7 @@
           
           $("#mapTable").trigger("update");
           $("#searchButton").prop("value", `${rows.length} results found`);
-          if(!$("#getItems").prop("checked")) {
+          if(!$("#getItemsCheckbox").prop("checked")) {
             $("#mapSummaryTab").hide();
             $("#mapSummary").hide();
           } else {
@@ -243,6 +243,7 @@
           $("#items").trigger("update");
           $("#summaryContentsLoading").hide();
           $("#summaryContents").show();
+          logger.info("Showing items");
           
         });
     
@@ -457,7 +458,7 @@
             </tr>
           </table>
           <div id='getItems' style='padding:10px 0px'>
-            <span class='itemToggle'><input type='checkbox' id='getItems' name='getItems' value='true'/> Also retrieve items (may be very slow)</span>
+            <span class='itemToggle'><input type='checkbox' id='getItemsCheckbox' name='getItems' value='true'/> Also retrieve items (may be very slow)</span>
           </div>
           <div id='mapFilterButtons'>
             <input id='searchButton' style='float:left;width:85%' type='submit' value='Search'/>
@@ -483,9 +484,9 @@
             <div id='totalProfitDiv'>Total profit: <span id='totalProfit' class='eventText'></span> <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&scaleIndex=3&&w=1&h=1'/> (<span id='avgProfit'></span> / map)</div>
             <hr/>
             <div id='itemToggles'>
-              <span class='itemToggle'><input type='checkbox' value='Currency'/> Currency</span>
-              <span class='itemToggle'><input type='checkbox' value='Maps'/> Maps</span>
-              <span class='itemToggle'><input type='checkbox' value='Divination Card'/> Div Cards</span>
+              <span class='itemToggle'><input class='itemToggleCheckbox' type='checkbox' value='Currency'/> Currency</span>
+              <span class='itemToggle'><input class='itemToggleCheckbox' type='checkbox' value='Maps'/> Maps</span>
+              <span class='itemToggle'><input class='itemToggleCheckbox' type='checkbox' value='Divination Card'/> Div Cards</span>
             </div>
             <hr/>
             <table id="items" style='display:block;'>
