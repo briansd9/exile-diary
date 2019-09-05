@@ -238,7 +238,7 @@ function initWindow(window) {
 
 async function createWindow() {
 
-  logger.info("Starting");
+  logger.info(`Starting Exile Diary v${app.getVersion()}`);
   
   await init();
   
@@ -317,7 +317,6 @@ async function createWindow() {
     }
   }
   mainWindow.on("resize", scaleWindow);
-    
   
   overlayWindow = new BrowserWindow({
     maxHeight: 40,
@@ -327,7 +326,6 @@ async function createWindow() {
     isMovable: true,
     alwaysOnTop: true,
     closable: false,
-    //resizable: false,
     minimizable: false,
     maximizable: false,
     fullscreenable: false,
