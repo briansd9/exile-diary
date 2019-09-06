@@ -78,7 +78,9 @@ function Parser() {
 	var FILTER_TOKENS = [
 	    'ItemLevel', 'DropLevel', 'Quality', 'Rarity', 'Class', 'BaseType', 'Sockets', 'LinkedSockets', 'SocketGroup',
 	    'Width', 'Height', 'Identified', 'Corrupted', 'ElderItem', 'ShaperItem', 'ShapedMap', 'HasExplicitMod', 'MapTier',
-	    'GemLevel', 'StackSize', 'ElderMap', 'Prophecy', 'FracturedItem', 'SynthesisedItem', 'AnyEnchantment', 'HasEnchantment'];
+	    'GemLevel', 'StackSize', 'ElderMap', 'Prophecy', 'FracturedItem', 'SynthesisedItem', 'AnyEnchantment', 'HasEnchantment',
+      'BlightedMap'
+    ];
 	var MODIFIER_TOKENS = [
 	    'SetBackgroundColor', 'SetBorderColor', 'SetTextColor', 'PlayAlertSound', 'PlayAlertSoundPositional',
 	    'SetFontSize', 'DisableDropSound', 'CustomAlertSound', 'MinimapIcon', 'PlayEffect' ];
@@ -241,7 +243,8 @@ function Parser() {
       'FracturedItem': FracturedItemFilter,
       'SynthesisedItem': SynthesisedItemFilter,
       'AnyEnchantment': AnyEnchantmentFilter,
-      'HasEnchantment': HasEnchantmentFilter
+      'HasEnchantment': HasEnchantmentFilter,
+      'BlightedMap': BlightedMapFilter
 		};
 
 		switch (token) {
@@ -283,6 +286,7 @@ function Parser() {
 			case 'FracturedItem':
 			case 'SynthesisedItem':
       case 'AnyEnchantment':
+      case 'BlightedMap':
 				parseBoolFilter( self, filters[token], arguments );
 				return;
 
@@ -912,6 +916,12 @@ function AnyEnchantmentFilter (value) {
 function HasEnchantmentFilter (mods) {
     this.match = function (item) {
         return mods.some( function(mod) { return item.hasEnchantment( mod ); } );
+    }
+}
+
+function BlightedMapFilter (value) {
+    this.match = function (item) {
+        return item.blightedMap === value;
     }
 }
 

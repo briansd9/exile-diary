@@ -248,7 +248,7 @@ ItemData.isShapedMap = function(data) {
   if(!data.properties) return false;
   for(i = 0; i < data.properties.length; i++) {
     if(data.properties[i].name === "Map Tier") {
-      return (data.properties[i].values[0][1] == 1 && data.properties[i].values[0][0] < 16);
+      return (data.properties[i].values[0][1] === 1 && data.properties[i].values[0][0] < 16);
     }
   }
   return false;
@@ -258,10 +258,15 @@ ItemData.isElderMap = function(data) {
   if(!data.properties) return false;
   for(i = 0; i < data.properties.length; i++) {
     if(data.properties[i].name === "Map Tier") {
-      return (data.properties[i].values[0][1] == 1 && data.properties[i].values[0][0] == 16);
+      return (data.properties[i].values[0][1] === 1 && data.properties[i].values[0][0] === 16);
     }
   }
   return false;
+}
+
+ItemData.isBlightedMap = function(data) {
+  if(!data.properties) return false;
+  return data.icon.includes("mb=1");
 }
 
 ItemData.getClass = function(data) {
@@ -274,11 +279,19 @@ ItemData.getClass = function(data) {
   }
   
   var cat;
-  cat = data.category;
-  if(typeof cat !== "string") {
-    cat = (Object.keys(data.category))[0];
-    if(data.category[cat] && data.category[cat].length > 0) {
-      cat = data.category[cat][0];
+  if(data.category) {
+    cat = data.category;
+    if(typeof cat !== "string") {
+      cat = (Object.keys(data.category))[0];
+      if(data.category[cat] && data.category[cat].length > 0) {
+        cat = data.category[cat][0];
+      }
+    }
+  } else {
+    // 3.8 api changes
+    cat = data.extended.category;
+    if(data.extended.subcategories) {
+      cat = data.extended.subcategories[0];
     }
   }
   switch(cat) {
@@ -378,6 +391,7 @@ function Item (itemdata)
 	this.influence = ItemData.getInfluence(itemdata);
 	this.shapedMap = ItemData.isShapedMap(itemdata);
 	this.elderMap = ItemData.isElderMap(itemdata);
+  this.blightedMap = ItemData.isBlightedMap(itemdata);
   this.mapTier = ItemData.getMapTier(itemdata);
 	this.stackSize = itemdata.stackSize;
 
