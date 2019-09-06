@@ -242,7 +242,7 @@ const uniqueMapsCurrentAtlas = {
     baseType: "Strand Map",
     mapTier: 4
   } 
-}
+};
 
 const uniqueIcons = {
   "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/AbberathsHooves.png" : "Abberath's Hooves",
@@ -267,7 +267,7 @@ const uniqueIcons = {
   "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Wands/ApepsRage.png" : "Apep's Rage",
   "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/ApepsSlumber.png" : "Apep's Slumber",
   "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/ApepsSupremacy.png" : "Apep's Supremacy",
-  "https://web.poecdn.com/image/Art/2DItems/Jewels/unique10.png" : "Apparitions",
+  //"https://web.poecdn.com/image/Art/2DItems/Jewels/unique10.png" : "Apparitions",
   "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Daggers/FangUnique.png" : "Arakaali's Fang",
   "https://web.poecdn.com/image/Art/2DItems/Amulets/Amulet2Unique.png" : "Araku Tiki",
   "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/Bows/VerdantGuardianBow.png" : "Arborix",
@@ -466,9 +466,9 @@ const uniqueIcons = {
   "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/ExplorersVisionFire.png" : "Flamesight",
   "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/OneHandMaces/OneHandMace6Unique.png" : "Flesh-Eater",
   "https://web.poecdn.com/image/Art/2DItems/Jewels/STRtoDEX.png" : "Fluid Motion",
-  "https://web.poecdn.com/image/Art/2DItems/Jewels/BlueJewel4.png" : "Fortified Legion",
+  //"https://web.poecdn.com/image/Art/2DItems/Jewels/BlueJewel4.png" : "Fortified Legion",
   "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/Shards/ChannelingShieldShard4.png" : "Fourth Piece of Focus",
-  "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/Foxshade.png" : "Fox's Fortune",
+  //"https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/Foxshade.png" : "Fox's Fortune",
   "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/Foxshade.png" : "Foxshade",
   "https://web.poecdn.com/image/Art/2DItems/Jewels/unique20.png" : "Fragile Bloom",
   "https://web.poecdn.com/image/Art/2DItems/Jewels/RedCorrupt6.png" : "Fragility",
@@ -967,7 +967,7 @@ const uniqueIcons = {
   "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Daggers/Widowmaker.png" : "Widowmaker",
   "https://web.poecdn.com/image/Art/2DItems/Jewels/MoltenStrikeThreshold.png" : "Wildfire",
   "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Claws/Wildslash.png" : "Wildslash",
-  "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/Briskwrap.png" : "Wildwrap",
+  //"https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/Briskwrap.png" : "Wildwrap",
   "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/Bows/Eagle.png" : "Windripper",
   "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/GlovesStr6.png" : "Winds of Change",
   "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/Windscream.png" : "Windscream",
@@ -1054,8 +1054,26 @@ const uniqueIcons = {
   "https://web.poecdn.com/image/Art/2DItems/Jewels/TemplarCivilization.png" : "Militant Faith",
   "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Scepters/ScepterOfSuffering.png" : "Sign of the Sin Eater",
   "https://web.poecdn.com/image/Art/2DItems/Amulets/Tavukai.png" : "Tavukai",
-  "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/Wreath_of_Phrecia.png" : "Wreath of Phrecia"
-  
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/Wreath_of_Phrecia.png" : "Wreath of Phrecia",
+  // Blight
+  "https://web.poecdn.com/image/Art/2DItems/Amulets/AssassinUnique.png" : "Badge of the Brotherhood",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/Supporter1gloveA.png" : "Breathstealer",
+  "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Daggers/ColdIronPoint.png" : "Cold Iron Point",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/Supporter1helmetC.png" : "Cowl of the Ceraunophile",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/Supporter1helmetA.png" : "Cowl of the Cryophile",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/Supporter1helmetB.png" : "Cowl of the Thermophile",
+  "https://web.poecdn.com/image/Art/2DItems/Jewels/BlueJewel4.png" : "Fortress Covenant",
+  "https://web.poecdn.com/image/Art/2DItems/Rings/IcefangOrbit.png" : "Icefang Orbit",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/85479.png" : "Machina Mitts",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/ZombieBodyArmour.png" : "Rotting Legion",
+  "https://web.poecdn.com/image/Art/2DItems/Jewels/unique10.png" : "Quickening Covenant",
+  "https://web.poecdn.com/image/Art/2DItems/Belts/85482.png" : "Siegebreaker",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/Supporter1bodyA.png" : "Sporeguard",
+  "https://web.poecdn.com/image/Art/2DItems/Amulets/JujusSoul.png" : "The Jinxed Juju",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/Supporter1bootA.png" : "The Stampede",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/85483.png" : "Torchoak Step",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/MinionConversionGloves.png" : "Triad Grip",
+  "https://web.poecdn.com/image/Art/2DItems/Rings/Bloodfreeze.png" : "Venopuncture"  
 };
 
 const baseMaps = [
@@ -1646,7 +1664,13 @@ const areas = [
   "Memory Void",
   "Distant Memory",
   // Legion
-  "Domain of Timeless Conflict"  
+  "Domain of Timeless Conflict",
+  // Blight
+  "Altered Distant Memory",
+  "Augmented Distant Memory",
+  "Cortex",
+  "Rewritten Distant Memory",
+  "Twisted Distant Memory"  
 ];
 
 const mods = [
