@@ -1,5 +1,6 @@
 const logger = require("./Log").getLogger(__filename);
 const Utils = require("./Utils");
+const ItemCategoryParser = require("./ItemCategoryParser");
 const rarities = ['Normal', 'Magic', 'Rare', 'Unique', 'Gem', 'Currency', 'Divination Card', 'Quest Item', 'Prophecy', 'Relic'];
 
 async function insertItems(items, timestamp) {
@@ -112,7 +113,7 @@ function parseItem(item, timestamp) {
   var icon = getImageUrl(item.icon);
   var name = stripTags(item.name);
   var rarity = rarities[item.frameType];
-  var category = getCategory(item);
+  var category = ItemCategoryParser.getCategory(item);
   var identified = item.identified;
   var typeline = stripTags(item.typeLine);
   var stacksize = item.stackSize || null;
@@ -137,98 +138,6 @@ function stripTags(name) {
     return null;
   }
   return name.replace("<<set:MS>><<set:M>><<set:S>>", "");
-}
-
-function getCategory(item) {
-
-  var cat = item.category;
-  if (!(cat instanceof String)) {
-    cat = Object.keys(item.category)[0];
-    if (item.category[cat] && item.category[cat].length > 0) {
-      cat = item.category[cat][0];
-    }
-  }
-
-  switch (cat) {
-    case "claw":
-    case "shield":
-    case "sceptre":
-    case "ring":
-    case "helmet":
-    case "wand":
-    case "belt":
-    case "dagger":
-    case "quiver":
-    case "bow":
-    case "amulet":
-      return cat.substring(0, 1).toUpperCase() + cat.substring(1) + "s";
-    case "boots":
-    case "gems":
-    case "gloves":
-      return cat.substring(0, 1).toUpperCase() + cat.substring(1);
-    case "supportgem":
-      return "Support Skill Gems";
-    case "activegem":
-      return "Active Skill Gems";
-    case "currency":
-    case "fossil":
-    case "resonator":
-      return "Currency";
-    case "onesword":
-      return "One Hand Swords";
-    case "onemace":
-      return "One Hand Maces";
-    case "oneaxe":
-      return "One Hand Axes";
-    case "twosword":
-      return "Two Hand Swords";
-    case "twomace":
-      return "Two Hand Maces";
-    case "twoaxe":
-      return "Two Hand Axes";
-    case "flasks":
-      if (item.typeLine.includes("Life"))
-        return "Life Flasks";
-      if (item.typeLine.includes("Mana"))
-        return "Mana Flasks";
-      if (item.typeLine.includes("Hybrid"))
-        return "Hybrid Flasks";
-      if (item.typeLine.includes("Diamond"))
-        return "Critical Utility Flasks";
-      return "Utility Flasks";
-    case "jewels":
-      return "Jewel";
-    case "abyss":
-      return "Abyss Jewel";
-    case "chest":
-      return "Body Armours";
-    case "staff":
-      return "Staves";
-    case "cards":
-      return "Divination Card";
-    case "soul":
-      return "Pantheon Soul";
-    case "misc":
-      if (item.frameType === 7)
-        return "Quest Items";
-      if (item.frameType === 5)
-        return "Labyrinth Items";
-    case "maps":
-      if (item.typeLine.includes("Map"))
-        return "Maps";
-      return "Map Fragments";
-    case "fragment":
-      return "Map Fragments";
-    case "piece":
-      return "Harbinger Item Piece";
-    case "monsters":
-      return "Captured Beast";
-    case "incubator":
-      return "Incubator";
-    default:
-      logger.warn("No item class found! category: " + cat);
-      logger.warn(JSON.stringify(item));
-  }
 }
 
 module.exports.insertItems = insertItems;

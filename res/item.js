@@ -1,3 +1,5 @@
+const ItemCategoryParser = require("./modules/ItemCategoryParser");
+
 var Rarity = {
 	Normal: 0,
 	Magic: 1,
@@ -216,8 +218,7 @@ ItemData.getGemLevel = function(data) {
   
   if(!data.properties) return false;
   
-  var itemClass = ItemData.getClass(data);
-  if(itemClass.indexOf("Gem") == -1) return false;
+  if(data.frameType !== 4) return false;
   
   for(i = 0; i < data.properties.length; i++) {
     if(data.properties[i].name === "Level") {
@@ -269,108 +270,6 @@ ItemData.isBlightedMap = function(data) {
   return data.icon.includes("mb=1");
 }
 
-ItemData.getClass = function(data) {
-  
-  if(data.frameType === 8) {
-    return "Prophecy";
-  }
-  if(data.typeLine.includes("Reliquary Key")) {
-    return "Misc Map Items";
-  }
-  
-  var cat;
-  if(data.category) {
-    cat = data.category;
-    if(typeof cat !== "string") {
-      cat = (Object.keys(data.category))[0];
-      if(data.category[cat] && data.category[cat].length > 0) {
-        cat = data.category[cat][0];
-      }
-    }
-  } else {
-    // 3.8 api changes
-    cat = data.extended.category;
-    if(data.extended.subcategories) {
-      cat = data.extended.subcategories[0];
-    }
-  }
-  switch(cat) {
-    case "claw":
-    case "shield":
-    case "sceptre":
-    case "ring":
-    case "helmet":
-    case "wand":
-    case "belt":
-    case "dagger":
-    case "quiver":
-    case "bow":
-    case "amulet":
-      return cat.charAt(0).toUpperCase() + cat.substr(1) + "s";
-    case "boots":
-    case "gems":
-    case "gloves":
-      return cat.charAt(0).toUpperCase() + cat.substr(1);
-    case "supportgem":
-      return "Support Skill Gems";
-    case "activegem":
-      return "Active Skill Gems";
-    case "currency":
-    case "fossil":
-      return "Currency";
-    case "resonator":
-      return "Delve Socketable Currency";      
-    case "onesword":
-      return "One Hand Swords";
-    case "onemace":
-      return "One Hand Maces";
-    case "oneaxe":
-      return "One Hand Axes";
-    case "twosword":
-      return "Two Hand Swords";
-    case "twomace":
-      return "Two Hand Maces";
-    case "twoaxe":
-      return "Two Hand Axes";
-    case "flasks":
-      if(data.typeLine.indexOf("Life") != -1) return "Life Flasks";
-      if(data.typeLine.indexOf("Mana") != -1) return "Mana Flasks";
-      if(data.typeLine.indexOf("Hybrid") != -1) return "Hybrid Flasks";
-      if(data.typeLine.indexOf("Diamond") != -1) return "Critical Utility Flasks";
-      return "Utility Flasks";
-    case "jewels":
-      return "Jewel";
-    case "abyss":
-      return "Abyss Jewel";
-    case "chest":
-      return "Body Armours";
-    case "staff":
-      return "Staves";
-    case "cards":
-      return "Divination Card";
-    case "soul":
-      return "Pantheon Soul";
-    case "misc":
-      if(data.frameType == 7) return "Quest Items";
-      if(data.frameType == 5) return "Labyrinth Items";
-    case "maps":
-      if(data.typeLine.indexOf("Map") !== -1) return "Maps";
-      return "Map Fragments";
-    case "fragment":
-      return "Map Fragments";
-    case "piece":
-      return "Harbinger Item Piece";
-    case "monsters":
-      return "Captured Beast";
-    case "incubator":
-      return "Incubator";
-    default:
-      console.log("No item class found! category: " + cat);
-      console.log(data);
-      throw new Error("DEAD");
-  }
-}
-
 function Item (itemdata)
 {
   
@@ -384,7 +283,7 @@ function Item (itemdata)
 	this.quality = ItemData.getQuality(itemdata);
 	this.rarity = ItemData.getRarity(itemdata);
 
-	this.itemClass = ItemData.getClass(itemdata);
+	this.itemClass = ItemCategoryParser.getCategory(itemdata);
 	this.baseType = itemdata.typeLine.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "");
 	this.identified = itemdata.identified || false;
 	this.corrupted = itemdata.corrupted || false;
