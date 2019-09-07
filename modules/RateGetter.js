@@ -15,9 +15,10 @@ const ratePaths = [
   "/api/data/itemoverview?type=Scarab",
   "/api/data/itemoverview?type=Prophecy",
   "/api/data/itemoverview?type=Incubator",
+  "/api/data/itemoverview?type=Oil",
 ];
 
-const CURRENT_ATLAS_SERIES = "Legion";
+const CURRENT_ATLAS_SERIES = "Blight";
 
 var DB;
 var settings;

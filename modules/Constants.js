@@ -2064,7 +2064,17 @@ const mods = [
   "The First 10 Possessed Monsters drop an additional Polished Scarab",
   "The First 10 Possessed Monsters drop an additional Gilded Scarab",
   "The First 10 Possessed Monsters have a 25% chance to drop an additional Map",
-  "The First 10 Possessed Monsters drop an additional Unique Item"
+  "The First 10 Possessed Monsters drop an additional Unique Item",
+  // Blight
+  "#% reduced Cost of Building and Upgrading Towers",  
+  "#% reduced Monster Movement Speed",
+  "#% chance for Blight Chests to drop an additional Reward",
+  "# Blight Chests are Lucky",
+  "Areas contain an additional Legion Encounter",
+  "Each Legion contains a War Hoard",
+  "Each Legion is accompanied by a General",
+  "Towers deal 20% more Damage",
+  
 ];
 
 const xpLevels = [
