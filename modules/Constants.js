@@ -51,7 +51,8 @@ const templeRoomQuotes = {
   "Remind me again why you let them fill this place with traps?" : "Defense Research Lab",
   "There was so much potential for good here. What a waste." : "Storm of Corruption",
   "So many dead... Let's please not end up like that." : "Apex of Ascension",
-  "Maybe they'd not have killed so many of each other if they'd grown fruit instead." : "Toxic Grove"
+  "Maybe they'd not have killed so many of each other if they'd grown fruit instead." : "Toxic Grove",
+  "Careful Exile... Something unseen still dwells here." : "Hall of Legends"
 };
 
 const townstrings = [
@@ -2074,7 +2075,9 @@ const mods = [
   "Each Legion contains a War Hoard",
   "Each Legion is accompanied by a General",
   "Towers deal 20% more Damage",
-  
+  "Normal Monsters in this Area Regenerate #% of Maximum Life per second",
+  "Magic Monsters in this Area Regenerate #% of Maximum Life per second",
+  "Rare Monsters in this Area Regenerate #% of Maximum Life per second"  
 ];
 
 const xpLevels = [
