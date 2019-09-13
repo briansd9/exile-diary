@@ -100,16 +100,16 @@ async function get() {
     return;
   }
   
-  var tabs = null;
+  var watchedTabs = null;
   if(settings.tabs && settings.tabs[settings.activeProfile.league]) {
-    tabs = settings.tabs[settings.activeProfile.league];
+    watchedTabs = settings.tabs[settings.activeProfile.league];
   } else {
     logger.info("Tabs to monitor not yet set, will retrieve all");
   }
   
   var params = {
     league : settings.activeProfile.league,
-    tabs : tabs,
+    tabs : watchedTabs,
     accountName : settings.accountName,
     poesessid : settings.poesessid,
     rates : rates
