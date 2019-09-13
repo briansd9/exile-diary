@@ -405,6 +405,7 @@ const equipmentBaseTypes = {
   "Viridian Jewel" : "Jewel",
   "Cobalt Jewel" : "Jewel",
   "Crimson Jewel" : "Jewel",
+  "Prismatic Jewel" : "Jewel",
   "Small Life Flask" : "Life Flasks",
   "Sanctified Life Flask" : "Life Flasks",
   "Divine Life Flask" : "Life Flasks",
