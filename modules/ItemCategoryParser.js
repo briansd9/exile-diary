@@ -1504,9 +1504,9 @@ function getCategory(item) {
   
   switch(item.frameType) {
     case 4:
-      if(gemBaseTypes[t]) {
-        t = t.replace("Superior ", "");
-        return gemBaseTypes[t];
+      var n = t.replace("Superior ", "");
+      if(gemBaseTypes[n]) {
+        return gemBaseTypes[n];
       } else {
         logger.info(`No base type found for gem [${t}]`);
         return null;
