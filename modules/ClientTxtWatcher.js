@@ -4,6 +4,7 @@ const InventoryGetter = require('./InventoryGetter');
 const ItemParser = require('./ItemParser');
 const RunParser = require('./RunParser');
 const Utils  = require('./Utils');
+const Constants = require('./Constants');
 
 var DB;
 var settings;
@@ -64,7 +65,7 @@ function start() {
     });
     tail.watch();
   }
-
+  
 }
 
 function insertEvent(event, timestamp) {
@@ -84,15 +85,17 @@ function insertEvent(event, timestamp) {
 }
 
 function getEvent(arg) {
+  
   var str = arg.substring(arg.indexOf("] ") + 2);
-  if(hasMaster(str)) {
+
+  var masterString = hasMaster(str);
+  if(masterString) {
     return {
       type: "master",
-      text: str.trim(),
+      text: masterString.trim(),
       instanceServer: ""
     };
-  }
-  else if(str.startsWith(":")) {
+  } else if(str.startsWith(":")) {
     if (str.includes("You have entered")) {
       var area = str.substring(str.indexOf("You have entered") + 17);
       return {
@@ -110,6 +113,12 @@ function getEvent(arg) {
       return {
         type: "level",
         text: Number.parseInt(str.substring(str.indexOf("is now level") + 12)),
+        instanceServer: ""
+      };
+    } else if(str.includes("Mission Complete")) {
+      return {
+        type: "favourGained",
+        text: str.replace(/[^0-9]/g, ''),
         instanceServer: ""
       };
     }
@@ -139,10 +148,24 @@ function getEvent(arg) {
 
 function hasMaster(str) {
   
-  if(str.startsWith("Einhar") || str.startsWith("Niko") || str.startsWith("Alva") || str.startsWith("Jun")) return true;
+  if(str.startsWith("Zana") && str.includes("Still sane, exile?")) {
+    return str;
+  }
   
-  // filter out shaper/elder fight dialogue
-  if(str.startsWith("Zana") && str.includes("Still sane, exile?")) return true;
+  for(var i = 0; i < Constants.masters.length; i++) {
+    var master = Constants.masters[i];
+    if(str.startsWith(master)) {
+      return str;      
+    }
+  }
+  
+  // 3.8.0: Jun sometimes does not talk at all during missions; scan for Syndicate member lines instead
+  for(var i = 0; i < Constants.syndicateMembers.length; i++) {
+    var synd = Constants.syndicateMembers[i];
+    if(str.startsWith(synd)) {
+      return `Jun, Veiled Master: [${str}]`;
+    }
+  }
   
   return false;
   
@@ -169,22 +192,33 @@ async function getOldMasterEvents() {
     
   rl.on('line', function(line) {
     var str = line.substring(line.indexOf("] ") + 2);
-    if(hasMaster(str)) {
-      var timestamp = line.substring(0, 19).replace(/[^0-9]/g, '');
-      if(timestamp > minTimestamp) {
-        var text = str.trim();
-        DB.run(
-          "insert into events(id, event_type, event_text, server) values(?, ?, ?, ?)",
-          [timestamp, "master", text, ""],
-          (err) => {
-            if (err) {
-              logger.info("Failed to insert event: " + err);
-            } else {
-              logger.info(`Inserted event ${timestamp} -> ${text}`);
-            }
+    var timestamp = line.substring(0, 19).replace(/[^0-9]/g, '');
+    var masterString = hasMaster(str);
+    if(masterString) {
+      DB.run(
+        "insert into events(id, event_type, event_text, server) values(?, ?, ?, ?)",
+        [timestamp, "master", masterString, ""],
+        (err) => {
+          if (err) {
+            logger.info("Failed to insert event: " + err.message);
+          } else {
+            logger.info(`Inserted master event ${timestamp} -> ${masterString}`);
           }
-        );        
-      }
+        }
+      );        
+    } else if(str.includes("Mission Complete")) {
+      var favourGained = str.replace(/[^0-9]/g, '');
+      DB.run(
+        "insert into events(id, event_type, event_text, server) values(?, ?, ?, ?)",
+        [timestamp, "favourGained", favourGained, ""],
+        (err) => {
+          if (err) {
+            logger.info("Failed to insert event: " + err.message);
+          } else {
+            logger.info(`Inserted favour event ${timestamp} -> ${favourGained}`);
+          }
+        }
+      );        
     }
   });
   
