@@ -25,7 +25,9 @@ function set(key, value) {
         logger.info("Error writing settings! " + err.message);
         throw err;
       } else {
-        logger.info(`Set "${key}" to ${JSON.stringify(value)}`);
+        if(key !== "mainWindowBounds") {
+          logger.info(`Set "${key}" to ${JSON.stringify(value)}`);
+        }
       }
     });    
   }  
