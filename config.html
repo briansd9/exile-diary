@@ -70,10 +70,8 @@
         var validCharacter = require('electron').remote.getGlobal("validCharacter");
 
         $("#sidenav").load("sidenav.html", () => {
-          if(!validCharacter || JSON.stringify(settings) === "{}") {
-            ["sidenav-items", "stashLink", "stashTab"].forEach(str => {
-              $(`#${str}`).hide();
-            });
+          if(JSON.stringify(settings) === "{}") {
+            $("#sidenav-items").hide();
           } else {
             $("#sidenav-main").removeAttr("href");
             $("#sidenav-main").click(backToMain);
@@ -404,8 +402,11 @@
             </div>
           `);
         });
-        $("#stashLink").html("Stash");
         $("#tabs").tabs("enable", 1);
+        var params = require('./modules/Utils').getParams(window.location.toString());
+        if(params['loadStash']) {
+          $("#tabs").tabs({ active: 1 });
+        }         
         
         function toHex(c) {
           var hex = c.toString(16);
@@ -549,7 +550,7 @@
     <div id="tabs">    
       <ul>
         <li><a id="accountLink" href="#account">Account</a></li>
-        <li><a id="stashLink" href="#stash">Stash (Loading...)</a></li>
+        <li><a id="stashLink" href="#stash">Stash</a></li>
       </ul>
       <div id="account">
         <table id='mapFilters'>

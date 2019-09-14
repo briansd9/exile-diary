@@ -44,12 +44,16 @@
         getStashItems() {
           return new Promise( (resolve, reject) => {
             DB.get(`select items, value from stashes where timestamp = ?`, [this.id], async (err, row) => {
-              this.value = row.value;
-              var items = await this.getItemsFromData(row.items);
-              for(var i = 0; i < items.length; i++) {
-                this.processItem(items[i]);
+              if(!row) {
+                resolve(false);                
+              } else {
+                this.value = row.value;
+                var items = await this.getItemsFromData(row.items);
+                for(var i = 0; i < items.length; i++) {
+                  this.processItem(items[i]);
+                }
+                resolve(true);
               }
-              resolve();
             });
           });
         }
@@ -161,7 +165,7 @@
         logger.info("Done capturing");
       });
 
-        function screenshot() {
+      function screenshot() {
         $("#sidenav").hide();
         $("#messages").hide();
         $("#messagePadding").hide();
@@ -207,18 +211,23 @@
         var currStash, prevStash;
         
         currStash = new Stash(id);
-        await currStash.getStashItems();
-        
-        var prevStashID = await getPrevStashID(id);
-        if(prevStashID) {
-          prevStash = new Stash(prevStashID);
-          await prevStash.getStashItems();
+        var hasStash = await currStash.getStashItems();
+        if(hasStash) {
+          var prevStashID = await getPrevStashID(id);
+          if(prevStashID) {
+            prevStash = new Stash(prevStashID);
+            await prevStash.getStashItems();
+          }
+          if(prevStash) {
+            currStash.compareTo(prevStash);
+          }
+          displayItems(currStash);
+          $("#topnav").show();
+          $("#itemsByValue").show();          
+        } else {
+          $("#noStash").show();
+          logger.info("No stash found!");
         }
-        if(prevStash) {
-          currStash.compareTo(prevStash);
-        }
-        
-        displayItems(currStash);
         
       }
       
@@ -373,7 +382,7 @@
     
     <div class='sidenav' id='sidenav'></div>
     
-    <table id='topnav' style='width:100%;'>
+    <table id='topnav' style='width:100%;display:none;'>
       <tr>
         <td id='prevCell' style='text-align:left;width:25%;'/>
         <td style='text-align:center;'>
@@ -383,10 +392,10 @@
         <td id='nextCell' style='text-align:right;width:25%;'/>
       </tr>
     </table>
-    <hr style='border:1px solid #999;' />
     
-    <div id='itemsByValue'>
-      <div id='netWorth' class='tableLink netWorth' onclick='$("#total").toggle()'></div>
+    <div id='itemsByValue' style="display:none;">
+      <hr style='border:1px solid #999;' />
+      <div id='netWorth' class='tableLink netWorth'></div>
       <table id='total' style='display:block;'>
         <thead id="itemsHeader">
           <tr class='ui-text'>
@@ -399,7 +408,11 @@
         <tbody id="itemsTable">
         </tbody>
       </table>
-      
+    </div>
+    
+    <div id='noStash' style='display:none;padding:80px;'>
+      <img src='res/img/stash.png' style='display:inline-block;vertical-align:middle;'/>
+      Net worth not checked yet. Have you <a href='config.html?loadStash=true'>set up stash tab tracking</a>?
     </div>
     
     
