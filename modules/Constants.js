@@ -88,6 +88,7 @@ const townstrings = [
   "Excavated Hideout",
   "Furious Hideout",
   "Glacial Hideout",
+  "Glimmerwood Hideout",
   "Haunted Hideout",
   "Immaculate Hideout",
   "Indomitable Hideout",
@@ -2067,6 +2068,8 @@ const mods = [
   "The First 10 Possessed Monsters have a 25% chance to drop an additional Map",
   "The First 10 Possessed Monsters drop an additional Unique Item",
   // Blight
+  "Area is infested with Fungal Growths",
+  "Natural inhabitants of this area have been removed",
   "#% reduced Cost of Building and Upgrading Towers",  
   "#% reduced Monster Movement Speed",
   "#% chance for Blight Chests to drop an additional Reward",
