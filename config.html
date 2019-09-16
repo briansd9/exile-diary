@@ -41,10 +41,9 @@
       const fs = require('fs');
       const logger = require('./modules/Log').getLogger(__filename);
       const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled"];
-      //const profileKeys = ["accountName", "characterName", "league"];
 
       var settings = {};
-      var tabList = {};
+      var tabsLoaded = false;
       var filterData = null;
       var requiresRestart = false;
 
@@ -66,8 +65,6 @@
         if(fs.existsSync(settingsPath)) {
           settings = require(settingsPath);
         }
-
-        var validCharacter = require('electron').remote.getGlobal("validCharacter");
 
         $("#sidenav").load("sidenav.html", () => {
           if(JSON.stringify(settings) === "{}") {
@@ -233,20 +230,6 @@
         }
       }
 
-      function changeProfile() {
-        var profileId = $("#activeProfile").val();
-        if (profileId in settings.profiles) {
-          Object.keys(settings.profiles[profileId]).forEach((key) => {
-            $("#" + key).val(settings.profiles[profileId][key]);
-          });
-        } else {
-          profileKeys.forEach((key) => {
-            $("#" + key).val("");
-          });
-        }
-        $("#saveSettings").prop("disabled", (profileId.trim() === ""));
-      }
-
       function saveSettings() {
         
         var valid = true;
@@ -299,19 +282,17 @@
           units: stashCheckUnits
         }
         
-        if(!requiresRestart) {
-          
+        if(!requiresRestart && tabsLoaded) {
           var tabs = [];
           $("input[name='tabList']:checked").each((i, elem) => {
             tabs.push($(elem).val());
           })
-          
+
           if(!settings.tabs) {
             settings.tabs = {};
           }
           settings.tabs[settings.activeProfile.league] = tabs;
-          
-        }
+        }          
         
         var filename = path.join(app.getPath("userData"), "settings.json");
         fs.writeFile(filename, JSON.stringify(settings), (err) => {
@@ -402,6 +383,7 @@
             </div>
           `);
         });
+        tabsLoaded = true;
         $("#tabs").tabs("enable", 1);
         var params = require('./modules/Utils').getParams(window.location.toString());
         if(params['loadStash']) {
