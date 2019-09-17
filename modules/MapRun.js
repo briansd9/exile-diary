@@ -33,7 +33,7 @@ class MapRun extends EventEmitter {
 
 async function getPrevMap(mapID) {
   return new Promise((resolve, reject) => {
-    DB.get("select id from mapruns where id < ? order by id desc limit 1", [mapID], (err, row) => {
+    DB.get("select id from mapruns where id < ? and ifnull(gained, 0) != -1 and ifnull(kills, 0) != -1 order by id desc limit 1", [mapID], (err, row) => {
       if (err) {
         logger.error(`Unable to get previous map: ${err}`);
         resolve(null);
@@ -46,7 +46,7 @@ async function getPrevMap(mapID) {
 
 async function getNextMap(mapID) {
   return new Promise((resolve, reject) => {
-    DB.get("select id from mapruns where id > ? order by id limit 1", [mapID], (err, row) => {
+    DB.get("select id from mapruns where id > ? and ifnull(gained, 0) != -1 and ifnull(kills, 0) != -1 order by id limit 1", [mapID], (err, row) => {
       if (err) {
         logger.error(`Unable to get next map: ${err}`);
         resolve(null);
@@ -65,7 +65,7 @@ async function getInfo(mapID) {
       from areainfo, mapruns where mapruns.id = ? and areainfo.id = ?
     `, [mapID, mapID], (err, row) => {
       if (err) {
-        logger.error(`Unable to get map info: ${err}`);
+        logger.error(`Unable to get map info: ${serr}`);
         resolve(null);
       } else {
         resolve({

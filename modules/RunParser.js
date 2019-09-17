@@ -77,19 +77,21 @@ async function tryProcess(obj) {
   var xpDiff = await getXPDiff(xp);
   var items = await checkItems(areaInfo, firstEvent.timestamp, lastEvent.timestamp);
   var killCount  = await getKillCount(firstEvent.timestamp, lastEvent.timestamp);
-  
-  // if no items picked up, no kills, and no xp gained, don't log map run
-  // this is to prevent unwanted logging of menagerie visits, etc.
-  if(!items.count && !xpDiff && !killCount) {
-    logger.info("No items or xp gained, not logging map run");
-    return;
-  }
+  var ignoreMapRun = false;
   
   DB.run("insert into areainfo(id, name) values(?, ?)", [firstEvent.timestamp, firstEvent.area], (err) => {
     if (err) {
       logger.info(`Error manually inserting areainfo (${firstEvent.timestamp} ${firstEvent.area}): ${err}`);
     }        
   });
+  
+  // if no items picked up, no kills, and no xp gained, log map run but ignore it (profit = -1, kills = -1)
+  if(!items.count && !xpDiff && !killCount) {
+    items.value = -1;
+    killCount = -1;
+    ignoreMapRun = true;
+    logger.info("No items or xp gained, map run will be logged as invisible");
+  }
   
   var runArr = [
     areaInfo.id, 
@@ -98,14 +100,16 @@ async function tryProcess(obj) {
     items.value, xp, killCount
   ];
   insertMapRun(runArr).then(() => {
-    emitter.emit(
-      "runProcessed", 
-      {
-        name: areaInfo.name, id: areaInfo.id, 
-        gained: items.value, xp: xpDiff, kills: killCount,
-        firstevent: firstEvent.timestamp, lastevent: lastEvent.timestamp
-      }
-    );
+    if(!ignoreMapRun) {
+      emitter.emit(
+        "runProcessed", 
+        {
+          name: areaInfo.name, id: areaInfo.id, 
+          gained: items.value, xp: xpDiff, kills: killCount,
+          firstevent: firstEvent.timestamp, lastevent: lastEvent.timestamp
+        }
+      );
+    }
   });
   
   return 1;
@@ -272,11 +276,14 @@ async function process() {
   var xpDiff = await getXPDiff(xp);
   var items = await checkItems(currArea, firstEvent, lastEvent);
   var killCount  = await getKillCount(firstEvent, lastEvent);
-  // if no items picked up and no xp gained, don't log map run
-  // this is to prevent unwanted logging of menagerie visits, etc.
+  var ignoreMapRun = false;
+  
+  // if no items picked up, no kills, and no xp gained, log map run but ignore it (profit = -1, kills = -1)
   if(!items.count && !xpDiff && !killCount) {
-    logger.info("No items or xp gained, not logging map run");
-    return;
+    items.value = -1;
+    killCount = -1;
+    ignoreMapRun = true;
+    logger.info("No items or xp gained, map run will be logged as invisible");
   }
   
   var runArr = [
@@ -286,14 +293,16 @@ async function process() {
     items.value, xp, killCount
   ];
   insertMapRun(runArr).then(() => {
-    emitter.emit(
-      "runProcessed", 
-      {
-        name: currArea.name, id: currArea.id, 
-        gained: items.value, xp: xpDiff, kills: killCount,
-        firstevent: firstEvent, lastevent: lastEvent
-      }
-    );
+    if(!ignoreMapRun) {
+      emitter.emit(
+        "runProcessed", 
+        {
+          name: currArea.name, id: currArea.id, 
+          gained: items.value, xp: xpDiff, kills: killCount,
+          firstevent: firstEvent, lastevent: lastEvent
+        }
+      );
+    }
   });
   
   

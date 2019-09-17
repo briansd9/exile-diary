@@ -234,7 +234,7 @@ function getSQL(q) {
     str += " mapruns ";
   }
     
-  str += " where areainfo.id = mapruns.id ";
+  str += " where areainfo.id = mapruns.id and ifnull(mapruns.gained, 0) != -1 and ifnull(mapruns.kills, 0) != -1 ";
   var params = [];
   
   if(q.mapname) {

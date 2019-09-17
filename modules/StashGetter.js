@@ -75,7 +75,7 @@ function reachedMapLimit(limit) {
         logger.info("No stashes found in db - will retrieve now");
         resolve(true);
       } else {
-        DB.get("select count(1) as count from mapruns where id > ?", [row.timestamp], (err, maps) => {
+        DB.get("select count(1) as count from mapruns where id > ? and ifnull(gained, 0) != -1 and ifnull(kills, 0) != -1", [row.timestamp], (err, maps) => {
           if(err) {      
             logger.info(`Error getting map count: ${err}`);
             resolve(false);

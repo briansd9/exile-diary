@@ -88,7 +88,9 @@
             gained, kills,
             (select count(1) from events where event_type='slain' and events.id between firstevent and lastevent) deaths
             from areainfo, mapruns
-            where mapruns.id = ? and areainfo.id = mapruns.id;
+            where mapruns.id = ? 
+            and ifnull(mapruns.gained, 0) != -1 and ifnull(mapruns.kills, 0) != -1
+            and areainfo.id = mapruns.id;
           `, [runInfo.id], (err, row) => {
             if(row) {
               if($("#lastMapsRows tr").length > 10) {
@@ -131,6 +133,7 @@
           (select count(1) from events where event_type='slain' and events.id between firstevent and lastevent) deaths
           from areainfo, mapruns
           where areainfo.id = mapruns.id
+          and ifnull(mapruns.gained, 0) != -1 and ifnull(mapruns.kills, 0) != -1
           order by mapruns.id desc
           limit 10;
         `, (err, rows) => {
