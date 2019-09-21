@@ -1522,8 +1522,7 @@ function getCategory(item) {
     case 7:
       return "Quest Items";
     case 8:
-      // prophecies - counted as currency
-      return "Currency";
+      return "Prophecy";
   }
   
   // Maligaro's Map quest item has frameType 7, already detected above as a quest item
