@@ -1488,6 +1488,14 @@ const otherBaseTypes = {
   "Divine Vessel" : "Map Fragments",
   "Ancient Reliquary Key" : "Misc Map Items",
   "Timeworn Reliquary Key" : "Misc Map Items",
+  "Primitive Alchemical Resonator" : "Currency",
+  "Potent Alchemical Resonator" : "Currency",
+  "Powerful Alchemical Resonator" : "Currency",
+  "Prime Alchemical Resonator" : "Currency",
+  "Primitive Chaotic Resonator" : "Currency",
+  "Potent Chaotic Resonator" : "Currency",
+  "Powerful Chaotic Resonator" : "Currency",
+  "Prime Chaotic Resonator" : "Currency",
   "Offering to the Goddess" : "Labyrinth Items",
   
   // not actually in the game - pseudo-items for vendor recipe
