@@ -148,14 +148,14 @@ function getEvent(arg) {
 
 function hasMaster(str) {
   
-  if(str.startsWith("Zana") && str.includes("Still sane, exile?")) {
-    return str;
-  }
-  
   for(var i = 0; i < Constants.masters.length; i++) {
     var master = Constants.masters[i];
     if(str.startsWith(master)) {
-      return str;      
+      if(str.startsWith("Zana") && !str.includes("Still sane, exile?")) {
+        continue;
+      } else {
+        return str;      
+      }
     }
   }
   
