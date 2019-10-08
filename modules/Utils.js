@@ -62,10 +62,13 @@ class Utils {
     for (var i = 0; i < Constants.baseMaps.length; i++) {
       var elder = "Elder " + Constants.baseMaps[i];
       var shaped = "Shaped " + Constants.baseMaps[i];
+      var blighted = "Blighted " + Constants.baseMaps[i];
       if (m.indexOf(shaped) !== -1 && shaped.length > baseMap.length) {
         baseMap = shaped;
       } else if (m.indexOf(elder) !== -1 && elder.length > baseMap.length) {
         baseMap = elder;
+      } else if (m.indexOf(blighted) !== -1 && blighted.length > baseMap.length) {
+        baseMap = blighted;
       } else if (m.indexOf(Constants.baseMaps[i]) !== -1 && Constants.baseMaps[i].length > baseMap.length) {
         baseMap = Constants.baseMaps[i];
       }
