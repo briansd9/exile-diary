@@ -1520,7 +1520,7 @@ function getCategory(item, subcategory = false) {
       }
     case 5:
       if(otherBaseTypes[t]) {
-        if(!subcategory && otherBaseTypes[t][0]) {
+        if(!subcategory && Array.isArray(otherBaseTypes[t])) {
           return otherBaseTypes[t][0];
         } else {
           return otherBaseTypes[t];
