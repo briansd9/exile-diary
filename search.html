@@ -98,6 +98,10 @@
           
           $("#summaryContentsLoading").show();
           $("#summaryContents").hide();
+          
+          $("#exportTab").hide();
+          $("#exportToExcel").prop("disabled", true);
+          
         });
         
         $("input.itemToggleCheckbox[type=checkbox]").click(function() {
@@ -137,39 +141,39 @@
           
           mapDataList = JSON.stringify(mapData);
           
-//          exportData.mapList = {
-//            data: [],
-//            colWidths: [],
-//            addRow : (row) => {
-//              exportData.mapList.data.push(row);
-//              Object.keys(row).forEach(key => {
-//                exportData.mapList.addColWidth(key, row[key]);
-//              });
-//            },
-//            addColWidth : (a, b) => {
-//              if(!exportData.mapList.colWidths[a]) {
-//                exportData.mapList.colWidths[a] = -1;
-//              }
-//              exportData.mapList.colWidths[a] = Math.max(exportData.mapList.colWidths[a], a.length, (new String(b)).length);
-//            }
-//          };
-//          
+          exportData.mapList = {
+            data: [],
+            colWidths: [],
+            addRow : (row) => {
+              exportData.mapList.data.push(row);
+              Object.keys(row).forEach(key => {
+                exportData.mapList.addColWidth(key, row[key]);
+              });
+            },
+            addColWidth : (a, b) => {
+              if(!exportData.mapList.colWidths[a]) {
+                exportData.mapList.colWidths[a] = -1;
+              }
+              exportData.mapList.colWidths[a] = Math.max(exportData.mapList.colWidths[a], a.length, (new String(b)).length);
+            }
+          };
+          
           rows.forEach(row => {
             Utils.addMapRow($("#mapRows"), row, false, ssf, hardcore);
-//            exportData.mapList.addRow({
-//              timestamp: row.firstevent,
-//              area: row.name,
-//              level: row.level,
-//              depth: row.depth,
-//              iiq: row.iiq,
-//              iir: row.iir,
-//              packsize: row.packsize,
-//              time: parseInt(Utils.getRunningTime(row.firstevent, row.lastevent, "s")),
-//              xp: row.xpgained,
-//              deaths: row.deaths,
-//              kills: row.kills,
-//              profit: parseFloat(Number(row.gained).toFixed(2))
-//            });
+            exportData.mapList.addRow({
+              timestamp: row.firstevent,
+              area: row.name,
+              level: row.level,
+              depth: row.depth,
+              iiq: row.iiq,
+              iir: row.iir,
+              packsize: row.packsize,
+              time: moment(row.lastevent, "YYYYMMDDHHmmss").diff(moment(row.firstevent, "YYYYMMDDHHmmss"), 'seconds'),
+              xp: row.xpgained,
+              deaths: row.deaths,
+              kills: row.kills,
+              profit: parseFloat(Number(row.gained).toFixed(2))
+            });
           });
           
           $("#mapTable").trigger("update");
@@ -177,32 +181,35 @@
           if(!$("#getItemsCheckbox").prop("checked")) {
             $("#mapSummaryTab").hide();
             $("#mapSummary").hide();
+            $("#exportToExcel").html("Export Map List to Excel");
+            $("#exportToExcel").prop("disabled", false);
           } else {
             $("#mapSummaryTab").show();
           }
           
+          $("#exportTab").show();
           $("#searchResults").show();
           $("#tabs").tabs("option", "active", 0);
         });
 
         ipcRenderer.on("mapSummaryResults", (event, data) => {
           
-//          exportData.itemList = {
-//            data : [],
-//            colWidths: [],
-//            addRow : (row) => {
-//              exportData.itemList.data.push(row);
-//              Object.keys(row).forEach(key => {
-//                exportData.itemList.addColWidth(key, row[key]);
-//              });
-//            },
-//            addColWidth : (a, b) => {
-//              if(!exportData.itemList.colWidths[a]) {
-//                exportData.itemList.colWidths[a] = -1;
-//              }
-//              exportData.itemList.colWidths[a] = Math.max(exportData.itemList.colWidths[a], a.length, (new String(b)).length);
-//            }
-//          };
+          exportData.itemList = {
+            data : [],
+            colWidths: [],
+            addRow : (row) => {
+              exportData.itemList.data.push(row);
+              Object.keys(row).forEach(key => {
+                exportData.itemList.addColWidth(key, row[key]);
+              });
+            },
+            addColWidth : (a, b) => {
+              if(!exportData.itemList.colWidths[a]) {
+                exportData.itemList.colWidths[a] = -1;
+              }
+              exportData.itemList.colWidths[a] = Math.max(exportData.itemList.colWidths[a], a.length, (new String(b)).length);
+            }
+          };
                     
           var f = new Intl.NumberFormat();
           $("#totalTime").html(moment.duration(data.totalTime, "seconds").format("H:mm:ss"));
@@ -214,35 +221,29 @@
           }
           $("#avgXP").html(f.format(Math.round(data.totalXP / data.numMaps)));
           display(data);
-//          data.items.forEach(item => {
-//            exportData.itemList.addRow({
-//              count: item.stackSize,
-//              item: item.displayName,
-//              value: parseFloat(Number(item.chaosValue).toFixed(2))
-//            });
-//          });
-          
-//          var wb = XLSX.utils.book_new();
-//          
-//          var mapSheet = XLSX.utils.json_to_sheet(exportData.mapList.data);
-//          mapSheet["!cols"] = [];
-//          Object.keys(exportData.mapList.colWidths).forEach(key => {
-//            mapSheet["!cols"].push({ wch: exportData.mapList.colWidths[key] + 5 });
-//          });
-//          XLSX.utils.book_append_sheet(wb, mapSheet, "Maps");
-//
-//          var itemSheet = XLSX.utils.json_to_sheet(exportData.itemList.data);
-//          itemSheet["!cols"] = [];
-//          Object.keys(exportData.itemList.colWidths).forEach(key => {
-//            itemSheet["!cols"].push({ wch: exportData.itemList.colWidths[key] + 5 });
-//          });
-//          XLSX.utils.book_append_sheet(wb, itemSheet, "Items");
-//    
-//          ipcRenderer.send("exportSheetReady", wb);
+          data.items.forEach(item => {
+            var category = ItemCategoryParser.getCategory(item, true);
+            if(category === "Maps") {
+              ["Shaped", "Elder", "Blighted"].forEach(str => {
+                if(item.displayName.includes(str)) {
+                  category = ["Maps", str];
+                }                
+              });
+            }
+            exportData.itemList.addRow({
+              count: item.stackSize,
+              item: item.displayName,
+              category: Array.isArray(category) ? category[0] : category,
+              subcategory: Array.isArray(category) ? category[1] : "",
+              value: parseFloat(Number(item.chaosValue).toFixed(2))
+            });
+          });
           
           $("#items").trigger("update");
           $("#summaryContentsLoading").hide();
           $("#summaryContents").show();
+          $("#exportToExcel").html("Export Map List and Items to Excel");
+          $("#exportToExcel").prop("disabled", false);
           logger.info("Showing items");
           
         });
@@ -252,6 +253,7 @@
           $("#messages").show();
           $("#messagePadding").show();
           $("#export").show();
+          $("#getItems").show();
 //          $("ul").show();
 //          $("#mapList").show();
 //          $("#mapSummary").hide();
@@ -293,6 +295,8 @@
         $("#messages").hide();
         $("#messagePadding").hide();
         $("#export").hide();
+        $("#exportTab").hide();
+        $("#getItems").hide();
 //        $("ul").hide();
 //        $("#mapList").show();
 //        $("#mapSummary").show();
@@ -435,6 +439,34 @@
             ipcRenderer.send("pastebin-error");
           });
       }
+      
+      function exportToExcel() {
+        
+        logger.info("Exporting Excel file");
+        
+        var wb = XLSX.utils.book_new();
+
+        var mapSheet = XLSX.utils.json_to_sheet(exportData.mapList.data);
+        mapSheet["!cols"] = [];
+        Object.keys(exportData.mapList.colWidths).forEach(key => {
+          mapSheet["!cols"].push({ wch: exportData.mapList.colWidths[key] + 5 });
+        });
+        XLSX.utils.book_append_sheet(wb, mapSheet, "Maps");
+        
+        
+        if(exportData.itemList) {
+          var itemSheet = XLSX.utils.json_to_sheet(exportData.itemList.data);
+          itemSheet["!cols"] = [];
+          Object.keys(exportData.itemList.colWidths).forEach(key => {
+            itemSheet["!cols"].push({ wch: exportData.itemList.colWidths[key] + 5 });
+          });
+          itemSheet["!autofilter"] = { ref: "C1:D" + (exportData.itemList.data.length + 1) };
+          XLSX.utils.book_append_sheet(wb, itemSheet, "Items");
+        }
+
+        ipcRenderer.send("exportSheetReady", wb);
+        
+      }
 
     </script>    
   </head>
@@ -458,7 +490,7 @@
             </tr>
           </table>
           <div id='getItems' style='padding:10px 0px'>
-            <span class='itemToggle'><input type='checkbox' id='getItemsCheckbox' name='getItems' value='true'/> Also retrieve items (may be very slow)</span>
+            <span class='itemToggle'><input type='checkbox' id='getItemsCheckbox' checked name='getItems' value='true'/> Also retrieve items (may be very slow)</span>
           </div>
           <div id='mapFilterButtons'>
             <input id='searchButton' style='float:left;width:85%' type='submit' value='Search'/>
@@ -528,6 +560,7 @@
         <div id="export">
           <div style='width: 60%;'>
           <button id='uploadMapList' onclick='uploadMapList()'>Upload Map List to Pastebin</button>
+          <button id='exportToExcel' onclick='exportToExcel()'>Export Map List to Excel</button>
           </div>
         </div>        
       </div>
