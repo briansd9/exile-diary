@@ -101,7 +101,7 @@ async function getMods(mapID) {
 
 async function getEvents(mapID) {
   return new Promise((resolve, reject) => {
-    var events = {};
+    var events = [];
     DB.all(`
             select events.* from mapruns, events 
             where mapruns.id = ?
@@ -113,10 +113,11 @@ async function getEvents(mapID) {
       } else {
         rows.forEach(row => {
           if(row.event_type !== "chat") {
-            events[row.id] = {
+            events.push({
+              id: row.id,
               event_type: row.event_type,
               event_text: row.event_text
-            };
+            });
           }
         });
         resolve(events);
