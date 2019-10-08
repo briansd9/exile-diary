@@ -236,6 +236,7 @@
         
         ["Zana", "Einhar", "Alva", "Niko", "Jun"].forEach( str => {
           $(`#${str}Icon`).hide();
+          $(`#${str}Favour`).hide();
         });
         
         itemsByType = {};
@@ -369,11 +370,10 @@
           var xpgained = (info.prevxp > 0 ? info.xp - info.prevxp : 0);
           if(info.xp !== 4250334444 || xpgained > 0) {
             var events = run.events;
-            var eventTimes = Object.keys(events).sort();
             var xpString = `<span class='eventText'>${f.format(info.xp)}</span> xp`;
             $("#xp").html(
               xpString
-              + (xpgained === 0 ? " · +0" : ` · ${Utils.formatSignedNumber(xpgained)}` + (xpgained > 0 ? ` · ${Utils.getXPRate(xpgained, eventTimes[0], eventTimes[eventTimes.length - 1])}/hr` : ""))
+              + (xpgained === 0 ? " · +0" : ` · ${Utils.formatSignedNumber(xpgained)}` + (xpgained > 0 ? ` · ${Utils.getXPRate(xpgained, events[0].id, events[events.length - 1].id)}/hr` : ""))
             );
             $("#xpDiv").css("display","block");
           }
@@ -445,21 +445,21 @@
       function showEvents(mapRun) {
         
         var events = mapRun.events;
-        var eventTimes = Object.keys(events).sort();
         
-        var runningTime = Utils.getRunningTime(eventTimes[0], eventTimes[eventTimes.length - 1]);
+        var runningTime = Utils.getRunningTime(events[0].id, events[events.length - 1].id);
         $("#runningTime").html(`Time<br/><span class='mapStatValue'>${runningTime}</span>`);
         
-        for (var i = 0; i < eventTimes.length; i++) {
-          eventTime = "[" + eventTimes[i].substring(8, 10) + ":" + eventTimes[i].substring(10, 12) + ":" + eventTimes[i].substring(12, 14) + "]";
-          var currEvent = events[eventTimes[i]];
+        for (var i = 0; i < events.length; i++) {
+          
+          var eventTime = "[" + events[i].id.substring(8, 10) + ":" + events[i].id.substring(10, 12) + ":" + events[i].id.substring(12, 14) + "]";
+          var currEvent = events[i];
           
           if(currEvent.event_type === "master") {
             if(currEvent.event_text.includes("Zana")) {
               $("#masterDiv").show();
               $(`#ZanaIcon`).show();
             }
-            else if(currEvent.event_text.includes("Jun")) {
+            else if(currEvent.event_text.includes("Jun") && !mapRun.info.name.includes("Syndicate Hideout") && !mapRun.info.name.includes("Mastermind's Lair")) {
               $("#masterDiv").show();
               $(`#JunIcon`).show();
             }
@@ -500,10 +500,14 @@
                 }
               });
             }
+          } 
+          
+          if(currEvent.event_type === 'favourGained') {
+            displayFavour(currEvent, events[i+1]);
           }
           
-          if (i > 0 && !lastEnteredTown(events, eventTimes, i)) {
-            var lootString = getInventoryDiffs(mapRun.items, eventTimes[i]);
+          if (i > 0 && !lastEnteredTown(events, i)) {
+            var lootString = getInventoryDiffs(mapRun.items, events[i].id);
             if (lootString.length > 0) {
               $("#eventsDiv").append(
                 "<div class='eventInfo'>"
@@ -515,7 +519,7 @@
           }
           
           if(i > 0) {
-            var prevEvent = events[eventTimes[i-1]];
+            var prevEvent = events[i-1];
             // don't spam multiple entries for Azurite Mine
             if(currEvent.event_type === "entered" && prevEvent.event_type === "entered" && currEvent.event_text === prevEvent.event_text) {
               continue;
@@ -542,9 +546,28 @@
 
       }
       
-      function lastEnteredTown(events, eventTimes, currIndex) {
+      function displayFavour(currEvent, nextEvent) {
+        
+        var favourGained = "+" + new Intl.NumberFormat().format(currEvent.event_text);
+        var found = false;
+        ["Einhar", "Alva", "Niko", "Jun"].forEach( str => {
+          if(nextEvent.event_type === "master" && nextEvent.event_text.startsWith(str)) {
+            $(`#${str}Favour`).html(favourGained);
+            $(`#${str}Favour`).show();
+            found = true;
+          }
+        });
+        
+        if(!found) {
+          $(`#ZanaFavour`).html(favourGained);
+          $(`#ZanaFavour`).show();
+        }
+        
+      }
+      
+      function lastEnteredTown(events, currIndex) {
         for (var i = currIndex - 1; i >= 0; i--) {
-          var event = events[eventTimes[i]];
+          var event = events[i];
           if (event.event_type === "entered") {
             return Utils.isTown(event.event_text);
           }
@@ -699,7 +722,7 @@
             name += i.name.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "") + ", ";
         }
         name += i.typeLine.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "");
-        name = name.replace("Superior ", "");
+        //name = name.replace("Superior ", "");
         return name;
       }
 
@@ -820,27 +843,39 @@
       </div>
       <hr style='border:1px solid #999;' />
       <div id="masterDiv" style="display:none;">
-        <span id='ZanaIcon' style='display:none;'>
-          <img src='res/img/zana.png'/>
-        </span>
-        <span id='EinharIcon' style='display:none;'>
-          <img src='res/img/einhar.png'/>
-          <div id='beastCount' style='display:inline;'>
-          </div>          
-        </span>
-        <span id='AlvaIcon' style='display:none;'>
-          <img src='res/img/alva.png'/>
-          <div id='incursionCount' style='display:inline;'>
-          </div>          
-        </span>
-        <span id='NikoIcon' style='display:none;'>
-          <img src='res/img/niko.png'/>
-          <div id='sulphiteCount' style='display:inline;'>
-          </div>        
-        </span>
-        <span id='JunIcon' style='display:none;'>
-          <img src='res/img/jun.png'/>
-        </span>
+        <div id='ZanaIcon' style='display:none;'>
+          <div style='position:relative;display:inline;'>
+            <img src='res/img/zana.png'/>
+            <span id='ZanaFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
+          </div>
+        </div>
+        <div id='EinharIcon' style='display:none;'>
+          <div style='position:relative;display:inline;'>
+            <img src='res/img/einhar.png'/>
+            <span id='EinharFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
+          </div>
+          <div id='beastCount' style='display:inline;'></div>
+        </div>
+        <div id='AlvaIcon' style='display:none;'>
+          <div style='position:relative;display:inline;'>
+            <img src='res/img/alva.png'/>
+            <span id='AlvaFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
+          </div>
+          <div id='incursionCount' style='display:inline;'></div>
+        </div>
+        <div id='NikoIcon' style='display:none;'>
+          <div style='position:relative;display:inline;'>
+            <img src='res/img/niko.png'/>
+            <span id='NikoFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
+          </div>
+          <div id='sulphiteCount' style='display:inline;'></div>
+        </div>
+        <div id='JunIcon' style='display:none;'>
+          <div style='position:relative;display:inline;'>
+            <img src='res/img/jun.png'/>
+            <span id='JunFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
+          </div>
+        </div>
         <hr style='border:1px solid #999;' />
       </div>
       <div class='eventsDiv' id='eventsDiv'></div>
