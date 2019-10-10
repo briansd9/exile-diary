@@ -1541,7 +1541,7 @@ function getCategory(item, subcategory = false) {
     return "Maps";
   }
 
-  if(t.endsWith("Scarab")) {
+  if(t.endsWith("Scarab") || t.endsWith("Breachstone") || t.endsWith("Emblem")) {
     return "Map Fragments";
   }
 
