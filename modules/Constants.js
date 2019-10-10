@@ -169,15 +169,15 @@ const uniqueMaps = {
 const uniqueMapsCurrentAtlas = {
   "Acton's Nightmare" : {
     baseType: "Overgrown Shrine Map",
-    mapTier: 7
+    mapTier: 6
   },
   "Caer Blaidd, Wolfpack's Den" : {
     baseType: "Underground River Map",
-    mapTier: 9
+    mapTier: 8
   },
   "Death and Taxes" : {
       baseType: "Necropolis Map",
-      mapTier: 8
+      mapTier: 7
   },
   "Doryani's Machinarium" : {
     baseType: "Maze Map",
@@ -185,7 +185,7 @@ const uniqueMapsCurrentAtlas = {
   },
   "Hall of Grandmasters" : {
     baseType: "Promenade Map",
-    mapTier: 6
+    mapTier: 9
   },
   "Hallowed Ground" : {
     baseType: "Cemetery Map",
@@ -193,28 +193,27 @@ const uniqueMapsCurrentAtlas = {
   },
   "Maelström of Chaos" : {
     baseType: "Atoll Map",
-    mapTier: 6
+    mapTier: 8
   },
   "Mao Kun" : {
-    // should be a Shore map - workaround for poe.ninja bug
-    baseType: "Reef Map",
-    mapTier: 9
+    baseType: "Shore Map",
+    mapTier: 8
   },
   "Oba's Cursed Trove" : {
-    baseType: "Underground Sea Map",
-    mapTier: 9
+    baseType: "Primordial Blocks Map",  // poe.ninja bug workaround
+    mapTier: 7
   },
   "Olmec's Sanctum" : {
     baseType: "Bone Crypt Map",
-    mapTier: 8
+    mapTier: 6
   },
   "Pillars of Arun" : {
     baseType: "Dunes Map",
-    mapTier: 8
+    mapTier: 10
   },
   "Poorjoy's Asylum" : {
     baseType: "Temple Map",
-    mapTier: 10
+    mapTier: 8
   },
   "The Coward's Trial" : {
     baseType: "Cursed Crypt Map",
@@ -222,27 +221,27 @@ const uniqueMapsCurrentAtlas = {
   },
   "The Perandus Manor" : {
     baseType: "Chateau Map",
-    mapTier: 8
+    mapTier: 7
   },  
   "The Putrid Cloister" : {
     baseType: "Museum Map",
-    mapTier: 11
+    mapTier: 13
   },
   "The Twilight Temple" : {
     baseType: "Moon Temple Map",
-    mapTier: 9
+    mapTier: 10
   },
   "The Vinktar Square" : {
     baseType: "Courtyard Map",
-    mapTier: 6
+    mapTier: 9
   },
   "Vaults of Atziri" : {
     baseType: "Vaal Pyramid Map",
-    mapTier: 12
+    mapTier: 11
   },  
   "Whakawairua Tuahu" : {
     baseType: "Strand Map",
-    mapTier: 4
+    mapTier: 3
   } 
 };
 
