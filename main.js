@@ -406,7 +406,7 @@ function addMessage(text, sendToOverlay = false) {
       var win = await activeWin();
       if(win.title === "Path of Exile" && win.owner.name.startsWith("PathOfExile")) {
         overlayWindow.webContents.send("message", msg);
-        overlayWindow.show();
+        overlayWindow.showInactive();
       }
     })();
   }
