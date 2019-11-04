@@ -476,7 +476,7 @@ function getXPDiff(currentXP) {
 }
 
 function getItems(areaID, firstEvent, lastEvent) {
-  logger.info(`Getting item values for map with ID ${areaID} (event bounds: ${firstEvent} -> ${lastEvent}`);
+  //logger.info(`Getting item values for map with ID ${areaID} (event bounds: ${firstEvent} -> ${lastEvent}`);
   return new Promise( async (resolve, reject) => {
     var rates = await RateGetter.getFor(areaID);
     DB.all(
@@ -653,6 +653,22 @@ function getMapMods(id) {
   });
 }
 
+async function recheckGained(mapID) {
+  DB = require('./DB').getDB();  
+  return new Promise( (resolve, reject) => {
+    DB.get("select id, firstevent, lastevent, gained from mapruns where id = ?", [mapID], async (err, row) => {
+      if(row && row.gained !== -1) {
+        var allItems = await getItems(row.id, row.firstevent, row.lastevent);
+        if(allItems.value - row.gained !== 0) {
+          console.log(`update mapruns set gained = ${allItems.value} where id = ${row.id} -- was: ${row.gained}`);
+        }
+      }
+      resolve(null);
+    });
+  });
+  
+}
+
 function getMapStats(arr) {
   var mapStats = {};
   arr.forEach( (mod) => {
@@ -670,3 +686,4 @@ function getMapStats(arr) {
 module.exports.process = process;
 module.exports.tryProcess = tryProcess;
 module.exports.emitter = emitter;
+module.exports.recheckGained = recheckGained;
