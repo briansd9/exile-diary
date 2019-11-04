@@ -1508,6 +1508,14 @@ const otherBaseTypes = {
 function getCategory(item, subcategory = false) {
   
   var t = item.typeLine;
+
+  if(otherBaseTypes[t]) {
+    if(!subcategory && Array.isArray(otherBaseTypes[t])) {
+      return otherBaseTypes[t][0];
+    } else {
+      return otherBaseTypes[t];
+    }
+  }
   
   switch(item.frameType) {
     case 4:
@@ -1519,15 +1527,7 @@ function getCategory(item, subcategory = false) {
         return null;
       }
     case 5:
-      if(otherBaseTypes[t]) {
-        if(!subcategory && Array.isArray(otherBaseTypes[t])) {
-          return otherBaseTypes[t][0];
-        } else {
-          return otherBaseTypes[t];
-        }
-      } else {
-        return "Labyrinth Items";
-      }
+      return "Labyrinth Items";
     case 6:
       return "Divination Card";
     case 7:
@@ -1536,13 +1536,14 @@ function getCategory(item, subcategory = false) {
       return "Prophecy";
   }
   
-  // Maligaro's Map quest item has frameType 7, already detected above as a quest item
-  if(t.endsWith("Map")) {
-    return "Maps";
-  }
-
-  if(t.endsWith("Scarab") || t.endsWith("Breachstone") || t.endsWith("Emblem")) {
+  if(t.endsWith("Scarab")) {
     return "Map Fragments";
+  }
+  
+  
+  // Maligaro's Map quest item has frameType 7, already detected above as a quest item
+  if(t.includes(" Map")) {
+    return "Maps";
   }
 
   if(t.endsWith("Incubator")) {
