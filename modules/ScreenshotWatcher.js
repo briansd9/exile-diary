@@ -138,7 +138,7 @@ function getXBounds(image, yBounds) {
       var blueAvg = blueArray.reduce((acc, curr) => {
         return acc + curr;
       }) / numCols;
-      if (blueAvg < 3) {
+      if (blueAvg < 1) {
         return x;
       }
       blueArray.shift();
