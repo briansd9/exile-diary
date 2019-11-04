@@ -24,23 +24,33 @@
       const logger = require('./modules/Log').getLogger(__filename);
       
       var renderer = require('electron').ipcRenderer;
+      var timestamp = null;
       
-      function hideOverlay() {
-        renderer.send("hideOverlay");
+      function hideOverlay(msgTimestamp) {
+        if(msgTimestamp !== timestamp) {
+          logger.info(`Different timestamps ${msgTimestamp} -> ${timestamp}, not hiding window overlay`);
+        } else {
+          logger.info("Hiding overlay");
+          renderer.send("hideOverlay");
+        }
       }
       
       $(document).ready(function () {
         
         renderer.on("message", (event, msg) => {
+          
+          timestamp = msg.timestamp;
 
           var msgDiv = $("#messages");
           msgDiv.html(`<span class='message'>${msg.text}</span>`);
+          logger.info("Fading in overlay");
           msgDiv.fadeIn(500);
           
           var messageWidth = document.getElementById("messages").scrollWidth + (msgDiv.has("img").length ? 40 : 0);
           window.resizeTo(messageWidth, 40);
+          logger.info(`Resizing to ${messageWidth}`);
           
-          setTimeout(() => { msgDiv.fadeOut(500, hideOverlay); }, 4000);
+          setTimeout(() => { msgDiv.fadeOut(500, () => {hideOverlay(msg.timestamp);} ); }, 4000);
           
         });
       });
@@ -70,7 +80,7 @@
     </style>		    
     
   </head>
-  <body style="overflow:hidden;" onmouseover="hideOverlay()">
+  <body style="overflow:hidden;" onmouseover="logger.info('moused over');hideOverlay(timestamp);">
     <div class="cover">&nbsp;</div>
     <div id="messages" class="overlayMessage messageSection"></div>
   </body>
