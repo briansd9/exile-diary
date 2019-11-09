@@ -85,3 +85,4 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 dev-app-update.yml
+modules/Dev.js
