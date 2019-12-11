@@ -2,8 +2,10 @@ const logger = require('./Log').getLogger(__filename);
 const Utils = require('./Utils');
 const EventEmitter = require('events');
 const ClientTxtWatcher = require('./ClientTxtWatcher');
-const RateGetter = require('./RateGetter');
+const ItemPricer = require('./ItemPricer');
 const OCRWatcher = require('./OCRWatcher');
+const XPTracker = require('./XPTracker');
+const Constants = require('./Constants');
 const https = require('https');
 
 var DB;
@@ -73,7 +75,7 @@ async function tryProcess(obj) {
   }
   
   
-  var xp = await getXP(firstEvent.timestamp, lastEvent.timestamp);
+  var xp = (XPTracker.isMaxXP() ? Constants.MAX_XP : await getXP(firstEvent.timestamp, lastEvent.timestamp));
   var xpDiff = await getXPDiff(xp);
   var items = await checkItems(areaInfo, firstEvent.timestamp, lastEvent.timestamp);
   var killCount  = await getKillCount(firstEvent.timestamp, lastEvent.timestamp);
@@ -272,7 +274,7 @@ async function process() {
   var lastEvent = await getLastEvent(currArea, firstEvent);
   if(!lastEvent) return;
   
-  var xp = await getXP(firstEvent, lastEvent);
+  var xp = (XPTracker.isMaxXP() ? Constants.MAX_XP : await getXP(firstEvent, lastEvent));
   var xpDiff = await getXPDiff(xp);
   var items = await checkItems(currArea, firstEvent, lastEvent);
   var killCount  = await getKillCount(firstEvent, lastEvent);
@@ -329,14 +331,12 @@ async function getKillCount(firstEvent, lastEvent) {
             incubators.push(JSON.parse(row.data));
           });
           for(var i = 1; i < incubators.length; i++) {
-            //logger.info(`in period ${i}`);
             var prev = incubators[i-1];
             var curr = incubators[i];
             var killCount = 0;
             Object.keys(prev).forEach((key) => {
               if(curr[key] && curr[key].progress - prev[key].progress > killCount) {
                 killCount = curr[key].progress - prev[key].progress;
-                //logger.info(`item ${key} curr ${curr[key].progress}, prev ${prev[key].progress}, killCount ${killCount}`);
               }
             });
             totalKillCount += killCount;
@@ -478,7 +478,6 @@ function getXPDiff(currentXP) {
 function getItems(areaID, firstEvent, lastEvent) {
   //logger.info(`Getting item values for map with ID ${areaID} (event bounds: ${firstEvent} -> ${lastEvent}`);
   return new Promise( async (resolve, reject) => {
-    var rates = await RateGetter.getFor(areaID);
     DB.all(
       " select id, event_text from events where id between ? and ? and event_type = 'entered' order by id ",
       [firstEvent, lastEvent],
@@ -492,7 +491,7 @@ function getItems(areaID, firstEvent, lastEvent) {
           for(var i = 1; i < rows.length; i++) {
             var prevRow = rows[i - 1];
             if(!Utils.isTown(prevRow.event_text)) {
-              var items = await getItemsFor(rows[i].id, rates);
+              var items = await getItemsFor(rows[i].id);
               numItems += items.count;
               totalProfit += Number.parseFloat(items.value);
             }
@@ -504,21 +503,70 @@ function getItems(areaID, firstEvent, lastEvent) {
   });
 }
 
-function getItemsFor(event, rates) {
+function getItemsFor(event) {
   var count = 0;
-  var value = 0;
+  var totalValue = 0;
+  var itemArr = [];
   return new Promise( (resolve, reject) => {
-    DB.all( " select rawdata from items where event_id = ? ", [event], (err, rows) => {
+    DB.all( " select * from items where event_id = ? ", [event], async (err, rows) => {
       if (err) {
         logger.info(`Error getting item values for ${event}: ${err}`);
         resolve(null);
-      }        
-      rows.forEach( (row) => {
+      }
+      for(var i = 0; i < rows.length; i++) {
         count++;
-        value += Utils.getItemValue(JSON.parse(row.rawdata), rates);
-        //logger.info(`After ${name} value is now ${value}`);
+        var item = rows[i];
+        if(item.value) {
+          totalValue += item.value;
+        } else {
+          var value = await ItemPricer.price(item);
+          itemArr.push([value, item.id, item.event_id]);
+          totalValue += value;
+        }
+      }
+      if(itemArr.length > 0) {
+        updateItemValues(itemArr);
+      }
+      resolve({count: count, value: totalValue});
+    });
+  });
+}
+
+function updateItemValues(arr) {
+  DB.serialize(() => {
+    DB.run("begin transaction", (err) => {
+      if(err) {
+        logger.info(`Error beginning transaction to insert items: ${err}`);
+      } else {
+        logger.info("Transaction started");
+      }
+    });
+    var stmt = DB.prepare(`update items set value = ? where id = ? and event_id = ?`);
+    for(var i = 0; i < arr.length; i++) {
+      var item = arr[i];
+      stmt.run(arr[i], (err) => {
+        if(err) {
+          logger.error(`Unable to set item value for item ${JSON.stringify(item)}`);
+        } 
       });
-      resolve({count: count, value: value});
+    }
+    stmt.finalize( (err) => {
+      if(err) {
+        logger.warn(`Error inserting items for ${event}: ${err}`);
+        DB.run("rollback", (err) => {
+          if (err) {
+            logger.info(`Error rolling back failed item insert: ${err}`);
+          }        
+        });
+      } else {
+        DB.run("commit", (err) => {
+          if (err) {
+            logger.info(`Error committing item insert: ${err}`);
+          } else {
+            logger.info("Transaction committed");
+          }        
+        });
+      }
     });
   });
 }
