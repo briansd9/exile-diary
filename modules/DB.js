@@ -146,6 +146,15 @@ const initSQL = [
   `,
   `
     alter table mapruns add kills number
+  `,
+  `
+    create table if not exists fullrates (
+      date text primary key not null,
+      data text not null
+    )
+  `,
+  `
+    alter table items add value number
   `
 ];
 
