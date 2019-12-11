@@ -16,7 +16,6 @@
     <script src="res/jquery.tablesorter.js"></script>
     <script src="res/jquery.lazy.js"></script>
     <script src="res/jquery-ui.js"></script>
-    <script src="res/item.js"></script>
     <script src="res/utils.js"></script>
     <script src="res/page-utils.js"></script>
 
@@ -40,7 +39,7 @@
       const {ipcRenderer} = require('electron');
       const fs = require('fs');
       const logger = require('./modules/Log').getLogger(__filename);
-      const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled"];
+      const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled", "minItemValue"];
 
       var settings = {};
       var tabsLoaded = false;
@@ -179,6 +178,7 @@
           $("#selectedName").val(settings.activeProfile.characterName);
           $("#selectedLeague").val(settings.activeProfile.league);
           $("#uploadFilter").attr('placeholder', `Click to upload new item filter for ${settings.activeProfile.characterName}`);
+          $("#overrideSSF").prop("checked", settings.activeProfile.overrideSSF);
           getTabList();
         } else {
           $("#activeProfile").html(`None`);
@@ -266,6 +266,9 @@
           characterName: $("#selectedName").val(),
           league: $("#selectedLeague").val()
         };
+        if($("#overrideSSF").is(":checked")) {
+          settings.activeProfile.overrideSSF = true;
+        }
         
         var stashCheckUnits = $("#stashCheckUnits").val();
         var stashCheckInterval;
@@ -281,6 +284,7 @@
           interval: stashCheckInterval,
           units: stashCheckUnits
         }
+        settings.minItemValue = $("#minItemValue").val() || 0;
         
         if(!requiresRestart && tabsLoaded) {
           var tabs = [];
@@ -599,6 +603,14 @@
               </div>
             </td>
           </tr>
+          <tr>
+            <td colspan="2">
+              <div class='configLabel ui-text'>
+                Get item prices even in SSF mode (experimental)
+                <input style='margin-left:20px;' name='overrideSSF' id='overrideSSF' type='checkbox'/>
+              </div>
+            </td>
+          </tr>
         </table>    
       </div>
       <div id="stash">
@@ -626,6 +638,11 @@
             <option value="hours">hours</option>
             <option value="maps">maps</option>
           </select>
+        <div>
+          <hr>
+          Ignore non-bulk items less than 
+          <input class='configInput' name='minItemValue' id='minItemValue' type='text' maxlength='3' size='3'/> <img style="vertical-align:middle;" src="res/img/c.png"/> 
+          in value
         </div>
         <hr>
         <div id="note">Select Stash Tabs to Monitor (Map tabs not yet supported)</div>
