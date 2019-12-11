@@ -326,6 +326,14 @@ var MiscUtils = {
   },
   
   applyDefaultStyle : function(item) {
+    
+    var Rarity = {
+      Normal: 0,
+      Magic: 1,
+      Rare: 2,
+      Unique: 3
+    };
+    
     var BLACK_75 = {r:0, g:0, b:0, a:190};
     var WHITE = {r:200, g:200, b:200};
     var BLUE = {r:136, g:136, b:255};
