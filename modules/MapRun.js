@@ -130,7 +130,7 @@ async function getItems(mapID) {
   return new Promise((resolve, reject) => {
     var items = {};
     DB.all(`
-            select events.id, items.rarity, items.icon, items.rawdata from mapruns, events, items
+            select events.id, items.rarity, items.icon, items.value, items.rawdata from mapruns, events, items
             where mapruns.id = ?
             and events.id between mapruns.firstevent and mapruns.lastevent
             and items.event_id = events.id;
@@ -144,18 +144,24 @@ async function getItems(mapID) {
           if(!items[row.id]) {
             items[row.id] = [];
           }
+          var secretName = "";
           if(row.rarity === "Unique") {
-            var data = JSON.parse(row.rawdata);
-            var secretName = Constants.getItemName(row.icon);
+            secretName = Constants.getItemName(row.icon);
             if(secretName) {
-              if(secretName === "Starforge" && data.elder) {
+              if(secretName === "Starforge" && row.elder) {
                 secretName = "Voidforge";
               }
-              data.secretName = secretName;
-              row.rawdata = JSON.stringify(data);
-            }            
+            }
           }
-          items[row.id].push(row.rawdata);
+          if(secretName || row.value) {
+            var data = JSON.parse(row.rawdata);
+            if(secretName) data.secretName = secretName;
+            if(row.value) data.value = row.value;
+            items[row.id].push(JSON.stringify(data));
+          } else {
+            items[row.id].push(row.rawdata);
+          }
+          
         }
         resolve(items);
       }
