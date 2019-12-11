@@ -1204,8 +1204,53 @@ const gemBaseTypes = {
   "Unbound Ailments Support" : "Support Skill Gems",
   "Vile Toxins Support" : "Support Skill Gems",
   "Void Manipulation Support" : "Support Skill Gems",
-  "Elemental Damage with Attacks Support" : "Support Skill Gems"
+  "Elemental Damage with Attacks Support" : "Support Skill Gems",
+  // 3.9 update
+  "Awakened Added Fire Damage Support" : "Support Skill Gems",
+  "Awakened Ancestral Call Support" : "Support Skill Gems",
+  "Awakened Brutality Support" : "Support Skill Gems",
+  "Awakened Burning Damage Support" : "Support Skill Gems",
+  "Awakened Elemental Damage with Attacks Support" : "Support Skill Gems",
+  "Awakened Fire Penetration Support" : "Support Skill Gems",
+  "Awakened Generosity Support" : "Support Skill Gems",
+  "Awakened Melee Physical Damage Support" : "Support Skill Gems",
+  "Awakened Melee Splash Support" : "Support Skill Gems",
+  "Awakened Multistrike Support" : "Support Skill Gems",
+  "Awakened Added Cold Damage Support" : "Support Skill Gems",
+  "Awakened Arrow Nova Support" : "Support Skill Gems",
+  "Awakened Cast on Critical Strike Support" : "Support Skill Gems",
+  "Awakened Chain Support" : "Support Skill Gems",
+  "Awakened Cold Penetration Support" : "Support Skill Gems",
+  "Awakened Deadly Ailments Support" : "Support Skill Gems",
+  "Awakened Fork Support" : "Support Skill Gems",
+  "Awakened Greater Multiple Projectiles Support" : "Support Skill Gems",
+  "Awakened Swift Affliction Support" : "Support Skill Gems",
+  "Awakened Void Manipulation Support" : "Support Skill Gems",
+  "Awakened Vicious Projectiles Support" : "Support Skill Gems",
+  "Awakened Added Chaos Damage Support" : "Support Skill Gems",
+  "Awakened Added Lightning Damage Support" : "Support Skill Gems",
+  "Awakened Blasphemy Support" : "Support Skill Gems",
+  "Awakened Cast While Channelling Support" : "Support Skill Gems",
+  "Awakened Controlled Destruction Support" : "Support Skill Gems",
+  "Awakened Curse On Hit Support" : "Support Skill Gems",
+  "Awakened Elemental Focus Support" : "Support Skill Gems",
+  "Awakened Increased Area Of Effect Support" : "Support Skill Gems",
+  "Awakened Lightning Penetration Support" : "Support Skill Gems",
+  "Awakened Minion Damage Support" : "Support Skill Gems",
+  "Awakened Spell Cascade Support" : "Support Skill Gems",
+  "Awakened Spell Echo Support" : "Support Skill Gems",
+  "Awakened Unbound Ailments Support" : "Support Skill Gems",
+  "Awakened Unleash Support" : "Support Skill Gems",
+  "Shrapnel Ballista" : "Active Skill Gems",
+  "Ensnaring Arrow" : "Active Skill Gems",
+  "Artillery Ballista" : "Active Skill Gems",
+  "Greater Volley Support" : "Support Skill Gems",
+  "Ballista Totem Support" : "Support Skill Gems",
+  "Arrow Nova Support" : "Support Skill Gems",
+  "Barrage Support" : "Support Skill Gems",
 };
+
+const nonStackableBaseTypes = [].concat(Object.keys(equipmentBaseTypes), Object.keys(gemBaseTypes));
 
 const otherBaseTypes = {
   "Simple Rope Net" : ["Currency", "Net"],
@@ -1445,7 +1490,7 @@ const otherBaseTypes = {
   "Imprint" : "Currency",
   "Eternal Orb" : "Currency",
   "Timeless Karui Emblem" : ["Map Fragments", "Timeless Emblem"],
-  "Timeless Eternal Empire Emblem" : ["Map Fragments", "Timeless Emblem"],
+  "Timeless Eternal Emblem" : ["Map Fragments", "Timeless Emblem"],
   "Timeless Vaal Emblem" : ["Map Fragments", "Timeless Emblem"],
   "Timeless Templar Emblem" : ["Map Fragments", "Timeless Emblem"],
   "Timeless Maraketh Emblem" : ["Map Fragments", "Timeless Emblem"],
@@ -1497,6 +1542,38 @@ const otherBaseTypes = {
   "Powerful Chaotic Resonator" : ["Currency", "Resonator"],
   "Prime Chaotic Resonator" : ["Currency", "Resonator"],
   "Offering to the Goddess" : "Labyrinth Items",
+  // 3.9 update
+  "Simple Sextant" : "Currency",
+  "Awakened Sextant" : "Currency",
+  "Prime Sextant" : "Currency",
+  "Awakener's Orb" : "Currency",
+  "Crusader's Exalted Orb" : "Currency",
+  "Hunter's Exalted Orb" : "Currency",
+  "Redeemer's Exalted Orb" : "Currency",
+  "Warlord's Exalted Orb" : "Currency",
+  "Turbulent Catalyst" : "Currency",
+  "Imbued Catalyst" : "Currency",
+  "Abrasive Catalyst" : "Currency",
+  "Tempering Catalyst" : "Currency",
+  "Fertile Catalyst" : "Currency",
+  "Prismatic Catalyst" : "Currency",
+  "Intrinsic Catalyst" : "Currency",
+  "Metamorph Brain" : "Metamorph Sample",
+  "Metamorph Eye" : "Metamorph Sample",
+  "Metamorph Liver" : "Metamorph Sample",
+  "Metamorph Lung" : "Metamorph Sample",
+  "Metamorph Heart" : "Metamorph Sample",
+  "Fragment of Enslavement" : ["Map Fragments", "Guardian Fragment"],
+  "Fragment of Eradication" : ["Map Fragments", "Guardian Fragment"],
+  "Fragment of Constriction" : ["Map Fragments", "Guardian Fragment"],
+  "Fragment of Purification" : ["Map Fragments", "Guardian Fragment"],
+  "Fragment of Shape" : ["Map Fragments", "Guardian Fragment"],
+  "Fragment of Knowledge" : ["Map Fragments", "Guardian Fragment"],
+  "Fragment of Terror" : ["Map Fragments", "Guardian Fragment"],
+  "Fragment of Emptiness" : ["Map Fragments", "Guardian Fragment"],
+  "Ivory Watchstone" : "Atlas Region Upgrade Item",
+  
+  
   
   // not actually in the game - pseudo-items for vendor recipe
   "6-socket Items" : "Currency",
@@ -1508,6 +1585,7 @@ const otherBaseTypes = {
 function getCategory(item, subcategory = false) {
   
   var t = item.typeLine;
+  if(!t) return null;
 
   if(otherBaseTypes[t]) {
     if(!subcategory && Array.isArray(otherBaseTypes[t])) {
@@ -1591,4 +1669,21 @@ function getCategory(item, subcategory = false) {
 
 }
 
+function getEquipmentBaseType(str) {
+  var types = Object.keys(equipmentBaseTypes);
+  for(var i = 0; i < types.length; i++) {
+    if(str.includes(types[i])) {
+      return types[i];
+    }
+  }
+  return null;
+}
+
+function isNonStackable(str) {
+  return nonStackableBaseTypes.includes(str);
+}
+
+
 module.exports.getCategory = getCategory;
+module.exports.getEquipmentBaseType = getEquipmentBaseType;
+module.exports.isNonStackable = isNonStackable;
