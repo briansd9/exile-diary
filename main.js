@@ -4,7 +4,7 @@ const logger = require("./modules/Log").getLogger(__filename);
 const ClientTxtWatcher = require("./modules/ClientTxtWatcher");
 const DB = require("./modules/DB");
 const OCRWatcher = require("./modules/OCRWatcher");
-const RateGetter = require("./modules/RateGetter");
+const RateGetterV2 = require("./modules/RateGetterV2");
 const RunParser = require('./modules/RunParser');
 const InventoryGetter = require('./modules/InventoryGetter');
 const MapSearcher = require('./modules/MapSearcher');
@@ -149,7 +149,7 @@ function init() {
         if(characterCheckStatus === "valid") {
           logger.info("Starting components");
           DB.getDB(true);
-          RateGetter.update();
+          RateGetterV2.update();
           ClientTxtWatcher.start();
           ScreenshotWatcher.start();
           OCRWatcher.start();
@@ -363,8 +363,8 @@ async function createWindow() {
     mainWindow.loadFile('config.html');
   } else {
     global.validCharacter = true;
-    global.ssf = (settings.activeProfile && settings.activeProfile.league && settings.activeProfile.league.includes("SSF"));
-    global.hardcore = (settings.activeProfile && settings.activeProfile.league && settings.activeProfile.league.includes("Hardcore"));
+    global.ssf = settings.activeProfile && (settings.activeProfile.overrideSSF || (settings.activeProfile.league && settings.activeProfile.league.includes("SSF")));
+    global.hardcore = settings.activeProfile && settings.activeProfile.league && settings.activeProfile.league.includes("Hardcore");
     mainWindow.loadFile('index.html');
   }
 
