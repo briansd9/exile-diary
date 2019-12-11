@@ -3,8 +3,8 @@ const logger = require("./Log").getLogger(__filename);
 const moment = require('moment');
 const https = require('https');
 const Utils = require('./Utils');
-const RateGetter = require('./RateGetter');
-const zlib = require('zlib');
+const ItemParser = require('./ItemParser');
+const ItemPricer = require('./ItemPricer');
 
 var DB;
 var settings;
@@ -95,11 +95,6 @@ async function get() {
   
   var timestamp = moment().format("YYYYMMDDHHmmss");  
   
-  rates = await RateGetter.getFor(timestamp);
-  if(!rates) {
-    return;
-  }
-  
   var watchedTabs = null;
   if(settings.tabs && settings.tabs[settings.activeProfile.league]) {
     watchedTabs = settings.tabs[settings.activeProfile.league];
@@ -112,7 +107,7 @@ async function get() {
     tabs : watchedTabs,
     accountName : settings.accountName,
     poesessid : settings.poesessid,
-    rates : rates
+    timestamp: timestamp
   };
   
   var tabList = await getTabList(params);
@@ -140,7 +135,7 @@ async function get() {
   };
   
   if(tabs.items.length > 0) {
-    var rawdata = await compress(tabs.items);
+    var rawdata = await Utils.compress(tabs.items);
     DB.run(" insert into stashes(timestamp, items, value) values(?, ?, ?) ", [timestamp, rawdata, tabs.value], (err) => {
       if(err) {      
         logger.info(`Error inserting stash ${timestamp} with value ${tabs.value}: ${err}`);
@@ -176,20 +171,6 @@ function timer(ms) {
 }
 
 
-function compress(data) {
-  var json = JSON.stringify(data);
-  return new Promise((resolve, reject) => {
-    zlib.deflate(json, (err, buffer) => {
-      if(err) {
-        logger.info(`Error compressing stash data: ${err}`);
-        throw err;
-      } else {
-        logger.info(`Stash data successfully compressed (${json.length} to ${buffer.length} bytes)`);
-        resolve(buffer);
-      }
-    });
-  });
-}
 
 function getTabList(s) {
   
@@ -267,10 +248,10 @@ async function getTab(t, s) {
       response.on('data', (chunk) => {
         body += chunk;
       });
-      response.on('end', () => {
+      response.on('end', async () => {
         try {
           var data = JSON.parse(body);
-          var tabData = parseTab(data.items, s.rates);
+          var tabData = await parseTab(data.items, s.timestamp);
           resolve(tabData);
         } catch(err) {
           logger.info(`Failed to get tab ${t.name}: ${err}`);
@@ -291,14 +272,16 @@ async function getTab(t, s) {
   
 }
 
-function parseTab(items, rates) {
+async function parseTab(items, timestamp) {
   
   var totalValue = 0;
   var tabItems = [];
   
   for(var i = 0; i < items.length; i++) {
     var item = items[i];
-    totalValue += Utils.getItemValue(item, rates);
+    var parsedItem = parseItem(item, timestamp);
+    var val = await ItemPricer.price(parsedItem);
+    totalValue += val;
     tabItems.push(item);
   }
   
@@ -307,6 +290,23 @@ function parseTab(items, rates) {
     items : tabItems
   };
   
+}
+
+function parseItem(rawdata, timestamp) {
+  var arr = ItemParser.parseItem(rawdata);
+  return {
+    id : arr[0],
+    event_id: timestamp,
+    icon: arr[2], 
+    name: arr[3],
+    rarity: arr[4],
+    category: arr[5],
+    identified: arr[6],
+    typeline: arr[7],
+    sockets: arr[8],
+    stacksize: arr[9],
+    rawdata: arr[10]
+  };
 }
 
 module.exports.tryGet = tryGet;
