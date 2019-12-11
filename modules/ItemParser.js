@@ -1,5 +1,6 @@
 const logger = require("./Log").getLogger(__filename);
 const Utils = require("./Utils");
+const ItemPricer = require("./ItemPricer");
 const ItemCategoryParser = require("./ItemCategoryParser");
 const rarities = ['Normal', 'Magic', 'Rare', 'Unique', 'Gem', 'Currency', 'Divination Card', 'Quest Item', 'Prophecy', 'Relic'];
 
@@ -109,6 +110,7 @@ async function isDuplicateInventory(items) {
 }
 
 function parseItem(item, timestamp) {
+  
   var id = item.id;
   var icon = getImageUrl(item.icon);
   var name = stripTags(item.name);
@@ -119,7 +121,7 @@ function parseItem(item, timestamp) {
   var stacksize = item.stackSize || null;
   var sockets = Utils.getSockets(item);
   var rawdata = JSON.stringify(item);
-  //logger.info([id, timestamp, icon, name, rarity, category, identified, typeline, sockets, stacksize]);
+  
   return [id, timestamp, icon, name, rarity, category, identified, typeline, sockets, stacksize, rawdata];
 }
 
@@ -141,3 +143,4 @@ function stripTags(name) {
 }
 
 module.exports.insertItems = insertItems;
+module.exports.parseItem = parseItem;
