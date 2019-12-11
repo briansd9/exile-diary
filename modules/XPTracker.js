@@ -1,7 +1,17 @@
 const logger = require("./Log").getLogger(__filename);
+const Constants = require("./Constants");
 const moment = require('moment');
 
+var maxXP = false;
+
+function isMaxXP() {
+  return maxXP;
+}
+
 async function logXP(timestamp, currXP) {
+  if(maxXP) {
+    return;
+  }
   var DB = require('./DB').getDB();
   var prevXP = await getPrevXP(DB);
   if(prevXP !== currXP) {
@@ -21,6 +31,10 @@ function getPrevXP(DB) {
         logger.info(`Error getting previous XP: ${err}`);
       }
       if(row) {
+        if(row.xp === Constants.MAX_XP) {
+          logger.info(`Max XP ${row.xp} reached, XP will now be ignored`);
+          maxXP = true;
+        }
         resolve(row.xp);
       } else {
         resolve(0);
@@ -30,3 +44,4 @@ function getPrevXP(DB) {
 }
 
 module.exports.logXP = logXP;
+module.exports.isMaxXP = isMaxXP;
