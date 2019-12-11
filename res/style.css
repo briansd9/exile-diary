@@ -511,3 +511,8 @@ textarea.changelog {
   font-family: Fontin;
   font-size: smaller;
 }
+
+span.itemSuffix {
+  font-size: small;
+  color: #B8DAF1;
+}
