@@ -177,26 +177,19 @@ function getFor(timestamp, repeatCount) {
   }  
 
   DB = require('./DB').getDB();
-  repeatCount = repeatCount || 1;
   return new Promise((resolve, reject) => {
-    DB.get("select distinct date from rates where date <= ? order by date desc", [timestamp], async (err, row) => {
+    var date = timestamp.toString().substring(0, 8) + "000000";
+    DB.get("select distinct date from rates where date = ? order by date desc", [date], async (err, row) => {
       if(err) {
-        logger.info(`Unable to get rates for ${timestamp}: ${err}`);
+        logger.info(`Unable to get rates for ${date}: ${err}`);
         resolve(null);
       } else if(!row) {
-        if(repeatCount > 5) {
-          logger.info(`Unable to get rates for ${timestamp} after 5 tries, giving up`);
-          resolve(null);
-        }
-        else {
-          logger.info(`No rates found for ${timestamp}, will attempt to retrieve`);
-          await update();
-          resolve(getFor(timestamp, repeatCount + 1));
-        }
+        logger.info(`No old rates found for ${date}`);
+        resolve(null);
       } else {
         DB.all("select item, value from rates where date = ?", [row.date], (err, rows) => {
           if(err) {
-            logger.info(`Unable to get rates for ${timestamp}: ${err}`);
+            logger.info(`Unable to get rates for ${date}: ${err}`);
           } else {
             var rates = {};
             rows.forEach(row => {
