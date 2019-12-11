@@ -362,6 +362,8 @@ const uniqueIcons = {
   "https://web.poecdn.com/image/Art/2DItems/Jewels/GreenJewel5.png" : "Cold Steel",
   "https://web.poecdn.com/image/Art/2DItems/Jewels/ShrapnelShotThreshold.png" : "Collateral Damage",
   "https://web.poecdn.com/image/Art/2DItems/Jewels/ElementalHitFire.png" : "Combat Focus",
+  "https://web.poecdn.com/image/Art/2DItems/Jewels/ElementalHitLightening.png" : "Combat Focus",
+  "https://web.poecdn.com/image/Art/2DItems/Jewels/ElementalHitCold.png" : "Combat Focus",
   "https://web.poecdn.com/image/Art/2DItems/Jewels/RedCorrupt4.png" : "Combustibles",
   "https://web.poecdn.com/image/Art/2DItems/Jewels/HighQuestRewardRed.png" : "Conqueror's Efficiency",
   "https://web.poecdn.com/image/Art/2DItems/Jewels/HighQuestRewardGreen.png" : "Conqueror's Longevity",
@@ -493,6 +495,8 @@ const uniqueIcons = {
   "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Daggers/Goredrill.png" : "Goredrill",
   "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/PillarsOfArun.png" : "Gorgon's Gaze",
   "https://web.poecdn.com/image/Art/2DItems/Jewels/RedGrandSpectrum.png" : "Grand Spectrum",
+  "https://web.poecdn.com/image/Art/2DItems/Jewels/BlueGrandSpectrum.png" : "Grand Spectrum",
+  "https://web.poecdn.com/image/Art/2DItems/Jewels/GreenGrandSpectrum.png" : "Grand Spectrum",
   "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/GreatOldOnesWard.png" : "Great Old One's Ward",
   "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/GreedsEmbrace.png" : "Greed's Embrace",
   "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Daggers/VerdantGuardianSword1.png" : "Grelwood Shank",
@@ -532,6 +536,10 @@ const uniqueIcons = {
   "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSwords/BladeOfVastri.png" : "Ichimonji",
   "https://web.poecdn.com/image/Art/2DItems/Belts/ImmortalFlesh.png" : "Immortal Flesh",
   "https://web.poecdn.com/image/Art/2DItems/Amulets/ElderCold.png" : "Impresence",
+  "https://web.poecdn.com/image/Art/2DItems/Amulets/ElderFire.png" : "Impresence",
+  "https://web.poecdn.com/image/Art/2DItems/Amulets/ElderLightning.png" : "Impresence",
+  "https://web.poecdn.com/image/Art/2DItems/Amulets/ElderPhysical.png" : "Impresence",
+  "https://web.poecdn.com/image/Art/2DItems/Amulets/ElderChaos.png" : "Impresence",
   "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/Illuminatis.png" : "Incandescent Heart",
   "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/UberElderHelmet.png" : "Indigon",
   "https://web.poecdn.com/image/Art/2DItems/Jewels/DEXtoSTR.png" : "Inertia",
@@ -556,7 +564,7 @@ const uniqueIcons = {
   "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/BodyStr3CUnique.png" : "Kaom's Heart",
   "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/TwoHandAxes/TwoHandAxe11Unique.png" : "Kaom's Primacy",
   "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/KaomsRoots.png" : "Kaom's Roots",
-  "https://web.poecdn.com/image/Art/2DItems/Rings/Ring2Unique.png" : "Kaom's Way",
+  "https://web.poecdn.com/image/Art/2DItems/Rings/Ring2Unique.png" : "Kaom's Sign",
   "https://web.poecdn.com/image/Art/2DItems/Amulets/Amulet4Unique.png" : "Karui Ward",
   "https://web.poecdn.com/image/Art/2DItems/Rings/Kikazaru.png" : "Kikazaru",
   "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/TwoHandAxes/Alexaxeandheartbreaker.png" : "Kingmaker",
@@ -1074,7 +1082,62 @@ const uniqueIcons = {
   "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/Supporter1bootA.png" : "The Stampede",
   "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/85483.png" : "Torchoak Step",
   "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/MinionConversionGloves.png" : "Triad Grip",
-  "https://web.poecdn.com/image/Art/2DItems/Rings/Bloodfreeze.png" : "Venopuncture"  
+  "https://web.poecdn.com/image/Art/2DItems/Rings/Bloodfreeze.png" : "Venopuncture",
+  // Bestiary (???)
+  "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/CrabUnique.png" : "Craiceann's Carapace",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/CrabUniqueHelmet.png" : "Craiceann's Chitin",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/CrabUniqueGloves.png" : "Craiceann's Pincers",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/CrabUniqueBoots.png" : "Craiceann's Tracks",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/TigerHelmet.png" : "Farrul's Bite",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/TigerBoots.png" : "Farrul's Chase",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/TigerBodyArmour.png" : "Farrul's Fur",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/TigerGloves.png" : "Farrul's Pounce",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/SpiderArmourBody.png" : "Fenumus' Shroud",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/SpiderArmourBoots.png" : "Fenumus' Spinnerets",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/SpiderArmourHelmet.png" : "Fenumus' Toxins",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/SpiderArmour%20Gloves.png" : "Fenumus' Weave",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/AvianHelmet.png" : "Saqawal's Flock",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/AvianBodyArmour.png" : "Saqawal's Nest",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/AvianBoots.png" : "Saqawal's Talons",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/AvianGloves.png" : "Saqawal's Winds",
+  // missing harbinger pieces
+  "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSwords/HarbingerLeagueShards/HarbingerSwordShard1.png" : "First Piece of the Arcane",
+  "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSwords/HarbingerLeagueShards/HarbingerSwordShard2.png" : "Second Piece of the Arcane",
+  "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSwords/HarbingerLeagueShards/HarbingerSwordShard3.png" : "Third Piece of the Arcane",
+  "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/HarbingerShards/Shard1.png" : "First Piece of Brutality",
+  "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/HarbingerShards/Shard2.png" : "Second Piece of Brutality",
+  "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/HarbingerShards/Shard3.png" : "Third Piece of Brutality"
+ 
+  
+};
+
+const uniqueFlasks = {
+  "AtzirisPromise" : "Atziri's Promise",
+  "BlockFlask" : "Rumi's Concoction",
+  "BloodOfTheKarui" : "Blood of the Karui",
+  "BottledPurity" : "Bottled Faith",
+  "CorusElixir" : "Coruscating Elixir",
+  "GorgonsFlask" : "Coralito's Signature",
+  "KiarasDetermination" : "Kiara's Determination",
+  "LaviangasOil" : "Lavianga's Spirit",
+  "OverflowingChalice" : "The Overflowing Chalice",
+  "PhantomBlood" : "Forbidden Taste",
+  "Rotgut" : "Rotgut",
+  "ShapersFlask" : "Dying Sun",
+  "Sin" : "Sin's Rebirth",
+  "SorrowOfTheDivine" : "The Sorrow of the Divine",
+  "SoulCatcher" : "Soul Catcher",
+  "SoulRipper" : "Soul Ripper",
+  "TasteOfHate" : "Taste of Hate",
+  "TheWiseOak" : "The Wise Oak",
+  "VialofUnlife" : "Cinderswallow Urn",
+  "VinktarFlask" : "Vessel of Vinktar",
+  "WitchFireBrew" : "Witchfire Brew",
+  "WrithingJar" : "The Writhing Jar",
+  "yFlask4" : "Doedre's Elixir",
+  "yFlask5" : "Lion's Roar",
+  "yFlasks17" : "Divination Distillate",
+  "ZerphisLastBreath" : "Zerphi's Last Breath"
 };
 
 const baseMaps = [
@@ -2185,8 +2248,22 @@ const xpLevels = [
   4250334444
 ];
 
+const MAX_XP = 4250334444;
+
 function getItemName(icon) {
-  return uniqueIcons[icon] || null;
+  if(icon.includes("?")) {
+    icon = icon.substring(0, icon.indexOf("?"));
+  }
+  // unique flasks have encoded URLs, need to extract flask ID
+  if(icon.includes("https://web.poecdn.com/gen/image/")) {
+    var str = icon.replace("https://web.poecdn.com/gen/image/", "");
+    str = str.substr(0, str.indexOf("/"));
+    var decoded = Buffer.from(str, "base64").toString("utf8");
+    var flaskId = JSON.parse(decoded)[2].f.replace("Art/2DItems/Flasks/", "");
+    return uniqueFlasks[flaskId] || null;
+  } else {
+    return uniqueIcons[icon] || null;
+  }
 }
 
 function getTempleRoom(q) {
@@ -2202,6 +2279,7 @@ module.exports.areas = areas;
 module.exports.labAreas = labAreas;
 module.exports.mods = mods;
 module.exports.xpLevels = xpLevels;
+module.exports.MAX_XP = MAX_XP;
 module.exports.getItemName = getItemName;
 module.exports.getTempleRoom  = getTempleRoom;
 module.exports.uniqueMapsCurrentAtlas = uniqueMapsCurrentAtlas;
