@@ -1,9 +1,12 @@
 const URL = require('url');
 const Query = require('querystring');
 const Constants = require('./Constants');
+const ItemCategoryParser = require('./ItemCategoryParser');
+const ItemData = require('./ItemData');
 const logger = require("./Log").getLogger(__filename);
 const moment = require('moment');
 const momentDurationFormatSetup = require("moment-duration-format");
+const zlib = require('zlib');
 
 class Utils {
   
@@ -33,6 +36,32 @@ class Utils {
     return false;
   }
   
+  static getDisplayName(item, htmlDisplay = true) {
+    
+    let baseName = this.getBaseName(item);
+    let uniqueName = Constants.getItemName(item.icon);
+    let suffix = this.getSuffix(item);
+    
+    let displayName = "";
+    
+    if(uniqueName) {
+      displayName = uniqueName + ", ";
+    }
+    
+    if(!item.typeLine.endsWith("Map")) {
+      displayName += baseName;
+    } else {
+      displayName += item.typeLine.replace("Superior ", "");
+    }
+    
+    if(suffix) {
+      displayName += `<br/><span class='itemSuffix'>(${suffix})</span>`;
+    }
+    
+    return displayName;
+    
+  }
+  
   static getBaseName(item) {
     if(item.typeLine) {
       return Utils.getBaseNameJSON(item);
@@ -41,7 +70,32 @@ class Utils {
       logger.info(JSON.stringify(item, null, " "));
     }
   }
-
+  
+  static getSuffix(item) {
+    
+    if(item.frameType === 4) {  // skill gems
+      
+      var suffix;
+      var level = ItemData.getGemLevel(item);
+      var quality = ItemData.getQuality(item);
+      
+      if(level > 1) {
+        suffix = `Level ${level}`;
+      }
+      if(quality >= 20) {
+        suffix = (suffix ? suffix + ", " : "") + `${quality}% Quality`;
+      }
+      
+      return (suffix ? `${suffix}` : "");
+      
+    } else if(item.icon.includes("Helmets") && item.enchantMods) {  //enchanted helmets
+      return `${item.enchantMods[0]}`;
+    } else {
+      return "";
+    }
+      
+  }
+  
   // for items in JSON format
   static getBaseNameJSON(item) {
     var name = item.typeLine.replace("Superior ", "");
@@ -247,8 +301,22 @@ class Utils {
     return f.format(Math.round(xp * 3600 / time));
   }
 
-}
 
+  static compress(data) {
+    var json = JSON.stringify(data);
+    return new Promise((resolve, reject) => {
+      zlib.deflate(json, (err, buffer) => {
+        if(err) {
+          logger.info(`Error compressing JSON data: ${err}`);
+          throw err;
+        } else {
+          logger.info(`JSON data successfully compressed (${json.length} to ${buffer.length} bytes)`);
+          resolve(buffer);
+        }
+      });
+    });
+  }
+}
 
 
 
