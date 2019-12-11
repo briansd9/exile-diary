@@ -1,8 +1,11 @@
 const DB = require('./DB').getDB();
 const logger = require("./Log").getLogger(__filename);
+const ItemData = require("./ItemData");
 const fs = require('fs');
 
 var cachedParser = {};
+var Rarity = ItemData.Rarity;
+var Influence = ItemData.Influence;
 
 function test(filterText) {
   return parseFilter(filterText);
