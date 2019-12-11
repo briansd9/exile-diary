@@ -15,7 +15,6 @@
     <script src="res/jquery.lazy.js"></script>
     <script src="res/jquery-ui.js"></script>
     <script src="res/utils.js"></script>
-    <script src="res/item.js"></script>
     <script src="res/page-utils.js"></script>
 
     <!-- Insert this line after script imports -->
@@ -34,17 +33,18 @@
       const Utils = require('./modules/Utils');
       const moment = require('moment');
       const momentDurationFormatSetup = require("moment-duration-format");
-      const RateGetter = require('./modules/RateGetter');
       const settings = require('./modules/settings').get();
       const logger = require('./modules/Log').getLogger(__filename);
       const MapRun = require('./modules/MapRun');
       const Parser = require('./modules/FilterParser');
       const RunParser = require('./modules/RunParser');
+      const ItemCategoryParser = require('./modules/ItemCategoryParser');
       const DB = require('./modules/DB').getDB();
       const Constants = require('./modules/Constants');
       const {ipcRenderer, remote} = require('electron');
+      const ItemData = require('./modules/ItemData');
       
-      var maprun, parser, rates, itemsByType, itemsById, currScroll;
+      var maprun, mapID, parser, rates, itemsByType, itemsById, currScroll;
       
       ipcRenderer.on("done-capturing", () => { 
         $("#sidenav").show();
@@ -108,7 +108,7 @@
 
       (async () => {
         
-        var mapID = await getMapID();
+        mapID = await getMapID();
         var m = new MapRun(mapID);
         m.on("MapRunReady", () => { loadMap(m); });
         
@@ -213,7 +213,7 @@
       function loadMap(mapRun) {
         clearCurrentMap();
         parser = mapRun.parser;
-        rates = mapRun.rates;
+        rates = mapRun.rates || {};
         showNavigation(mapRun);
         showInfo(mapRun);
         showEvents(mapRun);
@@ -270,52 +270,6 @@
         if(run.nav.next) {
           $("#nextCell").html(`<a class='ui-text' id='nextMap' onclick='goToRun("${run.nav.next}")'>${run.nav.next} >></a>`);
         }
-      }
-
-      function displayInfoName(i) {
-
-        var name = displayName(i.itemdata);
-        if (i.secretname) {
-          name = i.secretname + ", " + name;
-        }
-
-        var span = $("<span/>");
-        switch (i.itemdata.frameType) {
-          case 1: //magic
-            span.addClass("magic");
-            break;
-          case 2: //rare
-            span.addClass("rare");
-            break;
-          case 3: //unique
-            span.addClass("unique");
-            break;
-          case 4: //gem
-            span.addClass("gem");
-            break;
-          case 8: //prophecy
-            span.addClass("prophecy");
-            break;
-          default:
-            break;
-        }
-
-        span.html(name);
-
-        return span;
-
-      }
-
-      function drawFoundItem(i) {
-        var item = new Item(JSON.parse(i.rawdata));
-        var itemDiv = drawItem(item);
-
-        var str = "<tr>";
-        str += "<td class='eventTime'>" + MiscUtils.formatDate(i.timestamp) + "</td>";
-        str += "<td style='text-align:center;'><div class='item-container'>" + itemDiv.innerHTML + "</div></td>";
-        str += "<td>found in <a href='map.html?id=" + i.mapId + "'>" + i.name + " (T" + (i.level - 67) + ")</a></td>";
-        str += "</tr>";
-        $("#itemInfoLastFound").append(str);
       }
 
       function showInfo(run) {
@@ -416,7 +370,7 @@
       }
 
       function drawItem(itemData) {
-        var item = new Item(itemData);
+        var item = ItemData.createItem(itemData);
         var itemDiv = item.draw();
         MiscUtils.applyDefaultStyle(item);
         for (var j = 0; j < parser.ruleSet.length; j++) {
@@ -591,7 +545,7 @@
 
       }
 
-      function displayItemsByValue() {
+      async function displayItemsByValue() {
         
         var items = itemsById;
         var tbl = $("#itemsTable");
@@ -603,64 +557,70 @@
         var rgbLinkedItems = 0;
 
         Object.keys(items).forEach(function (k) {
+          
           var item = items[k];
-          item.displayName = Utils.getBaseName(item);
-          var sockets = ItemData.getSockets(item);
-          if(ItemData.countSockets(sockets) === 6) {
-            if(sockets.length === 1) {
-              sixLinkItems += (item.stackSize || 1);
-            } else {
-              sixSocketItems += (item.stackSize || 1);
-            }            
+          item.displayName = Utils.getDisplayName(item);
+          
+          var tempValue = Number.parseFloat(setValue(item));
+          
+          if(tempValue) {
+            totalValue += tempValue;
           } else {
-            if(
-              sockets.includes("RGB") || sockets.includes("RBG") || sockets.includes("BGR")
-              || sockets.includes("BRG") || sockets.includes("GRB") || sockets.includes("GBR")
-            ) {
-              rgbLinkedItems += (item.stackSize || 1);
+            var sockets = ItemData.getSockets(item);
+            if(ItemData.countSockets(sockets) === 6) {
+              if(sockets.length === 1) {
+                sixLinkItems += (item.stackSize || 1);
+              } else {
+                sixSocketItems += (item.stackSize || 1);
+              }            
             } else {
-              totalValue += Number.parseFloat(setValue(item));            
+              if(
+                sockets.includes("RGB") || sockets.includes("RBG") || sockets.includes("BGR")
+                || sockets.includes("BRG") || sockets.includes("GRB") || sockets.includes("GBR")
+              ) {
+                rgbLinkedItems += (item.stackSize || 1);
+              }
             }
           }
         });
         
         if(sixSocketItems > 0) {
+          var tempItemValue = await getCurrencyByName("Jeweller's Orb");
           var tempItem = {
             id: "6S",
             displayName: "6-socket Items",
             w: 1,
             h: 1,
             stackSize: sixSocketItems,
-            unitValue: (rates["Jeweller's Orb"] ? (7 * rates["Jeweller's Orb"]).toFixed(2) : 0),
-            chaosValue: (rates["Jeweller's Orb"] ? (sixSocketItems * 7 * rates["Jeweller's Orb"]).toFixed(2) : 0),
+            chaosValue: (tempItemValue ? (sixSocketItems * 7 * tempItemValue).toFixed(2) : 0),
             icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketNumbers.png?scale=1&scaleIndex=0"
           };
           itemsById["6S"] = tempItem;
           totalValue += Number.parseFloat(tempItem.chaosValue);
         }
         if(sixLinkItems > 0) {
+          var tempItemValue = await getCurrencyByName("Divine Orb");
           var tempItem = {
             id: "6L",
             displayName: "6-link Items",
             w: 1,
             h: 1,
             stackSize: sixLinkItems,
-            unitValue: (rates["Divine Orb"] ? (rates["Divine Orb"]).toFixed(2) : 0),
-            chaosValue: (rates["Divine Orb"] ? (sixLinkItems * rates["Divine Orb"]).toFixed(2) : 0),
+            chaosValue: (tempItemValue ? (sixLinkItems * tempItemValue).toFixed(2) : 0),
             icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyModValues.png?scale=1&scaleIndex=0"
           };
           itemsById["6L"] = tempItem;
           totalValue += Number.parseFloat(tempItem.chaosValue);
         }
         if(rgbLinkedItems > 0) {
+          var tempItemValue = await getCurrencyByName("Chromatic Orb");
           var tempItem = {
             id: "RGB",
             displayName: "R-G-B linked Items",
             w: 1,
             h: 1,
             stackSize: rgbLinkedItems,
-            unitValue: (rates["Chromatic Orb"] ? (rates["Chromatic Orb"]).toFixed(2) : 0),
-            chaosValue: (rates["Chromatic Orb"] ? (rgbLinkedItems * rates["Chromatic Orb"]).toFixed(2) : 0),
+            chaosValue: (tempItemValue ? (rgbLinkedItems * tempItemValue).toFixed(2) : 0),
             icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketColours.png?scale=1&scaleIndex=0"
           };
           itemsById["RGB"] = tempItem;
@@ -702,12 +662,22 @@
           typeIdentifier += "_unique";
         }
         
-        if (!itemsByType[typeIdentifier]) {
+        if(ItemCategoryParser.isNonStackable(typeIdentifier)) {
           itemsById[item.id] = item;
-          itemsByType[typeIdentifier] = item.id;
-          itemsById[item.id].stackSize = item.stackSize || 1;
         } else {
-          itemsById[itemsByType[typeIdentifier]].stackSize += item.stackSize || 1;
+          if (!itemsByType[typeIdentifier]) {
+            itemsById[item.id] = item;
+            itemsByType[typeIdentifier] = item.id;
+            itemsById[item.id].stackSize = item.stackSize || 1;
+            if(item.value) {
+              itemsById[item.id].value = item.value;
+            }
+          } else {
+            itemsById[itemsByType[typeIdentifier]].stackSize += item.stackSize || 1;
+            if(item.value) {
+              itemsById[itemsByType[typeIdentifier]].value += item.value;
+            }
+          }
         }
       }
 
@@ -727,8 +697,9 @@
       }
 
       function itemToString(i) {
-        if (!i.chaosValue)
+        if (!i.chaosValue) {
           return;
+        }
         
         var displayStackSize = (i.displayName === "6-socket Items") ? i.stackSize * 7 : i.stackSize;
         
@@ -739,47 +710,44 @@
               <span class='stackSize'>${displayStackSize || ""}</span>
             </td>
             <td style='padding-left:10px;padding-right:10px;min-width:300px'>${i.displayName}</td>
-            <td style='padding-left:10px;padding-right:10px'>${i.unitValue ? i.unitValue + "" : "&nbsp;"}</td>
-            <td style='padding-left:10px;padding-right:10px'>${i.chaosValue ? i.chaosValue + "" : "&nbsp;"}</td>
+            <td style='padding-left:10px;padding-right:10px'>${i.chaosValue ? Number(i.chaosValue).toFixed(2) + "" : "&nbsp;"}</td>
           `;
         return str;
         
       }
 
-
+      async function getCurrencyByName(curr) {
+        if(rates) {          
+          return rates[curr];
+        } else {
+          return (await ItemPricer.getCurrencyByName(mapID, curr));
+        }
+      }
 
 
       function setValue(item) {
-
-        if (item.chaosValue)
-          return item.chaosValue;
         
-        var sockets = Utils.getSockets(item);
+        var tempValue;
         
-        if(sockets) {
-          if(sockets.replace(/[DV\- ]/g, "").length === 6) {
-            if(sockets.replace(/[RGBWDV ]/g, "").length === 5) {
-              item.chaosValue = rates["Divine Orb"];
-            } else {
-              item.chaosValue = 7 * rates["Jeweller's Orb"];
-            }
-          } else {
-            item.chaosValue = Utils.getItemValue(item, rates);
-          }
+        if(item.value) {
+          tempValue = item.value;
+        } else if(item.chaosValue) {
+          tempValue = item.chaosValue;
         } else {
-          item.chaosValue = Utils.getItemValue(item, rates);
+          tempValue = Utils.getItemValue(item, rates);
+          console.log(`${item.displayName} ${tempValue} 3`);
         }
         
-        if(item.chaosValue > 0) item.chaosValue = item.chaosValue.toFixed(2);
-        
-        var name = Utils.getBaseName(item);
-        if (name === "Chaos Orb") {
-          item.unitValue = (1).toFixed(2);
-        } else if (rates[name]) {
-          item.unitValue = (rates[name] * 1).toFixed(2);
+        // ignore gems and equippable items if less than minimum value
+        if(item.frameType === 4 || ItemCategoryParser.getEquipmentBaseType(item.typeLine) !== null) {
+          if(settings.minItemValue && tempValue < settings.minItemValue) {
+            return 0;
+          }
         }
         
-        return item.chaosValue || 0;
+        item.chaosValue = tempValue;
+        if(tempValue > 0) tempValue = tempValue.toFixed(2);
+        return tempValue || 0;
 
       }
 
@@ -887,7 +855,6 @@
             <tr class='ui-text'>
               <th>&nbsp;</th>
               <th>Item</th>
-              <th>Unit</th>
               <th>Value</th>
             </tr>
           </thead>
