@@ -4,12 +4,16 @@ const moment = require('moment');
 const momentDurationFormatSetup = require("moment-duration-format");
 const logger = require("./Log").getLogger(__filename);
 const Utils = require("./Utils");
+const ItemPricer = require('./ItemPricer');
+const ItemCategoryParser = require('./ItemCategoryParser');
 
 var emitter = new EventEmitter();
+var settings;
 var DB;
 
 function search(formData) {
   DB = require('./DB').getDB();
+  settings = require('./settings').get();
   var data = qs.parse(formData);
   var query = getSQL(data);
   var mapIDs = [];
@@ -55,13 +59,22 @@ function mergeItems(arr) {
   for(var i = 0; i < arr.length; i++) {
     var item = arr[i];
     if(!item.chaosValue) continue;
-    if(!item.stackSize) item.stackSize = 1;
-    var typeLine = Utils.getBaseName(item);
-    if(items[typeLine]) {
-      items[typeLine].stackSize += item.stackSize;
-      items[typeLine].chaosValue += item.chaosValue;
+    var typeIdentifier  = item.typeLine.replace("Superior ", "");
+    if(item.frameType === 3) {
+      typeIdentifier += "_unique";
+    }
+    if(ItemCategoryParser.isNonStackable(typeIdentifier)) {
+      item.stackSize = 1;
+      items[item.id] = item;
     } else {
-      items[typeLine] = item;
+      if(!item.stackSize) item.stackSize = 1;
+      var typeLine = Utils.getBaseName(item);
+      if(items[typeLine]) {
+        items[typeLine].stackSize += item.stackSize;
+        items[typeLine].chaosValue += item.chaosValue;
+      } else {
+        items[typeLine] = item;
+      }
     }
   }
   return Object.values(items);
@@ -92,67 +105,84 @@ async function getItems(mapID) {
 async function getItemsFromEvent(eventID) {
   var items = [];
   return new Promise( (resolve, reject) => {
-    DB.all("select rawdata from items where event_id = ?", [eventID], async (err, rows) => {
+    DB.all("select rawdata, value from items where event_id = ?", [eventID], async (err, rows) => {
       if(err) {
         logger.info(`Error getting items: ${err}`);
         resolve(null);
       }
       for(var i = 0; i < rows.length; i++) {
         var item = JSON.parse(rows[i].rawdata);
-        var sockets = Utils.getSockets(item);
-        if(sockets) {
-          // check if item has 6 sockets (filter out delve sockets by replacing "DV")
-          if(sockets.replace(/[DV\- ]/g, "").length === 6) {
-            // check if item has 6 links (links are indicated by a - between sockets)
-            if(sockets.replace(/[RGBWDV ]/g, "").length === 5) {
-              item.icon = "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyModValues.png?scale=1&scaleIndex=0";
-              item.name = "";
-              item.w = 1;
-              item.h = 1;
-              item.stackSize = 1;
-              item.typeLine = "Divine Orb";
-              item.chaosValue = await getItemValue(eventID, item);
-              item.typeLine = "6-link Items";
-            } else {
-              item.icon = "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketNumbers.png?scale=1&scaleIndex=0";
-              item.name = "";
-              item.w = 1;
-              item.h = 1;
-              item.stackSize = 7;
-              item.typeLine = "Jeweller's Orb";
-              item.chaosValue = await getItemValue(eventID, item);
-              item.stackSize = 1;
-              item.typeLine = "6-socket Items";
-            }
-            items.push(item);
-          } else {
-            // item has less than 6 sockets - check if it has RGB links
-            var s = sockets.replace(/-/g, "");
-            if(s.includes("RGB") || s.includes("RBG") || s.includes("BGR") || s.includes("BRG") || s.includes("GRB") || s.includes("GBR")) {
-              item.icon = "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketColours.png?scale=1&scaleIndex=0";
-              item.name = "";
-              item.w = 1;
-              item.h = 1;
-              item.stackSize = 1;
-              item.typeLine = "Chromatic Orb";
-              item.chaosValue = await getItemValue(eventID, item);
-              item.typeLine = "R-G-B linked Items";
+        if(rows[i].value && rows[i].value > settings.minItemValue) {
+          item.chaosValue = rows[i].value;
+        } else {
+          var sockets = Utils.getSockets(item);
+          if(sockets) {
+            // check if item has 6 sockets (filter out delve sockets by replacing "DV")
+            if(sockets.replace(/[DV\- ]/g, "").length === 6) {
+              // check if item has 6 links (links are indicated by a - between sockets)
+              if(sockets.replace(/[RGBWDV ]/g, "").length === 5) {
+                item.icon = "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyModValues.png?scale=1&scaleIndex=0";
+                item.name = "";
+                item.w = 1;
+                item.h = 1;
+                item.stackSize = 1;
+                item.typeLine = "Divine Orb";
+                item.chaosValue = await getCurrencyValue(eventID, item);
+                item.typeLine = "6-link Items";
+              } else {
+                item.icon = "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketNumbers.png?scale=1&scaleIndex=0";
+                item.name = "";
+                item.w = 1;
+                item.h = 1;
+                item.stackSize = 7;
+                item.typeLine = "Jeweller's Orb";
+                item.chaosValue = await getCurrencyValue(eventID, item);
+                item.stackSize = 1;
+                item.typeLine = "6-socket Items";
+              }
               items.push(item);
             } else {
-              // default fallthrough case - delve socketed items go here
-              item.chaosValue = await getItemValue(eventID, item);
-              if(item.chaosValue) items.push(item);
+              // item has less than 6 sockets - check if it has RGB links
+              var s = sockets.replace(/-/g, "");
+              if(s.includes("RGB") || s.includes("RBG") || s.includes("BGR") || s.includes("BRG") || s.includes("GRB") || s.includes("GBR")) {
+                item.icon = "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketColours.png?scale=1&scaleIndex=0";
+                item.name = "";
+                item.w = 1;
+                item.h = 1;
+                item.stackSize = 1;
+                item.typeLine = "Chromatic Orb";
+                item.chaosValue = await getCurrencyValue(eventID, item);
+                item.typeLine = "R-G-B linked Items";
+                items.push(item);
+              }
             }
+          } else {
+            // non-socketed items
+            item.chaosValue = await getItemValue(eventID, item);
           }
-        } else {
-          // non-socketed items
-          item.chaosValue = await getItemValue(eventID, item);
-          if(item.chaosValue) items.push(item);
         }
+        if(item.chaosValue) items.push(item);
       }
       resolve(items);
     });
   });
+}
+
+async function getCurrencyValue(timestamp, item) {
+  
+  var stackSize = item.stackSize || 1;
+  var currency = item.typeLine;
+  
+  return new Promise( (resolve, reject) => {
+    DB.get("select value from rates where date <= ? and item = ? order by date desc limit 1", [timestamp, currency], (err, row) => {
+      if(row) {
+        resolve(row.value * stackSize);
+      } else {
+        resolve(ItemPricer.getCurrencyByName(timestamp, currency) * stackSize);
+      }
+    })
+  });
+  
 }
 
 async function getItemValue(timestamp, item) {
@@ -225,13 +255,13 @@ function getSQL(q) {
     select areainfo.*, mapruns.*,
     (mapruns.xp - (select xp from mapruns m where m.id < mapruns.id and xp is not null order by m.id desc limit 1)) xpgained,
     (select count(1) from events e where e.id between mapruns.firstevent and mapruns.lastevent and e.event_type = 'slain') deaths
-    from areainfo,
+    from areainfo, 
   `;
   
   if(q.mapcount) {
-    str += ` (select * from mapruns order by id desc limit ${q.mapcount} ) mapruns `;
+    str += ` (select * from mapruns where gained > -1 order by id desc limit ${q.mapcount} ) mapruns `;
   } else {
-    str += " mapruns ";
+    str += " (select * from mapruns where gained > -1) mapruns ";
   }
     
   str += " where areainfo.id = mapruns.id and ifnull(mapruns.gained, 0) != -1 and ifnull(mapruns.kills, 0) != -1 ";
