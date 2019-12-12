@@ -241,14 +241,18 @@
       }
 
       function getSeries(icon) {
-        if(icon.includes("mn=1")) return "Atlas2-3.4";
-        if(icon.includes("mn=2")) return "Atlas2";
-        if(icon.includes("mn=3")) return "Synthesis";
-        if(icon.includes("mn=4")) return "Legion";
-        if(icon.includes("mn=5")) return "Blight";
-        if(icon.includes("2DItems/Maps/AtlasMaps")) return "Atlas";
-        if(icon.includes("2DItems/Maps/Map")) return "Pre 2.4";
-        if(icon.includes("2DItems/Maps/act4maps")) return "Pre 2.0";
+        if(icon.includes("mn=")) {
+          if(icon.includes("mn=1")) return "Atlas2-3.4";
+          if(icon.includes("mn=2")) return "Atlas2";
+          if(icon.includes("mn=3")) return "Synthesis";
+          if(icon.includes("mn=4")) return "Legion";
+          if(icon.includes("mn=5")) return "Blight";
+          if(icon.includes("mn=6")) return "Metamorph";
+        } else {
+          if(icon.includes("2DItems/Maps/AtlasMaps")) return "Atlas";
+          if(icon.includes("2DItems/Maps/Map")) return "Pre 2.4";
+          if(icon.includes("2DItems/Maps/act4maps")) return "Pre 2.0";
+        }
         throw new Error("Invalid map image URL: " + icon);
       }
     }
