@@ -18,7 +18,6 @@
     <script src="res/jquery.tablesorter.js"></script>
     <script src="res/jquery.tablesorter.widgets.js"></script>
     <script src="res/utils.js"></script>
-    <script src="res/item.js"></script>
     <script src="res/page-utils.js"></script>
 
     <!-- Insert this line after script imports -->
@@ -31,6 +30,8 @@
       const settings = require('./modules/settings').get();
       const logger = require('./modules/Log').getLogger(__filename);
       const DB = require('./modules/DB').getDB();
+      const ItemData = require('./modules/ItemData');
+      const ItemCategoryParser = require('./modules/ItemCategoryParser');
       const moment = require('moment');
       const momentDurationFormatSetup = require("moment-duration-format");
       const {ipcRenderer, remote} = require('electron');
@@ -128,15 +129,25 @@
           var mapData = [];
           
           rows.forEach(row => {
-            mapData.push({
+            var obj = {
               name: row.name,
-              tier: row.level,
               time: moment.duration(moment(row.lastevent, "YYYYMMDDHHmmss").diff(moment(row.firstevent, "YYYYMMDDHHmmss"))).asSeconds(),
               id: row.id,
-              gained: row.gained,
-              kills: row.kills,
               xp: row.xp
-            });          
+            };
+            if(row.level) {
+              obj.tier = row.level;
+            }
+            if(row.depth) {
+              obj.depth = row.depth;
+            }
+            if(row.gained) {
+              obj.gained = row.gained;
+            }
+            if(row.kills) {
+              obj.kills = row.kills;
+            }
+            mapData.push(obj);
           });
           
           mapDataList = JSON.stringify(mapData);
@@ -161,7 +172,6 @@
           rows.forEach(row => {
             Utils.addMapRow($("#mapRows"), row, false, ssf, hardcore);
             exportData.mapList.addRow({
-              timestamp: row.firstevent,
               area: row.name,
               level: row.level,
               depth: row.depth,
@@ -232,7 +242,7 @@
             }
             exportData.itemList.addRow({
               count: item.stackSize,
-              item: item.displayName,
+              item: item.displayName.replace("<br/><span class='itemSuffix'>", " ").replace("</span>", ""),
               category: Array.isArray(category) ? category[0] : category,
               subcategory: Array.isArray(category) ? category[1] : "",
               value: parseFloat(Number(item.chaosValue).toFixed(2))
@@ -361,7 +371,7 @@
 
         items.forEach(item => {
           totalValue += item.chaosValue;
-          item.displayName = displayName(item);
+          item.displayName = Utils.getDisplayName(item);
         });
 
         items.sort(itemCompare);
@@ -389,29 +399,11 @@
 
       }
       
-      function displayName(i) {
-        
-        if(i.typeLine.endsWith(" Map") && !i.identified && i.frameType == 3) {
-          return Utils.getUniqueMap(i.typeLine);
-        }
-        
-        var name = "";
-        if (i.hasOwnProperty("name")) {
-          if (i.name.length > 0)
-            name += i.name.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "") + ", ";
-        }
-        name += i.typeLine.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "");
-        name = name.replace("Superior ", "");
-        
-        var magicMap = Utils.getBaseFromMagicMap(name);
-        return magicMap || name;
-        
-      }
-
       function itemToString(i) {
-        if (!i.chaosValue)
-          return;
-        var item = new Item(i);
+        
+        if (!i.chaosValue) return;
+        
+        var item = ItemData.createItem(i);
         
         var displayStackSize = (i.displayName === "6-socket Items") ? i.stackSize * 7 : i.stackSize;
         
