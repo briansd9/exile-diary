@@ -15,7 +15,6 @@
     <script src="res/jquery.lazy.js"></script>
     <script src="res/jquery-ui.js"></script>
     <script src="res/utils.js"></script>
-    <script src="res/item.js"></script>
     <script src="res/page-utils.js"></script>
 
     <!-- Insert this line after script imports -->
@@ -29,6 +28,10 @@
       const logger = require('./modules/Log').getLogger(__filename);
       const Utils = require('./modules/Utils');
       const RateGetter = require('./modules/RateGetter');
+      const ItemData = require('./modules/ItemData');
+      const ItemPricer = require('./modules/ItemPricer');
+      const ItemParser = require('./modules/ItemParser');
+      const ItemCategoryParser = require('./modules/ItemCategoryParser');
       const zlib = require('zlib');      
       const {ipcRenderer, remote} = require('electron');
       
@@ -65,7 +68,8 @@
                 // old data - compression not implemented yet, just parse directly
                 resolve(JSON.parse(data));
               } else {
-                resolve(JSON.parse(buffer));
+                var data = JSON.parse(buffer);
+                resolve(data);
               }
             });
           });
@@ -74,16 +78,22 @@
         processItem(item) {          
           // need to identify by both type and rarity, otherwise unique and normal maps of the same basetype will be grouped together
           var typeIdentifier  = item.typeLine.replace("Superior ", "");
-          if(item.frameType === 3) {
-            typeIdentifier += "_unique";
+          var uniqueName = Constants.getItemName(item.icon);
+          if(uniqueName) {
+            typeIdentifier += ` ${uniqueName}`;
           }
-          if (!this.itemsByType[typeIdentifier]) {
+          if(ItemCategoryParser.isNonStackable(typeIdentifier)) {
             this.itemsById[item.id] = item;
-            this.itemsByType[typeIdentifier] = item.id;
             this.itemsById[item.id].stackSize = item.stackSize || 1;
           } else {
-            this.itemsById[this.itemsByType[typeIdentifier]].stackSize += item.stackSize || 1;
-          }          
+            if (!this.itemsByType[typeIdentifier]) {
+              this.itemsById[item.id] = item;
+              this.itemsByType[typeIdentifier] = item.id;
+              this.itemsById[item.id].stackSize = item.stackSize || 1;
+            } else {
+              this.itemsById[this.itemsByType[typeIdentifier]].stackSize += item.stackSize || 1;
+            }          
+          }
         }
         
         getSortedItems() {          
@@ -235,31 +245,27 @@
         
         var rates = await RateGetter.getFor(s.id);
         
-        Object.keys(s.itemsById).forEach(k => {
+        var keys = Object.keys(s.itemsById);
+        
+        for(var i = 0; i < keys.length; i++) {
 
-          var item = s.itemsById[k];
-          item.displayName = Utils.getBaseName(item);
-
-          var sockets = ItemData.getSockets(item);
-          if(sockets.length > 0 && !sockets.includes("DV")) {
-            return;
+          var item = s.itemsById[keys[i]];
+          item.displayName = Utils.getDisplayName(item);
+          
+          if(rates) {
+            item.chaosValue = Utils.getItemValue(item, rates);
+          } else {
+            var parsedItem = parseItem(item);
+            var value = await ItemPricer.price(parsedItem);
+            item.chaosValue = value;
           }
-
-          item.chaosValue = Utils.getItemValue(item, rates);
 
           if(item.chaosValue) {
             item.chaosValue = Number(item.chaosValue).toFixed(2);
-            var name = Utils.getBaseName(item);
-            if (name === "Chaos Orb") {
-              item.unitValue = (1).toFixed(2);
-            } else if (rates[name]) {
-              item.unitValue = (rates[name] * 1).toFixed(2);
-            }
           }
-          
-        });
 
-        
+        };
+
         var items = s.getSortedItems();
         for (var i of items) {
           $("#itemsTable").append(itemToString(i));
@@ -269,22 +275,49 @@
         var chaosString, exaltString;
         chaosString = `${Number(s.value).toFixed(2)} <img style='vertical-align:middle;' src='res/img/c.png'/>`;
         
-        if(s.value > rates["Exalted Orb"]) {
-          var exaltValue = s.value / rates["Exalted Orb"];
+        var exaltRate = await getExaltRate();
+        
+        if(s.value > exaltRate) {
+          var exaltValue = s.value / exaltRate;
           exaltString = `${Number(exaltValue).toFixed(2)} <img style='vertical-align:middle;' src='res/img/ex.png'/>`;
         }        
 
         $("#netWorth").html(`Net Worth: ${chaosString} ${exaltString ? `(${exaltString})` : ""}`);
         $("#itemsHeader").show();
+        
+        function parseItem(rawdata) {
+          var arr = ItemParser.parseItem(rawdata);
+          return {
+            id : arr[0],
+            event_id: s.id,
+            icon: arr[2], 
+            name: arr[3],
+            rarity: arr[4],
+            category: arr[5],
+            identified: arr[6],
+            typeline: arr[7],
+            sockets: arr[8],
+            stacksize: arr[9],
+            rawdata: arr[10]
+          };
+        }        
+        
+        async function getExaltRate() {
+          if(rates) {
+            return rates["Exalted Orb"];
+          } else {
+            return (await ItemPricer.getCurrencyByName(s.id, "Exalted Orb"));
+          }
+        }
       
       }
       
       function itemToString(i) {
-        if (!i.chaosValue || !i.stackSize) {
+        if (!i.chaosValue) {
           return;
         }
         
-        var displayStackSize = (i.displayName === "6-socket Items") ? i.stackSize * 7 : i.stackSize;
+        var displayStackSize = (i.displayName === "6-socket Items") ? i.stackSize * 7 : (i.stackSize || "");
         var changeString = (i.change ? `${Utils.formatSignedNumber(i.change, true).replace(',', '')}` : "");
         
         var str = `
@@ -294,7 +327,6 @@
               <span class='stackSize'>${displayStackSize} ${changeString}</span><br/>
             </td>
             <td style='padding-left:10px;padding-right:10px;min-width:300px'>${i.displayName}</td>
-            <td style='padding-left:10px;padding-right:10px'>${i.unitValue ? i.unitValue + "" : "&nbsp;"}</td>
             <td style='padding-left:10px;padding-right:10px'>${i.chaosValue ? i.chaosValue + "" : "&nbsp;"}</td>
           `;
         return str;
@@ -375,6 +407,7 @@
         }
       }
       
+      
     </script>
 
   </head>
@@ -401,7 +434,6 @@
           <tr class='ui-text'>
             <th>&nbsp;</th>
             <th>Item</th>
-            <th>Unit</th>
             <th>Value</th>
           </tr>
         </thead>
