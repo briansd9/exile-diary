@@ -31,92 +31,7 @@ var Rarity = {
 	}
 };
 
-var Influence = {
-    None: 0,
-    Shaper: 1,
-    Elder: 2,
-
-    getName: function (i) {
-        switch (i) {
-            case 0: return 'None';
-            case 1: return 'Shaper';
-            case 2: return 'Elder';
-            default: throw 'Invalid Influence: ' + i
-        }
-    },
-
-    isValid: function (i) {
-        return 0 <= i && i <= 2
-    },
-
-    parse: function (str) {
-        switch (str.toLowerCase()) {
-            case 'none': return 0;
-            case 'shaper': return 1;
-            case 'elder': return 2;
-            default: throw 'Invalid Influence: ' + str
-        }
-    }
-}
-
 class ItemData {
-
- static validate(item) {
-    function assertTrue (expr, msg) {
-        if (!expr) {
-            throw msg;
-        }
-    }
-
-	function assertNotNullOrEmpty (str, msg) {
-        if (!str || (str === '')) {
-            throw msg;
-        }
-    }
-
-    function assertInRange (value, min, max, msg) {
-        if (isNaN(value) || value < min || value > max) {
-            throw msg;
-        }
-    }
-
-	function assertInArray (value, array, msg) {
-		if (!ArrayUtils.contains(array, value)) {
-			throw msg;
-		}
-	}
-
-	//assertNotNullOrEmpty( item.name, 'Item has no name' );
-    assertInRange( item.itemLevel, 1, 100, 'Invalid ItemLevel' );
-    assertInRange( item.dropLevel, 1, 100, 'Invalid DropLevel' );
-    assertInRange( item.quality, 0, 23, 'Invalid Quality' );
-	assertTrue( Rarity.isValid( item.rarity, 'Invalid Rarity' ));
-    assertNotNullOrEmpty( item.itemClass, 'Item has no Class' );
-    assertNotNullOrEmpty( item.baseType, 'Item has no BaseType' );
-    assertInRange( item.width, 1, 3, 'Invalid width' );
-    assertInRange( item.height, 1, 5, 'Invalid height' );
-	assertInArray( item.identified, [true, false], 'Invalid Identified property' );
-	assertInArray( item.corrupted, [true, false], 'Invalid Corrupted property' );
-	assertTrue( Influence.isValid( item.influence, 'Invalid Influence' ));
-	assertInArray( item.shapedMap, [true, false], 'Invalid ShapedMap property' );
-	var maxSockets = Math.min( 6, item.width * item.height );
-	assertInRange( ItemData.countSockets( item.sockets ), 0, maxSockets, 'Too many sockets for this item size' );
-}
-
-static areEqual(data, item) {
-	return data.name === item.name
-		&& data.itemLevel === item.itemLevel
-		&& data.dropLevel === item.dropLevel
-		&& data.quality === item.quality
-		&& data.rarity === item.rarity
-		&& data.itemClass === item.itemClass
-		&& data.baseType === item.baseType
-		&& data.width === item.width
-		&& data.height === item.height
-		&& data.identified === item.identified
-		&& data.corrupted === item.corrupted
-		&& ArrayUtils.areEqual( data.sockets, item.sockets );
-}
 
 static countSockets(sockets) {
   
@@ -204,9 +119,16 @@ static getGemLevel(data) {
 }
 
 static getInfluence(data) {
-  if(data.elder) return Influence.Elder;
-  else if(data.shaper) return Influence.Shaper;
-  else return Influence.None;
+  if(data.influences) {
+    return Object.keys(data.influences).map(inf => { return inf.toLowerCase() } );
+  }
+  if(data.shaper) {
+    return ["shaper"];
+  }
+  if(data.elder) {
+    return ["elder"];
+  }
+  return [];
 }
 
 static getMapTier(data) {
@@ -366,28 +288,23 @@ static createItem(itemdata)
 	}
   
   obj.getItemIcon = function() {
-    var icon = null;
+    var influenceIcons = [];
     if(this.veiled) {
-      icon = "veiled";
+      influenceIcons.push("veiled");
     } else if(this.synthesised) {
-      icon = "synthesised";
+      influenceIcons.push("synthesised");
     } else if(this.fractured) {
-      icon = "fractured";
+      influenceIcons.push("fractured");
     } else {
-      switch(this.influence) {
-        case Influence.Shaper:
-          icon = "shaper";
-          break;
-        case Influence.Elder:
-          icon = "elder";
-          break;
-        default:
-          break;
+      if(this.influence) {
+        this.influence.forEach(inf => influenceIcons.push(inf));
       }
     }
-    if(icon) {
+    if(influenceIcons.length) {
       var iconDiv = document.createElement('span');
-      iconDiv.innerHTML = `<img src='res/img/${icon}.png' style='width:24px;height:24px;margin:4px 4px 0px 0px'/>`;
+      influenceIcons.forEach(icon => {
+        iconDiv.innerHTML += `<img src='res/img/${icon}.png' style='width:24px;height:24px;margin:4px 4px 0px 0px'/>`;
+      });
       return iconDiv;
     } else {
       return null;
@@ -646,4 +563,4 @@ static createItem(itemdata)
 
 module.exports = ItemData;
 module.exports.Rarity = Rarity;
-module.exports.Influence = Influence;
+
