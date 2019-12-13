@@ -5,7 +5,6 @@ const fs = require('fs');
 
 var cachedParser = {};
 var Rarity = ItemData.Rarity;
-var Influence = ItemData.Influence;
 
 function test(filterText) {
   return parseFilter(filterText);
@@ -82,14 +81,14 @@ function Parser() {
 	    'ItemLevel', 'DropLevel', 'Quality', 'Rarity', 'Class', 'BaseType', 'Sockets', 'LinkedSockets', 'SocketGroup',
 	    'Width', 'Height', 'Identified', 'Corrupted', 'ElderItem', 'ShaperItem', 'ShapedMap', 'HasExplicitMod', 'MapTier',
 	    'GemLevel', 'StackSize', 'ElderMap', 'Prophecy', 'FracturedItem', 'SynthesisedItem', 'AnyEnchantment', 'HasEnchantment',
-      'BlightedMap'
+      'BlightedMap', 'HasInfluence'
     ];
 	var MODIFIER_TOKENS = [
 	    'SetBackgroundColor', 'SetBorderColor', 'SetTextColor', 'PlayAlertSound', 'PlayAlertSoundPositional',
 	    'SetFontSize', 'DisableDropSound', 'CustomAlertSound', 'MinimapIcon', 'PlayEffect' ];
 	var OPERATOR_TOKENS = [ '=', '<', '>', '<=', '>=' ];
 	var RARITY_TOKENS = [ 'Normal', 'Magic', 'Rare', 'Unique' ];
-	var BOOL_TOKENS = [ 'True', 'False' ];
+  var INFLUENCE_TOKENS = [ 'shaper', 'elder', 'crusader', 'redeemer', 'hunter', 'warlord' ];
 	var SOUND_TOKENS = [ 'ShAlchemy', 'ShBlessed', 'ShChaos', 'ShDivine', 'ShExalted', 'ShFusing', 'ShGeneral', 'ShMirror', 'ShRegal', 'ShVaal' ];
     var COLOR_TOKENS = [ 'Red', 'Green', 'Blue', 'Brown', 'White', 'Yellow' ]
     var ICON_SHAPE_TOKENS = [ 'Circle', 'Diamond', 'Hexagon', 'Square', 'Star', 'Triangle' ]
@@ -247,7 +246,8 @@ function Parser() {
       'SynthesisedItem': SynthesisedItemFilter,
       'AnyEnchantment': AnyEnchantmentFilter,
       'HasEnchantment': HasEnchantmentFilter,
-      'BlightedMap': BlightedMapFilter
+      'BlightedMap': BlightedMapFilter,
+      'HasInfluence' : HasInfluenceFilter
 		};
 
 		switch (token) {
@@ -291,6 +291,10 @@ function Parser() {
       case 'AnyEnchantment':
       case 'BlightedMap':
 				parseBoolFilter( self, filters[token], arguments );
+				return;
+        
+			case 'HasInfluence':
+				parseInfluenceFilter( self, filters[token], arguments );
 				return;
 
 			default:
@@ -356,7 +360,50 @@ function Parser() {
         var comparer = function(a,b) { return b.includes(a); }
         self.currentRule.filters.push( new filter( comparer, rarities ) );
 	}
+  
+	function parseInfluenceFilter (self, filter, arguments) {
+	    var tokens = getArgumentTokens(arguments);
+	    if (tokens.length == 0) {
+	        reportTokenError( self, arguments, 'influence')
+	        return;
+	    }
+      
+      var comparer;      
+      
+      if(tokens[0] === "==") {
+        tokens.shift(); // remove operator
+        comparer = function(a,b) {
+          // strict equality - must contain all influences specified to match
+          for(var i = 0; i < b.length; i++) {
+            if(!a.includes(b[i]))  return false;
+          }
+          return true;
+        }
+      } else {
+        comparer = function(a,b) { 
+          // match if any of the specified influences are found
+          for(var i = 0; i < a.length; i++) {
+            if(b.includes(a[i])) return true;
+          }
+          return false;
+        }
+      }
 
+        // the arguments must be a list of influences
+        var influences = [];
+        for (var i = 0; i < tokens.length; i++) {
+            var inf = tokens[i].toLowerCase();
+            if (!INFLUENCE_TOKENS.includes(inf)) {
+                reportTokenError( self, tokens[i], 'influence')
+                return;
+            }
+            influences.push(inf);
+        }
+
+        self.currentRule.filters.push( new filter( comparer, influences ) );
+	}
+  
+  
 	function parseSocketGroupFilter (self, filter, arguments) {
 		var args = parseStringArguments( self, arguments );
 		if (args === null) return;
@@ -845,13 +892,13 @@ function CorruptedFilter (value) {
 
 function ElderItemFilter (value) {
     this.match = function (item) {
-        return (item.influence === Influence.Elder) === value;
+        return (item.influence.includes("elder")) === value;
     }
 }
 
 function ShaperItemFilter (value) {
     this.match = function (item) {
-        return (item.influence === Influence.Shaper) === value;
+      return (item.influence.includes("shaper")) === value;
     }
 }
 
@@ -926,6 +973,12 @@ function BlightedMapFilter (value) {
     this.match = function (item) {
         return item.blightedMap === value;
     }
+}
+
+function HasInfluenceFilter (comparer, influences) {
+	this.match = function (item) {
+		return comparer( item.influence, influences );
+	};
 }
 
 // ------------------------ Modifiers --------------------------------------
