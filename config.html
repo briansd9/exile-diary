@@ -39,7 +39,7 @@
       const {ipcRenderer} = require('electron');
       const fs = require('fs');
       const logger = require('./modules/Log').getLogger(__filename);
-      const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled", "minItemValue"];
+      const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled"];
 
       var settings = {};
       var tabsLoaded = false;
@@ -206,6 +206,10 @@
           $("#stashCheckMaps").val(20);
           $("#stashCheckUnits").val("maps");
         }
+        
+        if(settings.minItemValue) {
+          $("#minItemValue").val(settings.minItemValue);
+        }
 
       }
       
@@ -253,7 +257,7 @@
         } else {
           $("#characterList").removeClass("invalid");
         }
-
+        
         if(!valid) {
           return;
         }

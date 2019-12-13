@@ -1106,9 +1106,23 @@ const uniqueIcons = {
   "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSwords/HarbingerLeagueShards/HarbingerSwordShard3.png" : "Third Piece of the Arcane",
   "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/HarbingerShards/Shard1.png" : "First Piece of Brutality",
   "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/HarbingerShards/Shard2.png" : "Second Piece of Brutality",
-  "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/HarbingerShards/Shard3.png" : "Third Piece of Brutality"
- 
-  
+  "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/HarbingerShards/Shard3.png" : "Third Piece of Brutality",
+  // Metamorph
+  "" : "Astral Projector",
+  "" : "Crown of the Inward Eye",
+  "" : "Eye of Desire",
+  "" : "Fury Valve",
+  "" : "Grip of Unmaking",
+  "" : "Hands of the High Templar",
+  "" : "Leash of Oblation",
+  "" : "Manastorm",
+  "" : "Mirage Blade",
+  "" : "Mistwall",
+  "" : "Mothers Embrace",
+  "" : "Starlight Mark",
+  "" : "The Black Cane",
+  "" : "The Ivory Tower",
+  "" : "Warriors Legacy"
 };
 
 const uniqueFlasks = {

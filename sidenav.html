@@ -11,7 +11,7 @@
       $("#myModal").appendTo($("body"));
       
       var settings = require("./modules/settings").get();
-      if(!settings.version || settings.version !== version) {
+      if(!settings || !settings.version || settings.version !== version) {
         $("#newVersion").show();
       }
       
