@@ -1183,6 +1183,7 @@ const gemBaseTypes = {
   "Pulverise Support" : "Support Skill Gems",
   "Rage Support" : "Support Skill Gems",
   "Ranged Attack Totem Support" : "Support Skill Gems",
+  "Remote Mine Support" : "Support Skill Gems",
   "Swift Affliction Support" : "Support Skill Gems",
   "Less Duration Support" : "Support Skill Gems",
   "Inspiration Support" : "Support Skill Gems",
