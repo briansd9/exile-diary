@@ -363,7 +363,10 @@ async function createWindow() {
     mainWindow.loadFile('config.html');
   } else {
     global.validCharacter = true;
-    global.ssf = settings.activeProfile && (settings.activeProfile.overrideSSF || (settings.activeProfile.league && settings.activeProfile.league.includes("SSF")));
+    global.ssf = settings.activeProfile && settings.activeProfile.league && settings.activeProfile.league.includes("SSF");
+    if(settings.activeProfile.overrideSSF === true) {
+      global.ssf = false;
+    }    
     global.hardcore = settings.activeProfile && settings.activeProfile.league && settings.activeProfile.league.includes("Hardcore");
     mainWindow.loadFile('index.html');
   }
