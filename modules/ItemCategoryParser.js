@@ -1077,6 +1077,7 @@ const gemBaseTypes = {
   "Wither" : "Active Skill Gems",
   "Withering Step" : "Active Skill Gems",
   "Wrath" : "Active Skill Gems",
+  
   "Added Chaos Damage Support" : "Support Skill Gems",
   "Added Cold Damage Support" : "Support Skill Gems",
   "Added Fire Damage Support" : "Support Skill Gems",
@@ -1115,6 +1116,7 @@ const gemBaseTypes = {
   "Curse On Hit Support" : "Support Skill Gems",
   "Hypothermia Support" : "Support Skill Gems",
   "Deadly Ailments Support" : "Support Skill Gems",
+  "Deathmark" : "Support Skill Gems",
   "Deathmark Support" : "Support Skill Gems",
   "Decay Support" : "Support Skill Gems",
   "Efficacy Support" : "Support Skill Gems",
@@ -1189,6 +1191,7 @@ const gemBaseTypes = {
   "Inspiration Support" : "Support Skill Gems",
   "Blastchain Mine Support" : "Support Skill Gems",
   "Ruthless Support" : "Support Skill Gems",
+  "Shockwave" : "Support Skill Gems",
   "Shockwave Support" : "Support Skill Gems",
   "Slower Projectiles Support" : "Support Skill Gems",
   "Spell Cascade Support" : "Support Skill Gems",
@@ -1206,6 +1209,7 @@ const gemBaseTypes = {
   "Vile Toxins Support" : "Support Skill Gems",
   "Void Manipulation Support" : "Support Skill Gems",
   "Elemental Damage with Attacks Support" : "Support Skill Gems",
+  
   // 3.9 update
   "Awakened Added Fire Damage Support" : "Support Skill Gems",
   "Awakened Ancestral Call Support" : "Support Skill Gems",
@@ -1249,6 +1253,8 @@ const gemBaseTypes = {
   "Ballista Totem Support" : "Support Skill Gems",
   "Arrow Nova Support" : "Support Skill Gems",
   "Barrage Support" : "Support Skill Gems",
+  "Galvanic Arrow" : "Active Skill Gems",
+  
 };
 
 const nonStackableBaseTypes = [].concat(Object.keys(equipmentBaseTypes), Object.keys(gemBaseTypes));
@@ -1559,11 +1565,6 @@ const otherBaseTypes = {
   "Fertile Catalyst" : "Currency",
   "Prismatic Catalyst" : "Currency",
   "Intrinsic Catalyst" : "Currency",
-  "Metamorph Brain" : "Metamorph Sample",
-  "Metamorph Eye" : "Metamorph Sample",
-  "Metamorph Liver" : "Metamorph Sample",
-  "Metamorph Lung" : "Metamorph Sample",
-  "Metamorph Heart" : "Metamorph Sample",
   "Fragment of Enslavement" : ["Map Fragments", "Guardian Fragment"],
   "Fragment of Eradication" : ["Map Fragments", "Guardian Fragment"],
   "Fragment of Constriction" : ["Map Fragments", "Guardian Fragment"],
@@ -1574,14 +1575,16 @@ const otherBaseTypes = {
   "Fragment of Emptiness" : ["Map Fragments", "Guardian Fragment"],
   "Ivory Watchstone" : "Atlas Region Upgrade Item",
   
-  
-  
   // not actually in the game - pseudo-items for vendor recipe
   "6-socket Items" : "Currency",
   "6-link Items" : "Currency",
   "R-G-B linked Items" : "Currency"
   
 };
+
+const metamorphSamples = [
+  "BrainInventory", "LungInventory", "HeartInventory", "LiverInventory", "EyeballInventory"
+];
 
 function getCategory(item, subcategory = false) {
   
@@ -1619,7 +1622,6 @@ function getCategory(item, subcategory = false) {
     return "Map Fragments";
   }
   
-  
   // Maligaro's Map quest item has frameType 7, already detected above as a quest item
   if(t.includes(" Map")) {
     return "Maps";
@@ -1640,9 +1642,10 @@ function getCategory(item, subcategory = false) {
   if(item.icon.includes("BestiaryOrbFull")) {
     return "Captured Beast";
   }
-
-  if(otherBaseTypes[t]) {
-    return otherBaseTypes[t];
+  
+  // 3.9 metamorph inventory organs
+  for(var i = 0; i < metamorphSamples.length; i++) {
+    if(item.icon.includes(metamorphSamples[i])) return "Metamorph Sample";
   }
   
   // equipment - search by hardcoded basetype
