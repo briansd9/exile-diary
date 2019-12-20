@@ -43,6 +43,7 @@
       const Constants = require('./modules/Constants');
       const {ipcRenderer, remote} = require('electron');
       const ItemData = require('./modules/ItemData');
+      const ItemPricer = require('./modules/ItemPricer');
       
       var maprun, mapID, parser, rates, itemsByType, itemsById, currScroll;
       
@@ -213,7 +214,7 @@
       function loadMap(mapRun) {
         clearCurrentMap();
         parser = mapRun.parser;
-        rates = mapRun.rates || {};
+        rates = mapRun.rates || null;
         showNavigation(mapRun);
         showInfo(mapRun);
         showEvents(mapRun);
@@ -491,7 +492,7 @@
           }
         }        
         
-        if(!rates || remote.getGlobal("ssf")) {
+        if(remote.getGlobal("ssf")) {
           $("#itemsByValue").hide();
         } else {
           displayItemsByValue();
@@ -717,7 +718,7 @@
       }
 
       async function getCurrencyByName(curr) {
-        if(rates) {          
+        if(rates) {
           return rates[curr];
         } else {
           return (await ItemPricer.getCurrencyByName(mapID, curr));
@@ -735,7 +736,6 @@
           tempValue = item.chaosValue;
         } else {
           tempValue = Utils.getItemValue(item, rates);
-          console.log(`${item.displayName} ${tempValue} 3`);
         }
         
         // ignore gems and equippable items if less than minimum value
