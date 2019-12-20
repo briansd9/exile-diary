@@ -446,7 +446,7 @@ async function checkItems(area, firstevent, lastevent) {
       break;
     } else {
       logger.info(`Last inventory not yet processed (${lastinv} < ${lastevent}), waiting 3 seconds`);
-      await sleep(3000);
+      await Utils.sleep(3000);
     }
   }
   
@@ -455,9 +455,7 @@ async function checkItems(area, firstevent, lastevent) {
   logger.info(`Total profit is ${allItems.value} in ${allItems.count} items`);
   return allItems;
 
-  function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
+
   
 }
 
@@ -547,7 +545,9 @@ function updateItemValues(arr) {
       stmt.run(arr[i], (err) => {
         if(err) {
           logger.error(`Unable to set item value for item ${JSON.stringify(item)}`);
-        } 
+        }  else {
+          logger.info(`Updated item value ${item[0]} for ${item[1]}`);
+        }
       });
     }
     stmt.finalize( (err) => {
