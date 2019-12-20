@@ -148,8 +148,9 @@
       return Math.max(helmetBaseValue, helmetEnchantValue);
     }
 
-    throw new Error("Unable to get value for item!");
+    logger.info("Unable to get value for item:");
     logger.info(item.parsedItem);
+    return 0;
     
     /* sub-functions for getting value per item type*/    
     function getHelmetEnchantValue() {
@@ -482,7 +483,7 @@
       //logger.info(`Could not find value for ${item.typeline}`);
       return 0;
     } else {
-      //console.log(`${type} => ${value}`);
+      //logger.info(`${type} => ${value}`);
       return value;
     }
   }
