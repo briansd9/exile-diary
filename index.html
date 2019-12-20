@@ -80,8 +80,12 @@
           }
         });
         
-        ipcRenderer.on("runProcessed", (event, runInfo) => {
+        ipcRenderer.on("runProcessed", async (event, runInfo) => {
+          
           $("#lastArea").hide();
+          
+          await Utils.sleep(1000);
+          
           DB.get(`
             select mapruns.id, name, level, depth, iiq, iir, packsize, firstevent, lastevent, 
             (mapruns.xp - (select xp from mapruns m where m.id < mapruns.id and xp is not null order by m.id desc limit 1)) xpgained,
@@ -93,10 +97,17 @@
             and areainfo.id = mapruns.id;
           `, [runInfo.id], (err, row) => {
             if(row) {
+              console.log(`Row found for ${runInfo.id}`);
               if($("#lastMapsRows tr").length > 10) {
                 $("#lastMapsRows tr:last").remove();
               }
               Utils.addMapRow($("#lastMapsRows"), row, true, ssf, hardcore);
+            } else {
+              console.log(`No row found for ${runInfo.id}, not updating`);
+            }
+            if(err) {
+              logger.info("Error adding map row:");
+              logger.info(err);
             }
           });          
         });
