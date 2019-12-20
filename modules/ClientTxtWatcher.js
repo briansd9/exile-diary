@@ -74,7 +74,7 @@ function insertEvent(event, timestamp) {
     [timestamp, event.type, event.text, event.instanceServer],
     (err) => {
       if (err) {
-        logger.info("Failed to insert event: " + err);
+        logger.info(`Error inserting event ${timestamp} -> ${event.type} ${event.text} ${event.instanceServer || ""}  : ${err}`);
       } else {
         if(event.type !== "chat" && event.type !== "note") {
           logger.info(`Inserted event ${timestamp} -> ${event.type} ${event.text} ${event.instanceServer || ""}`);
