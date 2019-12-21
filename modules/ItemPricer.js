@@ -149,6 +149,7 @@
     }
 
     logger.info("Unable to get value for item:");
+    logger.info(JSON.stringify(item.parsedItem));
     return 0;
     
     /* sub-functions for getting value per item type*/    
