@@ -540,16 +540,15 @@ function updateItemValues(arr) {
       }
     });
     var stmt = DB.prepare(`update items set value = ? where id = ? and event_id = ?`);
-    for(var i = 0; i < arr.length; i++) {
-      var item = arr[i];
-      stmt.run(arr[i], (err) => {
+    arr.forEach(item => {
+      stmt.run(item, (err) => {
         if(err) {
           logger.error(`Unable to set item value for item ${JSON.stringify(item)}`);
         }  else {
-          logger.info(`Updated item value ${item[0]} for ${item[1]}`);
+          logger.info(`Updated item value ${item[0]} for ${item[1]} in event ${item[2]}`);
         }
       });
-    }
+    });
     stmt.finalize( (err) => {
       if(err) {
         logger.warn(`Error inserting items for ${event}: ${err}`);
