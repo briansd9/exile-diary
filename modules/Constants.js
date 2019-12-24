@@ -85,6 +85,7 @@ const townstrings = [
   "Doomguard Hideout",
   "Eclipsed Hideout",
   "Enlightened Hideout",
+  "Entombed Hideout",
   "Excavated Hideout",
   "Furious Hideout",
   "Glacial Hideout",
@@ -108,6 +109,7 @@ const townstrings = [
   "Towering Hideout",
   "Undercity Hideout",
   "Unearthed Hideout",
+  "Celestial Nebula Hideout",
   // Synthesis
   "Memory Nexus"
   
