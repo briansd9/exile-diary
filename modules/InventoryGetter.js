@@ -175,7 +175,7 @@ class InventoryGetter extends EventEmitter {
       if (item.inventoryId === "MainInventory") {
         mainInventory[item.id] = item;
       } else {
-        mainInventory[item.id] = item;
+        //mainInventory[item.id] = item;
         equippedItems[item.id] = item;
       }
     });
