@@ -24,7 +24,8 @@ const rateTypes = {
   "UniqueFlask" : cleanUniqueItems,
   "UniqueWeapon" : cleanUniqueItems,
   "UniqueArmour" : cleanUniqueItems,
-  "UniqueAccessory" : cleanUniqueItems
+  "UniqueAccessory" : cleanUniqueItems,
+  "Watchstone" : cleanNameValuePairs
 };
 
 const specialGems = ["Empower Support", "Enlighten Support", "Enhance Support"];
@@ -109,6 +110,7 @@ async function getRates(date) {
   rates["HelmetEnchant"] = tempRates["HelmetEnchant"];
   rates["UniqueMap"] = tempRates["UniqueMap"];
   rates["Map"] = tempRates["Map"];
+  rates["Watchstone"] = tempRates["Watchstone"];
   
   var data = await Utils.compress(rates);
   DB.run("insert into fullrates(date, data) values(?, ?)", [date, data], (err) => {
@@ -144,6 +146,7 @@ function getNinjaURL(category) {
     case "UniqueWeapon":
     case "UniqueArmour":
     case "UniqueAccessory":
+    case "Watchstone":
       url = `/api/data/itemoverview?type=${category}`;
       break;
     default:
