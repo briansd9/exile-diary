@@ -9,7 +9,8 @@ async function logKillCount(timestamp, eqp) {
     if(item.incubatedItem) {
       incubators[key] = {
         level: item.incubatedItem.level,
-        progress: item.incubatedItem.progress
+        progress: item.incubatedItem.progress,
+        total: item.incubatedItem.total
       };
     }
   });
