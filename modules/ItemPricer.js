@@ -109,11 +109,14 @@
       }
     } else {
       // value not tracked for non-unique flasks and jewels
-      if(item.typeline.includes("Flask") || (item.typeline.includes("Jewel") && item.rarity !== "Currency")) {
+      if( (item.typeline.includes("Flask") || item.typeline.includes("Jewel")) && baseTypeRarities.includes(item.rarity) ) {
         return 0;
       }
     }
     
+    if(item.typeline === "Ivory Watchstone") {
+      return getWatchstoneValue();      
+    }    
     if(item.category === "Map Fragments" || item.typeline === "Offering to the Goddess" || (item.typeline.includes("Timeless") && item.typeline.includes("Splinter"))) {
       return getFragmentValue();
     }
@@ -165,6 +168,18 @@
         return value;
       }
 
+    }
+    
+    function getWatchstoneValue() {
+      var identifier = item.name || Constants.getItemName(item.icon);
+      var value = rates["Watchstone"][identifier] * (item.stacksize || 1);
+      if(!value) {
+        //logger.info(`Could not find value for ${item.typeline}`);
+        return 0;
+      } else {
+        //console.log(`${item.typeline} => ${value}`);
+        return value;
+      }
     }
 
     function getValueFromTable(table) {
