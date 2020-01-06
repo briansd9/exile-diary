@@ -53,7 +53,7 @@ function processImage(file) {
   TesseractWorker.recognize(file, {
     lang: "eng",
     tessedit_char_whitelist: "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ:-',%+"
-  }).then((result) => {
+  }).then(async result => {
       
       var filename = path.basename(file);
       var timestamp = filename.substring(0, filename.indexOf("."));
@@ -65,6 +65,14 @@ function processImage(file) {
       if (file.indexOf("area") > -1) {
         
         var area = getAreaInfo(lines);
+        var areaName = await getAreaNameFromDB(timestamp);
+        if(areaName) {
+          logger.info(`Got last entered area from db: ${areaName}`);
+          area.name = areaName;
+        } else {
+          logger.info(`Got last entered area from ocr: ${area.name}`);
+        }
+        
         DB.run(
           "insert into areainfo(id, name, level, depth) values(?, ?, ?, ?)",
           [timestamp, area.name, area.level, area.depth],
@@ -112,7 +120,7 @@ function processImage(file) {
     }).finally(() => {
       fs.unlinkSync(file);
       TesseractWorker.terminate();
-      logger.info("Completed OCR on " + file, " deleting");
+      logger.info("Completed OCR on " + file + ", deleting");
     });
 }
 
@@ -157,18 +165,16 @@ function getAreaInfo(lines) {
         areaInfo.name = str;
         continue;
       }
-    } else {
-      // after area name is found, extract monster level
-      var levelMatch = line.match(/Level: ([1-9][0-9])?/);
-      if (levelMatch) {
-        areaInfo.level = levelMatch.pop();
-        continue;
-      }
-      depthMatch = line.match(/Depth: ([1-9][0-9]+)?/);
-      if (depthMatch) {
-        areaInfo.depth = depthMatch.pop();
-        break;
-      }
+    }
+    var levelMatch = line.match(/Level: ([1-9][0-9])?/);
+    if (levelMatch) {
+      areaInfo.level = levelMatch.pop();
+      continue;
+    }
+    depthMatch = line.match(/Depth: ([1-9][0-9]+)?/);
+    if (depthMatch) {
+      areaInfo.depth = depthMatch.pop();
+      continue;
     }
   }
 
@@ -190,6 +196,19 @@ function getModInfo(lines) {
   }
   return mods;
   
+}
+
+function getAreaNameFromDB(timestamp) {
+  return new Promise((resolve, reject) => {
+    DB.get("select event_text as area from events where event_type='entered' and id < ? order by id desc limit 1", [timestamp], (err, row)=> {
+      if(err) {
+        logger.info(`Error getting previous XP: ${err}`);
+        resolve(null);
+      } else {
+        resolve(row ? row.area : null);
+      }
+    });
+  });
 }
 
 module.exports.start = start;
