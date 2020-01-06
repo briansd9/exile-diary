@@ -9,6 +9,14 @@ const masters = [
   "Jun, Veiled Master"
 ];
 
+const conquerors = [
+  "Al-Hezmin, the Hunter",
+  "Baran, the Crusader",
+  "Drox, the Warlord",
+  "Veritania, the Redeemer",
+  "Sirus, Awakener of Worlds"
+];
+
 const syndicateMembers = [
   "Aisling Laffrey, The Silent Butcher",
   "Cameria the Coldblooded",
@@ -165,7 +173,12 @@ const uniqueMaps = {
   "Dunes Map": "Pillars of Arun",
   "Atoll Map": "Maelström of Chaos",
   "Strand Map": "Whakawairua Tuahu",
-  "Maze Map": "Doryani's Machinarium"
+  "Maze Map": "Doryani's Machinarium",
+  "Relic Chambers Map" : "Cortex",
+  "Siege Map" : "Altered Distant Memory",
+  "Basilica Map" : "Rewritten Distant Memory",
+  "Park Map" : "Twisted Distant Memory",
+  "Courthouse Map" : "Augmented Distant Memory"  
 };
 
 const uniqueMapsCurrentAtlas = {
@@ -1110,21 +1123,35 @@ const uniqueIcons = {
   "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/HarbingerShards/Shard2.png" : "Second Piece of Brutality",
   "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/HarbingerShards/Shard3.png" : "Third Piece of Brutality",
   // Metamorph
-  "" : "Astral Projector",
-  "" : "Crown of the Inward Eye",
-  "" : "Eye of Desire",
-  "" : "Fury Valve",
-  "" : "Grip of Unmaking",
-  "" : "Hands of the High Templar",
-  "" : "Leash of Oblation",
-  "" : "Manastorm",
-  "" : "Mirage Blade",
-  "" : "Mistwall",
-  "" : "Mothers Embrace",
-  "" : "Starlight Mark",
-  "" : "The Black Cane",
-  "" : "The Ivory Tower",
-  "" : "Warriors Legacy"
+  "https://web.poecdn.com/image/Art/2DItems/Maps/SynthesisColdGuardianMap.png" : "Altered Distant Memory",
+  "https://web.poecdn.com/image/Art/2DItems/Rings/AstralProjector.png" : "Astral Projector",
+  "https://web.poecdn.com/image/Art/2DItems/Maps/SynthesisFireGuardianMap.png" : "Augmented Distant Memory",
+  "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/IvoryWatchstone7.png" : "Booming Populace",
+  "https://web.poecdn.com/image/Art/2DItems/Maps/SynthesisBossGuardianMap.png" : "Cortex",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/CrownOfTheInwardEye.png" : "Crown of the Inward Eye",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/EyeOfDesire.png" : "Eye of Malice",
+  "https://web.poecdn.com/image/Art/2DItems/Amulets/MetamorphosisAmulet.png" : "Fury Valve",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/HandsOfTheHighTemplar.png" : "Hands of the High Templar",
+  "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/IvoryWatchstone4.png" : "Irresistable Temptation",
+  "https://web.poecdn.com/image/Art/2DItems/Belts/LeashOfOblation.png" : "Leash of Oblation",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/Manastorm.png" : "Manastorm",
+  "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/IvoryWatchstone3.png" : "Misinformation",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/Mistwall.png" : "Mistwall",
+  "https://web.poecdn.com/image/Art/2DItems/Belts/MothersEmbrace.png" : "Mother's Embrace",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/GripOfUnmaking.png" : "Painseeker",
+  "https://web.poecdn.com/image/Art/2DItems/Maps/SynthesisGolemGuardianMap.png" : "Rewritten Distant Memory",
+  "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/IvoryWatchstone2.png" : "Stalwart Defenders",
+  "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/IvoryWatchstone5.png" : "Territories Unknown",
+  "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/IvoryWatchstone1.png" : "Terror",
+  "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Scepters/TheBlackCane.png" : "The Black Cane",
+  "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/TheIvoryTower.png" : "The Ivory Tower",
+  "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSwords/MirageBlade.png" : "The Saviour",
+  "https://web.poecdn.com/image/Art/2DItems/Jewels/ConnectedJewel.png" : "Thread of Hope",
+  "https://web.poecdn.com/image/Art/2DItems/Maps/SynthesisLightningGuardianMap.png" : "Twisted Distant Memory",
+  "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/IvoryWatchstone6.png" : "War Among the Stars",
+  "https://web.poecdn.com/image/Art/2DItems/Rings/WarriorsLegacy.png" : "Warrior's Legacy",
+  "https://web.poecdn.com/image/Art/2DItems/Amulets/StarlightMark.png" : "Willowgift",
+  
 };
 
 const uniqueFlasks = {
@@ -2304,6 +2331,7 @@ function getTempleRoom(q) {
   return templeRoomQuotes[q] || null;
 }
 module.exports.masters = masters;
+module.exports.conquerors = conquerors;
 module.exports.syndicateMembers = syndicateMembers;
 module.exports.templeRoomQuotes = templeRoomQuotes;
 module.exports.townstrings = townstrings;
