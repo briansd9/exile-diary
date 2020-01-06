@@ -45,6 +45,7 @@
       const ItemData = require('./modules/ItemData');
       const ItemPricer = require('./modules/ItemPricer');
       
+      
       var maprun, mapID, parser, rates, itemsByType, itemsById, currScroll;
       
       ipcRenderer.on("done-capturing", () => { 
@@ -239,6 +240,9 @@
           $(`#${str}Icon`).hide();
           $(`#${str}Favour`).hide();
         });
+        ["Crusader", "Hunter", "Redeemer", "Warlord"].forEach( str => {
+          $(`#${str}Icon`).hide();
+        });
         
         itemsByType = {};
         itemsById = {};
@@ -352,6 +356,8 @@
           } else {
             return null;
           }
+        } else if(eventType === "conqueror") {
+          return null;
         }
         
         switch (eventType) {
@@ -455,7 +461,17 @@
                 }
               });
             }
-          } 
+          }
+          
+          if(currEvent.event_type === "conqueror") {
+            console.log(currEvent);
+            ["Crusader", "Hunter", "Redeemer", "Warlord"].forEach(str => {
+              if(currEvent.event_text.includes(str)) {
+                $("#masterDiv").show();
+                $(`#${str}Icon`).show();
+              }
+            });
+          }
           
           if(currEvent.event_type === 'favourGained') {
             displayFavour(currEvent, events[i+1]);
@@ -844,6 +860,26 @@
             <span id='JunFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
           </div>
         </div>
+        <div id='CrusaderIcon' style='display:none;'>
+          <div style='position:relative;display:inline;'>
+            <img src='res/img/crusaderinfluence.png'/>
+          </div>
+        </div>
+        <div id='HunterIcon' style='display:none;'>
+          <div style='position:relative;display:inline;'>
+            <img src='res/img/hunterinfluence.png'/>
+          </div>
+        </div>
+        <div id='RedeemerIcon' style='display:none;'>
+          <div style='position:relative;display:inline;'>
+            <img src='res/img/redeemerinfluence.png'/>
+          </div>
+        </div>
+        <div id='WarlordIcon' style='display:none;'>
+          <div style='position:relative;display:inline;'>
+            <img src='res/img/warlordinfluence.png'/>
+          </div>
+        </div>        
         <hr style='border:1px solid #999;' />
       </div>
       <div class='eventsDiv' id='eventsDiv'></div>

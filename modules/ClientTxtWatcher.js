@@ -89,10 +89,17 @@ function getEvent(arg) {
   var str = arg.substring(arg.indexOf("] ") + 2);
 
   var masterString = hasMaster(str);
+  var conquerorString = hasConqueror(str);
   if(masterString) {
     return {
       type: "master",
       text: masterString.trim(),
+      instanceServer: ""
+    };
+  } else if(conquerorString) {
+    return {
+      type: "conqueror",
+      text: conquerorString.trim(),
       instanceServer: ""
     };
   } else if(str.startsWith(":")) {
@@ -171,7 +178,17 @@ function hasMaster(str) {
   
 }
 
-async function getOldMasterEvents() {
+function hasConqueror(str) {
+  for(var i = 0; i < Constants.conquerors.length; i++) {
+    var conq = Constants.conquerors[i];
+    if(str.startsWith(conq)) {
+      return str;      
+    }
+  }
+  return false;
+}
+
+async function getOldConquerorEvents() {
   
   DB = require('./DB').getDB();
   settings = require('./settings').get();
@@ -193,36 +210,24 @@ async function getOldMasterEvents() {
   rl.on('line', function(line) {
     var str = line.substring(line.indexOf("] ") + 2);
     var timestamp = line.substring(0, 19).replace(/[^0-9]/g, '');
-    var masterString = hasMaster(str);
-    if(masterString) {
+    var conqString  = hasConqueror(str);
+    if(conqString) {
       DB.run(
         "insert into events(id, event_type, event_text, server) values(?, ?, ?, ?)",
-        [timestamp, "master", masterString, ""],
+        [timestamp, "conqueror", conqString.trim(), ""],
         (err) => {
           if (err) {
             logger.info("Failed to insert event: " + err.message);
           } else {
-            logger.info(`Inserted master event ${timestamp} -> ${masterString}`);
-          }
-        }
-      );        
-    } else if(str.includes("Mission Complete")) {
-      var favourGained = str.replace(/[^0-9]/g, '');
-      DB.run(
-        "insert into events(id, event_type, event_text, server) values(?, ?, ?, ?)",
-        [timestamp, "favourGained", favourGained, ""],
-        (err) => {
-          if (err) {
-            logger.info("Failed to insert event: " + err.message);
-          } else {
-            logger.info(`Inserted favour event ${timestamp} -> ${favourGained}`);
+            logger.info(`Inserted conqueror event ${timestamp} -> ${conqString}`);
           }
         }
       );        
     }
   });
+    
   
 }
 
 module.exports.start = start;
-module.exports.getOldMasterEvents = getOldMasterEvents;
+module.exports.getOldConquerorEvents = getOldConquerorEvents;
