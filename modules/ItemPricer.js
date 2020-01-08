@@ -51,13 +51,13 @@
 
     var DB = require('./DB').getDB();
     return new Promise((resolve, reject) => {
-      DB.get("select date, data from fullrates where date <= ? order by date desc", [timestamp], async (err, row) => {
+      DB.get("select date, data from fullrates where date <= ? order by date desc", [date], async (err, row) => {
         if(err) {
-          logger.info(`Unable to get rates for ${timestamp}: ${err}`);
+          logger.info(`Unable to get rates for ${date}: ${err}`);
           resolve(null);
         } else {
           if(!row || !row.data) {
-            logger.info(`No rates found for ${timestamp}`);
+            logger.info(`No rates found for ${date}`);
             resolve(null);
           } else {
             zlib.inflate(row.data, (err, buffer) => {
@@ -172,6 +172,14 @@
     
     function getWatchstoneValue() {
       var identifier = item.name || Constants.getItemName(item.icon);
+      for(var i = 0; i < item.explicitMods.length; i++) {
+        var mod = item.explicitMods[i];
+        if(mod.endsWith("uses remaining")) {
+          identifier += `, ${mod}`;
+          break;
+        }
+      }
+      
       var value = rates["Watchstone"][identifier] * (item.stacksize || 1);
       if(!value) {
         //logger.info(`Could not find value for ${item.typeline}`);
