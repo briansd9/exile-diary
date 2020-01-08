@@ -128,7 +128,7 @@ async function get() {
     var t = tabList[i];
     logger.info(`Checking tab ${t.name} of type ${t.type}`);
     var tabData = await getTab(t, params);
-    if(tabData.items.length > 0) {
+    if(tabData && tabData.items && tabData.items.length > 0) {
       tabs.value += Number(tabData.value);
       tabs.items = tabs.items.concat(tabData.items);
     }
