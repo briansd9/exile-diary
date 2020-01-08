@@ -350,7 +350,7 @@ async function getKillCount(firstEvent, lastEvent) {
 }
 
 async function getXP(firstEvent, lastEvent) {
-  return new Promise( async (resolve, reject) => {
+  return new Promise( (resolve, reject) => {
     DB.get(" select timestamp, xp from xp where timestamp between ? and ? order by timestamp desc limit 1 ", [firstEvent, lastEvent], async (err, row) => {
       if(err || !row) {
         logger.info(`Failed to get XP between ${firstEvent} and ${lastEvent} from local DB, retrieving manually`);
@@ -417,7 +417,7 @@ async function getXPManual() {
 }
 
 async function getLastInventoryTimestamp() {
-  return new Promise( async (resolve, reject) => {
+  return new Promise( (resolve, reject) => {
     DB.get("select timestamp from lastinv", (err, row) => {
       if(err) {
         logger.info(`Error getting timestamp for last inventory: ${err}`);
@@ -475,7 +475,7 @@ function getXPDiff(currentXP) {
 
 function getItems(areaID, firstEvent, lastEvent) {
   //logger.info(`Getting item values for map with ID ${areaID} (event bounds: ${firstEvent} -> ${lastEvent}`);
-  return new Promise( async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     DB.all(
       " select id, event_text from events where id between ? and ? and event_type = 'entered' order by id ",
       [firstEvent, lastEvent],
@@ -496,7 +496,7 @@ function getItems(areaID, firstEvent, lastEvent) {
           }
           totalProfit = Number(totalProfit).toFixed(2);
           resolve({count: numItems, value: totalProfit});
-        }   
+        }
       });
   });
 }
@@ -544,7 +544,7 @@ function updateItemValues(arr) {
       stmt.run(item, (err) => {
         if(err) {
           logger.error(`Unable to set item value for item ${JSON.stringify(item)}`);
-        }  else {
+        } else {
           logger.info(`Updated item value ${item[0]} for ${item[1]} in event ${item[2]}`);
         }
       });
