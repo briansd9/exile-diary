@@ -1,6 +1,6 @@
 {
   "name": "exile-diary",
-  "version": "0.2.44",
+  "version": "0.2.45",
   "main": "main.js",
   "build": {
     "appId": "com.pathofexile.exilediary",
