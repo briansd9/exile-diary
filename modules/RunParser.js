@@ -474,7 +474,7 @@ function getXPDiff(currentXP) {
 }
 
 function getItems(areaID, firstEvent, lastEvent) {
-  //logger.info(`Getting item values for map with ID ${areaID} (event bounds: ${firstEvent} -> ${lastEvent}`);
+  logger.info(`Getting item values for map with ID ${areaID} (event bounds: ${firstEvent} -> ${lastEvent}`);
   return new Promise((resolve, reject) => {
     DB.all(
       " select id, event_text from events where id between ? and ? and event_type = 'entered' order by id ",
@@ -510,22 +510,23 @@ function getItemsFor(event) {
       if (err) {
         logger.info(`Error getting item values for ${event}: ${err}`);
         resolve(null);
-      }
-      for(var i = 0; i < rows.length; i++) {
-        count++;
-        var item = rows[i];
-        if(item.value) {
-          totalValue += item.value;
-        } else {
-          var value = await ItemPricer.price(item);
-          itemArr.push([value, item.id, item.event_id]);
-          totalValue += value;
+      } else {
+        for(var i = 0; i < rows.length; i++) {
+          count++;
+          var item = rows[i];
+          if(item.value) {
+            totalValue += item.value;
+          } else {
+            var value = await ItemPricer.price(item);
+            itemArr.push([value, item.id, item.event_id]);
+            totalValue += value;
+          }
         }
+        if(itemArr.length > 0) {
+          updateItemValues(itemArr);
+        }
+        resolve({count: count, value: totalValue});
       }
-      if(itemArr.length > 0) {
-        updateItemValues(itemArr);
-      }
-      resolve({count: count, value: totalValue});
     });
   });
 }
