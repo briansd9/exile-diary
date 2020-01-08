@@ -25,7 +25,7 @@ const rateTypes = {
   "UniqueWeapon" : cleanUniqueItems,
   "UniqueArmour" : cleanUniqueItems,
   "UniqueAccessory" : cleanUniqueItems,
-  "Watchstone" : cleanNameValuePairs
+  "Watchstone" : cleanWatchstones
 };
 
 const specialGems = ["Empower Support", "Enlighten Support", "Enhance Support"];
@@ -298,5 +298,17 @@ function cleanMaps(arr) {
   });
   return a;
 }
+
+function cleanWatchstones(arr) {
+  var a = {};
+  console.log(arr);
+  arr.lines.forEach(item => {
+    if(item.count && item.count < 10) return; // ignore low confidence listings
+    var identifier = `${item.name}, ${item.variant} uses remaining`;
+    a[identifier] = item.chaosValue;
+  });
+  return a;
+}
+
       
 module.exports.update = update;
