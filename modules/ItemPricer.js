@@ -89,7 +89,7 @@
     
     let rates = await getRatesFor(item.event_id);
     if(!rates) {
-      return null;
+      return 0;
     }
     
     item.parsedItem = JSON.parse(item.rawdata);
@@ -118,7 +118,7 @@
       return getWatchstoneValue();      
     }    
     if(item.category === "Map Fragments" || item.typeline === "Offering to the Goddess" || (item.typeline.includes("Timeless") && item.typeline.includes("Splinter"))) {
-      return getFragmentValue();
+      return getValueFromTable("Fragment");
     }
     if(item.rarity === "Currency" || item.typeline.includes("Incubator")) {
       return getCurrencyValue();
@@ -132,7 +132,6 @@
     if(item.rarity === "Prophecy") {
       return getValueFromTable("Prophecy");
     }
-
     if(item.category.includes("Skill Gems")) {
       return getGemValue();
     }
@@ -156,20 +155,28 @@
     return 0;
     
     /* sub-functions for getting value per item type*/    
+
+    function getValueFromTable(table, identifier = null) {
+      if(!identifier) {
+        identifier = item.typeline;
+      }
+      var value = rates[table][identifier] * (item.stacksize || 1);
+      if(!value) {
+        logger.info(`[${table}] : ${identifier} => No value found, returning 0`);
+        return 0;
+      } else {
+        logger.info(`[${table}] : ${identifier} => ${value}`);
+        return value;
+      }
+    }
+    
     function getHelmetEnchantValue() {
       if(!item.parsedItem.enchantMods) return 0;
       var identifier = item.parsedItem.enchantMods;
-      var value = rates["HelmetEnchant"][identifier];
-      if(!value) {
-        //logger.info(`Could not find value for ${identifier}`);
-        return 0;
-      } else {
-        //console.log(`${identifier} => ${value}`);
-        return value;
-      }
-
+      return getValueFromTable("HelmetEnchant", identifier);
     }
     
+
     function getWatchstoneValue() {
       var identifier = item.name || Constants.getItemName(item.icon);
       for(var i = 0; i < item.explicitMods.length; i++) {
@@ -179,33 +186,13 @@
           break;
         }
       }
-      
-      var value = rates["Watchstone"][identifier] * (item.stacksize || 1);
-      if(!value) {
-        //logger.info(`Could not find value for ${item.typeline}`);
-        return 0;
-      } else {
-        //console.log(`${item.typeline} => ${value}`);
-        return value;
-      }
-    }
-
-    function getValueFromTable(table) {
-      var value = rates[table][item.typeline] * (item.stacksize || 1);
-      if(!value) {
-        //logger.info(`Could not find value for ${item.typeline}`);
-        return 0;
-      } else {
-        //console.log(`${item.typeline} => ${value}`);
-        return value;
-      }
+      return getValueFromTable("Watchstone", identifier);
     }
 
     function getGemValue() {
       var identifier = item.typeline.replace("Superior ", "");
       var level = ItemData.getGemLevel(item.parsedItem);
       var quality = ItemData.getQuality(item.parsedItem);
-
       switch(identifier) {
         case "Empower Support":
         case "Enlighten Support":
@@ -221,20 +208,10 @@
           if(quality >= 20) identifier += ` Q${quality}`;
           break;
       }
-
       if(item.parsedItem.corrupted) {
         identifier += " (Corrupted)";
-      }
-
-      var value = rates["SkillGem"][identifier] * (item.stacksize || 1);
-      if(!value) {
-        //logger.info(`Could not find value for ${identifier}`);
-        return 0;
-      } else {
-        //console.log(`${identifier} => ${value}`);
-        return value;
-      }
-
+      }      
+      return getValueFromTable("SkillGem", identifier);
     }
 
     function getMapValue() {
@@ -251,18 +228,8 @@
           name = "Temple Map";
         }
       }
-
       var identifier = `${name} T${tier} ${series}`;
-
-      var value = rates["Map"][identifier] * (item.stacksize || 1);
-      if(!value) {
-        //logger.info(`Could not find value for ${identifier}, item follows`);
-        //logger.info(item.rawdata);
-        return 0;
-      } else {
-        //console.log(`${identifier} => ${value}`);
-        return value;
-      }
+      return getValueFromTable("Map", identifier);
 
       function getSeries(icon) {
         if(icon.includes("mn=")) {
@@ -277,8 +244,10 @@
           if(icon.includes("2DItems/Maps/Map")) return "Pre 2.4";
           if(icon.includes("2DItems/Maps/act4maps")) return "Pre 2.0";
         }
-        throw new Error("Invalid map image URL: " + icon);
+        logger.info(`Invalid map item icon: ${icon}`);
+        return "";
       }
+      
     }
 
     function getBaseTypeValue() {
@@ -298,42 +267,16 @@
       } else if(item.parsedItem.elder) {
         identifier += " Elder";
       }
-      //logger.info("IDentifier is " + identifier);
 
-      var value = rates["BaseType"][identifier];
-      if(!value) {
-        //logger.info(`Could not find value for ${identifier}`);
-        return 0;
-      } else {
-        //console.log(`${identifier} => ${value}`);
-        return value * (item.stacksize || 1);
-      }
+      return getValueFromTable("BaseType", identifier);
 
     }
 
     function getCurrencyValue() {
       if(item.typeline === "Chaos Orb") {
         return item.stacksize;
-      }
-      var value = rates["Currency"][item.typeline] * (item.stacksize || 1);
-      if(!value) {
-        //logger.info(`Could not find value for ${item.typeline}`);
-        return 0;
       } else {
-        //console.log(`${item.typeline} => ${value}`);
-        return value;
-      }
-    }
-
-    function getFragmentValue() {
-      var value = rates["Fragment"][item.typeline]  * (item.stacksize || 1);
-      if(!value) {
-        //logger.info(`Could not find value for ${item.typeline}, item follows`);
-        //logger.info(item.rawdata);
-        return 0;
-      } else {
-        //console.log(`${item.typeline} => ${value}`);
-        return value;
+        return getValueFromTable("Currency");
       }
     }
 
@@ -343,26 +286,15 @@
       var tier = ItemData.getMapTier(item.parsedItem);
       var typeline = item.typeline.replace("Superior ", "");
 
-//      if(name === "Oba's Cursed Trove" && tier == 7 && typeline === "Underground Sea Map") {
-//        // poe.ninja bug workaround
-//        typeline = "Primordial Blocks Map";
-//      }
-
       var identifier = `${name} T${tier} ${typeline}`;
-      var value = rates["UniqueMap"][identifier] * (item.stacksize || 1);
-      if(!value) {
-        //logger.info(`Could not find value for ${identifier}, item follows`);
-        //logger.info(item.rawdata);
-        return 0;
-      } else {
-        //console.log(`${identifier} => ${value}`);
-        return value;
-      }
+      
+      return getValueFromTable("UniqueMap", identifier);
+      
     }
 
     function getUniqueItemValue() {
 
-      var identifier = item.name || Constants.getItemName(item.icon);
+      var identifier = item.name || Constants.getItemName(item.icon) || item.typeline;
 
       if(identifier === "Grand Spectrum" || identifier === "Combat Focus") {
         identifier += ` ${item.typeline}`;
@@ -373,12 +305,12 @@
 
       var links = getLinks(item.parsedItem);
       identifier += links;
-      identifier += getAbyssSockets(item, identifier);
+      identifier += getAbyssSockets(identifier);
 
       var value;
 
       if(item.identified === 0) {
-        var arr;
+        var arr = null;
         if(identifier === "Agnerod") {
           arr = [
             `Agnerod East${links}`,
@@ -426,21 +358,11 @@
           ];
         }
         if(arr) {
-          value = getValueUnidWithVariants(arr);
+          return getValueUnidWithVariants(arr);
         }
       }
-
-      if(!value) value = rates["UniqueItem"][identifier];
-
-      if(!value) {
-        //logger.info(`Could not find value for ${identifier}, item follows`);
-        //logger.info(item.rawdata);
-        return 0;
-      } else {
-        
-        //console.log(`${identifier} => ${value}`);
-        return value * (item.stacksize || 1);
-      }
+      
+      return getValueFromTable("UniqueItem", identifier);
 
     }
 
