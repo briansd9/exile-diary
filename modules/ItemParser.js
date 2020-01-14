@@ -88,22 +88,21 @@ async function isDuplicateInventory(items) {
     }
     query += ")";
     
-    if(!checkDuplicates) resolve(false);
-    
-    if(numItemsToCheck < 1) resolve(false);
-
-    logger.info(query);
-    var DB = require('./DB').getDB();
-    DB.get(query, (err, row) => {
-      if(err) {
-        logger.warn(`Error checking inventory keys: ${err}`);
-        resolve(false);
-      } else {
-        logger.info(`${numItemsToCheck} items in inventory, ${row.count} duplicates found in DB`);
-        resolve(row.count === numItemsToCheck);
-      }
-    });
-    
+    if(!checkDuplicates || numItemsToCheck < 1) {
+      resolve(false);
+    } else {
+      logger.info(query);
+      var DB = require('./DB').getDB();
+      DB.get(query, (err, row) => {
+        if(err) {
+          logger.warn(`Error checking inventory keys: ${err}`);
+          resolve(false);
+        } else {
+          logger.info(`${numItemsToCheck} items in inventory, ${row.count} duplicates found in DB`);
+          resolve(row.count === numItemsToCheck);
+        }
+      });
+    }    
   });
     
   
