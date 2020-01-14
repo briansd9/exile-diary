@@ -474,7 +474,6 @@ function getXPDiff(currentXP) {
 }
 
 function getItems(areaID, firstEvent, lastEvent) {
-  logger.info(`Getting item values for map with ID ${areaID} (event bounds: ${firstEvent} -> ${lastEvent}`);
   return new Promise((resolve, reject) => {
     DB.all(
       " select id, event_text from events where id between ? and ? and event_type = 'entered' order by id ",
@@ -518,6 +517,9 @@ function getItemsFor(event) {
             totalValue += item.value;
           } else {
             var value = await ItemPricer.price(item);
+            if(!value) {
+              value = 0;
+            }
             itemArr.push([value, item.id, item.event_id]);
             totalValue += value;
           }
@@ -545,9 +547,10 @@ function updateItemValues(arr) {
       stmt.run(item, (err) => {
         if(err) {
           logger.error(`Unable to set item value for item ${JSON.stringify(item)}`);
-        } else {
-          logger.info(`Updated item value ${item[0]} for ${item[1]} in event ${item[2]}`);
         }
+//        } else {
+//          logger.info(`Updated item value ${item[0]} for ${item[1]} in event ${item[2]}`);
+//        }
       });
     });
     stmt.finalize( (err) => {
