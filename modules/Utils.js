@@ -24,6 +24,9 @@ class Utils {
         return true;
       }
     }
+    if(str.endsWith("Hideout") && !str.includes("Syndicate")) {
+      return true;
+    }
     return false;
   }
   
