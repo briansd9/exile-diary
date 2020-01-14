@@ -301,7 +301,6 @@ function cleanMaps(arr) {
 
 function cleanWatchstones(arr) {
   var a = {};
-  console.log(arr);
   arr.lines.forEach(item => {
     if(item.count && item.count < 10) return; // ignore low confidence listings
     var identifier = `${item.name}, ${item.variant} uses remaining`;
