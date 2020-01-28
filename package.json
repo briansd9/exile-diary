@@ -20,6 +20,13 @@
       "installerIcon": "./res/img/icons/win/ExileDiary.ico",
       "uninstallerIcon": "./res/img/icons/win/ExileDiary.ico",
       "installerHeaderIcon": "./res/img/icons/win/ExileDiary.ico"
+    },
+    "linux": {
+      "target": "deb",
+      "executableName": "Exile-Diary",
+      "icon": "./res/img/icons/png",
+      "category": "Utility",
+      "maintainer": "briansd9"
     }
   },
   "scripts": {
