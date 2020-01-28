@@ -35,6 +35,13 @@ function start() {
     inv = new InventoryGetter();
 
     tail.on("line", (line) => {
+      if (process.platform === 'linux') {
+        // Remove carriage return
+        // NOTE: PoE run on wine, the client.txt file has Windows carriage return
+        //       This cause an error when trying to execute the regexp on the line
+        line = JSON.stringify(line).replace(/(\\r\\n|\\n|\\r)/, '');
+        line = JSON.parse(line);
+      }
       if(line.toLowerCase().endsWith(`] @to ${settings.activeProfile.characterName.toLowerCase()}: end`)) {
         logger.info("Detected map end signal, processing last map run");
         RunParser.process();
