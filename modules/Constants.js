@@ -2265,6 +2265,17 @@ const xpLevels = [
   4250334444
 ];
 
+const watchstoneMaxCharges = {
+  "Irresistable Temptation" : 18,
+  "Booming Populace" : 14,
+  "Misinformation" : 11,
+  "Stalwart Defenders" : 12,
+  "Territories Unknown" : 18,
+  "Terror" : 12,
+  "War Among the Stars" : 10
+};
+
+
 const MAX_XP = 4250334444;
 
 function getItemName(icon) {
@@ -2297,6 +2308,7 @@ module.exports.areas = areas;
 module.exports.labAreas = labAreas;
 module.exports.mods = mods;
 module.exports.xpLevels = xpLevels;
+module.exports.watchstoneMaxCharges = watchstoneMaxCharges;
 module.exports.MAX_XP = MAX_XP;
 module.exports.getItemName = getItemName;
 module.exports.getTempleRoom  = getTempleRoom;
