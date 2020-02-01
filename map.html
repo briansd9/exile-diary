@@ -464,7 +464,6 @@
           }
           
           if(currEvent.event_type === "conqueror") {
-            console.log(currEvent);
             ["Crusader", "Hunter", "Redeemer", "Warlord"].forEach(str => {
               if(currEvent.event_text.includes(str)) {
                 $("#masterDiv").show();
@@ -477,7 +476,7 @@
             displayFavour(currEvent, events[i+1]);
           }
           
-          if (i > 0 && !lastEnteredTown(events, i)) {
+          if (i > 0 && !lastEnteredTown(events, i) && currEvent.event_type === "entered") {
             var lootString = getInventoryDiffs(mapRun.items, events[i].id);
             if (lootString.length > 0) {
               $("#eventsDiv").append(
@@ -676,7 +675,7 @@
         // need to identify by both type and rarity, otherwise unique and normal maps of the same basetype will be grouped together
         var typeIdentifier  = item.typeLine.replace("Superior ", "");
         if(item.frameType === 3) {
-          typeIdentifier += "_unique";
+          typeIdentifier += ` ${item.secretName} ${item.typeLine}`;
         }
         
         if(ItemCategoryParser.isNonStackable(typeIdentifier)) {
@@ -714,10 +713,11 @@
       }
 
       function itemToString(i) {
+        
         if (!i.chaosValue) {
           return;
         }
-        
+
         var displayStackSize = (i.displayName === "6-socket Items") ? i.stackSize * 7 : i.stackSize;
         
         var str = `
