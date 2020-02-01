@@ -34,7 +34,7 @@
     "Wands",
     "Warstaff"
   ];
-
+  
   var ratesCache = {};
 
   function getRatesFor(timestamp) {
@@ -75,8 +75,8 @@
     });
   }
 
-  async function price(item) {
-
+  async function price(item, log = true) {
+    
     if(item.rarity === "Quest Item") {
       // can't be traded
       return 0;
@@ -98,7 +98,9 @@
     if(item.rarity === "Unique") {
       if(item.category === "Maps") {
         return getUniqueMapValue();
-      }
+      } else if(item.typeline === "Ivory Watchstone") {
+        return getWatchstoneValue();      
+      }    
       else {
         // handle helmet enchants - if item is a helmet, don't return value yet
         if(item.category === "Helmets") {
@@ -114,9 +116,6 @@
       }
     }
     
-    if(item.typeline === "Ivory Watchstone") {
-      return getWatchstoneValue();      
-    }    
     if(item.category === "Map Fragments" || item.typeline === "Offering to the Goddess" || (item.typeline.includes("Timeless") && item.typeline.includes("Splinter"))) {
       return getValueFromTable("Fragment");
     }
@@ -162,10 +161,14 @@
       }
       var value = rates[table][identifier] * (item.stacksize || 1);
       if(!value) {
-        logger.info(`[${table}] : ${identifier} => No value found, returning 0`);
+        if(log) {
+          logger.info(`[${table}] : ${identifier} => No value found, returning 0`);
+        }
         return 0;
       } else {
-        logger.info(`[${table}] : ${identifier} => ${value}`);
+        if(log) {
+          logger.info(`[${table}] : ${identifier} => ${value}`);
+        }
         return value;
       }
     }
@@ -178,12 +181,19 @@
     
 
     function getWatchstoneValue() {
+      console.log(item);
       var identifier = item.name || Constants.getItemName(item.icon);
-      for(var i = 0; i < item.explicitMods.length; i++) {
-        var mod = item.explicitMods[i];
-        if(mod.endsWith("uses remaining")) {
-          identifier += `, ${mod}`;
-          break;
+      if(!item.identified) {
+        if(Constants.watchstoneMaxCharges[identifier]) {
+          identifier += `, ${Constants.watchstoneMaxCharges[identifier]} uses remaining`;
+        };
+      } else {
+        for(var i = 0; i < item.parsedItem.explicitMods.length; i++) {
+          var mod = item.parsedItem.explicitMods[i];
+          if(mod.endsWith("uses remaining")) {
+            identifier += `, ${mod}`;
+            break;
+          }
         }
       }
       return getValueFromTable("Watchstone", identifier);
@@ -205,12 +215,17 @@
           break;
         default:
           if(level >= 20) identifier += ` L${level}`;
-          if(quality >= 20) identifier += ` Q${quality}`;
+          if(quality >= 20) {
+            identifier += ` Q${quality}`;
+          } else if(identifier.startsWith("Awakened")) {
+            // temporary workaround for poe.ninja issue
+            identifier += ` Q20`;
+          }
           break;
       }
       if(item.parsedItem.corrupted) {
         identifier += " (Corrupted)";
-      }      
+      }
       return getValueFromTable("SkillGem", identifier);
     }
 
@@ -273,6 +288,9 @@
     }
 
     function getCurrencyValue() {
+      // temporary workaround poe.ninja bug
+      // if(item.typeline === "Stacked Deck") return 4 * item.stacksize;
+      
       if(item.typeline === "Chaos Orb") {
         return item.stacksize;
       } else {

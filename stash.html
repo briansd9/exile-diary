@@ -256,7 +256,7 @@
             item.chaosValue = Utils.getItemValue(item, rates);
           } else {
             var parsedItem = parseItem(item);
-            var value = await ItemPricer.price(parsedItem);
+            var value = await ItemPricer.price(parsedItem, false);
             item.chaosValue = value;
           }
 

@@ -280,7 +280,7 @@ async function parseTab(items, timestamp) {
   for(var i = 0; i < items.length; i++) {
     var item = items[i];
     var parsedItem = parseItem(item, timestamp);
-    var val = await ItemPricer.price(parsedItem);
+    var val = await ItemPricer.price(parsedItem, false);
     totalValue += val;
     tabItems.push(item);
   }
