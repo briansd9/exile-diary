@@ -32,8 +32,8 @@
   "scripts": {
     "start": "electron .",
     "postinstall": "install-app-deps",
-    "pack": "electron-builder -wl --dir",
-    "dist": "electron-builder -wl"
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
   "keywords": [
     "util",
