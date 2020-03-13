@@ -35,7 +35,7 @@ class ItemData {
 
 static countSockets(sockets) {
   
-  if(!sockets) return 0;
+  if(!sockets || !sockets.length) return 0;
   
 	var result = 0;  
 	sockets.forEach( function(group) {
