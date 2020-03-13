@@ -20,13 +20,20 @@
       "installerIcon": "./res/img/icons/win/ExileDiary.ico",
       "uninstallerIcon": "./res/img/icons/win/ExileDiary.ico",
       "installerHeaderIcon": "./res/img/icons/win/ExileDiary.ico"
+    },
+    "linux": {
+      "target": "deb",
+      "executableName": "Exile-Diary",
+      "icon": "./res/img/icons/png",
+      "category": "Utility",
+      "maintainer": "briansd9"
     }
   },
   "scripts": {
     "start": "electron .",
     "postinstall": "install-app-deps",
-    "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "pack": "electron-builder -wl --dir",
+    "dist": "electron-builder -wl"
   },
   "keywords": [
     "util",
