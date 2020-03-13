@@ -150,17 +150,21 @@ async function getItemsFromEvent(eventID) {
               }
             } else {
               // item has less than 6 sockets - check if it has RGB links
-              var s = sockets.replace(/-/g, "");
-              if(s.includes("RGB") || s.includes("RBG") || s.includes("BGR") || s.includes("BRG") || s.includes("GRB") || s.includes("GBR")) {
-                item.icon = "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketColours.png?scale=1&scaleIndex=0";
-                item.name = "";
-                item.w = 1;
-                item.h = 1;
-                item.stackSize = 1;
-                item.frameType = 6;
-                item.typeLine = "Chromatic Orb";
-                item.chaosValue = await getCurrencyValue(eventID, item);
-                item.typeLine = "R-G-B linked Items";
+              var socketGroups = sockets.split(" ");
+              for(var i = 0; i < socketGroups.length; i++) {
+                var s = socketGroups[i];
+                if(s.includes("R") && s.includes("G") && s.includes("B")) {
+                  item.icon = "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketColours.png?scale=1&scaleIndex=0";
+                  item.name = "";
+                  item.w = 1;
+                  item.h = 1;
+                  item.stackSize = 1;
+                  item.frameType = 6;
+                  item.typeLine = "Chromatic Orb";
+                  item.chaosValue = await getCurrencyValue(eventID, item);
+                  item.typeLine = "R-G-B linked Items";
+                  break;
+                }
               }
             }            
           }          
