@@ -97,11 +97,19 @@
             and areainfo.id = mapruns.id;
           `, [runInfo.id], (err, row) => {
             if(row) {
-              console.log(`Row found for ${runInfo.id}`);
               if($("#lastMapsRows tr").length > 10) {
                 $("#lastMapsRows tr:last").remove();
               }
-              Utils.addMapRow($("#lastMapsRows"), row, true, ssf, hardcore);
+              
+              Utils.addMapRow({
+                table: $("#lastMapsRows"),
+                data: row,
+                first: true,
+                ssf: ssf,
+                hardcore: hardcore,
+                modal: false
+              });
+              
             } else {
               console.log(`No row found for ${runInfo.id}, not updating`);
             }
@@ -150,7 +158,14 @@
         `, (err, rows) => {
           if(rows) {
             rows.forEach( row => {
-              Utils.addMapRow($("#lastMapsRows"), row, false, ssf, hardcore);
+              Utils.addMapRow({
+                table: $("#lastMapsRows"),
+                data: row,
+                first: true,
+                ssf: ssf,
+                hardcore: hardcore,
+                modal: false
+              });
             });
             //$("#lastMapsTable").tablesorter();              
           }
