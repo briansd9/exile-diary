@@ -25,7 +25,8 @@ const rateTypes = {
   "UniqueWeapon" : cleanUniqueItems,
   "UniqueArmour" : cleanUniqueItems,
   "UniqueAccessory" : cleanUniqueItems,
-  "Watchstone" : cleanWatchstones
+  "Watchstone" : cleanWatchstones,
+  "Vial" : cleanNameValuePairs
 };
 
 const specialGems = ["Empower Support", "Enlighten Support", "Enhance Support"];
@@ -97,7 +98,8 @@ async function getRates(date) {
     tempRates["Incubator"],
     tempRates["Fossil"],
     tempRates["Resonator"],
-    tempRates["Essence"]
+    tempRates["Essence"],
+    tempRates["Vial"]
   );
   rates["Fragment"] = Object.assign(
       tempRates["Fragment"], 
@@ -147,6 +149,7 @@ function getNinjaURL(category) {
     case "UniqueArmour":
     case "UniqueAccessory":
     case "Watchstone":
+    case "Vial":
       url = `/api/data/itemoverview?type=${category}`;
       break;
     default:
