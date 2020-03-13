@@ -380,6 +380,20 @@ async function createWindow() {
 
   mainWindow.webContents.on('new-window', function(event, urlToOpen) {
     event.preventDefault();
+    var win = new BrowserWindow({
+      modal: true,
+      show: false,
+      frame: false,
+      titleBarStyle: "hidden",
+      width: Math.floor(mainWindow.getBounds().width * 0.85),
+      height: Math.floor(mainWindow.getBounds().height * 0.85),
+      parent: mainWindow
+    });
+    win.loadURL(urlToOpen);
+    win.once('ready-to-show', () => {
+      win.show();
+    });
+    event.newGuest = win;
   });  
 
   initWindow(mainWindow);
