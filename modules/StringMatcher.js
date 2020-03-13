@@ -13,7 +13,7 @@ class StringMatcher {
       return "";
     }
     var ret = "";
-    ret = this.getClosest(str, Constants.mods);
+    ret = this.getClosest(str, Constants.mapMods);
     if (ret.indexOf("#") > -1) {
       var matches = str.match(/[1-9][0-9]*/g);
       if (matches) {
