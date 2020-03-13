@@ -1716,7 +1716,24 @@
     "https://web.poecdn.com/image/Art/2DItems/Maps/SynthesisLightningGuardianMap.png" : "Twisted Distant Memory",
     "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/IvoryWatchstone6.png" : "War Among the Stars",
     "https://web.poecdn.com/image/Art/2DItems/Rings/WarriorsLegacy.png" : "Warrior's Legacy",
-    "https://web.poecdn.com/image/Art/2DItems/Amulets/StarlightMark.png" : "Willowgift"
+    "https://web.poecdn.com/image/Art/2DItems/Amulets/StarlightMark.png" : "Willowgift",
+    
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/Tangmazuarmourgloves.png" : "Algor Mortis",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/Tangmazuarmourhelmet.png" : "Assailum",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/Tangmazuarmourboots.png" : "Beacon of Madness",
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/LoneMessengerJewel.png" : "Calamitous Visions",
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/PitfighterJewel.png" : "Child of Violence",
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/DiscipleOfKitavaJewel.png" : "Kitava's Teachings",
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/UniqueJewelBase2.png" : "Megalomaniac",
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/NaturesPatienceJewel.png" : "Natural Affinity",
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/DragonStyleJewel.png" : "One With Nothing",
+    "https://web.poecdn.com/image/delirium/items/Perfidy.png" : "Perfidy",
+    "https://web.poecdn.com/image/Art/2DItems/Rings/SkitterbotRing.png" : "Profane Proxy",
+    "https://web.poecdn.com/image/delirium/items/SplitPersonality.png" : "Split Personality",
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/Veteran%27sAwarenessJewel.png" : "The Front Line",
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/SecretsOfAgonyJewel.png" : "The Interrogation",
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/KineticismJewel.png" : "The Siege",
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/UniqueJewelBase3.png" : "Voices"
     
   },
   
