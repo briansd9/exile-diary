@@ -5,6 +5,7 @@ const EventEmitter = require('events');
 const Parser = require('./FilterParser');
 const ClientTxtWatcher = require('./ClientTxtWatcher');
 const RateGetter = require('./RateGetter');
+const Utils = require('./Utils');
 
 class MapRun extends EventEmitter {
 
@@ -26,6 +27,12 @@ class MapRun extends EventEmitter {
     this.events = await getEvents(mapID);
     this.items = await getItems(mapID);
     this.league = await getLeague(mapID);
+    
+    if(this.info.level) {
+      logger.info(`Setting AreaLevel to ${this.info.level} for filter parser`);
+      this.parser.setAreaLevel(this.info.level);
+    }
+    
     this.emit("MapRunReady", mapID);
   }
 
@@ -146,7 +153,7 @@ async function getItems(mapID) {
           }
           var secretName = "";
           if(row.rarity === "Unique") {
-            secretName = Constants.getItemName(row.icon);
+            secretName = Utils.getItemName(row.icon);
             if(secretName) {
               if(secretName === "Starforge" && row.elder) {
                 secretName = "Voidforge";
