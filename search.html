@@ -86,6 +86,7 @@
         });
 
         $("#form").submit(function(event) {
+          
           event.preventDefault();
           exportData = {};
           mapDataList = null;
@@ -103,23 +104,40 @@
           $("#exportTab").hide();
           $("#exportToExcel").prop("disabled", true);
           
+          $('#selectedProfitSpan').hide();
+          
         });
         
         $("input.itemToggleCheckbox[type=checkbox]").click(function() {
+          
           var itemTypes = [];
           $("input.itemToggleCheckbox[type=checkbox]").each(function() {
             if(this.checked) {
               itemTypes.push(this.value);
             }
           });
+
+          var displayValue = 0;
           $("#itemsTable > tr").each(function() {
             var itemClass = $(this).data("itemclass");
+            var itemValue = $(this).data("itemvalue");
             if(itemTypes.length === 0 || itemTypes.includes(itemClass)) {
               $(this).show();
+              if(itemTypes.length > 0) {
+                displayValue += itemValue;
+              }
             } else {
               $(this).hide();
             }
           });
+          
+          if(itemTypes.length > 0 && displayValue > 0) {
+            $('#selectedProfit').html(Number(displayValue).toFixed(2));
+            $('#selectedProfitSpan').show();
+          } else {
+            $('#selectedProfitSpan').hide();
+          }
+            
         });
         
         ipcRenderer.on("mapSearchResults", (event, rows) => {
@@ -170,7 +188,14 @@
           };
           
           rows.forEach(row => {
-            Utils.addMapRow($("#mapRows"), row, false, ssf, hardcore);
+            Utils.addMapRow({
+              table: $("#mapRows"),
+              data: row,
+              first: false,
+              ssf: ssf,
+              hardcore: hardcore,
+              modal: true
+            });            
             exportData.mapList.addRow({
               area: row.name,
               level: row.level,
@@ -407,13 +432,15 @@
         
         var displayStackSize = (i.displayName === "6-socket Items") ? i.stackSize * 7 : i.stackSize;
         
-        var str = `<tr data-itemclass="${item.itemClass}"><td bgcolor=0 style='position:relative;min-width:60px'><img class='lazy' style='height:${i.h * 40}"px;width:${i.w * 40}px;' data-src='${i.icon}'/><span class='stackSize'>${(displayStackSize || "")}</span></td>`;
+        var str = `<tr data-itemclass="${item.itemClass}" data-itemvalue="${i.chaosValue}">`;
+        str += `<td bgcolor=0 style='position:relative;min-width:60px'><img class='lazy' style='height:${i.h * 40}px;width:${i.w * 40}px;' data-src='${i.icon}'/><span class='stackSize'>${(displayStackSize || "")}</span></td>`;
         str += `<td style='text-align: right;'>${i.stackSize || "&nbsp;"}</td>`;
         str += `<td style='padding-left:10px;padding-right:10px'>${i.stackSize ? "x" : "&nbsp;"}</td>`;
         str += `<td style='padding-left:10px;padding-right:10px;min-width:300px'>${i.displayName}</td>`;
         if(!ssf) {
           str += `<td style='padding-left:10px;padding-right:10px'>${i.chaosValue ? Number(i.chaosValue).toFixed(2) + "" : "&nbsp;"}</td>`;
         }
+        str += `</tr>`;
         return str;
       }
       
@@ -511,6 +538,9 @@
               <span class='itemToggle'><input class='itemToggleCheckbox' type='checkbox' value='Currency'/> Currency</span>
               <span class='itemToggle'><input class='itemToggleCheckbox' type='checkbox' value='Maps'/> Maps</span>
               <span class='itemToggle'><input class='itemToggleCheckbox' type='checkbox' value='Divination Card'/> Div Cards</span>
+              <span id='selectedProfitSpan' style='display:none'>
+                Total value of selected items: <span id='selectedProfit' class='eventText'></span> <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&scaleIndex=3&&w=1&h=1'/> 
+              </span>
             </div>
             <hr/>
             <table id="items" style='display:block;'>
