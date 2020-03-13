@@ -78,9 +78,13 @@
         processItem(item) {          
           // need to identify by both type and rarity, otherwise unique and normal maps of the same basetype will be grouped together
           var typeIdentifier  = item.typeLine.replace("Superior ", "");
-          var uniqueName = Constants.getItemName(item.icon);
+          var uniqueName = Utils.getItemName(item.icon);
           if(uniqueName) {
             typeIdentifier += ` ${uniqueName}`;
+          }
+          var suffix = Utils.getSuffix(item);
+          if(suffix) {
+            typeIdentifier += ` ${suffix}`;
           }
           if(ItemCategoryParser.isNonStackable(typeIdentifier)) {
             this.itemsById[item.id] = item;
@@ -244,6 +248,7 @@
       async function displayItems(s) {
         
         var rates = await RateGetter.getFor(s.id);
+        var exaltRate = await getExaltRate();
         
         var keys = Object.keys(s.itemsById);
         
@@ -262,6 +267,9 @@
 
           if(item.chaosValue) {
             item.chaosValue = Number(item.chaosValue).toFixed(2);
+            if(item.chaosValue > exaltRate) {
+              item.exaltValue = Number(item.chaosValue / exaltRate).toFixed(2);
+            }
           }
 
         };
@@ -275,7 +283,7 @@
         var chaosString, exaltString;
         chaosString = `${Number(s.value).toFixed(2)} <img style='vertical-align:middle;' src='res/img/c.png'/>`;
         
-        var exaltRate = await getExaltRate();
+        
         
         if(s.value > exaltRate) {
           var exaltValue = s.value / exaltRate;
@@ -323,11 +331,14 @@
         var str = `
           <tr>
             <td bgcolor=0 style='min-width:120px;position:relative;'>
-              <img onerror='this.style.visibility="hidden"'; style='height:${i.h * 40}px;width:${i.w * 40}px;' src='${i.icon}'/>
+              <img onerror='this.style.visibility="hidden"'; style='height:${i.h * 40}px;width:${i.w * 40}px;' src="${i.icon}"/>
               <span class='stackSize'>${displayStackSize} ${changeString}</span><br/>
             </td>
             <td style='padding-left:10px;padding-right:10px;min-width:300px'>${i.displayName}</td>
-            <td style='padding-left:10px;padding-right:10px'>${i.chaosValue ? i.chaosValue + "" : "&nbsp;"}</td>
+            <td style='padding-left:10px;padding-right:10px'>
+              ${i.chaosValue ? i.chaosValue + " <img style='vertical-align:middle;height:1em;width:1em;' src='res/img/c.png' />" : "&nbsp;"}
+              ${i.exaltValue ? "(" + i.exaltValue + " <img style='vertical-align:middle;height:1em;width:1em;' src='res/img/ex.png' />)" : ""}
+            </td>
           `;
         return str;
         
