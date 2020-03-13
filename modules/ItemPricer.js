@@ -9,31 +9,6 @@
   
 
   const baseTypeRarities = ["Normal", "Magic", "Rare"];
-  const baseTypeCategories = [
-    "Amulets",
-    "Belts",
-    "Body Armours",
-    "Boots",
-    "Bows",
-    "Claws",
-    "Daggers",
-    "Gloves",
-    "Helmets",
-    "One Hand Axes",
-    "One Hand Maces",
-    "One Hand Swords",
-    "Quivers",
-    "Rings",
-    "Rune Dagger",
-    "Sceptres",
-    "Shields",
-    "Staves",
-    "Two Hand Axes",
-    "Two Hand Maces",
-    "Two Hand Swords",
-    "Wands",
-    "Warstaff"
-  ];
   
   var ratesCache = {};
 
@@ -93,6 +68,8 @@
     }
     
     item.parsedItem = JSON.parse(item.rawdata);
+    
+    var minItemValue = settings.minItemValue;
     var helmetBaseValue;
 
     if(item.rarity === "Unique") {
@@ -135,7 +112,7 @@
       return getGemValue();
     }
 
-    if(baseTypeRarities.includes(item.rarity) && baseTypeCategories.includes(item.category)) {
+    if(baseTypeRarities.includes(item.rarity) && Constants.baseTypeCategories.includes(item.category)) {
       // handle helmet enchants - if item is a helmet, don't return value yet
       if(item.category === "Helmets") {
         helmetBaseValue = getBaseTypeValue();
@@ -176,13 +153,13 @@
     function getHelmetEnchantValue() {
       if(!item.parsedItem.enchantMods) return 0;
       var identifier = item.parsedItem.enchantMods;
-      return getValueFromTable("HelmetEnchant", identifier);
+      var value = getValueFromTable("HelmetEnchant", identifier);
+      return(value >= minItemValue ? value : 0);
     }
     
 
     function getWatchstoneValue() {
-      console.log(item);
-      var identifier = item.name || Constants.getItemName(item.icon);
+      var identifier = item.name || Utils.getItemName(item.icon);
       if(!item.identified) {
         if(Constants.watchstoneMaxCharges[identifier]) {
           identifier += `, ${Constants.watchstoneMaxCharges[identifier]} uses remaining`;
@@ -247,6 +224,11 @@
       return getValueFromTable("Map", identifier);
 
       function getSeries(icon) {
+        
+        if(icon.includes("https://web.poecdn.com/gen/image/")) {
+          return getSeriesBase64(icon);          
+        }
+        
         if(icon.includes("mn=")) {
           if(icon.includes("mn=1")) return "Atlas2-3.4";
           if(icon.includes("mn=2")) return "Atlas2";
@@ -254,6 +236,7 @@
           if(icon.includes("mn=4")) return "Legion";
           if(icon.includes("mn=5")) return "Blight";
           if(icon.includes("mn=6")) return "Metamorph";
+          if(icon.includes("mn=7")) return "Delirium";
         } else {
           if(icon.includes("2DItems/Maps/AtlasMaps")) return "Atlas";
           if(icon.includes("2DItems/Maps/Map")) return "Pre 2.4";
@@ -262,6 +245,31 @@
         logger.info(`Invalid map item icon: ${icon}`);
         return "";
       }
+      
+    }
+    
+    function getSeriesBase64(icon) {
+      
+      var data = Utils.getBase64EncodedData(icon);
+      
+      if(data.mn) {
+        switch(data.mn) {
+          case 1: return "Atlas2-3.4";
+          case 2: return "Atlas2";
+          case 3: return "Synthesis";
+          case 4: return "Legion";
+          case 5: return "Blight";
+          case 6: return "Metamorph";
+          case 7: return "Delirium";
+        }
+      } else {
+        if(data.f.includes("2DItems/Maps/AtlasMaps")) return "Atlas";
+        if(data.f.includes("2DItems/Maps/Map")) return "Pre 2.4";
+        if(data.f.includes("2DItems/Maps/act4maps")) return "Pre 2.0";
+      }
+      
+      logger.info(`Invalid map item icon: ${icon}`);
+      return "";
       
     }
 
@@ -283,7 +291,8 @@
         identifier += " Elder";
       }
 
-      return getValueFromTable("BaseType", identifier);
+      var value = getValueFromTable("BaseType", identifier);
+      return(value >= minItemValue ? value : 0);
 
     }
 
@@ -300,7 +309,7 @@
 
     function getUniqueMapValue() {
 
-      var name = item.name || Constants.getItemName(item.icon);
+      var name = item.name || Utils.getItemName(item.icon);
       var tier = ItemData.getMapTier(item.parsedItem);
       var typeline = item.typeline.replace("Superior ", "");
 
@@ -312,7 +321,7 @@
 
     function getUniqueItemValue() {
 
-      var identifier = item.name || Constants.getItemName(item.icon) || item.typeline;
+      var identifier = item.name || Utils.getItemName(item.icon) || item.typeline;
 
       if(identifier === "Grand Spectrum" || identifier === "Combat Focus") {
         identifier += ` ${item.typeline}`;
@@ -324,8 +333,6 @@
       var links = getLinks(item.parsedItem);
       identifier += links;
       identifier += getAbyssSockets(identifier);
-
-      var value;
 
       if(item.identified === 0) {
         var arr = null;
@@ -380,7 +387,8 @@
         }
       }
       
-      return getValueFromTable("UniqueItem", identifier);
+      var value = getValueFromTable("UniqueItem", identifier);
+      return(value >= minItemValue ? value : 0);
 
     }
 
@@ -394,8 +402,9 @@
         if(val < min) min = val;
         if(val > max) max = val;
       })
-
-      return (min + max) / 2;
+      
+      var value = (min + max) / 2;
+      return(value >= minItemValue ? value : 0);
 
     }
 
