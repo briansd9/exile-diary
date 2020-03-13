@@ -39,9 +39,8 @@ static countSockets(sockets) {
   
 	var result = 0;  
 	sockets.forEach( function(group) {
-    if(!group.includes("DV")) {
-      result += group.length;
-    }
+    group = group.replace("DV", "D");
+    result += group.length;
 	});
 	return result;
 }
@@ -86,6 +85,7 @@ static getSockets(data) {
   
   for(var i = 0; i < data.sockets.length; i++) {
     var s = data.sockets[i];
+    
     if(s.group === currGroup) {
       currSockets += s.sColour;
     } else {
@@ -185,6 +185,7 @@ static createItem(itemdata)
 	obj.baseType = itemdata.typeLine.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "");
 	obj.identified = itemdata.identified || false;
 	obj.corrupted = itemdata.corrupted || false;
+  obj.mirrored = itemdata.duplicated || false;
 	obj.influence = ItemData.getInfluence(itemdata);
 	obj.shapedMap = ItemData.isShapedMap(itemdata);
 	obj.elderMap = ItemData.isElderMap(itemdata);
@@ -197,6 +198,7 @@ static createItem(itemdata)
   obj.fractured  = itemdata.fractured || false;
   
   obj.explicitMods = itemdata.explicitMods;
+  obj.implicitMods = itemdata.implicitMods;
   obj.enchantMods = itemdata.enchantMods;
   
   if(obj.itemClass === "Prophecy") {
@@ -236,11 +238,20 @@ static createItem(itemdata)
 		return ItemData.countSockets( this.sockets );
 	}
   
+  // broken - mod list currently contains only the actual stats
+  // can't get actual name of mod, which is what's being searched for  
 	obj.hasExplicitMod = function(mod) {
     if(mod === "Veil" && this.veiled) {
       return true;
     } else {
-      return this.explicitMods && this.explicitMods.includes( mod );
+      if(!this.explicitMods) {
+        return false;
+      } else {
+        for(var i = 0; i < this.explicitMods.length; i++) {
+          if(this.explicitMods[i].includes(mod)) return true;
+        }
+        return false;
+      }
     }
 	}  
 
@@ -303,7 +314,7 @@ static createItem(itemdata)
     if(influenceIcons.length) {
       var iconDiv = document.createElement('span');
       influenceIcons.forEach(icon => {
-        iconDiv.innerHTML += `<img src='res/img/${icon}.png' style='width:24px;height:24px;margin:4px 4px 0px 0px'/>`;
+        iconDiv.innerHTML += `<img src="res/img/${icon}.png" style="width:24px;height:24px;margin:4px 4px 0px 0px"/>`;
       });
       return iconDiv;
     } else {

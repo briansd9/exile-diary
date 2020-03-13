@@ -4,6 +4,7 @@ const ItemData = require("./ItemData");
 const fs = require('fs');
 
 var cachedParser = {};
+var currentAreaLevel = null;
 var Rarity = ItemData.Rarity;
 
 function test(filterText) {
@@ -15,7 +16,7 @@ async function get(forID) {
   var filterID = await getFilterID(forID);
   if(cachedParser[filterID]) {
     return cachedParser[filterID];
-  } 
+  }
   
   var parser = parseFilter(await getFilterText(forID));  
   cachedParser[filterID] = parser;  
@@ -77,12 +78,14 @@ module.exports.test = test;
 function Parser() {
 
 	var VISIBILITY_TOKENS = [ 'Show', 'Hide' ];
+  var CONTINUE_TOKEN = 'Continue';
 	var FILTER_TOKENS = [
-	    'ItemLevel', 'DropLevel', 'Quality', 'Rarity', 'Class', 'BaseType', 'Sockets', 'LinkedSockets', 'SocketGroup',
-	    'Width', 'Height', 'Identified', 'Corrupted', 'ElderItem', 'ShaperItem', 'ShapedMap', 'HasExplicitMod', 'MapTier',
-	    'GemLevel', 'StackSize', 'ElderMap', 'Prophecy', 'FracturedItem', 'SynthesisedItem', 'AnyEnchantment', 'HasEnchantment',
-      'BlightedMap', 'HasInfluence'
-    ];
+    'ItemLevel', 'DropLevel', 'Quality', 'Rarity', 'Class', 'BaseType', 'Sockets', 'LinkedSockets', 'SocketGroup',
+    'Width', 'Height', 'Identified', 'Corrupted', 'ElderItem', 'ShaperItem', 'ShapedMap', 'HasExplicitMod', 'MapTier',
+    'GemLevel', 'StackSize', 'ElderMap', 'Prophecy', 'FracturedItem', 'SynthesisedItem', 'AnyEnchantment', 'HasEnchantment',
+    'BlightedMap', 'HasInfluence',
+    'Mirrored', 'CorruptedMods', 'AreaLevel'
+  ];
 	var MODIFIER_TOKENS = [
 	    'SetBackgroundColor', 'SetBorderColor', 'SetTextColor', 'PlayAlertSound', 'PlayAlertSoundPositional',
 	    'SetFontSize', 'DisableDropSound', 'CustomAlertSound', 'MinimapIcon', 'PlayEffect' ];
@@ -90,8 +93,8 @@ function Parser() {
 	var RARITY_TOKENS = [ 'Normal', 'Magic', 'Rare', 'Unique' ];
   var INFLUENCE_TOKENS = [ 'shaper', 'elder', 'crusader', 'redeemer', 'hunter', 'warlord' ];
 	var SOUND_TOKENS = [ 'ShAlchemy', 'ShBlessed', 'ShChaos', 'ShDivine', 'ShExalted', 'ShFusing', 'ShGeneral', 'ShMirror', 'ShRegal', 'ShVaal' ];
-    var COLOR_TOKENS = [ 'Red', 'Green', 'Blue', 'Brown', 'White', 'Yellow' ]
-    var ICON_SHAPE_TOKENS = [ 'Circle', 'Diamond', 'Hexagon', 'Square', 'Star', 'Triangle' ]
+  var COLOR_TOKENS = [ 'Red', 'Green', 'Blue', 'Brown', 'White', 'Yellow', 'Grey', 'Pink', 'Cyan', 'Purple', 'Orange' ]
+  var ICON_SHAPE_TOKENS = [ 'Circle', 'Diamond', 'Hexagon', 'Square', 'Star', 'Triangle', 'Kite', 'Cross', 'Pentagon', 'Moon', 'UpsideDownHouse' ]
 
 	this.currentLineNr = 0;
 	this.currentRule = null;
@@ -100,6 +103,12 @@ function Parser() {
 	this.errors = [];
 	this.warnings = [];
 	this.lineTypes = [];
+  
+  // clear last stored area level when getting new parser
+  currentAreaLevel = null;
+  this.setAreaLevel = function(level) {
+    currentAreaLevel = level;
+  }  
 
 	this.parse = function (lines) {
 		this.currentRule = null;
@@ -133,6 +142,14 @@ function Parser() {
 					parseEndOfRule( this );
 				}
 				parseVisibility( this, line );
+			}
+			else if (CONTINUE_TOKEN === line.trim()) {
+				if (this.currentRule !== null) {
+          this.currentRule.continue = true;
+					parseEndOfRule( this );
+				} else {
+          reportParseError( this, line.trim(), 'Continue without current rule' );
+        }
 			}
 			else {
 				if (this.currentRule === null) {
@@ -226,9 +243,13 @@ function Parser() {
 			'Rarity': RarityFilter,
 			'Class': ClassFilter,
 			'BaseType': BaseTypeFilter,
-			'Sockets': SocketsFilter,
 			'LinkedSockets': LinkedSocketsFilter,
+      
+      // this is intentional - with 3.9 filter type update,
+      // much of the logic for between two filters is shared
+			'Sockets': SocketGroupFilter,
 			'SocketGroup': SocketGroupFilter,
+      
 			'Width': WidthFilter,
 			'Height': HeightFilter,
 			'Identified': IdentifiedFilter,
@@ -247,20 +268,24 @@ function Parser() {
       'AnyEnchantment': AnyEnchantmentFilter,
       'HasEnchantment': HasEnchantmentFilter,
       'BlightedMap': BlightedMapFilter,
-      'HasInfluence' : HasInfluenceFilter
+      'HasInfluence' : HasInfluenceFilter,
+      'Mirrored' : MirroredFilter,
+      'CorruptedMods' : CorruptedModsFilter,
+      'AreaLevel' : AreaLevelFilter
 		};
 
 		switch (token) {
 			case 'ItemLevel':
 			case 'DropLevel':
 			case 'Quality':
-			case 'Sockets':
 			case 'LinkedSockets':
 			case 'Width':
 			case 'Height':
 			case 'MapTier':
 			case 'GemLevel':
 			case 'StackSize':
+      case 'CorruptedMods':
+      case 'AreaLevel':
 				parseNumericFilter( self, filters[token], arguments );
 				return;
 
@@ -276,8 +301,11 @@ function Parser() {
 				parseMultiStringFilter( self, filters[token], arguments );
 				return;
 
+			case 'Sockets':
+				parseSocketGroupFilter( self, filters[token], arguments, "unlinked" );
+				return;
 			case 'SocketGroup':
-				parseSocketGroupFilter( self, filters[token], arguments );
+				parseSocketGroupFilter( self, filters[token], arguments, "linked" );
 				return;
 
 			case 'Identified':
@@ -290,6 +318,7 @@ function Parser() {
 			case 'SynthesisedItem':
       case 'AnyEnchantment':
       case 'BlightedMap':
+      case 'Mirrored':
 				parseBoolFilter( self, filters[token], arguments );
 				return;
         
@@ -403,35 +432,47 @@ function Parser() {
         self.currentRule.filters.push( new filter( comparer, influences ) );
 	}
   
-  
-	function parseSocketGroupFilter (self, filter, arguments) {
-		var args = parseStringArguments( self, arguments );
-		if (args === null) return;
-		if (args.length === 0) {
-			reportUnexpectedEndOfLine( self, 'one or more strings' );
-			return;
-		}
-
-		// Make sure socket group is all uppercase.
-		// Don't sort yet because we want to display error messages correctly.
-		args = args.map( function(a) { return a.toUpperCase(); } );
-
-		// Then check for invalid characters.
-		var isInvalid = args.some( function(socketGroup) {
-			if (!StrUtils.consistsOf( socketGroup, 'RGBW' )) {
-				reportInvalidSocketGroup( self, socketGroup );
-				return true;
-			}
-			return false;
-		} );
-
-		// Now sort alphabetically because the filter requires that.
-		args = args.map( StrUtils.sortChars );
-
-		if (!isInvalid) {
-			self.currentRule.filters.push( new filter( args ) );
-		}
-	}
+	function parseSocketGroupFilter (self, filter, arguments, mode) {
+    
+	    var tokens = getArgumentTokens(arguments);
+	    if (tokens.length == 0) {
+	        reportTokenError( self, arguments, 'influence')
+	        return;
+	    }
+      
+      var operator = null;
+      
+			if (["<", "<=", ">", ">=", "=", "=="].includes(tokens[0])) {
+        operator = tokens.shift();
+        // single equals: no operator needed, match any of the arguments
+        if(operator === "=") {
+          operator = null;
+        }
+      }
+      
+      var groups = tokens.map( tok => { return tok.toUpperCase(); } );
+      
+      var isInvalid = groups.some( function(socketGroup) {
+        if (!StrUtils.consistsOf( socketGroup, '0123456RGBWDA' )) {
+          reportInvalidSocketGroup( self, socketGroup );
+          return true;
+        }
+        return false;
+      } );
+      
+      if (!isInvalid) {        
+        groups = groups.map( group => {
+          var sorted = StrUtils.sortChars(group);
+          return {
+            count: sorted.replace(/[RGBWDA]/g, ""),
+            sockets: sorted.replace(/[0123456]/g, "")
+          };
+        });
+        console.log(`Socket group filter [${arguments}]: operator is ${operator}, groups is ${JSON.stringify(groups)}`);
+        self.currentRule.filters.push( new filter( operator, groups, mode ) );
+      }
+      
+	}  
 
 	function parseBoolFilter (self, filter, arguments) {
 		var args = parseStringArguments( self, arguments );
@@ -767,6 +808,7 @@ function Parser() {
 
 function Rule (visibility) {
 	this.show = visibility;
+  this.continue = false;
 	this.filters = [];
 	this.modifiers = [];
 	this.codeLines = [];
@@ -823,6 +865,7 @@ function BaseTypeFilter (baseTypes) {
 
 function SocketsFilter (comparer, numSockets) {
 	this.match = function (item) {
+    return true;
 		return comparer( item.getNumSockets(), numSockets );
 	};
 }
@@ -837,33 +880,109 @@ function LinkedSocketsFilter (comparer, numLinkedSockets) {
 	};
 }
 
-function SocketGroupFilter (groups) {
-	this.minSocketCounts = groups.map( StrUtils.countChars );
-
-	function isSubsetOf (subsetCounts, containerCounts) {
-		for (var s in containerCounts) {
-			if (!(s in subsetCounts)) {
-				return false;
-			}
-			if (subsetCounts[s] < containerCounts[s]) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	function matchSocketGroups (grp, refGroups) {
-		var socketCounts = StrUtils.countChars( grp );
-		return refGroups.some( function (refGrp) {
-			return isSubsetOf( socketCounts, refGrp );
-		} );
-	}
-
+function SocketGroupFilter (operator, groups, mode ) {
+  
+  if(!operator) operator = "=";
+  
+  var countComparers = {
+    '=': function(a,b) { return a == b; },
+    '==': function(a,b) { return a == b; },
+    '<': function(a,b) { return a < b; },
+    '>': function(a,b) { return a > b; },
+    '<=': function(a,b) { return a <= b; },
+    '>=': function(a,b) { return a >= b; }
+  };
+  var countComparer = countComparers[operator];
+  
+  function buildSocketGroups(str) {
+    var groups = {};
+    for(var i = 0; i < str.length; i++) {
+      var s = str.charAt(i);
+      groups[s] = groups[s] ? groups[s] + 1 : 1;
+    }
+    return groups;
+  }
+  
 	this.match = function (item) {
-		return item.sockets.some( function (grp) {
-			return matchSocketGroups( grp, this.minSocketCounts );
-		}, this );
-	}
+    
+    var socketsToCheck;
+    switch(mode) {
+      case "linked":
+        socketsToCheck = item.sockets;
+        break;
+      case "unlinked":
+        var socketString = "";
+        item.sockets.forEach( s => {
+          socketString += s;
+        })
+        socketsToCheck = [ socketString ];
+        break;
+      default:
+        throw new Error("Invalid socket group mode");
+        break;
+    }
+      
+    
+    for(var i = 0; i < groups.length; i++) {
+
+      var seekGroup = groups[i];
+      
+      if(seekGroup.count) {
+        var countMatched = socketsToCheck.some(itemGroup => {
+          return countComparer( itemGroup.length, seekGroup.count );
+        });
+        if(!countMatched) {
+          return false;
+        }
+        if(!seekGroup.sockets) {
+          return true;
+        }
+      }
+      
+      return socketsToCheck.some(itemGroup => {
+        var seekSockets = buildSocketGroups(seekGroup.sockets);
+        var itemSockets = buildSocketGroups(itemGroup);
+        switch(operator) {
+          case "==":
+            var result = true;
+            for(var s in seekSockets) {
+              if(!itemSockets[s] || itemSockets[s] !== seekSockets[s]) result = false;
+            }
+            if(!seekGroup.count) {
+              // if no count specified, extra sockets should cause match to fail
+              for(var s in itemSockets) {
+                if(!seekSockets[s]) result = false;
+              }
+            }
+            return result;
+          case "=":
+          case ">=":
+            for(var s in seekSockets) {
+              if(!itemSockets[s] || itemSockets[s] < seekSockets[s]) return false;
+            }
+            return true;
+          case ">":
+            for(var s in seekSockets) {
+              if(!itemSockets[s] || itemSockets[s] <= seekSockets[s]) return false;
+            }
+            return true;
+          case "<=":
+            for(var s in seekSockets) {
+              if(itemSockets[s] && itemSockets[s] > seekSockets[s]) return false;
+            }
+            return true;
+          case "<":
+            for(var s in seekSockets) {
+              if(itemSockets[s] && itemSockets[s] >= seekSockets[s]) return false;
+            }
+            return true;
+        }
+      });
+      
+    }
+    
+	};
+
 }
 
 function WidthFilter (comparer, width) {
@@ -957,6 +1076,8 @@ function SynthesisedItemFilter (value) {
 }
 
 function AnyEnchantmentFilter (value) {
+  // not accurate - should only count labyrinth enchantments
+  // but should be ok if we're only applying this to items picked up
     this.match = function (item) {
         return (item.enchantMods && item.enchantMods.length > 0) === value;
     };
@@ -980,6 +1101,27 @@ function HasInfluenceFilter (comparer, influences) {
 		return comparer( item.influence, influences );
 	};
 }
+
+function MirroredFilter (value) {
+    this.match = function (item) {
+        return item.mirrored === value;
+    }
+}
+
+function CorruptedModsFilter (comparer, modCount) {
+    // not accurate - corruption implicits indistiguishable from normal ones, just count implicit mods instead
+    this.match = function (item) {
+        return item.corrupted && item.implicitMods && comparer( item.implicitMods.length, modCount );
+    }
+}
+
+function AreaLevelFilter (comparer, level) {
+    // not accurate - corruption implicits indistiguishable from normal ones, just count implicit mods instead
+    this.match = function (item) {
+        return comparer( currentAreaLevel, level );
+    }
+}
+
 
 // ------------------------ Modifiers --------------------------------------
 
