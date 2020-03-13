@@ -650,11 +650,11 @@
                 sixSocketItems += (item.stackSize || 1);
               }            
             } else {
-              if(
-                sockets.includes("RGB") || sockets.includes("RBG") || sockets.includes("BGR")
-                || sockets.includes("BRG") || sockets.includes("GRB") || sockets.includes("GBR")
-              ) {
-                rgbLinkedItems += (item.stackSize || 1);
+              for(var i = 0; i < sockets.length; i++) {
+                if(sockets[i].includes("R") && sockets[i].includes("G") && sockets[i].includes("B")) {
+                  rgbLinkedItems += (item.stackSize || 1);
+                  break;
+                }
               }
             }
           }
