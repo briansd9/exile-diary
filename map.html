@@ -45,14 +45,15 @@
       const ItemData = require('./modules/ItemData');
       const ItemPricer = require('./modules/ItemPricer');
       
-      
-      var maprun, mapID, parser, rates, itemsByType, itemsById, currScroll;
+      var maprun, mapID, modal, parser, rates, itemsByType, itemsById, currScroll;
       
       ipcRenderer.on("done-capturing", () => { 
-        $("#sidenav").show();
-        $("#messages").show();
-        $("#messagePadding").show();
-        $("#topnav").show();
+        if(!modal) {
+          $("#sidenav").show();
+          $("#messages").show();
+          $("#messagePadding").show();
+          $("#topnav").show();
+        }
         $("#mods").removeClass('mapModScreenshot');
         $("#mods").addClass('dropdown-content');
         $("#mods").addClass('mapMod');
@@ -63,10 +64,30 @@
       });
       
       $(document).ready(() => {
+        
         $("#sidenav").load("sidenav.html", () => {
           $("#sidenav-items").append("<div><a class='ui-text' onclick='screenshot()'>Screenshot</a></div>");
         });
         $("#messages").load("messages.html");
+        
+        if(modal) {
+          $("body").css({
+            "margin" : "0px",
+            "border" : "2px inset #999"
+          });
+          $("#outerDiv").css({
+            "margin-left" : "20px",
+            "height" : window.innerHeight - 4,
+            "overflow-y" : "auto"
+          });
+          $("#mapCanvas").css({
+            "margin" : "10px 20px 10px 0px"
+          });
+          ["sidenav", "topnav", "footer", "messages", "messagePadding", "bottomHR"].forEach((elem) => {
+            $(`#${elem}`).hide();
+          });
+        }
+        
       });
       
       $(document).keydown(e => {
@@ -84,17 +105,26 @@
             //break;
           case "Escape":
           case "Esc":
-            $("#myModal").hide();
+            if(modal) {
+              window.close();
+            }
             break;
         }
       });
       
+      $(document).click(() => {
+        if(modal) {
+          window.close();
+        }
+      });
       
       function screenshot() {
-        $("#sidenav").hide();
-        $("#messages").hide();
-        $("#messagePadding").hide();
-        $("#topnav").hide();
+        if(!modal) {
+          $("#sidenav").hide();
+          $("#messages").hide();
+          $("#messagePadding").hide();
+          $("#topnav").hide();
+        }
         $("#mods").removeClass('dropdown-content');
         $("#mods").removeClass('mapMod');
         $("#mods").addClass('mapModScreenshot');
@@ -111,6 +141,8 @@
       (async () => {
         
         mapID = await getMapID();
+        modal = (Utils.getParams(window.location.toString())).modal;
+        
         var m = new MapRun(mapID);
         m.on("MapRunReady", () => { loadMap(m); });
         
@@ -131,10 +163,12 @@
           }
         });
         
-        ipcRenderer.on("runProcessed", (event, run) => { 
-          addToRunList(run.id); 
-        });
-        loadRunList(mapID);
+        if(!modal) {
+          ipcRenderer.on("runProcessed", (event, run) => { 
+            addToRunList(run.id); 
+          });
+          loadRunList(mapID);
+        }
 
       })();
       
@@ -242,6 +276,7 @@
         });
         ["Crusader", "Hunter", "Redeemer", "Warlord"].forEach( str => {
           $(`#${str}Icon`).hide();
+          $(`#${str}Icon`).removeData();
         });
         
         itemsByType = {};
@@ -316,17 +351,18 @@
           $("#mods").removeClass('mapMod');
         }
         
-        if(run.info.kills) {
-          $("#killCount").html(f.format(run.info.kills));
+        if(info.kills) {
+          $("#killCount").html(f.format(info.kills));
+          $("#killText").html(info.kills === 1 ? "monster" : "monsters");
           $("#killCountDiv").css("display","block");
         }
         else {
           $("#killCountDiv").css("display","none");
         }
-
+        
+        var xpgained;
         if(info.xp) {
-          
-          var xpgained = (info.prevxp > 0 ? info.xp - info.prevxp : 0);
+          xpgained = (info.prevxp > 0 ? info.xp - info.prevxp : 0);
           if(info.xp !== 4250334444 || xpgained > 0) {
             var events = run.events;
             var xpString = `<span class='eventText'>${f.format(info.xp)}</span> xp`;
@@ -337,7 +373,15 @@
             $("#xpDiv").css("display","block");
           }
         }
+        
+        if(info.kills || xpgained) {
+          $("#xpKillCountHR").show();
+        } else {
+          $("#xpKillCountHR").hide();
+        }        
+        
         $(".mapArea").show();
+        
       }
       
       function getEventString(e) {
@@ -347,7 +391,7 @@
         
         if(eventType === "master") {
           if(eventText.startsWith("Alva")) {
-            var templeRoom = Constants.getTempleRoom(eventText.substring(eventText.indexOf(":") + 1).trim());
+            var templeRoom = Utils.getTempleRoom(eventText.substring(eventText.indexOf(":") + 1).trim());
             if(templeRoom) {
               return(`<span class='eventType'>Found T3 temple room</span> <span class='eventText'>${templeRoom}</span></div>`);
             } else {
@@ -377,18 +421,28 @@
       }
 
       function drawItem(itemData) {
+        
         var item = ItemData.createItem(itemData);
         var itemDiv = item.draw();
         MiscUtils.applyDefaultStyle(item);
+        
+        var lastMatchedRule = null;
         for (var j = 0; j < parser.ruleSet.length; j++) {
           var rule = parser.ruleSet[j];
           if (rule.match(item)) {
-            item.matchingRule = rule;
-            rule.applyTo(item);
-            break;
+            lastMatchedRule = rule;
+            if(!rule.continue) {
+              break;
+            }
           }
         }
+        
+        if(lastMatchedRule) {
+          lastMatchedRule.applyTo(item);
+        }        
+        
         return itemDiv;
+        
       }
 
       function getItemDiv(item) {
@@ -466,8 +520,14 @@
           if(currEvent.event_type === "conqueror") {
             ["Crusader", "Hunter", "Redeemer", "Warlord"].forEach(str => {
               if(currEvent.event_text.includes(str)) {
-                $("#masterDiv").show();
-                $(`#${str}Icon`).show();
+                $("#masterDiv").show();                
+                var conq = $(`#${str}Icon`);
+                conq.show();
+                if(conq.data("count")) {
+                  conq.data("count", conq.data("count") + 1);
+                } else {
+                  conq.data("count", 1);
+                }
               }
             });
           }
@@ -513,7 +573,7 @@
           displayItemsByValue();
         }
         $(".eventsArea").show();
-
+  
       }
       
       function displayFavour(currEvent, nextEvent) {
@@ -723,7 +783,7 @@
         var str = `
           <tr>
             <td bgcolor=0 style='min-width:60px;position:relative;'>
-              <img onerror='this.style.visibility="hidden";' style='height:${i.h * 40}px;width:${i.w * 40}px;' src='${i.icon}'/>
+              <img onerror='this.style.visibility="hidden";' style='height:${i.h * 40}px;width:${i.w * 40}px;' src="${i.icon}"/>
               <span class='stackSize'>${displayStackSize || ""}</span>
             </td>
             <td style='padding-left:10px;padding-right:10px;min-width:300px'>${i.displayName}</td>
@@ -768,6 +828,7 @@
       }
 
       function goToRun(id) {
+        if(modal) return;
         var m = new MapRun(id);
         m.on("MapRunReady", () => { 
           window.history.pushState("", "", `map.html?id=${id}`);
@@ -779,135 +840,143 @@
   </head>
   <body style='display:none;'>
     
-    <div class='sidenav' id='sidenav'></div>    
+    <div id="outerDiv">
     
-    <table id='topnav' style='width:100%;'>
-      <tr>
-        <td id='prevCell' style='text-align:left;width:25%;'/>
-        <td style='text-align:center;'>
-          <select class='ui-text' id='runs' style='width:100%;' onchange='goToRun($("#runs").val());'>
-          </select>
-        </td>
-        <td id='nextCell' style='text-align:right;width:25%;'/>
-      </tr>
-    </table>
-    <hr style='border:1px solid #999;' />
-    <div id='mapCanvas'>
-      <div class='dropdown' style='text-align:left;width:100%;'>
-        <div class='dropbtn'>
-          <table class='mapArea mapTable' style='width:100%;'>
-            <tr style='vertical-align: top;'>
-              <td>
-                <div id='mapDiv' class='mapInfo'>
-                  <div id='name'></div>
-                  <div id='level'></div>
-                  <div id='depth'></div>
-                  <div id='league'></div>
-                </div>
-              </td>
-              <td class='mapStat' id='IIQ'>
-              </td>
-              <td class='mapStat' id='IIR'>
-              </td>
-              <td class='mapStat' id='packSize'>
-              </td>
-              <td class='mapStat' id='runningTime'>
-              </td>
-            </tr>
+      <div class='sidenav' id='sidenav'></div>    
+
+      <table id='topnav' style='width:100%;'>
+        <tr>
+          <td id='prevCell' style='text-align:left;width:25%;'/>
+          <td style='text-align:center;'>
+            <select class='ui-text' id='runs' style='width:100%;' onchange='goToRun($("#runs").val());'>
+            </select>
+          </td>
+          <td id='nextCell' style='text-align:right;width:25%;'/>
+        </tr>
+        <tr>
+          <td colspan='3'>
+            <hr style='border:1px solid #999;' />
+          </td>
+        </tr>
+      </table>
+      <div id='mapCanvas'>
+        <div class='dropdown' style='text-align:left;width:100%;'>
+          <div class='dropbtn'>
+            <table class='mapArea mapTable' style='width:100%;'>
+              <tr style='vertical-align: top;'>
+                <td>
+                  <div id='mapDiv' class='mapInfo'>
+                    <div id='name'></div>
+                    <div id='level'></div>
+                    <div id='depth'></div>
+                    <div id='league'></div>
+                  </div>
+                </td>
+                <td class='mapStat' id='IIQ'>
+                </td>
+                <td class='mapStat' id='IIR'>
+                </td>
+                <td class='mapStat' id='packSize'>
+                </td>
+                <td class='mapStat' id='runningTime'>
+                </td>
+              </tr>
+            </table>
+          </div>
+          <div id='mods' class='mapMod'></div>
+          <hr class='mapArea' style='border:1px solid #999;' />
+        </div>						
+        <div id='xpDiv' style='display:none;'>
+          <span id='xp'></span>
+        </div>
+        <div id='killCountDiv' style='font-size:smaller;display:none;'>
+          <span id='killCount' class='eventText'></span> <span id='killText'>monsters</span> slain
+        </div>
+        <hr id='xpKillCountHR' style='border:1px solid #999;' />
+        <div id="masterDiv" style="display:none;">
+          <div id='ZanaIcon' style='display:none;'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/zana.png'/>
+              <span id='ZanaFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
+            </div>
+          </div>
+          <div id='EinharIcon' style='display:none;'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/einhar.png'/>
+              <span id='EinharFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
+            </div>
+            <div id='beastCount' style='display:inline;'></div>
+          </div>
+          <div id='AlvaIcon' style='display:none;'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/alva.png'/>
+              <span id='AlvaFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
+            </div>
+            <div id='incursionCount' style='display:inline;'></div>
+          </div>
+          <div id='NikoIcon' style='display:none;'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/niko.png'/>
+              <span id='NikoFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
+            </div>
+            <div id='sulphiteCount' style='display:inline;'></div>
+          </div>
+          <div id='JunIcon' style='display:none;'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/jun.png'/>
+              <span id='JunFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
+            </div>
+          </div>
+          <div id='CrusaderIcon' style='display:none;'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/crusaderinfluence.png'/>
+            </div>
+          </div>
+          <div id='HunterIcon' style='display:none;'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/hunterinfluence.png'/>
+            </div>
+          </div>
+          <div id='RedeemerIcon' style='display:none;'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/redeemerinfluence.png'/>
+            </div>
+          </div>
+          <div id='WarlordIcon' style='display:none;'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/warlordinfluence.png'/>
+            </div>
+          </div>        
+          <hr style='border:1px solid #999;' />
+        </div>
+        <div class='eventsDiv' id='eventsDiv'></div>
+        <hr class='eventsArea' style='border:1px solid #999;' />
+        <div id='itemsByValue'>
+          <div id='netWorth' class='tableLink netWorth' onclick='$("#total").toggle()'></div>
+          <table id='total' style='display:block;'>
+            <thead>
+              <tr class='ui-text'>
+                <th>&nbsp;</th>
+                <th>Item</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody id="itemsTable">
+            </tbody>
           </table>
+          <hr id="bottomHR" style='border:1px solid #999;' />
         </div>
-        <div id='mods' class='mapMod'></div>
-        <hr class='mapArea' style='border:1px solid #999;' />
-      </div>						
-      <div id='xpDiv' style='display:none;'>
-        <span id='xp'></span>
       </div>
-      <div id='killCountDiv' style='font-size:smaller;display:none;'>
-        <span id='killCount' class='eventText'></span> monsters slain
+      <div class="footer">
+        Generated by Exile Diary v<span id='appVersionFooter'></span> https://github.com/briansd9/exile-diary
+        <script>
+          $("#appVersionFooter").html(require('electron').remote.app.getVersion());
+        </script>      
       </div>
-      <hr style='border:1px solid #999;' />
-      <div id="masterDiv" style="display:none;">
-        <div id='ZanaIcon' style='display:none;'>
-          <div style='position:relative;display:inline;'>
-            <img src='res/img/zana.png'/>
-            <span id='ZanaFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
-          </div>
-        </div>
-        <div id='EinharIcon' style='display:none;'>
-          <div style='position:relative;display:inline;'>
-            <img src='res/img/einhar.png'/>
-            <span id='EinharFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
-          </div>
-          <div id='beastCount' style='display:inline;'></div>
-        </div>
-        <div id='AlvaIcon' style='display:none;'>
-          <div style='position:relative;display:inline;'>
-            <img src='res/img/alva.png'/>
-            <span id='AlvaFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
-          </div>
-          <div id='incursionCount' style='display:inline;'></div>
-        </div>
-        <div id='NikoIcon' style='display:none;'>
-          <div style='position:relative;display:inline;'>
-            <img src='res/img/niko.png'/>
-            <span id='NikoFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
-          </div>
-          <div id='sulphiteCount' style='display:inline;'></div>
-        </div>
-        <div id='JunIcon' style='display:none;'>
-          <div style='position:relative;display:inline;'>
-            <img src='res/img/jun.png'/>
-            <span id='JunFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
-          </div>
-        </div>
-        <div id='CrusaderIcon' style='display:none;'>
-          <div style='position:relative;display:inline;'>
-            <img src='res/img/crusaderinfluence.png'/>
-          </div>
-        </div>
-        <div id='HunterIcon' style='display:none;'>
-          <div style='position:relative;display:inline;'>
-            <img src='res/img/hunterinfluence.png'/>
-          </div>
-        </div>
-        <div id='RedeemerIcon' style='display:none;'>
-          <div style='position:relative;display:inline;'>
-            <img src='res/img/redeemerinfluence.png'/>
-          </div>
-        </div>
-        <div id='WarlordIcon' style='display:none;'>
-          <div style='position:relative;display:inline;'>
-            <img src='res/img/warlordinfluence.png'/>
-          </div>
-        </div>        
-        <hr style='border:1px solid #999;' />
-      </div>
-      <div class='eventsDiv' id='eventsDiv'></div>
-      <hr class='eventsArea' style='border:1px solid #999;' />
-      <div id='itemsByValue'>
-        <div id='netWorth' class='tableLink netWorth' onclick='$("#total").toggle()'></div>
-        <table id='total' style='display:block;'>
-          <thead>
-            <tr class='ui-text'>
-              <th>&nbsp;</th>
-              <th>Item</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-          <tbody id="itemsTable">
-          </tbody>
-        </table>
-        <hr style='border:1px solid #999;' />
-      </div>
+      <div id="messagePadding" style="height:150px;visibility:hidden;">&nbsp;</div>
+      <div id="messages" class="messageSection"></div>
+      
     </div>
-    <div class="footer">
-      Generated by Exile Diary v<span id='appVersionFooter'></span> https://github.com/briansd9/exile-diary
-      <script>
-        $("#appVersionFooter").html(require('electron').remote.app.getVersion());
-      </script>      
-    </div>
-    <div id="messagePadding" style="height:150px;visibility:hidden;">&nbsp;</div>
-    <div id="messages" class="messageSection"></div>
   </body>
 </html>
 
