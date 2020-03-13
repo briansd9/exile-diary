@@ -59,22 +59,20 @@ function mergeItems(arr) {
   for(var i = 0; i < arr.length; i++) {
     var item = arr[i];
     if(!item.chaosValue) continue;
-    var typeIdentifier  = item.typeLine.replace("Superior ", "");
+    if(!item.stackSize) item.stackSize = 1;
+    var typeLine = Utils.getBaseName(item);
+    var suffix = Utils.getSuffix(item);
     if(item.frameType === 3) {
-      typeIdentifier += "_unique";
+      typeLine += " " + item.icon;
     }
-    if(ItemCategoryParser.isNonStackable(typeIdentifier)) {
-      item.stackSize = 1;
-      items[item.id] = item;
+    if(suffix) {
+      typeLine += " " + suffix;
+    }
+    if(items[typeLine]) {
+      items[typeLine].stackSize += item.stackSize;
+      items[typeLine].chaosValue += item.chaosValue;
     } else {
-      if(!item.stackSize) item.stackSize = 1;
-      var typeLine = Utils.getBaseName(item);
-      if(items[typeLine]) {
-        items[typeLine].stackSize += item.stackSize;
-        items[typeLine].chaosValue += item.chaosValue;
-      } else {
-        items[typeLine] = item;
-      }
+      items[typeLine] = item;
     }
   }
   return Object.values(items);
@@ -105,18 +103,26 @@ async function getItems(mapID) {
 async function getItemsFromEvent(eventID) {
   var items = [];
   return new Promise( (resolve, reject) => {
-    DB.all("select rawdata, value from items where event_id = ?", [eventID], async (err, rows) => {
+    DB.all("select rawdata, stacksize, category, sockets, value from items where event_id = ?", [eventID], async (err, rows) => {
       if(err) {
         logger.info(`Error getting items: ${err}`);
         resolve(null);
       }
       for(var i = 0; i < rows.length; i++) {
+        
         var item = JSON.parse(rows[i].rawdata);
-        if(rows[i].value && rows[i].value > settings.minItemValue) {
+        
+        if(rows[i].value) {
           item.chaosValue = rows[i].value;
         } else {
-          var sockets = Utils.getSockets(item);
-          if(sockets) {
+          // backward compatibility - value not stored with item in old versions
+          item.chaosValue = await getItemValue(eventID, item);
+        }
+        
+        var sockets = rows[i].sockets;
+        if(sockets) {
+          if(!item.chaosValue) {       
+            item.chaosValue = null;
             // check if item has 6 sockets (filter out delve sockets by replacing "DV")
             if(sockets.replace(/[DV\- ]/g, "").length === 6) {
               // check if item has 6 links (links are indicated by a - between sockets)
@@ -126,6 +132,7 @@ async function getItemsFromEvent(eventID) {
                 item.w = 1;
                 item.h = 1;
                 item.stackSize = 1;
+                item.frameType = 6;
                 item.typeLine = "Divine Orb";
                 item.chaosValue = await getCurrencyValue(eventID, item);
                 item.typeLine = "6-link Items";
@@ -135,12 +142,12 @@ async function getItemsFromEvent(eventID) {
                 item.w = 1;
                 item.h = 1;
                 item.stackSize = 7;
+                item.frameType = 6;
                 item.typeLine = "Jeweller's Orb";
                 item.chaosValue = await getCurrencyValue(eventID, item);
                 item.stackSize = 1;
                 item.typeLine = "6-socket Items";
               }
-              items.push(item);
             } else {
               // item has less than 6 sockets - check if it has RGB links
               var s = sockets.replace(/-/g, "");
@@ -150,18 +157,17 @@ async function getItemsFromEvent(eventID) {
                 item.w = 1;
                 item.h = 1;
                 item.stackSize = 1;
+                item.frameType = 6;
                 item.typeLine = "Chromatic Orb";
                 item.chaosValue = await getCurrencyValue(eventID, item);
                 item.typeLine = "R-G-B linked Items";
-                items.push(item);
               }
-            }
-          } else {
-            // non-socketed items
-            item.chaosValue = await getItemValue(eventID, item);
-          }
+            }            
+          }          
         }
+        
         if(item.chaosValue) items.push(item);
+        
       }
       resolve(items);
     });
@@ -174,11 +180,12 @@ async function getCurrencyValue(timestamp, item) {
   var currency = item.typeLine;
   
   return new Promise( (resolve, reject) => {
-    DB.get("select value from rates where date <= ? and item = ? order by date desc limit 1", [timestamp, currency], (err, row) => {
+    DB.get("select value from rates where date <= ? and item = ? order by date desc limit 1", [timestamp, currency], async (err, row) => {
       if(row) {
         resolve(row.value * stackSize);
       } else {
-        resolve(ItemPricer.getCurrencyByName(timestamp, currency) * stackSize);
+        var currValue = await ItemPricer.getCurrencyByName(timestamp, currency);
+        resolve(currValue * stackSize);
       }
     })
   });
