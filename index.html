@@ -97,14 +97,16 @@
             and areainfo.id = mapruns.id;
           `, [runInfo.id], (err, row) => {
             if(row) {
-              if($("#lastMapsRows tr").length > 10) {
-                $("#lastMapsRows tr:last").remove();
+              
+              
+              if($("#lastMapsRows tr").length >= 10) {
+                $("#lastMapsRows tr:first").remove();
               }
               
               Utils.addMapRow({
                 table: $("#lastMapsRows"),
                 data: row,
-                first: true,
+                first: false,
                 ssf: ssf,
                 hardcore: hardcore,
                 modal: false
