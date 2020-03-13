@@ -77,6 +77,9 @@ class InventoryGetter extends EventEmitter {
       var obj = Object.assign({}, curr);
       obj.stackSize -= prev.stackSize;
       return obj;
+    } else if(prev.name !== curr.name || prev.typeLine !== curr.typeLine) {
+      // for items that transform (fated uniques, upgraded breachstones, etc)
+      return curr;
     }
     return null;
   }
