@@ -42,7 +42,7 @@ class Utils {
   static getDisplayName(item, htmlDisplay = true) {
     
     let baseName = this.getBaseName(item);
-    let uniqueName = Constants.getItemName(item.icon);
+    let uniqueName = this.getItemName(item.icon);
     let suffix = this.getSuffix(item);
     
     let displayName = "";
@@ -76,31 +76,82 @@ class Utils {
   
   static getSuffix(item) {
     
+    
     if(item.frameType === 4) {  // skill gems
       
-      var suffix;
+      var suffix = "";
+      var name = item.typeLine.replace("Superior ", "");
       var level = ItemData.getGemLevel(item);
       var quality = ItemData.getQuality(item);
       
-      if(level > 1) {
-        suffix = `Level ${level}`;
-      }
-      if(quality >= 20) {
-        suffix = (suffix ? suffix + ", " : "") + `${quality}% Quality`;
-      }
-      
-      return (suffix ? `${suffix}` : "");
+      switch(name) {
+        case "Empower Support":
+        case "Enlighten Support":
+        case "Enhance Support":
+          if(level >= 2) {
+            return `Level ${level}`;
+          }
+          break;
+        default:
+          if(level >= 20 || (name === "Brand Recall" && level >= 6) ) {
+            suffix += `Level ${level}`;
+          }
+          if(quality >= 20) {
+            suffix += `${(suffix ? ", " : "")}${quality}% Quality`;
+          }
+          return suffix;
+          break;
+      }      
       
     } else if(item.icon.includes("Helmets") && item.enchantMods) {  //enchanted helmets
+      
       return `${item.enchantMods[0]}`;
+      
+    } else if(item.typeLine === "Ivory Watchstone") {
+      
+      if(!item.identified) {
+        var name = this.getItemName(item.icon);
+        if(Constants.watchstoneMaxCharges[name]) {
+          return `${Constants.watchstoneMaxCharges[name]} uses remaining`;
+        };
+      } else {
+        for(var i = 0; i < item.explicitMods.length; i++) {
+          var mod = item.explicitMods[i];
+          if(mod.endsWith("uses remaining")) {
+            return mod;
+            break;
+          }
+        }
+      }      
+      
     } else {
-      return "";
+      
+      var suffix = "";      
+      var sockets = ItemData.getSockets(item);
+      for(var i = 0; i < sockets.length; i++) {
+        if(sockets[i].length >= 5) {
+          suffix = `${sockets[i].length}L`;
+        }
+      }
+      
+      if(suffix === "6L" && item.typeLine === "6-link Items") {
+        return "";
+      } else {
+        return suffix;
+      }
+      
     }
       
   }
   
   // for items in JSON format
   static getBaseNameJSON(item) {
+    
+    // 3.10 clean basetype finally included in itemdata hallelujah!!!!!!
+    if(item.extended && item.extended.baseType) {
+      return item.extended.baseType;
+    }
+    
     var name = item.typeLine.replace("Superior ", "");
     if(item.frameType === 3 && item.typeLine.endsWith(" Map")) {
       name = (item.identified ? item.name : this.getUniqueMap(name));
@@ -220,13 +271,22 @@ class Utils {
     
   }
   
-  static addMapRow(rowsObject, map, first = false, ssf = false, hardcore = false) {
+  static addMapRow(param) {
+    
+    var map = param.data;
 
     var row = $("<tr class='mapRow'>");
-    row.click(()=>{
-      window.location.href=`map.html?id=${map.id}`
-      //window.open(`map.html?id=${map.id}`); 
-    });
+    
+    if(param.modal) {
+      row.click(()=>{
+        window.open(`map.html?id=${map.id}&modal=true`);
+      });
+    } else {
+      row.click(()=>{
+        window.location.href=`map.html?id=${map.id}`;
+        //window.open(`map.html?id=${map.id}`); 
+      });
+    }
 
     var timestamp = moment(map.id, "YYYYMMDDHHmmss").format("YYYY-MM-DD HH:mm:ss");
     row.append($("<td>").append(timestamp));
@@ -246,21 +306,21 @@ class Utils {
     var xpRate = (map.xpgained > 0 ? Utils.getXPRate(map.xpgained, map.firstevent, map.lastevent) : "-");
     row.append($("<td>").append(xpRate));
     
-    if(!ssf) {
+    if(!param.ssf) {
       row.append($("<td>").append(Number(map.gained).toFixed(2)));
     }
     
-    if(!hardcore) {
+    if(!param.hardcore) {
       var deaths = Utils.getDeathCount(map.deaths);
       row.append($("<td>").append(deaths));
     }
 
     row.append($("<td>").append(map.kills > 0 ? (new Intl.NumberFormat()).format(map.kills) : "-"));
 
-    if(first) {
-      rowsObject.prepend(row);
+    if(param.first) {
+      param.table.prepend(row);
     } else {
-      rowsObject.append(row);
+      param.table.append(row);
     }
 
   }
@@ -324,6 +384,30 @@ class Utils {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
   
+  static getItemName(icon) {
+    if(icon.includes("?")) {
+      icon = icon.substring(0, icon.indexOf("?"));
+    }
+    // unique flasks have encoded URLs, need to extract flask ID
+    if(icon.includes("https://web.poecdn.com/gen/image/")) {
+      var jsonData = this.getBase64EncodedData(icon);
+      var flaskId = jsonData.f.replace("Art/2DItems/Flasks/", "");
+      return Constants.uniqueFlasks[flaskId] || null;
+    } else {
+      return Constants.uniqueIcons[icon] || null;
+    }
+  }
+  
+  static getBase64EncodedData(iconURL) {
+    var str = iconURL.replace("https://web.poecdn.com/gen/image/", "");
+    str = str.substr(0, str.indexOf("/"));
+    return (JSON.parse(Buffer.from(str, "base64").toString("utf8")))[2];
+  }
+
+  static getTempleRoom(q) {
+    return Constants.templeRoomQuotes[q] || null;
+  }  
+
 }
 
 
