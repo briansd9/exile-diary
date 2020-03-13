@@ -516,12 +516,21 @@ function getItemsFor(event) {
           if(item.value) {
             totalValue += item.value;
           } else {
+            
             var value = await ItemPricer.price(item);
             if(!value) {
               value = 0;
             }
+            
+            if(value.isVendor) {
+              totalValue += value.val;
+              value = 0;
+            } else {
+              totalValue += value;
+            }
+            
             itemArr.push([value, item.id, item.event_id]);
-            totalValue += value;
+            
           }
         }
         if(itemArr.length > 0) {

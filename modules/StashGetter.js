@@ -281,7 +281,10 @@ async function parseTab(items, timestamp) {
     var item = items[i];
     var parsedItem = parseItem(item, timestamp);
     var val = await ItemPricer.price(parsedItem, false);
-    totalValue += val;
+    
+    // vendor recipes handled manually
+    totalValue += (val.isVendor ? 0 : val);
+    
     tabItems.push(item);
   }
   

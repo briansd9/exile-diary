@@ -69,7 +69,7 @@
     
     item.parsedItem = JSON.parse(item.rawdata);
     
-    var minItemValue = settings.minItemValue;
+    var minItemValue = settings.minItemValue || -1;
     var helmetBaseValue;
 
     if(item.rarity === "Unique") {
@@ -203,7 +203,8 @@
       if(item.parsedItem.corrupted) {
         identifier += " (Corrupted)";
       }
-      return getValueFromTable("SkillGem", identifier);
+      var value = getValueFromTable("SkillGem", identifier);
+      return(value >= minItemValue ? value : 0);
     }
 
     function getMapValue() {
@@ -275,7 +276,9 @@
 
     function getBaseTypeValue() {
 
-      if(item.parsedItem.ilvl < 82) return 0;
+      if(item.parsedItem.ilvl < 82) {
+        return getVendorRecipeValue();
+      }
 
       var identifier = item.typeline.replace("Superior ", "");
       if(identifier.endsWith("Talisman")) return 0;
@@ -292,9 +295,37 @@
       }
 
       var value = getValueFromTable("BaseType", identifier);
-      return(value >= minItemValue ? value : 0);
+      return(value >= minItemValue ? value : getVendorRecipeValue());
 
     }
+    
+    function getVendorRecipeValue() {
+      
+      var sockets = ItemData.getSockets(item.parsedItem);
+      if(!sockets.length) return 0;
+
+      var vendorValue;
+      
+      if(ItemData.countSockets(sockets) === 6) {
+        if(sockets.length === 1) {
+          logger.info("Returning vendor recipe: 6L");
+          vendorValue = rates["Currency"]["Divine Orb"];
+        } else {
+          logger.info("Returning vendor recipe: 6S");
+          vendorValue = rates["Currency"]["Jeweller's Orb"] * 7;
+        }
+      } else {
+        for(var i = 0; i < sockets.length; i++) {
+          if(sockets[i].includes("R") && sockets[i].includes("G") && sockets[i].includes("B")) {
+            vendorValue = rates["Currency"]["Chromatic Orb"];
+          }
+        }
+      }
+      
+      return vendorValue ? { isVendor: true, val: vendorValue } : 0;
+      
+    }
+      
 
     function getCurrencyValue() {
       // temporary workaround poe.ninja bug
@@ -388,7 +419,7 @@
       }
       
       var value = getValueFromTable("UniqueItem", identifier);
-      return(value >= minItemValue ? value : 0);
+      return(value >= minItemValue ? value : getVendorRecipeValue());
 
     }
 
@@ -401,7 +432,7 @@
         var val = rates["UniqueItem"][ident];
         if(val < min) min = val;
         if(val > max) max = val;
-      })
+      });
       
       var value = (min + max) / 2;
       return(value >= minItemValue ? value : 0);
