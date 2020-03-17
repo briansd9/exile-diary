@@ -13,3 +13,8 @@ function setZoomFactor(f) {
   require('electron').webFrame.setZoomFactor(f);
 }
 
+function openShell(dir) {
+  console.log(dir);
+  require("electron").shell.openExternal(dir);
+}
+

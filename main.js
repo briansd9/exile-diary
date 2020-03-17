@@ -205,6 +205,11 @@ function initWindow(window) {
   ScreenshotWatcher.emitter.on("OCRError", () => {
     addMessage("Error getting area info from screenshot. Please try again", true);
   });  
+  ScreenshotWatcher.emitter.on("tooMuchScreenshotClutter", (totalSize) => {
+    var settings = Settings.get();
+    var dir = settings.screenshotDir.replace(/\\/g, "\\\\");    
+    addMessage(`Screenshot folder contains <span class='eventText'>${totalSize}</span> screenshots. Click <span class='eventText' style='cursor:pointer;' onclick='openShell("${dir}")'>here</span> to open it for cleanup`);
+  });  
   
   RunParser.emitter.removeAllListeners();
   RunParser.emitter.on("runProcessed", (run) => {

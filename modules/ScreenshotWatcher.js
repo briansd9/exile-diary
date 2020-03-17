@@ -5,6 +5,9 @@ const moment = require('moment');
 const chokidar = require('chokidar');
 const logger = require("./Log").getLogger(__filename);
 const EventEmitter = require('events');
+const fs = require('fs');
+
+const SCREENSHOT_DIRECTORY_SIZE_LIMIT = 400;
 
 var settings;
 var watcher;
@@ -50,6 +53,13 @@ function start() {
 
 }
 
+async function checkScreenshotSpaceUsed() {
+    var dir = fs.readdirSync(settings.screenshotDir);
+    if(dir.length > SCREENSHOT_DIRECTORY_SIZE_LIMIT) {
+      emitter.emit("tooMuchScreenshotClutter", dir.length); 
+    }
+}
+
 
 function process(file) {
   var filename = moment().format("YMMDDHHmmss");
@@ -89,6 +99,10 @@ function process(file) {
         ]);
         enhanceImage(image2, scaleFactor);
         image2.write(path.join(app.getPath('userData'), '.temp_capture', filename + "." + path.basename(file, ".png") + ".mods.png"));
+        logger.info("Deleting screenshot " + file);
+        fs.unlinkSync(file);
+        checkScreenshotSpaceUsed();
+        
       } catch(e) {
         logFailedCapture(e);
       }
@@ -251,5 +265,10 @@ function logFailedCapture(e) {
   emitter.emit("OCRError");
 }
 
+function test(file) {
+  process(file);  
+}
+
 module.exports.start = start;
 module.exports.emitter = emitter;
+module.exports.test = test;
