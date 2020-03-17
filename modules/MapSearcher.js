@@ -151,8 +151,8 @@ async function getItemsFromEvent(eventID) {
             } else {
               // item has less than 6 sockets - check if it has RGB links
               var socketGroups = sockets.split(" ");
-              for(var i = 0; i < socketGroups.length; i++) {
-                var s = socketGroups[i];
+              for(var j = 0; j < socketGroups.length; j++) {
+                var s = socketGroups[j];
                 if(s.includes("R") && s.includes("G") && s.includes("B")) {
                   item.icon = "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketColours.png?scale=1&scaleIndex=0";
                   item.name = "";
