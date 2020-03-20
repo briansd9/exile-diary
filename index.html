@@ -106,7 +106,7 @@
               Utils.addMapRow({
                 table: $("#lastMapsRows"),
                 data: row,
-                first: false,
+                first: true,
                 ssf: ssf,
                 hardcore: hardcore,
                 modal: false
@@ -163,13 +163,13 @@
               Utils.addMapRow({
                 table: $("#lastMapsRows"),
                 data: row,
-                first: true,
+                first: false,
                 ssf: ssf,
                 hardcore: hardcore,
                 modal: false
               });
             });
-            //$("#lastMapsTable").tablesorter();              
+            $("#lastMapsTable").tablesorter();              
           }
         });
       }
