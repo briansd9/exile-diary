@@ -242,6 +242,37 @@
     "yFlasks17" : "Divination Distillate",
     "ZerphisLastBreath" : "Zerphi's Last Breath"
   },
+  
+  "uniqueMaps" : {  
+    "SynthesisBossGuardianMap" : "Cortex",
+    "SynthesisFireGuardianMap" : "Augmented Distant Memory",
+    "UniqueMapEye" : "Whakawairua Tuahu",
+    "PerandusManor" : "The Perandus Manor",
+    "Doryanis" : "Doryani's Machinarium",
+    "MaelstromofChaos" : "Maelström of Chaos",
+    "HallowedGround" : "Hallowed Ground",
+    "PillarsOfVastiri" : "Pillars of Arun",
+    "olmec" : "Olmec's Sanctum",
+    "WolfMap" : "Caer Blaidd, Wolfpack's Den",
+    "UniqueMap1" : "Vaults of Atziri",
+    "TheVinktarSquare" : "The Vinktar Square",
+    "FairgravesMap01" : "Mao Kun",
+    "UniqueMap2" : "Untainted Paradise",
+    "Celestial" : "The Twilight Temple",
+    "PoorjoysAsylum" : "Poorjoy's Asylum",
+    "PutridCloister" : "The Putrid Cloister",
+    "SynthesisColdGuardianMap" : "Altered Distant Memory",
+    "UndeadSiege" : "The Coward's Trial",
+    "HallOfGrandmasters" : "Hall of Grandmasters",
+    "musicbox" : "Acton's Nightmare",
+    "oba" : "Oba's Cursed Trove",
+    "DeathandTaxes" : "Death and Taxes",
+    "SynthesisLightningGuardianMap" : "Twisted Distant Memory",
+    "SynthesisGolemGuardianMap" : "Rewritten Distant Memory",
+    "HarbingerRed" : "The Beachhead",
+    "HarbingerYellow" : "The Beachhead",
+    "HarbingerWhite" : "The Beachhead"  
+  },
 
   "baseMaps" : [
     "Arcade Map",
