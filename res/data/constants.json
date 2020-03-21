@@ -828,7 +828,7 @@
   ],
   
   "uniqueIcons" : {
-
+  
     "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/AbberathsHooves.png" : "Abberath's Hooves",
     "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Wands/Wychverge.png" : "Abberath's Horn",
     "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/Abyssus.png" : "Abyssus",
@@ -1988,6 +1988,9 @@
     "Monsters deal #% extra Damage as Cold",
     "Monsters deal #% extra Damage as Fire",
     "Monsters deal #% extra Damage as Lightning",
+    "Monsters deal #% extra Physical Damage as Cold",
+    "Monsters deal #% extra Physical Damage as Fire",
+    "Monsters deal #% extra Physical Damage as Lightning",
     "Monsters drop no items",
     "Monsters fire # additional Projectiles",
     "Monsters gain 3 Endurance Charges every 20 seconds",
