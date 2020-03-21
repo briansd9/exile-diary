@@ -390,17 +390,45 @@ class Utils {
     }
     // unique flasks have encoded URLs, need to extract flask ID
     if(icon.includes("https://web.poecdn.com/gen/image/")) {
+      logger.info(`Checking ${icon}`);
       var jsonData = this.getBase64EncodedData(icon);
-      var flaskId = jsonData.f.replace("Art/2DItems/Flasks/", "");
-      return Constants.uniqueFlasks[flaskId] || null;
+      logger.info(`JSON data is ${JSON.stringify(jsonData)}`);
+      
+      if(jsonData.f.includes("/Flasks/")) {
+        return getFlaskName(jsonData.f);
+      } else if(jsonData.f.includes("/Maps/")) {
+        return getUniqueMapName(jsonData.f);
+      } else {
+        logger.info(`Invalid icon data found: ${jsonData.f}`);
+        return null;
+      }
+      
     } else {
       return Constants.uniqueIcons[icon] || null;
     }
+    
+    function getFlaskName(str) {
+      // 3.10 icon url generation changed - 2 part replace required now
+      var flaskId = str.replace("Art/", "").replace("2DItems/Flasks/", "");
+      logger.info(`Flask id is ${flaskId}`);
+      logger.info("Got " + Constants.uniqueFlasks[flaskId]);
+      return Constants.uniqueFlasks[flaskId] || null;
+    }
+
+    function getUniqueMapName(str) {
+      var mapId = str.replace("Art/", "").replace("2DItems/Maps/", "");
+      logger.info(`Map id is ${mapId}`);
+      logger.info("Got " + Constants.uniqueMaps[mapId]);
+      return Constants.uniqueMaps[mapId] || null;
+    }
+    
   }
   
   static getBase64EncodedData(iconURL) {
     var str = iconURL.replace("https://web.poecdn.com/gen/image/", "");
+    logger.info(`Got ${str}`);
     str = str.substr(0, str.indexOf("/"));
+    logger.info(`Extracted ${str}`);
     return (JSON.parse(Buffer.from(str, "base64").toString("utf8")))[2];
   }
 
