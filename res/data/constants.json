@@ -1761,7 +1761,7 @@
     "https://web.poecdn.com/image/delirium/items/Perfidy.png" : "Perfidy",
     "https://web.poecdn.com/image/Art/2DItems/Rings/SkitterbotRing.png" : "Profane Proxy",
     "https://web.poecdn.com/image/delirium/items/SplitPersonality.png" : "Split Personality",
-    "https://web.poecdn.com/image/Art/2DItems/Jewels/Veteran%27sAwarenessJewel.png" : "The Front Line",
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/Veteran'sAwarenessJewel.png" : "The Front Line",
     "https://web.poecdn.com/image/Art/2DItems/Jewels/SecretsOfAgonyJewel.png" : "The Interrogation",
     "https://web.poecdn.com/image/Art/2DItems/Jewels/KineticismJewel.png" : "The Siege",
     "https://web.poecdn.com/image/Art/2DItems/Jewels/UniqueJewelBase3.png" : "Voices"
@@ -1955,6 +1955,7 @@
     "Area is occupied by The Eradicator",
     "Area is occupied by The Purifier",
     "Area is Overgrown with Caustic Plants",
+    "Area is Overgrown with Parasitic Caustic Plants",
     "Area is Unidentified",
     "Areas contain deposits of Voltaxic Sulphite",
     "Areas contain Memory Fragments",
@@ -2197,7 +2198,7 @@
     "Unique Monsters drop Corrupted Items",
     "When a Player Kills a Synthesised Rare Monster, they gain its Modifiers for 20 seconds",
     
-    "# to Level of dropped Reward Items",
+    "+# to Level of dropped Reward Items",
     "#% increased Quantity of Items contained in Vaal Vessel",
     "#% increased Rarity of Items contained in Vaal Vessel",
     "Area contains # additional Blight Encounters",
