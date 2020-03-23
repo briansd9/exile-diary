@@ -519,7 +519,7 @@
           
           if(currEvent.event_type === "conqueror") {
             ["Crusader", "Hunter", "Redeemer", "Warlord"].forEach(str => {
-              if(currEvent.event_text.includes(str)) {
+              if(currEvent.event_text.includes(str + ":")) {
                 $("#masterDiv").show();                
                 var conq = $(`#${str}Icon`);
                 conq.show();
