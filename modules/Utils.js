@@ -390,9 +390,7 @@ class Utils {
     }
     // unique flasks have encoded URLs, need to extract flask ID
     if(icon.includes("https://web.poecdn.com/gen/image/")) {
-      logger.info(`Checking ${icon}`);
       var jsonData = this.getBase64EncodedData(icon);
-      logger.info(`JSON data is ${JSON.stringify(jsonData)}`);
       
       if(jsonData.f.includes("/Flasks/")) {
         return getFlaskName(jsonData.f);
@@ -410,15 +408,11 @@ class Utils {
     function getFlaskName(str) {
       // 3.10 icon url generation changed - 2 part replace required now
       var flaskId = str.replace("Art/", "").replace("2DItems/Flasks/", "");
-      logger.info(`Flask id is ${flaskId}`);
-      logger.info("Got " + Constants.uniqueFlasks[flaskId]);
       return Constants.uniqueFlasks[flaskId] || null;
     }
 
     function getUniqueMapName(str) {
       var mapId = str.replace("Art/", "").replace("2DItems/Maps/", "");
-      logger.info(`Map id is ${mapId}`);
-      logger.info("Got " + Constants.uniqueMaps[mapId]);
       return Constants.uniqueMaps[mapId] || null;
     }
     
