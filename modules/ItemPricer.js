@@ -222,7 +222,9 @@
         }
       }
       var identifier = `${name} T${tier} ${series}`;
-      return getValueFromTable("Map", identifier);
+      // workaround poe.ninja bug
+      var tempIdentifier = identifier.replace("Delirium", "Delerium");
+      return getValueFromTable("Map", identifier) || getValueFromTable("Map", tempIdentifier);
 
       function getSeries(icon) {
         
