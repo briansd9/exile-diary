@@ -511,8 +511,14 @@ function getItemsFor(event) {
         resolve(null);
       } else {
         for(var i = 0; i < rows.length; i++) {
-          count++;
+
           var item = rows[i];
+          
+          // ignore items that are equipped
+          var jsonData = JSON.parse(item.rawdata);
+          if(jsonData.inventoryId !== "MainInventory") continue;
+          
+          count++;
           if(item.value) {
             totalValue += item.value;
           } else {
