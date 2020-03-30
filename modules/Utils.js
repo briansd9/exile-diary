@@ -20,7 +20,7 @@ class Utils {
 
   static isTown(str) {
     for(var i = 0; i < Constants.townstrings.length; i++) {
-      if(str.includes(Constants.townstrings[i])) {
+      if(str == Constants.townstrings[i]) {
         return true;
       }
     }
@@ -420,9 +420,7 @@ class Utils {
   
   static getBase64EncodedData(iconURL) {
     var str = iconURL.replace("https://web.poecdn.com/gen/image/", "");
-    logger.info(`Got ${str}`);
     str = str.substr(0, str.indexOf("/"));
-    logger.info(`Extracted ${str}`);
     return (JSON.parse(Buffer.from(str, "base64").toString("utf8")))[2];
   }
 
