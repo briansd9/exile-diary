@@ -1606,7 +1606,7 @@
     "Timeless Delirium Orb" : ["Stackable Currency", "Delirium Orb"],
     "Blighted Delirium Orb" : ["Stackable Currency", "Delirium Orb"],
     "Amorphous Delirium Orb" : ["Stackable Currency", "Delirium Orb"],
-    "Simulacrum Splinter" : "Map Fragments",
+    "Simulacrum Splinter" : "Stackable Currency",
     "Simulacrum" : "Map Fragments",
     
     "6-socket Items" : "Currency",

@@ -93,7 +93,7 @@
       }
     }
     
-    if(item.category === "Map Fragments" || item.typeline === "Offering to the Goddess" || (item.typeline.includes("Timeless") && item.typeline.includes("Splinter"))) {
+    if(item.category === "Map Fragments" || item.typeline === "Offering to the Goddess" || item.typeline === "Simulacrum Splinter" || (item.typeline.includes("Timeless") && item.typeline.includes("Splinter"))) {
       return getValueFromTable("Fragment");
     }
     if(item.rarity === "Currency" || item.typeline.includes("Incubator")) {
