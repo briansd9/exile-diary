@@ -7,7 +7,12 @@
     "Zana, Master Cartographer",
     "Jun, Veiled Master"
   ],
-
+  
+  "leagueNPCs" : [
+    "Sister Cassia",
+    "Strange Voice"
+  ],
+  
   "conquerors" : [
     "Al-Hezmin, the Hunter",
     "Baran, the Crusader",
@@ -61,6 +66,24 @@
     "Maybe they'd not have killed so many of each other if they'd grown fruit instead." : "Toxic Grove",
     "Careful Exile... Something unseen still dwells here." : "Hall of Legends"
   },
+  
+  "beastCaptureQuotes" : [
+    "Off you go, little beast! Away!",
+    "We will be best friends beast! Until we slaughter you!",
+    "The First Ones look upon this capture with pride, Exile. You hunt well.",
+    "Do not worry little beast! We are friends now!",
+    "This one is captured. Einhar will take it.",
+    "You have been captured, beast. You will be a survivor, or you will be food.",
+    "Haha! You are captured, stupid beast.",
+    "Survivor! You are well prepared for the end. This is a fine capture.",
+    "What? Do you not have nets, exile?",
+    "Great job, Exile! Einhar will take the captured beast to the Menagerie.",
+    "Ohhh... That was a juicy one, exile.",
+    "There are no more worthy beasts nearby, so Einhar will go feed the ones we caught.",
+    "That was a hunt you will not soon forget! You're welcome! Goodbye!",
+    "An exhilarating hunt, exile! Now it is time for Einhar to go do Einhar business.",
+    "That was a great hunt, exile! Einhar will write a mighty poem about it."
+  ],
 
   "townstrings" : [
     "Lioneye's Watch",
