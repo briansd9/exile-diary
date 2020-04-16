@@ -400,12 +400,12 @@
           } else {
             return null;
           }
-        } else if(eventType === "conqueror") {
-          return null;
         }
         
         switch (eventType) {
           case "favourGained":
+          case "conqueror":
+          case "leagueNPC":
             return null;
           case "note":
             eventType = "";
@@ -963,4 +963,3 @@
     </div>
   </body>
 </html>
-
