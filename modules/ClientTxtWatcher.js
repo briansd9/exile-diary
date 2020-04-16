@@ -96,20 +96,33 @@ function getEvent(arg) {
   var str = arg.substring(arg.indexOf("] ") + 2);
 
   var masterString = hasMaster(str);
-  var conquerorString = hasConqueror(str);
   if(masterString) {
     return {
       type: "master",
       text: masterString.trim(),
       instanceServer: ""
     };
-  } else if(conquerorString) {
+  }
+  
+  var conquerorString = hasConqueror(str);
+  if(conquerorString) {
     return {
       type: "conqueror",
       text: conquerorString.trim(),
       instanceServer: ""
     };
-  } else if(str.startsWith(":")) {
+  }
+  
+  var npcString = hasNPC(str);
+  if(npcString) {
+    return {
+      type: "leagueNPC",
+      text: npcString.trim(),
+      instanceServer: ""
+    };
+  }
+  
+  if(str.startsWith(":")) {
     if (str.includes("You have entered")) {
       var area = str.substring(str.indexOf("You have entered") + 17);
       return {
@@ -195,7 +208,17 @@ function hasConqueror(str) {
   return false;
 }
 
-async function getOldConquerorEvents() {
+  function hasNPC(str) {
+    for(var i = 0; i < Constants.leagueNPCs.length; i++) {
+      var npc = Constants.leagueNPCs[i];
+      if(str.startsWith(npc)) {
+        return str;      
+      }
+    }
+    return false;
+  }
+
+async function getOldNPCEvents() {
   
   DB = require('./DB').getDB();
   settings = require('./settings').get();
@@ -217,24 +240,23 @@ async function getOldConquerorEvents() {
   rl.on('line', function(line) {
     var str = line.substring(line.indexOf("] ") + 2);
     var timestamp = line.substring(0, 19).replace(/[^0-9]/g, '');
-    var conqString  = hasConqueror(str);
-    if(conqString) {
+    var npcString  = hasNPC(str);
+    if(npcString) {
       DB.run(
         "insert into events(id, event_type, event_text, server) values(?, ?, ?, ?)",
-        [timestamp, "conqueror", conqString.trim(), ""],
+        [timestamp, "leagueNPC", npcString.trim(), ""],
         (err) => {
           if (err) {
             logger.info("Failed to insert event: " + err.message);
           } else {
-            logger.info(`Inserted conqueror event ${timestamp} -> ${conqString}`);
+            logger.info(`Inserted league NPC event ${timestamp} -> ${npcString}`);
           }
         }
       );        
     }
   });
-    
   
 }
 
 module.exports.start = start;
-module.exports.getOldConquerorEvents = getOldConquerorEvents;
+module.exports.getOldNPCEvents = getOldNPCEvents;
