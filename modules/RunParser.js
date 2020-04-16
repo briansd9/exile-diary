@@ -365,16 +365,11 @@ async function getXP(firstEvent, lastEvent) {
   
   
 async function getXPManual() {
+  
   var settings = require('./settings').get();  
-  var requestParams = {
-    hostname: 'www.pathofexile.com',
-    path: `/character-window/get-characters?accountName=${encodeURIComponent(settings.accountName)}`,
-    method: 'GET',
-    headers: {
-      Referer: 'http://www.pathofexile.com/',
-      Cookie: `POESESSID=${settings.poesessid}`
-    }
-  };
+  var path = `/character-window/get-characters?accountName=${encodeURIComponent(settings.accountName)}`;
+  var requestParams = Utils.getRequestParams(path, settings.poesessid);
+  
   return new Promise((resolve, reject) => {
     var request = https.request(requestParams, (response) => {
       var body = '';
@@ -726,7 +721,7 @@ async function recheckGained(mapID) {
       if(row && row.gained !== -1) {
         var allItems = await getItems(row.id, row.firstevent, row.lastevent);
         if(allItems.value - row.gained !== 0) {
-          console.log(`update mapruns set gained = ${allItems.value} where id = ${row.id} -- was: ${row.gained}`);
+          console.log(`update mapruns set gained = ${allItems.value} where id = ${row.id}; -- was: ${row.gained}`);
         }
       }
       resolve(null);
@@ -749,7 +744,111 @@ function getMapStats(arr) {
   return mapStats;
 }
 
+function getMapExtraInfo(mapID) {
+  DB = require('./DB').getDB();
+  DB.get(" select * from mapruns where id = :id", [mapID], async (err, row) => {
+    
+    let extraInfo = {};
+    
+    let events = await getEvents(row.firstevent, row.lastevent);
+    
+    let blightCount = getBlightCount(events);
+    if(blightCount > 8) {
+      extraInfo.blightedMap = true;
+    } else if(blightCount > 0) {
+      extraInfo.blightEncounter = true;
+    }
+    
+    let conq = getConqueror(events);
+    if(conq) { extraInfo.conqueror = conq; }
+    
+    let deaths = getDeaths(events);
+    if(deaths) { extraInfo.deaths = deaths; }
+    
+    let master = getMaster(row, events);
+    if(master) { extraInfo.master = master; }
+    
+    if(Object.keys(extraInfo).length) {
+      console.log(JSON.stringify(row));
+      console.log(JSON.stringify(extraInfo, null, 4));
+    }
+    
+  });
+  
+  function getMaster(row, events) {
+    
+  }
+  
+  function getDeaths(events) {    
+    return events.reduce( (total, e) => { return total + (e.event_type === "slain" ? 1 : 0); }, 0);    
+  }  
+  
+  function getConqueror(events) {
+   
+    let conq = null;
+    let conqCount = 0;
+    
+    for(let i = 0; i < events.length; i++) {
+      if(events[i].event_type === "conqueror") {
+        if(!conq) {
+          conq = Constants.conquerors.find( str => { return events[i].event_text.startsWith(str); } );
+        }
+        conqCount++;
+      }
+    }
+    
+    if(conq && !conq.includes("Sirus")) {
+      var c = {};
+      c[conq] = (conqCount > 1 ? "battle" : "encounter");
+      return c;
+    }
+    
+    return null;
+    
+  }
+  
+  function getBlightCount(events) {
+    
+    const blightBranchEvents = [
+      "The Blight is trying to spread!",
+      "It's put out new mycelium! ... New roots!",
+      "It's branching, exile!"
+    ];
+    
+    return events.reduce( (total, e) => {
+      return total + (e.event_type === "leagueNPC" && blightBranchEvents.some(str => { return e.event_text.endsWith(str) }) ? 1 : 0);
+    }, 0);
+    
+  }
+  
+  function getMods(id) {
+    return new Promise( (resolve, reject) => {
+      DB.all(" select mod from mapmods where area_id = :id order by id", [id], (err, rows) => {
+        var mods = [];
+        for(let i = 0; i < rows.length; i++) {
+          mods.push(rows[i].mod);
+        }
+        resolve(mods);
+      });
+    });
+  }
+
+  function getEvents(firstevent, lastevent) {
+    return new Promise( (resolve, reject) => {
+      DB.all(" select * from events where id between :first and :last order by id", [firstevent, lastevent], (err, rows) => { 
+        var events = [];
+        for(let i = 0; i < rows.length; i++) {
+          events.push(rows[i]);
+        }
+        resolve(events); 
+      });
+    });
+  }
+  
+}
+
 module.exports.process = process;
 module.exports.tryProcess = tryProcess;
 module.exports.emitter = emitter;
 module.exports.recheckGained = recheckGained;
+module.exports.getMapExtraInfo = getMapExtraInfo;
