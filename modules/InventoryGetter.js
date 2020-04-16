@@ -101,16 +101,10 @@ class InventoryGetter extends EventEmitter {
   }
 
   getCurrentInventory(timestamp) {
+
     var ig = this;
-    var requestParams = {
-        hostname: 'www.pathofexile.com',
-        path: this.queryPath,
-        method: 'GET',
-        headers: {
-          Referer: 'http://www.pathofexile.com/',
-          Cookie: `POESESSID=${settings.poesessid}`
-        }
-      };
+    var requestParams = require('./Utils').getRequestParams(this.queryPath, settings.poesessid);
+    
     return new Promise((resolve, reject) => {
       var request = https.request(requestParams, (response) => {
         var body = '';

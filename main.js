@@ -51,17 +51,10 @@ function checkCurrentCharacterLeague() {
       characterCheckStatus = "error";
       resolve();
     }
-  
-    var requestParams = {
-      hostname: 'www.pathofexile.com',
-      path: `/character-window/get-characters?accountName=${encodeURIComponent(settings.accountName)}`,
-      method: 'GET',
-      headers: {
-        Referer: 'http://www.pathofexile.com/',
-        Cookie: `POESESSID=${settings.poesessid}`
-      }
-    };
-
+    
+    var path = `/character-window/get-characters?accountName=${encodeURIComponent(settings.accountName)}`;
+    var requestParams = Utils.getRequestParams(path, settings.poesessid);
+    
     var request = require('https').request(requestParams, (response) => {
       var body = '';
       response.setEncoding('utf8');

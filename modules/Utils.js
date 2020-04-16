@@ -427,6 +427,24 @@ class Utils {
   static getTempleRoom(q) {
     return Constants.templeRoomQuotes[q] || null;
   }  
+  
+  static getRequestParams(path, poesessid) {
+    
+    let app = require('electron').app || require('electron').remote.app;
+    let params = {
+      hostname: 'www.pathofexile.com',
+      path: path,
+      method: 'GET',
+      headers: {
+        "User-Agent": `exile-diary/${app.getVersion()}`,
+        "Referer": 'http://www.pathofexile.com/',
+        "Cookie": `POESESSID=${poesessid}`
+      }
+    };    
+    
+    return params;
+    
+  }
 
 }
 

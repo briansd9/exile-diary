@@ -39,6 +39,7 @@
       const {ipcRenderer} = require('electron');
       const fs = require('fs');
       const logger = require('./modules/Log').getLogger(__filename);
+      const Utils = require('./modules/Utils');
       const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled"];
 
       var settings = {};
@@ -339,15 +340,9 @@
       
       function getTabList() {
         
-        var requestParams = {
-          hostname: 'www.pathofexile.com',
-          path: `/character-window/get-stash-items?accountName=${encodeURIComponent(settings.accountName)}&league=${encodeURIComponent(settings.activeProfile.league)}&tabs=1`,
-          method: 'GET',
-          headers: {
-            Referer: 'http://www.pathofexile.com/',
-            Cookie: `POESESSID=${$("#poesessid").val()}`
-          }
-        };
+        var path = `/character-window/get-stash-items?accountName=${encodeURIComponent(settings.accountName)}&league=${encodeURIComponent(settings.activeProfile.league)}&tabs=1`;
+        var poesessid = $("#poesessid").val();
+        var requestParams = Utils.getRequestParams(path, poesessid);
         
         var request = https.request(requestParams, (response) => {
           var body = '';
@@ -417,15 +412,9 @@
         
         $("#characterList").val(`Loading characters for ${$("#accountName").val()} . . .`);
         
-        var requestParams = {
-          hostname: 'www.pathofexile.com',
-          path: `/character-window/get-characters?accountName=${encodeURIComponent($("#accountName").val())}`,
-          method: 'GET',
-          headers: {
-            Referer: 'http://www.pathofexile.com/',
-            Cookie: `POESESSID=${$("#poesessid").val()}`
-          }
-        };
+        var path = `/character-window/get-characters?accountName=${encodeURIComponent($("#accountName").val())}`;
+        var poesessid = $("#poesessid").val();
+        var requestParams = Utils.getRequestParams(path, poesessid);
         
         var request = https.request(requestParams, (response) => {
           var body = '';

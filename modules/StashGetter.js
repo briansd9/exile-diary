@@ -174,16 +174,9 @@ function timer(ms) {
 
 function getTabList(s) {
   
-  var requestParams = {
-    hostname: 'www.pathofexile.com',
-    path: `/character-window/get-stash-items?league=${encodeURIComponent(s.league)}&accountName=${encodeURIComponent(s.accountName)}&tabs=1`,
-    method: 'GET',
-    headers: {
-      Referer: 'https://www.pathofexile.com/',
-      Cookie: `POESESSID=${s.poesessid}`
-    }
-  };
-
+  var path = `/character-window/get-stash-items?league=${encodeURIComponent(s.league)}&accountName=${encodeURIComponent(s.accountName)}&tabs=1`;
+  var requestParams = Utils.getRequestParams(path, s.poesessid);
+  
   return new Promise((resolve, reject) => {
     var request = https.request(requestParams, (response) => {
       var body = '';
@@ -231,15 +224,8 @@ function getTabList(s) {
 
 async function getTab(t, s) {
   
-  var requestParams = {
-    hostname: 'www.pathofexile.com',
-    path: `/character-window/get-stash-items?league=${encodeURIComponent(s.league)}&accountName=${encodeURIComponent(s.accountName)}&tabIndex=${t.index}`,
-    method: 'GET',
-    headers: {
-      Referer: 'http://www.pathofexile.com/',
-      Cookie: `POESESSID=${s.poesessid}`
-    }
-  };
+  var path = `/character-window/get-stash-items?league=${encodeURIComponent(s.league)}&accountName=${encodeURIComponent(s.accountName)}&tabIndex=${t.index}`;
+  var requestParams = Utils.getRequestParams(path, s.poesessid);
 
   return new Promise((resolve, reject) => {
     var request = https.request(requestParams, (response) => {
