@@ -63,7 +63,11 @@
         
         var settingsPath = path.join(app.getPath("userData"), "settings.json");
         if(fs.existsSync(settingsPath)) {
-          settings = require(settingsPath);
+          try {
+            settings = require(settingsPath);
+          } catch(err) {
+            // if settings file contains invalid JSON, ignore and prompt for fresh setup
+          }
         }
 
         $("#sidenav").load("sidenav.html", () => {
