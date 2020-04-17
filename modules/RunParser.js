@@ -548,8 +548,6 @@ function updateItemValues(arr) {
     DB.run("begin transaction", (err) => {
       if(err) {
         logger.info(`Error beginning transaction to insert items: ${err}`);
-      } else {
-        logger.info("Transaction started");
       }
     });
     var stmt = DB.prepare(`update items set value = ? where id = ? and event_id = ?`);
@@ -575,9 +573,7 @@ function updateItemValues(arr) {
         DB.run("commit", (err) => {
           if (err) {
             logger.info(`Error committing item insert: ${err}`);
-          } else {
-            logger.info("Transaction committed");
-          }        
+          }
         });
       }
     });
