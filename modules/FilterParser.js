@@ -468,7 +468,6 @@ function Parser() {
             sockets: sorted.replace(/[0123456]/g, "")
           };
         });
-        console.log(`Socket group filter [${arguments}]: operator is ${operator}, groups is ${JSON.stringify(groups)}`);
         self.currentRule.filters.push( new filter( operator, groups, mode ) );
       }
       
