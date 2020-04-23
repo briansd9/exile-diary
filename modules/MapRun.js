@@ -137,7 +137,7 @@ async function getItems(mapID) {
   return new Promise((resolve, reject) => {
     var items = {};
     DB.all(`
-            select events.id, items.rarity, items.icon, items.value, items.rawdata from mapruns, events, items
+            select events.id, items.rarity, items.icon, items.value, items.stacksize, items.rawdata from mapruns, events, items
             where mapruns.id = ?
             and events.id between mapruns.firstevent and mapruns.lastevent
             and items.event_id = events.id;
@@ -160,10 +160,11 @@ async function getItems(mapID) {
               }
             }
           }
-          if(secretName || row.value) {
+          if(secretName || row.value || row.stacksize) {
             var data = JSON.parse(row.rawdata);
             if(secretName) data.secretName = secretName;
             if(row.value) data.value = row.value;
+            if(row.stacksize) data.pickupStackSize = row.stacksize;
             items[row.id].push(JSON.stringify(data));
           } else {
             items[row.id].push(row.rawdata);

@@ -161,7 +161,8 @@
           items: ".item-container",
           content: function () {
             let id = $(this).attr("id");
-            let popup = $(`#${id}_popup`);
+            let arrayIndex = $(this).attr("arrayIndex");
+            let popup = $(`#${id}_${arrayIndex}_popup`);
             return (popup.length ? popup.clone() : null);
           },
           position: { my: "left", at: "right" },
@@ -459,6 +460,7 @@
 
       function getItemDiv(item) {
         itemDiv = drawItem(item);
+        itemDiv.setAttribute("arrayIndex", item.arrayIndex);
         if (item.frameType === 3) {
           MiscUtils.preload(item.icon);
           itemDiv.setAttribute("icon", item.icon);
@@ -605,9 +607,11 @@
         if(!items[timestamp]) return "";
         
         var inventoryDiv = document.createElement("div");
-        items[timestamp].forEach( rawdata => {
-          var item = JSON.parse(rawdata);
+        
+        for(let i = 0; i < items[timestamp].length; i++) {
+          var item = JSON.parse(items[timestamp][i]);
           if(item.inventoryId === "MainInventory") {
+            item.arrayIndex = i;
             processItem(item);
             var itemDiv = getItemDiv(item);
             inventoryDiv.appendChild(itemDiv);
@@ -616,7 +620,7 @@
               $("#popupContainer").append(popup);
             }
           }
-        });
+        };
         return (`<span class='eventType'>Picked up:</span> <span class='eventText'>${inventoryDiv.outerHTML}</span></div>`);
 
       }

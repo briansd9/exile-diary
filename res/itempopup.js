@@ -32,10 +32,10 @@ function setMaxLength(str) {
 }
 
 function createPopup(data) {
-
+  
   maxLength = -1;
   
-  let d = $(`<div id='${data.id}_popup' style='white-space:nowrap;'/>`);
+  let d = $(`<div id='${data.id}_${data.arrayIndex}_popup' style='white-space:nowrap;'/>`);
         
   let t = $(`<table class='newItemPopup'/>`);
   if(frameTypes[data.frameType]) {
@@ -44,8 +44,10 @@ function createPopup(data) {
     // divination cards - special handling required
     return null;
   }
-  
+
   t.append(getHeader(data));
+  
+  fixStackSize(data);
   
   let contentRow = $("<tr />");
   let contentCell = $("<td class='itemInfo' />");
@@ -105,7 +107,7 @@ function createPopup(data) {
   
   d.append($(`
     <div style='border: 1px solid #333;display:inline-block;padding:4px;background-color:rgba(0,0,0,0.9);vertical-align:top;z-index:1998'>
-      <span class='stackSize' style='top:12px;left:18px;'>${data.maxStackSize ? data.stackSize : ""}</span>
+      <span class='stackSize' style='top:12px;left:18px;'>${data.maxStackSize ? data.pickupStackSize : ""}</span>
       <img style='vertical-align:top;' src="${data.icon}"/>
     </div>
   `));
@@ -113,6 +115,17 @@ function createPopup(data) {
   
   return d.get(0);
 
+}
+
+function fixStackSize(data) {
+  if(!data.properties || !data.maxStackSize) return;
+  for(var i = 0; i < data.properties.length; i++) {
+    let prop = data.properties[i];
+    if(prop.name === "Stack Size") {
+      prop.values[0][0] = `${data.pickupStackSize}/${data.maxStackSize}`;
+      return;
+    }
+  }
 }
 
 function getHeader(data) {
