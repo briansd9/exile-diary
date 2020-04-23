@@ -1,0 +1,525 @@
+.newItemPopup {
+  display: inline-block;
+  text-align: center;
+  background-color: rgba(0, 0, 0, 0.95);
+  border: 1px solid #333;
+  border-collapse: collapse; 
+  padding: 0px;
+}
+
+.itemHeader {
+  height: 36px;
+}  
+
+
+.itemInfo {
+  min-width: 400px;
+  max-width: 900px;
+  padding: 0px 10px 4px 10px;
+}
+
+.itemInfo div {
+  font-size: 18px;
+}
+
+.itemName {
+  font-size: 20px;
+}
+
+.itemName.secretName {
+  opacity: 0.35;
+}
+
+.doubleLine .itemName {
+  margin-top: -2px;
+}
+
+.doubleLine .itemName.typeLine {
+  margin-top: -2px;
+}
+
+.separator {
+  height: 8px;
+}
+
+.newItemPopup.normalPopup .itemName, .newItemPopup.normalPopup .secDescrText {
+  color: #c8c8c8;
+}
+.newItemPopup.rarePopup .itemName, .newItemPopup.rarePopup .secDescrText {
+  color: #ffff77; 
+}
+.newItemPopup.magicPopup .itemName, .newItemPopup.magicPopup .secDescrText {
+  color: #8888ff; 
+}
+.newItemPopup.gemPopup .itemName, .newItemPopup.gemPopup .secDescrText {
+  color: #1ba29b; 
+}
+.newItemPopup.currencyPopup .itemName, .newItemPopup.currencyPopup .secDescrText {
+  color: #aa9e82; 
+}
+.newItemPopup.uniquePopup .itemName, .newItemPopup.uniquePopup .secDescrText {
+  color: #af6025; 
+}
+.newItemPopup.questPopup .itemName, .newItemPopup.questPopup .secDescrText {
+  color: #4ae63a; 
+}
+.newItemPopup.prophecyPopup .itemName, .newItemPopup.prophecyPopup .secDescrText {
+  color: #b54bff; 
+}
+.newItemPopup.relicPopup .itemName, .newItemPopup.relicPopup .secDescrText {
+  color: #82ad6a; 
+}
+
+
+.itemHeader .symbol {
+  content: ' ';
+  display: inline-block;
+  position: relative;
+  background: none center no-repeat; }
+
+.itemHeader .symbol.l {
+  float: left;
+  left: -1px;
+  height: 100%;
+  width: 26px; }
+
+.itemHeader .symbol.r {
+  float: right;
+  right: -1px;
+  height: 100%;
+  width: 26px; 
+}
+
+.itemHeader.doubleLine .symbol.l {
+  left: -1px;
+ }
+
+.itemHeader.doubleLine .symbol.r {
+  right: -2px;
+}
+
+.itemHeader .symbol.shaper {
+  background-image: url('img/itemicons/shaper-symbol.png'); }
+
+.itemHeader .symbol.elder {
+  background-image: url('img/itemicons/elder-symbol.png'); }
+
+.itemHeader .symbol.crusader {
+  background-image: url('img/itemicons/crusader-symbol.png'); }
+
+.itemHeader .symbol.redeemer {
+  background-image: url('img/itemicons/redeemer-symbol.png'); }
+
+.itemHeader .symbol.hunter {
+  background-image: url('img/itemicons/hunter-symbol.png'); }
+
+.itemHeader .symbol.warlord {
+  background-image: url('img/itemicons/warlord-symbol.png'); }
+
+.itemHeader .symbol.veiled {
+  background-image: url('img/itemicons/veiled-symbol.png'); }
+
+.itemHeader .symbol.fractured {
+  background-image: url('img/itemicons/fractured-symbol.png'); }
+
+.itemHeader .symbol.synthetic {
+  background-image: url('img/itemicons/synthetic-symbol.png'); }
+
+.normalPopup .itemHeader {
+  background: url('img/itemicons/header-normal-left.png') top left no-repeat, url('img/itemicons/header-normal-right.png') top right no-repeat, url('img/itemicons/header-normal-middle.png') top center repeat-x; }
+
+.normalPopup .separator {
+  background: url('img/itemicons/seperator-normal.png') center no-repeat; }
+
+.magicPopup .itemHeader {
+  background: url('img/itemicons/header-magic-left.png') top left no-repeat, url('img/itemicons/header-magic-right.png') top right no-repeat, url('img/itemicons/header-magic-middle.png') top center repeat-x; }
+
+.magicPopup .separator {
+  background: url('img/itemicons/seperator-magic.png') center no-repeat; }
+
+.rarePopup .itemHeader {
+  background: url('img/itemicons/header-rare-left.png') top left no-repeat, url('img/itemicons/header-rare-right.png') top right no-repeat, url('img/itemicons/header-rare-middle.png') top center repeat-x; }
+
+.rarePopup .itemHeader.doubleLine {
+  background: url('img/itemicons/header-double-rare-left.png') top left no-repeat, url('img/itemicons/header-double-rare-right.png') top right no-repeat, url('img/itemicons/header-double-rare-middle.png') top center repeat-x; }
+
+.rarePopup .separator {
+  background: url('img/itemicons/seperator-rare.png') center no-repeat; }
+
+.uniquePopup .itemHeader {
+  background: url('img/itemicons/header-unique-left.png') top left no-repeat, url('img/itemicons/header-unique-right.png') top right no-repeat, url('img/itemicons/header-unique-middle.png') top center repeat-x; }
+
+.uniquePopup .itemHeader.doubleLine {
+  background: url('img/itemicons/header-double-unique-left.png') top left no-repeat, url('img/itemicons/header-double-unique-right.png') top right no-repeat, url('img/itemicons/header-double-unique-middle.png') top center repeat-x; }
+
+.uniquePopup .separator {
+  background: url('img/itemicons/seperator-unique.png') center no-repeat; }
+
+.gemPopup .itemHeader {
+  background: url('img/itemicons/header-gem-left.png') top left no-repeat, url('img/itemicons/header-gem-right.png') top right no-repeat, url('img/itemicons/header-gem-middle.png') top center repeat-x; }
+
+.gemPopup .separator {
+  background: url('img/itemicons/seperator-gem.png') center no-repeat; }
+
+.currencyPopup .itemHeader {
+  background: url('img/itemicons/header-currency-left.png') top left no-repeat, url('img/itemicons/header-currency-right.png') top right no-repeat, url('img/itemicons/header-currency-middle.png') top center repeat-x; }
+
+.currencyPopup .separator {
+  background: url('img/itemicons/seperator-currency.png') center no-repeat; }
+
+.questPopup .itemHeader {
+  background: url('img/itemicons/header-quest-left.png') top left no-repeat, url('img/itemicons/header-quest-right.png') top right no-repeat, url('img/itemicons/header-quest-middle.png') top center repeat-x; }
+
+.questPopup .separator {
+  background: url('img/itemicons/seperator-quest.png') center no-repeat; }
+
+.prophecyPopup .itemHeader {
+  background: url('img/itemicons/header-prophecy-left.png') top left no-repeat, url('img/itemicons/header-prophecy-right.png') top right no-repeat, url('img/itemicons/header-prophecy-middle.png') top center repeat-x; }
+
+.prophecyPopup .separator {
+  background: url('img/itemicons/seperator-prophecy.png') center no-repeat; }
+
+.relicPopup .itemHeader {
+  background: url('img/itemicons/header-relic-left.png') top left no-repeat, url('img/itemicons/header-relic-right.png') top right no-repeat, url('img/itemicons/header-relic-middle.png') top center repeat-x; }
+
+.relicPopup .itemHeader.doubleLine {
+  background: url('img/itemicons/header-double-relic-left.png') top left no-repeat, url('img/itemicons/header-double-relic-right.png') top right no-repeat, url('img/itemicons/header-double-relic-middle.png') top center repeat-x; }
+
+.relicPopup .separator {
+  background: url('img/itemicons/seperator-relic.png') center no-repeat; }  
+
+.newItemPopup .colourDefault {
+  color: white; }
+.newItemPopup .colourAugmented {
+  color: #8888FF; }
+.newItemPopup .colourUnmet {
+  color: #d20000; }
+.newItemPopup .colourPhysicalDamage {
+  color: white; }
+.newItemPopup .colourFireDamage {
+  color: #960000; }
+.newItemPopup .colourColdDamage {
+  color: #366492; }
+.newItemPopup .colourLightningDamage {
+  color: gold; }
+.newItemPopup .colourChaosDamage {
+  color: #d02090; }
+
+.explicitMod, .implicitMod, .utilityMod {
+  color: #8888FF; }
+
+.fracturedMod {
+  color: #a29162; }
+
+.craftedMod, .enchantMod {
+  color: #b4b4ff; }
+
+.textUnique, .flavourText, .uniqueitem {
+  color: #af6025; }
+
+.descrText, .flavourText {
+  font-style: italic; 
+}
+
+@keyframes animate-veiled-mod {
+  100% {
+    background-position: 0; } }
+
+.veiledMod .lc.prefix, .veiledMod .lc.suffix {
+  padding: 0;
+  display: inline-block;
+  animation: animate-veiled-mod 3s steps(90) reverse infinite;
+  will-change: background-position;
+  white-space: nowrap; }
+.veiledMod .lc.prefix {
+  width: 158px;  
+  background-position: -14220px;
+  user-select: auto;
+  color: transparent; }
+.veiledMod .lc.prefix01 {
+  background-image: url('img/itemicons/veiled/prefix_01.png'); }
+.veiledMod .lc.prefix02 {
+  background-image: url('img/itemicons/veiled/prefix_02.png'); }
+.veiledMod .lc.prefix03 {
+  background-image: url('img/itemicons/veiled/prefix_03.png'); }
+.veiledMod .lc.prefix04 {
+  background-image: url('img/itemicons/veiled/prefix_04.png'); }
+.veiledMod .lc.prefix05 {
+  background-image: url('img/itemicons/veiled/prefix_05.png'); }
+.veiledMod .lc.prefix06 {
+  background-image: url('img/itemicons/veiled/prefix_06.png'); }
+.veiledMod .lc.suffix {
+  width: 85px;
+  background-position: -7650px;
+  user-select: auto;
+  color: transparent; }
+.veiledMod .lc.suffix01 {
+  background-image: url('img/itemicons/veiled/suffix_01.png'); }
+.veiledMod .lc.suffix02 {
+  background-image: url('img/itemicons/veiled/suffix_02.png'); }
+.veiledMod .lc.suffix03 {
+  background-image: url('img/itemicons/veiled/suffix_03.png'); }
+.veiledMod .lc.suffix04 {
+  background-image: url('img/itemicons/veiled/suffix_04.png'); }
+.veiledMod .lc.suffix05 {
+  background-image: url('img/itemicons/veiled/suffix_05.png'); }
+.veiledMod .lc.suffix06 {
+  background-image: url('img/itemicons/veiled/suffix_06.png'); }
+
+.experienceBar {
+  background: url('img/itemicons/experience-bar.png');
+  width: 212px;
+  height: 13px;
+  margin: 0 4px;
+  display: inline-block;
+  text-align: left; }
+.experienceBar .fill {
+  width: 204px;
+  display: inline-block;
+  margin: 0px 4px; }
+.experienceBar .fill span {
+  display: inline-block;
+  height: 13px;
+  background: url('img/itemicons/experience-bar-fill.png') repeat-x; }
+
+.incubated .text {
+  color: #b4b4ff; }
+.incubated .descrText {
+  font-size: 0.8em; }
+.incubated .descrText .progress {
+  color: white;
+  padding: 0; }
+
+.newItemPopup .vaalHeader, .newItemPopup .hybridHeader {
+  background: none no-repeat center / contain;
+  height: 34px;
+  font-size: 20px;
+  padding-top: 4px;
+}
+.newItemPopup .vaalHeader {
+  background-image: url('img/itemicons/vaal-title.png'); }
+.newItemPopup .hybridHeader {
+  background-image: url('img/itemicons/hybrid-title.png'); }
+
+.PoEMarkup.glyph.HBG00 {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -60px -90px;
+  width: 5px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBG01 {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -38px -90px;
+  width: 8px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBG02 {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -28px -90px;
+  width: 10px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBG03 {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -46px -90px;
+  width: 8px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBG04 {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -18px -90px;
+  width: 10px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAa {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -40px 0px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAb {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -40px -18px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAc {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: 0px -36px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAd {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -20px -36px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAe {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -40px -36px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAf {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -60px 0px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAg {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -60px -18px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAh {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -60px -36px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAi {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: 0px -54px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAj {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -20px -54px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAk {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -40px -54px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAl {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: 0px 0px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAm {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -80px 0px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAn {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -20px 0px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAo {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -80px -36px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAp {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -80px -54px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAq {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: 0px -72px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAr {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -20px -72px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAs {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -40px -72px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAt {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -60px -72px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAu {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -80px -72px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAv {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -100px 0px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAw {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -100px -18px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAx {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -100px -36px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAy {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -100px -54px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGAz {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -100px -72px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGBa {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -80px -18px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGBc {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -20px -18px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGBd {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: 0px -18px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.HBGBe {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -60px -54px;
+  width: 20px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.hbgi00 {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: -54px -90px;
+  width: 6px;
+  height: 18px;
+  display: inline-block; }
+.PoEMarkup.glyph.hbgi04 {
+  background: url('img/itemicons/glyph.png') no-repeat;
+  background-position: 0px -90px;
+  width: 18px;
+  height: 18px;
+  display: inline-block; }

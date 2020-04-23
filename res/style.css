@@ -11,7 +11,7 @@ html {
 		font-family: Fontin;
 		src: url("Fontin-Regular.ttf");
 	}
-	
+  
 	span.positive {
 		color: #88cc88;
 	}
@@ -182,8 +182,15 @@ html {
 	.uniqueItemTooltipStyle {
     min-width: 100px !important ;
     border: 1px solid #af6025 !important ;
-		background: rgba(0, 0, 0, 0.9) !important ;
 	}
+  
+	.tooltipOverride {
+		background: rgba(0, 0, 0, 0) !important ;
+    border: none !important ;
+    min-width: 400px !important;
+    max-width: 900px !important;
+	}
+    
   
 	.chatTime {
 		color: #8F60C3;		
@@ -516,3 +523,4 @@ span.itemSuffix {
   font-size: small;
   color: #B8DAF1;
 }
+

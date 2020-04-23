@@ -1,6 +1,7 @@
 <html>
   <head>
     <link rel="stylesheet" type="text/css" href="res/style.css" />
+    <link rel="stylesheet" type="text/css" href="res/itempopup.css" />
     <link rel="stylesheet" type="text/css" href="res/poedit.css" />
     <link rel="stylesheet" type="text/css" href="res/jquery-ui.min.css" />
     <link rel="stylesheet" type="text/css" href="res/jquery-ui.structure.min.css" />
@@ -15,6 +16,7 @@
     <script src="res/jquery.lazy.js"></script>
     <script src="res/jquery-ui.js"></script>
     <script src="res/utils.js"></script>
+    <script src="res/itempopup.js"></script>
     <script src="res/page-utils.js"></script>
 
     <!-- Insert this line after script imports -->
@@ -90,6 +92,10 @@
         
       });
       
+//      $(document).on("click", ".item-container", function() {
+//        alert(1);
+//      });
+      
       $(document).keydown(e => {
         switch (e.key) {
           case "ArrowLeft":
@@ -145,21 +151,26 @@
         
         var m = new MapRun(mapID);
         m.on("MapRunReady", () => { loadMap(m); });
-        
+
         $(document).tooltip({
-          tooltipClass: "uniqueItemTooltipStyle",
+          classes: {
+            "ui-tooltip": "tooltipOverride",
+          },
           show: "true",
           hide: "false",
-          items: "[icon]",
+          items: ".item-container",
           content: function () {
-            var element = $(this);
-            var str = "<div class='uniqueBox'>";
-            if (element.attr("secretName")) {
-              str += "<div class='uniqueItemName'>" + element.attr("secretName") + "</div>";
+            let id = $(this).attr("id");
+            let popup = $(`#${id}_popup`);
+            return (popup.length ? popup.clone() : null);
+          },
+          position: { my: "left", at: "right" },
+          open: function(event, ui) {
+            if(ui.tooltip.offset().top < $(window).scrollTop()) {
+              ui.tooltip.offset({ top: $(window).scrollTop() });
+            } else if(ui.tooltip.offset().top - $(window).scrollTop() + ui.tooltip.height() + 16 > window.innerHeight) {
+              ui.tooltip.offset({ top: window.innerHeight - ui.tooltip.height() - 16 + $(window).scrollTop() });
             }
-            str += "<img class='centerImage' src=\"" + element.attr("icon") + "\"/>";
-            str += "</div>";
-            return str;
           }
         });
         
@@ -262,7 +273,8 @@
         [
           "itemsTable", "prevCell", "nextCell",
           "IIQ", "IIR", "packSize", "eventsDiv", "mods", 
-          "beastCount", "incursionCount", "sulphiteCount"
+          "beastCount", "incursionCount", "sulphiteCount",
+          "popupContainer"
         ].forEach( str => {
           $(`#${str}`).empty();
         });
@@ -439,7 +451,7 @@
         
         if(lastMatchedRule) {
           lastMatchedRule.applyTo(item);
-        }        
+        }
         
         return itemDiv;
         
@@ -599,6 +611,10 @@
             processItem(item);
             var itemDiv = getItemDiv(item);
             inventoryDiv.appendChild(itemDiv);
+            var popup = createPopup(item);
+            if(popup) {
+              $("#popupContainer").append(popup);
+            }
           }
         });
         return (`<span class='eventType'>Picked up:</span> <span class='eventText'>${inventoryDiv.outerHTML}</span></div>`);
@@ -824,6 +840,8 @@
   </head>
   <body style='display:none;'>
     
+    <div id="popupContainer" style="pointer-events:none;display:none;height:100%;width:100%;z-index:999;position:absolute;top:0;left:0"></div>
+   
     <div id="outerDiv">
     
       <div class='sidenav' id='sidenav'></div>    
