@@ -1,3 +1,4 @@
+
 .newItemPopup {
   display: inline-block;
   text-align: center;
@@ -212,7 +213,7 @@
   color: #a29162; }
 
 .craftedMod, .enchantMod {
-  color: #b4b4ff; }
+  color: #B8DAF1; }
 
 .textUnique, .flavourText, .uniqueitem {
   color: #af6025; }
@@ -283,7 +284,7 @@
   background: url('img/itemicons/experience-bar-fill.png') repeat-x; }
 
 .incubated .text {
-  color: #b4b4ff; }
+  color: #B8DAF1; }
 .incubated .descrText {
   font-size: 0.8em; }
 .incubated .descrText .progress {
@@ -523,3 +524,127 @@
   width: 18px;
   height: 18px;
   display: inline-block; }
+
+.divinationCard {
+  width: 268px;
+  height: 401px;
+  background: transparent;
+  font-size: 14px; }
+.divinationCard span.lc {
+  padding: 0; 
+  top: 4px;
+}
+.divinationCard .cardFace {
+  position: absolute;
+  z-index: -1;
+  left: 4%;
+  top: 7%;
+  height: 42%;
+  width: 90%;
+  background: #1e1e1e;
+  overflow: hidden; }
+.divinationCard .cardFace img {
+  height: 100%;
+  width: 100%; }
+.divinationCard .itemBoxContent {
+  z-index: 3;
+  background: transparent url('img/itemicons/divination-card.png') no-repeat center;
+  background-size: cover;
+  width: 100%;
+  height: 100%; }
+.divinationCard .itemBoxContent .itemHeader {
+  padding-top: 3%; }
+.divinationCard .itemBoxContent .itemHeader .itemName {
+  font-size: 16px; }
+.divinationCard .itemBoxContent .explicitModsWrapper {
+  position: absolute;
+  top: 51.0%;
+  left: 3%;
+  width: 88%;
+  height: 16%;
+  margin: 0 3.5%;
+  font-size: 110%;
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  transform-style: preserve-3d; }
+.divinationCard .itemBoxContent .explicitModsWrapper .explicitModsContainer {
+  position: relative;
+  top: 50%;
+  width: 100%;
+  transform: translateY(-50%); }
+.divinationCard .itemBoxContent .explicitModsWrapper .explicitModsContainer .explicitMod {
+  line-height: 16px; }
+.divinationCard .itemBoxContent .explicitModsWrapper .explicitModsContainer .explicitMod:nth-child(n+3) {
+  line-height: 14px; }
+.divinationCard .itemBoxContent .explicitModsWrapper .explicitModsContainer .explicitMod .corrupted {
+  font-size: 15px;
+  line-height: 15px; }
+.divinationCard .itemBoxContent .stackSize {
+  color: #c8c8c8;
+  font-size: 80%;
+  width: 15%;
+  height: 22px;
+  top: 46.5%;
+  left: 10%;
+  position: absolute; }
+.divinationCard .itemBoxContent .flavourTextWrapper {
+  position: absolute;
+  top: 67%;
+  left: 3%;
+  width: 88%;
+  height: 29%;
+  margin: 0 3.5%; 
+  padding: 6px;
+}
+.divinationCard .itemBoxContent .flavourTextWrapper .flavourTextContainer {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%); }
+.divinationCard .itemBoxContent .flavourTextWrapper .flavourTextContainer .flavourText {
+  line-height: 1; }
+.divinationCard .itemName, .divinationCard .secDescrText {
+  color: #111; }
+.divinationCard .default {
+  color: #7f7f7f; }
+.divinationCard .uniqueitem {
+  color: #af6025; }
+.divinationCard .rareitem {
+  color: #ffff77; }
+.divinationCard .magicitem {
+  color: #8888ff; }
+.divinationCard .whiteitem {
+  color: #c8c8c8; }
+.divinationCard .gemitem {
+  color: #1ba29b; }
+.divinationCard .currencyitem {
+  color: #aa9e82; }
+.divinationCard .questitem {
+  color: #4ae63a; }
+.divinationCard .crafted {
+  color: #b4b4ff; }
+.divinationCard .divination {
+  color: #aae6e6; }
+.divinationCard .corrupted {
+  color: #d20000; }
+.divinationCard .enchanted {
+  color: #b8daf2; }
+.divinationCard .bold {
+  font-weight: bold; }
+.divinationCard .italic {
+  font-style: italic; }
+.divinationCard .normal {
+  font-weight: normal;
+  font-style: normal;
+  color: #c8c8c8; }
+
+.explicitMod .lc {
+  font-size: 16px;
+}
+
+.flavourText .lc {
+  font-size: 16px;
+}
+
+.itemLevel, .itemLevelOnly + .separator {
+  display: none;
+}

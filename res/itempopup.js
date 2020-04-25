@@ -32,6 +32,116 @@ function setMaxLength(str) {
 }
 
 function createPopup(data) {
+  try {
+    if(data.frameType === 6) {
+      return createDivCardPopup(data);
+    } else {
+      return createItemPopup(data);
+    }
+  } catch(e) {
+    let log = require('./modules/Log').getLogger(__filename);
+    log.info("Error creating item popup: " + e);
+    log.info(JSON.stringify(data));
+  }
+}
+
+function createDivCardPopup(data) {
+  
+  let containerDiv = $(`<div id='${data.id}_${data.arrayIndex}_popup' style='position:relative;' class='itemPopupContainer newItemPopup divinationCard'/>`);
+  containerDiv.append(`<div class='cardFace'><img src='https://web.poecdn.com/image/divination-card/${data.artFilename}.png'/></div>`);
+  
+  fixStackSize(data);
+  
+  let d = $("<div class='itemBoxContent'/>");
+  d.append($(`
+    <div class="itemHeader">
+      <span class="l"></span>
+      <div class="itemName typeLine">
+        <span class="lc" style='position:relative;top:3px;'>${data.typeLine}</span>
+      </div>
+      <span class="r"></span>
+    </div>
+    <div class="stackSize">${data.pickupStackSize}/${data.maxStackSize}</div>
+  `));
+  d.append(getDivCardMods(data));
+  d.append(getDivCardFlavourText(data));
+  
+  containerDiv.append(d);
+  return containerDiv;
+ 
+}
+
+function getDivCardMods(data) {
+  
+  if(!data.explicitMods) return null;
+  
+  let str = "<div class='explicitModsWrapper'><div class='explicitModsContainer'>";
+  
+  let mods = data.explicitMods[0].split("\r\n");
+  for(let i = 0; i < mods.length; i++) {
+    str += `
+      <div class='explicitMod'>
+        <span class='lc'>
+          ${parseMod(mods[i])}
+          <br/>
+        </span>
+      </div>
+    `;
+  }
+  
+  str += "</div></div>";
+  return str;
+  
+  function parseMod(str) {
+
+    let parsedStr = '';
+    let fontSize = null;
+    
+    let sizeMatch = str.match(/<size:[0-9]+>/g);    
+    if(sizeMatch) {
+      fontSize = sizeMatch[0].replace(/[a-z<>:]/g, "");
+      str = str.replace(/<size:[0-9]+>/, "");
+    }
+    
+    let markup = str.match(/<([^{}<>]+)>/g);
+    let text = str.match(/{([^{}<>]+)}/g);
+    for(let i = 0; i < markup.length; i++) {
+      parsedStr += `<span style='${fontSize ? `font-size:${fontSize/2}px` : ""}' class='${markup[i].replace(/[<>]/g, "")}'>${text[i].replace(/[{}]/g, "")}</span> `;
+    }
+    
+    return parsedStr;    
+  }
+  
+}
+
+function getDivCardFlavourText(data) {
+  
+  if(!data.flavourText) return null;
+  
+  let str = "<div class='flavourTextWrapper'><div class='flavourTextContainer'><div class='flavourText'>";
+  let fontSize = null;
+  let flavourTextStr = "";
+  
+  for(let i = 0; i < data.flavourText.length; i++) {
+    let f = data.flavourText[i];    
+    let sizeMatch = f.match(/<size:[0-9]+>/g);
+    if(sizeMatch) {
+      fontSize = sizeMatch[0].replace(/[a-z<>:]/g, "");
+      f = f.replace(/<size:[0-9]+>/, "");
+    }
+    f = f.replace("\r", "<br/>").replace(/[{}]/g, "");
+    flavourTextStr += f;
+  }
+  
+  str += `<span class='lc' style='${fontSize ? `font-size:${fontSize/2}px` : ""}'>${flavourTextStr}</span>`;
+  str += "</div></div></div>";
+  
+  return str;
+
+}
+
+
+function createItemPopup(data) {
   
   maxLength = -1;
   
@@ -55,7 +165,7 @@ function createPopup(data) {
   
   var textFunctions = [
     getProperties,
-    getRequirements,
+    getItemLevelAndRequirements,
     getEnchantMods,
     getImplicitMods,
     getUnidentified,
@@ -91,22 +201,22 @@ function createPopup(data) {
     textArray.push(getDescrText(data));
   }  
   
-  
-  for(let i = 0; i < textArray.length; i++) {
-    contentCell.append(textArray[i]);
-    if(i < textArray.length - 1) {
-      contentCell.append($("<div class='separator'>"));
+  if(textArray.length > 0) {
+    for(let i = 0; i < textArray.length; i++) {
+      contentCell.append(textArray[i]);
+      if(i < textArray.length - 1) {
+        contentCell.append($("<div class='separator'>"));
+      }
     }
+    contentCell.css("width", `${maxLength * 0.9}ch`);
   }
-  
-  contentCell.css("width", `${maxLength * 0.9}ch`);
   //console.log(`${data.typeLine} maxlength is ${maxLength}`);
 
   contentRow.append(contentCell);
   t.append(contentRow);
   
   d.append($(`
-    <div style='border: 1px solid #333;display:inline-block;padding:4px;background-color:rgba(0,0,0,0.9);vertical-align:top;z-index:1998'>
+    <div style='border: 1px solid #333;display:inline-block;padding:4px;background-color:rgba(0,0,0);vertical-align:top;z-index:1998'>
       <span class='stackSize' style='top:12px;left:18px;'>${data.maxStackSize ? data.pickupStackSize : ""}</span>
       <img style='vertical-align:top;' src="${data.icon}"/>
     </div>
@@ -225,19 +335,27 @@ function getProperties(data) {
 }
 
 
-function getRequirements(data) {
-  if(!data.requirements) return null;
+function getItemLevelAndRequirements(data) {
+  if(!data.requirements && data.ilvl === 0) return null;
   let div = $("<div/>");
-  let reqString = "Requires ";
-  for(let i = 0; i < data.requirements.length; i++) {
-    reqString += getPropertyString(data.requirements[i]);
-    if(i < data.requirements.length - 1) {
-      reqString += ", ";
-    }
+  if(data.ilvl) {
+    div.append($(`<div class='itemLevel'><span>Item Level: </span><span class='colourDefault'>${data.ilvl}</span></div>`));
   }
-  reqString = reqString.replace(":", "");
-  div.append($(`<div>${reqString}</div>`));
-  setMaxLength($(div).text());
+  if(data.requirements) {
+    let reqString = "Requires ";
+    for(let i = 0; i < data.requirements.length; i++) {
+      reqString += getPropertyString(data.requirements[i]);
+      if(i < data.requirements.length - 1) {
+        reqString += ", ";
+      }
+    }
+    reqString = reqString.replace(":", "");
+    div.append($(`<div>${reqString}</div>`));
+    setMaxLength($(div).text());
+  }
+  if(data.ilvl && !data.requirements) {
+    div.addClass("itemLevelOnly");
+  }
   return div;
 }
 

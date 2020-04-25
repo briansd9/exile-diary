@@ -106,9 +106,10 @@
               $("#nextMap")[0].click();
             }
             break;
-          //case "End":
-            //window.location.href = "map.html";
-            //break;
+          case "Alt":
+            $(".itemLevel").show();
+            $(".itemLevelOnly + .separator").show();
+            break;
           case "Escape":
           case "Esc":
             if(modal) {
@@ -117,7 +118,16 @@
             break;
         }
       });
-      
+
+      $(document).keyup(e => {
+        switch (e.key) {
+          case "Alt":
+            $(".itemLevel").hide();
+            $(".itemLevelOnly + .separator").hide();
+            break;
+        }
+      });
+  
       $(document).click(() => {
         if(modal) {
           window.close();
