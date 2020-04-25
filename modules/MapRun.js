@@ -148,6 +148,7 @@ async function getItems(mapID) {
       } else {
         for(var i = 0; i < rows.length; i++) {
           var row = rows[i];
+          var data = JSON.parse(row.rawdata);
           if(!items[row.id]) {
             items[row.id] = [];
           }
@@ -155,13 +156,12 @@ async function getItems(mapID) {
           if(row.rarity === "Unique") {
             secretName = Utils.getItemName(row.icon);
             if(secretName) {
-              if(secretName === "Starforge" && row.elder) {
+              if(secretName === "Starforge" && data.elder) {
                 secretName = "Voidforge";
               }
             }
           }
           if(secretName || row.value || row.stacksize) {
-            var data = JSON.parse(row.rawdata);
             if(secretName) data.secretName = secretName;
             if(row.value) data.value = row.value;
             if(row.stacksize) data.pickupStackSize = row.stacksize;
