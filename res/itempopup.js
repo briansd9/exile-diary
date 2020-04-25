@@ -366,7 +366,7 @@ function getExplicitMods(data) {
   if(data.explicitMods) {
     for(let i = 0; i < data.explicitMods.length; i++) {
       // horrible hack for incubator mod - actually two lines separated by \r\n
-      let arr = data.explicitMods[i].split("\r\n");
+      let arr = data.explicitMods[i].split(/[\r\n]+/);
       for(let j = 0; j < arr.length; j++) {
         // horrible hack for essences - one mod line is blank
         if(arr[j] === "") arr[j] = "&nbsp;";
