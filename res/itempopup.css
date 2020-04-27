@@ -648,3 +648,7 @@
 .itemLevel, .itemLevelOnly + .separator {
   display: none;
 }
+
+.newItemPopup.divinationCard {
+  border: none !important;
+}
