@@ -421,7 +421,7 @@ function Parser() {
         // the arguments must be a list of influences
         var influences = [];
         for (var i = 0; i < tokens.length; i++) {
-            var inf = tokens[i].toLowerCase();
+            var inf = tokens[i].toLowerCase().replace(/"/g, '');
             if (!INFLUENCE_TOKENS.includes(inf)) {
                 reportTokenError( self, tokens[i], 'influence')
                 return;
