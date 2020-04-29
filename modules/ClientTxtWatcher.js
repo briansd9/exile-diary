@@ -130,7 +130,7 @@ function getEvent(arg) {
         text: area.substring(0, area.length - 1),
         instanceServer: lastInstanceServer
       };
-    } else if(str.includes(`${settings.activeProfile.characterName} has been slain`)) {
+    } else if(str.includes(`${settings.activeProfile.characterName} has been slain`) || str.includes(`${settings.activeProfile.characterName} has committed suicide`)) {
       return {
         type: "slain",
         text: "",
