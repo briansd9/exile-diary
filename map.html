@@ -99,7 +99,9 @@
       $(document).keydown(e => {
         switch (e.key) {
           case "ArrowLeft":
-            $("#prevMap")[0].click();
+            if (document.getElementById("prevMap")) {
+              $("#prevMap")[0].click();
+            }
             break;
           case "ArrowRight":
             if (document.getElementById("nextMap")) {
@@ -617,10 +619,12 @@
         if(!items[timestamp]) return "";
         
         var inventoryDiv = document.createElement("div");
+        var itemPickedUp = false;
         
         for(let i = 0; i < items[timestamp].length; i++) {
           var item = JSON.parse(items[timestamp][i]);
           if(item.inventoryId === "MainInventory") {
+            itemPickedUp = true;
             item.arrayIndex = i;
             processItem(item);
             var itemDiv = getItemDiv(item);
@@ -631,7 +635,8 @@
             }
           }
         };
-        return (`<span class='eventType'>Picked up:</span> <span class='eventText'>${inventoryDiv.outerHTML}</span></div>`);
+        
+        return (itemPickedUp ? `<span class='eventType'>Picked up:</span> <span class='eventText'>${inventoryDiv.outerHTML}</span></div>` : "");
 
       }
 
