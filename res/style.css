@@ -187,6 +187,7 @@ html {
 	.tooltipOverride {
 		background: rgba(0, 0, 0, 0) !important ;
     border: none !important ;
+    pointer-events: none !important ;
     min-width: 400px !important;
     max-width: 900px !important;
 	}

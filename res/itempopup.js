@@ -215,10 +215,17 @@ function createItemPopup(data) {
   contentRow.append(contentCell);
   t.append(contentRow);
   
+  let backgroundImageStyle = "";
+  if(data.shaper) {
+    backgroundImageStyle = `background-image: url("res/img/itemicons/ShaperBackground${data.w}x${data.h}.png")`;
+  } else if (data.elder) {
+    backgroundImageStyle = `background-image: url("res/img/itemicons/ElderBackground${data.w}x${data.h}.png")`;
+  }
+  
   d.append($(`
     <div style='border: 1px solid #333;display:inline-block;padding:4px;background-color:rgba(0,0,0);vertical-align:top;z-index:1998'>
       <span class='stackSize' style='top:12px;left:18px;'>${data.maxStackSize ? data.pickupStackSize : ""}</span>
-      <img style='vertical-align:top;' src="${data.icon}"/>
+      <img style='vertical-align:top;${backgroundImageStyle}' src="${data.icon}"/>
     </div>
   `));
   d.append(t);
