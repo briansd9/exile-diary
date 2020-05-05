@@ -118,10 +118,15 @@
           });
 
           var displayValue = 0;
+          
           $("#itemsTable > tr").each(function() {
             var itemClass = $(this).data("itemclass");
             var itemValue = $(this).data("itemvalue");
-            if(itemTypes.length === 0 || itemTypes.includes(itemClass)) {
+            if(
+              itemTypes.length === 0 
+              || itemTypes.includes(itemClass) 
+              || (itemTypes.includes("Other") && !["Currency", "Maps", "Divination Card"].includes(itemClass)) 
+            ) {
               $(this).show();
               if(itemTypes.length > 0) {
                 displayValue += itemValue;
@@ -144,8 +149,7 @@
           
           $("#mapRows").empty();
           
-          var mapData = [];
-          
+          var mapData = [];          
           rows.forEach(row => {
             var obj = {
               name: row.name,
@@ -166,8 +170,7 @@
               obj.kills = row.kills;
             }
             mapData.push(obj);
-          });
-          
+          });          
           mapDataList = JSON.stringify(mapData);
           
           exportData.mapList = {
@@ -197,6 +200,7 @@
               modal: true
             });            
             exportData.mapList.addRow({
+              id: row.id,
               area: row.name,
               level: row.level,
               depth: row.depth,
@@ -229,6 +233,16 @@
 
         ipcRenderer.on("mapSummaryResults", (event, data) => {
           
+          for(let i = 0; i < exportData.mapList.data.length; i++) {
+            let map = exportData.mapList.data[i];
+            if(data.profitByMap[map.id]) {
+              let profit = data.profitByMap[map.id];
+              for(let k in profit) {
+                map[k] = parseFloat(Number(profit[k]).toFixed(2));
+              }
+            }
+          }
+          
           exportData.itemList = {
             data : [],
             colWidths: [],
@@ -255,8 +269,9 @@
             $("#kills").show();
           }
           $("#avgXP").html(f.format(Math.round(data.totalXP / data.numMaps)));
-          display(data);
-          data.items.forEach(item => {
+          display(data);          
+          
+          data.allItems.forEach(item => {
             var category = ItemCategoryParser.getCategory(item, true);
             if(category === "Maps") {
               ["Shaped", "Elder", "Blighted"].forEach(str => {
@@ -387,7 +402,7 @@
       
       function display(data) {
         
-        var items = data.items;
+        var items = data.allItems;
         
         var tbl = $("#itemsTable");
         tbl.empty();        
@@ -538,6 +553,7 @@
               <span class='itemToggle'><input class='itemToggleCheckbox' type='checkbox' value='Currency'/> Currency</span>
               <span class='itemToggle'><input class='itemToggleCheckbox' type='checkbox' value='Maps'/> Maps</span>
               <span class='itemToggle'><input class='itemToggleCheckbox' type='checkbox' value='Divination Card'/> Div Cards</span>
+              <span class='itemToggle'><input class='itemToggleCheckbox' type='checkbox' value='Other'/> Other</span>
               <span id='selectedProfitSpan' style='display:none'>
                 Total value of selected items: <span id='selectedProfit' class='eventText'></span> <img style='vertical-align:middle;' src='https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollRare.png?scale=1&scaleIndex=3&&w=1&h=1'/> 
               </span>

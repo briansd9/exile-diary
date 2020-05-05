@@ -45,13 +45,51 @@ async function getStatSummary(totalXP, totalKills, mapIDs) {
   var totalTime = 0;
   logger.info("Getting items for map summary");
   var allItems = [];
+  var profitByMap = {};
   for(var i = 0; i < mapIDs.length; i++) {
     totalTime += await getTime(mapIDs[i]);
-    allItems = allItems.concat(await getItems(mapIDs[i]));
+    var mapItems = await getItems(mapIDs[i]);
+    profitByMap[mapIDs[i]] = getProfitByCategory(mapItems);
+    allItems = allItems.concat(mapItems);
   }
   allItems = mergeItems(allItems);
   logger.info("Done getting items");
-  emitter.emit("mapSummaryResults", { numMaps : mapIDs.length, totalXP: totalXP, totalKills: totalKills, totalTime: totalTime, items: allItems });  
+  emitter.emit("mapSummaryResults", { 
+    numMaps : mapIDs.length, 
+    totalXP: totalXP,
+    totalKills: totalKills, 
+    totalTime: totalTime, 
+    profitByMap: profitByMap, 
+    allItems: allItems 
+  });  
+}
+
+function getProfitByCategory(items) {
+  let profit = {
+    currency: 0,
+    maps: 0,
+    divCards: 0,
+    other: 0
+  };
+  for(let i = 0; i < items.length; i++) {
+    let cat = ItemCategoryParser.getCategory(items[i]);
+    switch(cat) {
+      case "Currency":
+      case "Stackable Currency":
+        profit.currency += items[i].chaosValue;
+        break;
+      case "Maps":
+        profit.maps += items[i].chaosValue;
+        break;
+      case "Divination Card":
+        profit.divCards += items[i].chaosValue;
+        break;
+      default:
+        profit.other += items[i].chaosValue;
+        break;
+    }
+  }
+  return profit;
 }
 
 function mergeItems(arr) {
@@ -92,7 +130,7 @@ async function getItems(mapID) {
       }
       for(var i = 1; i < rows.length; i++) {
         if(!Utils.isTown(rows[i-1].event_text)) {
-          items = items.concat(await getItemsFromEvent(rows[i].id));
+          items = items.concat(await getItemsFromEvent(mapID, rows[i].id));
         }
       }
       resolve(items);
@@ -100,7 +138,7 @@ async function getItems(mapID) {
   });
 }
 
-async function getItemsFromEvent(eventID) {
+async function getItemsFromEvent(mapID, eventID) {
   var items = [];
   return new Promise( (resolve, reject) => {
     DB.all("select rawdata, stacksize, category, sockets, value from items where event_id = ?", [eventID], async (err, rows) => {
@@ -170,7 +208,10 @@ async function getItemsFromEvent(eventID) {
           }          
         }
         
-        if(item.chaosValue) items.push(item);
+        if(item.chaosValue) {
+          item.mapID = mapID;
+          items.push(item);
+        }
         
       }
       resolve(items);
