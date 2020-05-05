@@ -174,6 +174,13 @@ class InventoryGetter extends EventEmitter {
       } else {
         mainInventory[item.id] = item;
         equippedItems[item.id] = item;
+        if(item.socketedItems) {
+          for(let i = 0; i < item.socketedItems.length; i++) {
+            let socketedItem = item.socketedItems[i];
+            mainInventory[socketedItem.id] = socketedItem;
+            equippedItems[socketedItem.id] = socketedItem;
+          }
+        }
       }
     });
     return {
