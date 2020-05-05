@@ -481,11 +481,14 @@ function getItems(areaID, firstEvent, lastEvent) {
           var numItems = 0;
           var totalProfit = 0;
           for(var i = 1; i < rows.length; i++) {
-            var prevRow = rows[i - 1];
+            var prevRow = rows[i - 1];            
             if(!Utils.isTown(prevRow.event_text)) {
+              logger.info(`Getting items picked up in ${prevRow.id} ${prevRow.event_text}`);
               var items = await getItemsFor(rows[i].id);
               numItems += items.count;
               totalProfit += Number.parseFloat(items.value);
+            } else {
+              logger.info(`Ignoring items picked up in town area ${prevRow.id} ${prevRow.event_text}`);
             }
           }
           totalProfit = Number(totalProfit).toFixed(2);
@@ -495,49 +498,47 @@ function getItems(areaID, firstEvent, lastEvent) {
   });
 }
 
-function getItemsFor(event) {
+function getItemsFor(evt) {
   var count = 0;
   var totalValue = 0;
   var itemArr = [];
   return new Promise( (resolve, reject) => {
-    DB.all( " select * from items where event_id = ? ", [event], async (err, rows) => {
+    DB.all( " select * from items where event_id = ? ", [evt], async (err, rows) => {
       if (err) {
-        logger.info(`Error getting item values for ${event}: ${err}`);
+        logger.info(`Error getting item values for ${evt}: ${err}`);
         resolve(null);
       } else {
+        
         for(var i = 0; i < rows.length; i++) {
-
-          var item = rows[i];
-          
+          var item = rows[i];          
           // ignore items that are equipped
           var jsonData = JSON.parse(item.rawdata);
-          if(jsonData.inventoryId !== "MainInventory") continue;
-          
-          count++;
-          if(item.value) {
-            totalValue += item.value;
-          } else {
-            
-            var value = await ItemPricer.price(item);
-            if(!value) {
-              value = 0;
-            }
-            
-            if(value.isVendor) {
-              totalValue += value.val;
-              value = 0;
+          if(jsonData.inventoryId === "MainInventory") {          
+            count++;
+            if(item.value) {
+              totalValue += item.value;
             } else {
-              totalValue += value;
-            }
-            
-            itemArr.push([value, item.id, item.event_id]);
-            
+              var value = await ItemPricer.price(item);
+              if(!value) {
+                value = 0;
+              }
+              if(value.isVendor) {
+                totalValue += value.val;
+                value = 0;
+              } else {
+                totalValue += value;
+              }
+              itemArr.push([value, item.id, item.event_id]);
+            }            
           }
         }
+        
         if(itemArr.length > 0) {
           updateItemValues(itemArr);
         }
+        
         resolve({count: count, value: totalValue});
+        
       }
     });
   });
