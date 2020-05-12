@@ -144,18 +144,15 @@ const initSQL = [
       data text not null
     )
   `,
-  `
-    alter table mapruns add kills number
-  `,
+  `delete from incubators where timestamp < (select min(timestamp) from (select timestamp from incubators order by timestamp desc limit 25))`,
+  `alter table mapruns add kills number`,
   `
     create table if not exists fullrates (
       date text primary key not null,
       data text not null
     )
   `,
-  `
-    alter table items add value number
-  `
+  `alter table items add value number`
 ];
 
 module.exports = DB;
