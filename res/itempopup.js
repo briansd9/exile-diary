@@ -203,9 +203,11 @@ function createItemPopup(data) {
   
   if(textArray.length > 0) {
     for(let i = 0; i < textArray.length; i++) {
-      contentCell.append(textArray[i]);
-      if(i < textArray.length - 1) {
-        contentCell.append($("<div class='separator'>"));
+      if(textArray[i]) {
+        contentCell.append(textArray[i]);
+        if(i < textArray.length - 1) {
+          contentCell.append($("<div class='separator'>"));
+        }
       }
     }
     contentCell.css("width", `${maxLength * 0.9}ch`);
@@ -344,6 +346,7 @@ function getProperties(data) {
 
 function getItemLevelAndRequirements(data) {
   if(!data.requirements && data.ilvl === 0) return null;
+  if(data.isVaalGem) return null; // already displayed under base gem
   let div = $("<div/>");
   if(data.ilvl) {
     div.append($(`<div class='itemLevel'><span>Item Level: </span><span class='colourDefault'>${data.ilvl}</span></div>`));
