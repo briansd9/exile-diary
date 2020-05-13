@@ -3,10 +3,12 @@ const { app, BrowserWindow, dialog, ipcMain } = require('electron');
 const logger = require("./modules/Log").getLogger(__filename);
 const ClientTxtWatcher = require("./modules/ClientTxtWatcher");
 const DB = require("./modules/DB");
+const KillTracker = require('./modules/KillTracker');
 const OCRWatcher = require("./modules/OCRWatcher");
 const RateGetterV2 = require("./modules/RateGetterV2");
 const RunParser = require('./modules/RunParser');
 const InventoryGetter = require('./modules/InventoryGetter');
+const ItemFilter = require('./modules/ItemFilter');
 const MapSearcher = require('./modules/MapSearcher');
 const ScreenshotWatcher = require("./modules/ScreenshotWatcher");
 const Settings = require("./modules/settings");
@@ -151,6 +153,7 @@ function init() {
           ClientTxtWatcher.start();
           ScreenshotWatcher.start();
           OCRWatcher.start();
+          ItemFilter.load();
         }
         resolve(true);
       });
@@ -235,6 +238,11 @@ function initWindow(window) {
   });
   MapSearcher.emitter.on("mapSummaryResults", (data) => {
     webContents.send("mapSummaryResults", data);
+  });
+  
+  KillTracker.emitter.removeAllListeners();
+  KillTracker.emitter.on("incubatorsUpdated", (incubators) => {
+    webContents.send("incubatorsUpdated", incubators);
   });
   
 }
