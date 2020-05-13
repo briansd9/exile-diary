@@ -3,6 +3,11 @@
   Exile Diary v<span id='appVersion'></span>
   <script>
     
+    const renderer = require('electron').ipcRenderer;
+    renderer.on("incubatorsUpdated", (event, incubators) => {
+      console.log(incubators);
+    });            
+    
     $(document).ready(() => {
       
       var version = require('electron').remote.app.getVersion();
