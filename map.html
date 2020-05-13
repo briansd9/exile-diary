@@ -650,33 +650,54 @@
         var sixSocketItems = 0;
         var sixLinkItems = 0;
         var rgbLinkedItems = 0;
+        
+        let sixSocketValue = 7 * (await getCurrencyByName("Jeweller's Orb"));
+        let sixLinkValue = await getCurrencyByName("Divine Orb");
+        let rgbLinkedValue = await getCurrencyByName("Chromatic Orb");
 
         Object.keys(items).forEach(function (k) {
           
           var item = items[k];
+
           item.displayName = Utils.getDisplayName(item);
           
           var tempValue = Number.parseFloat(setValue(item));
           
-          if(tempValue) {
-            totalValue += tempValue;
-          } else {
-            var sockets = ItemData.getSockets(item);
-            if(ItemData.countSockets(sockets) === 6) {
-              if(sockets.length === 1) {
+          console.log(`${item.displayName} ${tempValue}`);
+          
+          // check if value is from vendor recipe          
+          var sockets = ItemData.getSockets(item);
+          if(ItemData.countSockets(sockets) === 6) {
+            if(sockets.length === 1) {
+              if(tempValue <= sixLinkValue) {
+                tempValue = 0;
+                item.chaosValue = 0;
                 sixLinkItems += (item.stackSize || 1);
-              } else {
-                sixSocketItems += (item.stackSize || 1);
-              }            
+              }
             } else {
-              for(var i = 0; i < sockets.length; i++) {
-                if(sockets[i].includes("R") && sockets[i].includes("G") && sockets[i].includes("B")) {
+              if(tempValue < sixSocketValue) {
+                tempValue = 0;
+                item.chaosValue = 0;
+                sixSocketItems += (item.stackSize || 1);
+              }
+            }            
+          } else {
+            for(var i = 0; i < sockets.length; i++) {
+              if(sockets[i].includes("R") && sockets[i].includes("G") && sockets[i].includes("B")) {
+                if(tempValue <= rgbLinkedValue) {
+                  tempValue = 0;
+                  item.chaosValue = 0;
                   rgbLinkedItems += (item.stackSize || 1);
-                  break;
                 }
+                break;
               }
             }
           }
+          
+          if(tempValue) {
+            totalValue += tempValue;
+          }
+          
         });
         
         if(sixSocketItems > 0) {
@@ -831,13 +852,6 @@
           tempValue = item.chaosValue;
         } else {
           tempValue = Utils.getItemValue(item, rates);
-        }
-        
-        // ignore gems and equippable items if less than minimum value
-        if(item.frameType === 4 || ItemCategoryParser.getEquipmentBaseType(item.typeLine) !== null) {
-          if(settings.minItemValue && tempValue < settings.minItemValue) {
-            return 0;
-          }
         }
         
         item.chaosValue = tempValue;

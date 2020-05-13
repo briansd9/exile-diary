@@ -46,6 +46,21 @@
       var tabsLoaded = false;
       var filterData = null;
       var requiresRestart = false;
+      
+      const itemFilterCategories = [
+        { id: "nonunique", desc: "Non-unique equipment", hint: "Normal, magic and rare gear (weapons, armour, jewellery)" },
+        { id: "unique", desc: "Unique equipment", hint: "Weapons, armour, jewellery, flasks and jewels" },
+        { id: "gem", desc: "Skill Gems" },
+        { id: "map", desc: "Maps", hint: "Also includes unique maps" },
+        { id: "divcard", desc: "Divination cards" },
+        { id: "prophecy", desc: "Prophecies" },
+        { id: "oil", desc: "Oils" },
+        { id: "fragment", desc: "Fragments" },
+        { id: "delve", desc: "Fossils and resonators" },
+        { id: "catalyst", desc: "Catalysts" },
+        { id: "essence", desc: "Essences" },
+        { id: "currency", desc: "Currency", hint: "Includes all other currency items not specifically listed above" }
+      ]; 
 
       $(document).ready(function () {
         
@@ -80,6 +95,23 @@
         });
 
         $("#messages").load("messages.html");
+        
+        for(const cat of itemFilterCategories) {
+          
+          let d = $("<div style='margin: 4px 0'>");
+          d.append($(`<input type='checkbox' id='${cat.id}Checkbox' class='itemtypecheckbox' style='width:25px;height:25px;vertical-align:middle' title='${cat.hint || ""}'/>`));
+          d.append($(`<span class='itemtypeicon'><img src='res/img/itemtypeicons/${cat.id}.png' class='itemtypeicon' style='height:35px;padding:0 8px;vertical-align:middle;'/>${cat.desc}</span>`));
+          d.append($(`
+            <span class='itemvaluefilter'>
+              less than
+              <input type='number' min='0' max='999' step='0.1' maxlength='5' style='margin:0!important;width:50px' id='${cat.id}MinValue' title='If no value is specified, ALL items of the selected category will be ignored'/>
+              <img src='res/img/c.png' style='height:25px;vertical-align:middle;' />
+              in value
+            </span>
+          `));
+          $("#itemFilterCategories").append(d);
+          
+        }
         
         loadSettings();
 
@@ -177,7 +209,6 @@
           $("#screenshotDirDisable").prop("checked", true);
         }
         
-        
         if(settings.activeProfile && settings.activeProfile.characterName) {
           $("#activeProfile").html(`${settings.activeProfile.characterName} (${settings.activeProfile.league} league)`);
           $("#selectedName").val(settings.activeProfile.characterName);
@@ -212,8 +243,22 @@
           $("#stashCheckUnits").val("maps");
         }
         
-        if(settings.minItemValue) {
-          $("#minItemValue").val(settings.minItemValue);
+        // backward compatibility, preserve old minItemValue if present
+        if(settings.minItemValue && !settings.itemFilter) {
+          ["nonunique", "unique", "gem"].forEach(cat => {
+            $(`#${cat}Checkbox`).prop("checked", true);
+            $(`#${cat}MinValue`).val(settings.minItemValue);
+          })
+        } else if(settings.itemFilter) {
+          for(let key in settings.itemFilter) {
+            let cat = settings.itemFilter[key];
+            if(cat.ignore) {
+              $(`#${key}Checkbox`).prop("checked", true);
+              if(cat.minValue) {
+                $(`#${key}MinValue`).val(cat.minValue);
+              }
+            }
+          };
         }
 
       }
@@ -293,7 +338,19 @@
           interval: stashCheckInterval,
           units: stashCheckUnits
         }
-        settings.minItemValue = $("#minItemValue").val() || 0;
+        
+        let itemFilter = {};
+        itemFilterCategories.forEach(cat => {
+          itemFilter[cat.id] = {};
+          if($(`#${cat.id}Checkbox`).prop("checked")) {
+            itemFilter[cat.id].ignore = true;
+            let v = Number.parseFloat($(`#${cat.id}MinValue`).val());
+            if(v) {
+              itemFilter[cat.id].minValue = v;
+            }
+          }
+        });
+        settings.itemFilter = itemFilter;
         
         if(!requiresRestart && tabsLoaded) {
           var tabs = [];
@@ -530,10 +587,11 @@
 
     <div class='sidenav' id='sidenav'></div>    
     
-    <div id="tabs">    
+    <div id="tabs">
       <ul>
         <li><a id="accountLink" href="#account">Account</a></li>
         <li><a id="stashLink" href="#stash">Stash</a></li>
+        <li><a id="filterLink" href="#filter">Filter</a></li>
       </ul>
       <div id="account">
         <table id='mapFilters'>
@@ -635,19 +693,25 @@
             <option value="hours">hours</option>
             <option value="maps">maps</option>
           </select>
-        <div>
           <hr>
-          Ignore non-bulk items less than 
-          <input class='configInput' name='minItemValue' id='minItemValue' type='text' maxlength='3' size='3'/> <img style="vertical-align:middle;" src="res/img/c.png"/> 
-          in value
+          <div id="note">Select Stash Tabs to Monitor (Map tabs not yet supported)</div>
+          <div id="tabList" style="max-height:65%;overflow-y:auto;"></div>
         </div>
-        <hr>
-        <div id="note">Select Stash Tabs to Monitor (Map tabs not yet supported)</div>
-        <div id="tabList" style="max-height:65%;overflow-y:auto;"></div>
+      </div>
+      <div id="filter">
+        <div style='display:flex;align-items:center'>
+          <img src="res/img/novalue.png" style='height:100px;margin-right:10px'/> 
+          <span>
+            Items in the categories selected below will be <b class='eventText'>ignored.</b> 
+            No value will be calculated for them, and they will be excluded from map summary and net worth.
+          </span>
+        </div>
+        <hr style='clear:left;'>
+        <div id='itemFilterCategories'/>
       </div>
     </div>
-              <button class='ui-text' style='width:48%;float:left;' id='saveSettings' onclick='saveSettings()'>Save</button>
-              <button class='ui-text' style='width:48%;float:right;' onclick='backToMain()'>Back to Main</button>
+    <button class='ui-text' style='width:48%;float:left;' id='saveSettings' onclick='saveSettings()'>Save</button>
+    <button class='ui-text' style='width:48%;float:right;' onclick='backToMain()'>Back to Main</button>
     <div id="messagePadding" style="height:150px;visibility:hidden;">&nbsp;</div>
     <div id="messages" class="messageSection"></div>
   </body>

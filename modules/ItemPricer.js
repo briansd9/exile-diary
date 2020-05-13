@@ -3,6 +3,7 @@
   const ItemData = require('./ItemData');
   const ItemCategoryParser = require("./ItemCategoryParser");
   const ItemParser = require('./ItemParser');
+  const ItemFilter = require('./ItemFilter');
   const Utils = require('./Utils');
   const zlib = require('zlib');  
   const settings = require('./settings').get();
@@ -69,7 +70,18 @@
     
     item.parsedItem = JSON.parse(item.rawdata);
     
-    var minItemValue = settings.minItemValue || -1;
+    var minItemValue = 0;
+    var filter = ItemFilter.filter(item.parsedItem);
+    if(filter.ignore) {
+      if(filter.minValue) {
+        minItemValue = filter.minValue;
+      } else {
+        // unconditional ignore - stop here and get vendor recipe instead, if any
+        return getVendorRecipeValue();
+      }
+    }
+    
+    
     var helmetBaseValue;
 
     if(item.rarity === "Unique") {
@@ -133,28 +145,39 @@
     /* sub-functions for getting value per item type*/    
 
     function getValueFromTable(table, identifier = null) {
+      
       if(!identifier) {
         identifier = item.typeline;
       }
-      var value = rates[table][identifier] * (item.stacksize || 1);
-      if(!value) {
+      
+      // handle items that stack - minItemValue is for exactly 1 of the item
+      let unitValue = rates[table][identifier];
+      if(!unitValue) {
         if(log) {
           logger.info(`[${table}] : ${identifier} => No value found, returning 0`);
         }
         return 0;
-      } else {
-        if(log) {
-          logger.info(`[${table}] : ${identifier} => ${value}`);
-        }
-        return value;
+      } else if(unitValue < minItemValue) {
+        logger.info(`[${table}] : ${identifier} => ${unitValue} < ${minItemValue}, ignoring`);
+        return 0;
       }
+      
+      let value = unitValue * (item.stacksize || 1);
+      if(log) {
+        if(value >= minItemValue) {
+          logger.info(`[${table}] : ${identifier} => ${value}`);            
+        } else {
+          logger.info(`[${table}] : ${identifier} => ${value} < ${minItemValue}, ignoring`);
+        }
+      }
+      return(value >= minItemValue ? value : 0);
+
     }
     
     function getHelmetEnchantValue() {
       if(!item.parsedItem.enchantMods) return 0;
       var identifier = item.parsedItem.enchantMods;
-      var value = getValueFromTable("HelmetEnchant", identifier);
-      return(value >= minItemValue ? value : 0);
+      return getValueFromTable("HelmetEnchant", identifier);      
     }
     
 
@@ -203,8 +226,7 @@
       if(item.parsedItem.corrupted) {
         identifier += " (Corrupted)";
       }
-      var value = getValueFromTable("SkillGem", identifier);
-      return(value >= minItemValue ? value : 0);
+      return getValueFromTable("SkillGem", identifier);
     }
 
     function getMapValue() {
@@ -296,8 +318,9 @@
         identifier += " Elder";
       }
 
-      var value = getValueFromTable("BaseType", identifier);
-      return(value >= minItemValue ? value : getVendorRecipeValue());
+      let value = getValueFromTable("BaseType", identifier);
+      let vendorValue = getVendorRecipeValue();
+      return(vendorValue ? Math.max(value, vendorValue.val) : value);
 
     }
     
@@ -319,12 +342,33 @@
       } else {
         for(var i = 0; i < sockets.length; i++) {
           if(sockets[i].includes("R") && sockets[i].includes("G") && sockets[i].includes("B")) {
+            logger.info("Returning vendor recipe: RGB");
             vendorValue = rates["Currency"]["Chromatic Orb"];
           }
         }
       }
       
-      return vendorValue ? { isVendor: true, val: vendorValue } : 0;
+      if(!vendorValue) {
+        return 0;
+      } else {
+        
+        let currFilter = ItemFilter.getForCategory("currency");
+        if(currFilter.ignore) {
+          if(currFilter.minValue) {
+            if(vendorValue < currFilter.minValue) {
+              logger.info(`Vendor value ${vendorValue} < currency min value ${currFilter.minValue}, returning`);
+              return 0;
+            }
+          } else {
+            logger.info(`Ignoring currency unconditionally?!? Returning 0`);
+            return 0;
+          }
+        }
+
+        logger.info("Returning vendor value " + vendorValue);
+        return { isVendor: true, val: vendorValue };
+        
+      }
       
     }
       
@@ -334,7 +378,12 @@
       // if(item.typeline === "Stacked Deck") return 4 * item.stacksize;
       
       if(item.typeline === "Chaos Orb") {
-        return item.stacksize;
+        if(minItemValue > 1) {
+          // if we only care about currency greater than 1c in value, chaos orbs are ignored
+          return 0;
+        } else {
+          return item.stacksize;
+        }
       } else {
         return getValueFromTable("Currency");
       }
@@ -420,8 +469,9 @@
         }
       }
       
-      var value = getValueFromTable("UniqueItem", identifier);
-      return(value >= minItemValue ? value : getVendorRecipeValue());
+      let value = getValueFromTable("UniqueItem", identifier);
+      let vendorValue = getVendorRecipeValue();
+      return(vendorValue ? Math.max(value, vendorValue.val) : value);
 
     }
 

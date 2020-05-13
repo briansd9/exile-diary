@@ -525,3 +525,21 @@ span.itemSuffix {
   color: #B8DAF1;
 }
 
+.itemtypecheckbox + .itemtypeicon {
+  opacity: 0.5;  
+}
+.itemtypecheckbox:checked + .itemtypeicon {
+  opacity: 1;  
+}
+
+.itemtypecheckbox ~ .itemvaluefilter {
+  visibility: hidden;
+}
+.itemtypecheckbox:checked ~ .itemvaluefilter {
+  visibility: visible;
+}
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
