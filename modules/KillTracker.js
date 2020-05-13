@@ -1,5 +1,8 @@
+const EventEmitter = require('events');
 const logger = require("./Log").getLogger(__filename);
 const moment = require('moment');
+
+var emitter = new EventEmitter();
 
 async function logKillCount(timestamp, eqp) {
   
@@ -8,6 +11,8 @@ async function logKillCount(timestamp, eqp) {
     var item = eqp[key];
     if(item.incubatedItem) {
       incubators[key] = {
+        gearSlot: item.inventoryId,
+        itemType: item.incubatedItem.name,
         level: item.incubatedItem.level,
         progress: item.incubatedItem.progress,
         total: item.incubatedItem.total
@@ -24,6 +29,8 @@ async function logKillCount(timestamp, eqp) {
     DB.run("insert into incubators(timestamp, data) values(?, ?)", [timestamp, currIncubators], (err) => {
       if(err) {
         logger.info(`Error inserting incubator data for ${timestamp}): ${err}`);
+      } else {
+        emitter.emit("incubatorsUpdated", incubators);        
       }
     });
   }
@@ -46,3 +53,4 @@ function getPrevIncubators(DB) {
 }
 
 module.exports.logKillCount = logKillCount;
+module.exports.emitter = emitter;
