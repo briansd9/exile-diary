@@ -17,7 +17,7 @@
       
       var settings = require("./modules/settings").get();
       if(!settings || !settings.version || settings.version !== version) {
-        $("#newVersion").show();
+        $(".newVersion").show();
       }
       
     });
@@ -35,7 +35,7 @@
     function about() {
       $("#modalContent").load("about.html", () => {
         $("#myModal").show();
-        $("#newVersion").hide();        
+        $(".newVersion").hide();        
         var settings = require("./modules/settings").get();
         var version = require('electron').remote.app.getVersion();
         if(!settings.version || settings.version !== version) {
@@ -57,14 +57,18 @@
   <div><a class='ui-text' id='sidenav-main' href="index.html">Main</a></div>
   <div><a class='ui-text' href="stash.html">Net Worth</a></div>
   <div><a class='ui-text' href="search.html">Search</a></div>
-  <div><a class='ui-text' href="config.html">Settings</a></div>
+  <div>
+    <a class='ui-text' href="config.html">
+      Settings
+    </a>
+  </div>
 </div>
 
 <hr style='border:1px solid #333'/>
 <div>
   <a class='ui-text' onclick='about()'>
     About
-    <img id='newVersion' src="res/img/!.png" style="display:none;height:25px;width:25px;vertical-align:middle;"/>
+    <img class='newVersion' src="res/img/!.png" style="display:none;height:25px;width:25px;vertical-align:middle;"/>
   </a>
 </div>
 
