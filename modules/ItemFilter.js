@@ -11,7 +11,7 @@ function load() {
   itemTypes.forEach(type => {
     itemFilters[type] = {};
   });
-  settings = require("./Settings").get();
+  settings = require("./settings").get();
   
   // backward compatibility - preserve previous minItemValue functionality  
   if(settings.minItemValue) {
