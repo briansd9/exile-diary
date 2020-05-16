@@ -99,12 +99,14 @@
         for(const cat of itemFilterCategories) {
           
           let d = $("<div style='margin: 4px 0'>");
+          let valueHint = cat.valueHint || 'If no value is specified, ALL items of the selected category will be ignored';
+          
           d.append($(`<input type='checkbox' id='${cat.id}Checkbox' class='itemtypecheckbox' style='width:25px;height:25px;vertical-align:middle' title='${cat.hint || ""}'/>`));
           d.append($(`<span class='itemtypeicon'><img src='res/img/itemtypeicons/${cat.id}.png' class='itemtypeicon' style='height:35px;padding:0 8px;vertical-align:middle;'/>${cat.desc}</span>`));
           d.append($(`
             <span class='itemvaluefilter'>
               less than
-              <input type='number' min='0' max='999' step='0.1' maxlength='5' style='margin:0!important;width:50px' id='${cat.id}MinValue' title='If no value is specified, ALL items of the selected category will be ignored'/>
+              <input type='number' min='0' max='999' step='0.1' maxlength='5' style='margin:0!important;width:50px' id='${cat.id}MinValue' title='${valueHint}'/>
               <img src='res/img/c.png' style='height:25px;vertical-align:middle;' />
               in value
             </span>
@@ -702,7 +704,7 @@
         <div style='display:flex;align-items:center'>
           <img src="res/img/novalue.png" style='height:100px;margin-right:10px'/> 
           <span>
-            Items in the categories selected below will be <b class='eventText'>ignored.</b> 
+            Items you pick up which are in the categories selected below will be <b class='eventText'>ignored.</b><br/>
             No value will be calculated for them, and they will be excluded from map summary and net worth.
           </span>
         </div>
