@@ -2178,6 +2178,7 @@
     "Synthesised Rare Monsters have 50% chance to drop a Currency Item",
     "Synthesised Rare Monsters have 50% chance to drop a Quality Currency Item",
     "Synthesised Rare Monsters have 8% chance to drop a Fossil",
+    "Temple Architects drop an additional Map Currency Item",
     "The First # Possessed Monsters drop an additional Gilded Scarab",
     "The First # Possessed Monsters drop an additional Map",
     "The First # Possessed Monsters drop an additional Polished Scarab",
@@ -2454,8 +2455,22 @@
     "Wands",
     "Warstaff",
     "Warstaves"
-  ]
+  ],
+  
+  "shardTypes" : {
+    "Exalted Shard" : "Exalted Orb",
+    "Mirror Shard" : "Mirror of Kalandra",
+    "Annulment Shard" : "Orb of Annulment",
+    "Alteration Shard" : "Orb of Alteration",
+    "Horizon Shard" : "Orb of Horizons",
+    "Chaos Shard" : "Chaos Orb",
+    "Ancient Shard" : "Ancient Orb",
+    "Engineer's Shard" : "Engineer's Orb",
+    "Regal Shard" : "Regal Orb",
+    "Harbinger's Shard" : "Harbinger's Orb",
+    "Transmutation Shard" : "Orb of Transmutation",
+    "Alchemy Shard" : "Orb of Alchemy",
+    "Binding Shard" : "Orb of Binding"    
+  }
   
 }
-
-
