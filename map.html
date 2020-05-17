@@ -663,9 +663,7 @@
           
           var tempValue = Number.parseFloat(setValue(item));
           
-          console.log(`${item.displayName} ${tempValue}`);
-          
-          // check if value is from vendor recipe          
+          // check if value is from vendor recipe
           var sockets = ItemData.getSockets(item);
           if(ItemData.countSockets(sockets) === 6) {
             if(sockets.length === 1) {
@@ -675,7 +673,7 @@
                 sixLinkItems += (item.stackSize || 1);
               }
             } else {
-              if(tempValue < sixSocketValue) {
+              if(tempValue <= sixSocketValue) {
                 tempValue = 0;
                 item.chaosValue = 0;
                 sixSocketItems += (item.stackSize || 1);
