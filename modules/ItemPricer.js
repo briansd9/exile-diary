@@ -150,8 +150,24 @@
         identifier = item.typeline;
       }
       
+      // special handling for currency shards - always price at 1/20 of the whole orb
+      if(Constants.shardTypes[identifier]) {
+        let wholeOrb = Constants.shardTypes[identifier];
+        let shardValue = rates[table][wholeOrb] / 20;
+        let stackValue = shardValue * item.stacksize;
+        if(log) {
+          if(shardValue >= minItemValue) {
+            logger.info(`[${table}] : ${identifier} => ${shardValue} x ${item.stacksize} = ${stackValue}`);
+          } else {
+            logger.info(`[${table}] : ${identifier} => ${shardValue} < ${minItemValue}, ignoring`);
+          }
+        }
+        return(shardValue >= minItemValue ? stackValue : 0);
+      }      
+      
       // handle items that stack - minItemValue is for exactly 1 of the item
       let unitValue = rates[table][identifier];
+      
       if(!unitValue) {
         if(log) {
           logger.info(`[${table}] : ${identifier} => No value found, returning 0`);
@@ -377,16 +393,24 @@
       // temporary workaround poe.ninja bug
       // if(item.typeline === "Stacked Deck") return 4 * item.stacksize;
       
-      if(item.typeline === "Chaos Orb") {
-        if(minItemValue > 1) {
-          // if we only care about currency greater than 1c in value, chaos orbs are ignored
-          return 0;
-        } else {
-          return item.stacksize;
-        }
-      } else {
-        return getValueFromTable("Currency");
+      switch(item.typeline) {
+        case "Chaos Orb":
+          if(minItemValue > 1) {
+            // if we only care about currency greater than 1c in value, chaos orbs are ignored
+            return 0;
+          } else {
+            return item.stacksize;
+          }
+        case "Chaos Shard":
+          if(minItemValue > 1/20) {
+            return 0;
+          } else {
+            return item.stacksize / 20;
+          }
+        default:
+          return getValueFromTable("Currency");
       }
+      
     }
 
     function getUniqueMapValue() {
