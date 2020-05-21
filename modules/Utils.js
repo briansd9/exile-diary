@@ -76,7 +76,6 @@ class Utils {
   
   static getSuffix(item) {
     
-    
     if(item.frameType === 4) {  // skill gems
       
       var suffix = "";
@@ -106,6 +105,16 @@ class Utils {
     } else if(item.icon.includes("Helmets") && item.enchantMods) {  //enchanted helmets
       
       return `${item.enchantMods[0]}`;
+      
+    } else if(item.typeLine.endsWith("Map")) {
+      
+      for(let i = 0; i < item.properties.length; i++) {
+        let prop = item.properties[i];
+        if(prop.name === "Map Tier") {
+          return `T${prop.values[0][0]}`;
+        }
+      }
+      return "";
       
     } else if(item.typeLine === "Ivory Watchstone") {
       
