@@ -159,6 +159,27 @@
         });
         $("#messages").load("messages.html");
         
+        $("#filterItems").on("input", function() {
+          let text = $(this).val().trim().toLowerCase();
+          if(!text) {
+            $(".itemRow").show();
+            $("#filtered").hide();
+          } else {
+            let totalValue = 0;
+            $(".itemRow").each(function() {
+              if($(this).data("itemName").includes(text)) {
+                totalValue += Number($(this).data("itemValue"));
+                $(this).show();
+              } else {
+                $(this).hide();
+              }
+            });
+            totalValue = Number(totalValue).toFixed(2);
+            $("#filteredValue").html(totalValue);
+            $("#filtered").show();
+          }
+        });
+        
         var stashID = await getStashID();
         loadStash(stashID);
         
@@ -329,7 +350,7 @@
         var changeString = (i.change ? `${Utils.formatSignedNumber(i.change, true).replace(',', '')}` : "");
         
         var str = `
-          <tr>
+          <tr class='itemRow' data-item-name="${i.displayName.toLowerCase()}" data-item-value="${i.chaosValue || 0}">
             <td bgcolor=0 style='min-width:120px;position:relative;'>
               <img onerror='this.style.visibility="hidden"'; style='height:${i.h * 40}px;width:${i.w * 40}px;' src="${i.icon}"/>
               <span class='stackSize'>${displayStackSize} ${changeString}</span><br/>
@@ -439,7 +460,17 @@
     
     <div id='itemsByValue' style="display:none;">
       <hr style='border:1px solid #999;' />
-      <div id='netWorth' class='tableLink netWorth'></div>
+      <div class='tableLink' style='display:inline-flex;width:100%'>
+        <div id='netWorth' class='netWorth'>
+        </div>      
+        <div style='padding-left:20px;'>
+          <input type='text' id='filterItems' style='border-radius:3px;background-color:#111;' placeholder="Filter...">
+          <span id='filtered' style='display:none;'>
+            <span id='filteredValue'>0</span>
+            <img style='vertical-align:middle;height:30px;width:30px' src='res/img/c.png'/>
+          </span>
+        </div>
+      </div>
       <table id='total' style='display:block;'>
         <thead id="itemsHeader">
           <tr class='ui-text'>
