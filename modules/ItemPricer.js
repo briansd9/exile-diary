@@ -174,7 +174,9 @@
         }
         return 0;
       } else if(unitValue < minItemValue) {
-        logger.info(`[${table}] : ${identifier} => ${unitValue} < ${minItemValue}, ignoring`);
+        if(log) {
+          logger.info(`[${table}] : ${identifier} => ${unitValue} < ${minItemValue}, ignoring`);
+        }
         return 0;
       }
       
@@ -242,7 +244,10 @@
       if(item.parsedItem.corrupted) {
         identifier += " (Corrupted)";
       }
-      return getValueFromTable("SkillGem", identifier);
+      let value = getValueFromTable("SkillGem", identifier);
+      let vendorValue = getVendorRecipeValue();
+      return(vendorValue ? Math.max(value, vendorValue.val) : value);
+      
     }
 
     function getMapValue() {
@@ -342,25 +347,31 @@
     
     function getVendorRecipeValue() {
       
-      var sockets = ItemData.getSockets(item.parsedItem);
-      if(!sockets.length) return 0;
-
       var vendorValue;
       
-      if(ItemData.countSockets(sockets) === 6) {
-        if(sockets.length === 1) {
-          logger.info("Returning vendor recipe: 6L");
-          vendorValue = rates["Currency"]["Divine Orb"];
-        } else {
-          logger.info("Returning vendor recipe: 6S");
-          vendorValue = rates["Currency"]["Jeweller's Orb"] * 7;
-        }
-      } else {
-        for(var i = 0; i < sockets.length; i++) {
-          if(sockets[i].includes("R") && sockets[i].includes("G") && sockets[i].includes("B")) {
-            logger.info("Returning vendor recipe: RGB");
-            vendorValue = rates["Currency"]["Chromatic Orb"];
+      var sockets = ItemData.getSockets(item.parsedItem);
+      if(sockets.length) {
+        if(ItemData.countSockets(sockets) === 6) {
+          if(sockets.length === 1) {
+            logger.info("Returning vendor recipe: 6L");
+            vendorValue = rates["Currency"]["Divine Orb"];
+          } else {
+            logger.info("Returning vendor recipe: 6S");
+            vendorValue = rates["Currency"]["Jeweller's Orb"] * 7;
           }
+        } else {
+          for(var i = 0; i < sockets.length; i++) {
+            if(sockets[i].includes("R") && sockets[i].includes("G") && sockets[i].includes("B")) {
+              logger.info("Returning vendor recipe: RGB");
+              vendorValue = rates["Currency"]["Chromatic Orb"];
+            }
+          }
+        }
+      } else if(item.category.includes("Skill Gems")) {
+        let quality = ItemData.getQuality(item.parsedItem);
+        if(quality >= 20) {
+          logger.info("Returning vendor recipe: GCP");
+          vendorValue = rates["Currency"]["Gemcutter's Prism"];
         }
       }
       
@@ -372,16 +383,22 @@
         if(currFilter.ignore) {
           if(currFilter.minValue) {
             if(vendorValue < currFilter.minValue) {
-              logger.info(`Vendor value ${vendorValue} < currency min value ${currFilter.minValue}, returning`);
+              if(log) {
+                logger.info(`Vendor value ${vendorValue} < currency min value ${currFilter.minValue}, returning`);
+              }
               return 0;
             }
           } else {
-            logger.info(`Ignoring currency unconditionally?!? Returning 0`);
+            if(log) {
+              logger.info(`Ignoring currency unconditionally?!? Returning 0`);
+            }
             return 0;
           }
         }
 
-        logger.info("Returning vendor value " + vendorValue);
+        if(log) {
+          logger.info("Returning vendor value " + vendorValue);
+        }
         return { isVendor: true, val: vendorValue };
         
       }
