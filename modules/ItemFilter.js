@@ -17,7 +17,7 @@ function load() {
   if(settings.minItemValue) {
     itemFilters["nonunique"] = {ignore: true, minValue: settings.minItemValue};
     itemFilters["unique"] = {ignore: true, minValue: settings.minItemValue};
-    itemFilters["gems"] = {ignore: true, minValue: settings.minItemValue};
+    itemFilters["gem"] = {ignore: true, minValue: settings.minItemValue};
   }
   
   // if new itemFilter setting is present, overwrite previous minItemValue
@@ -33,13 +33,21 @@ function filter(item) {
   
   if(!itemFilters) load();
   
-  let typeLine = ItemCategoryParser.getEquipmentBaseType(item.typeLine);
+  // gem, div card, prophecy can be determined by frametype
+  switch(item.frameType) {
+    case 4:
+      return itemFilters.gem;
+    case 6:
+      return itemFilters.divcard;
+    case 8:
+      return itemFilters.prophecy;
+    // no default case - if none of the above, fall through
+  }
   
-  // nonunique, unique  
+  // gear - nonunique, unique  
+  let typeLine = ItemCategoryParser.getEquipmentBaseType(item.typeLine);
   if(ItemCategoryParser.isNonStackable(typeLine)) {
     switch(item.frameType) {
-      case 4:
-        return itemFilters.gem;
       case 3:
       case 9:
         // 3 = unique, 9 = relic
@@ -49,14 +57,11 @@ function filter(item) {
     }
   }
   
+  // stackable items
   let cat = ItemCategoryParser.getCategory(item, true);
   switch(cat) {
     case "Maps":
       return itemFilters.map;
-    case "Divination Card":
-      return itemFilters.divcard;
-    case "Prophecy":
-      return itemFilters.prophecy;
     case "Map Fragments":
     case "Labyrinth Items": // offering to the goddess
       return itemFilters.fragment;
