@@ -75,11 +75,11 @@
         if(modal) {
           $("body").css({
             "margin" : "0px",
-            "border" : "2px inset #999"
+            "border" : "4px double #999"
           });
           $("#outerDiv").css({
             "margin-left" : "20px",
-            "height" : window.innerHeight - 4,
+            "height" : window.innerHeight - 8,
             "overflow-y" : "auto"
           });
           $("#mapCanvas").css({
@@ -163,7 +163,7 @@
         
         var m = new MapRun(mapID);
         m.on("MapRunReady", () => { loadMap(m); });
-
+        
         $(document).tooltip({
           classes: {
             "ui-tooltip": "tooltipOverride",
@@ -186,7 +186,7 @@
             }
           }
         });
-        
+
         if(!modal) {
           ipcRenderer.on("runProcessed", (event, run) => { 
             addToRunList(run.id); 
@@ -650,10 +650,12 @@
         var sixSocketItems = 0;
         var sixLinkItems = 0;
         var rgbLinkedItems = 0;
+        var gcpItems = 0;
         
         let sixSocketValue = 7 * (await getCurrencyByName("Jeweller's Orb"));
         let sixLinkValue = await getCurrencyByName("Divine Orb");
         let rgbLinkedValue = await getCurrencyByName("Chromatic Orb");
+        let gcpValue = await getCurrencyByName("Gemcutter's Prism");
 
         Object.keys(items).forEach(function (k) {
           
@@ -665,30 +667,40 @@
           
           // check if value is from vendor recipe
           var sockets = ItemData.getSockets(item);
-          if(ItemData.countSockets(sockets) === 6) {
-            if(sockets.length === 1) {
-              if(tempValue <= sixLinkValue) {
-                tempValue = 0;
-                item.chaosValue = 0;
-                sixLinkItems += (item.stackSize || 1);
-              }
-            } else {
-              if(tempValue <= sixSocketValue) {
-                tempValue = 0;
-                item.chaosValue = 0;
-                sixSocketItems += (item.stackSize || 1);
-              }
-            }            
-          } else {
-            for(var i = 0; i < sockets.length; i++) {
-              if(sockets[i].includes("R") && sockets[i].includes("G") && sockets[i].includes("B")) {
-                if(tempValue <= rgbLinkedValue) {
+          if(sockets.length) {
+            if(ItemData.countSockets(sockets) === 6) {
+              if(sockets.length === 1) {
+                if(tempValue <= sixLinkValue) {
                   tempValue = 0;
                   item.chaosValue = 0;
-                  rgbLinkedItems += (item.stackSize || 1);
+                  sixLinkItems += (item.stackSize || 1);
                 }
-                break;
+              } else {
+                if(tempValue <= sixSocketValue) {
+                  tempValue = 0;
+                  item.chaosValue = 0;
+                  sixSocketItems += (item.stackSize || 1);
+                }
+              }            
+            } else {
+              for(var i = 0; i < sockets.length; i++) {
+                if(sockets[i].includes("R") && sockets[i].includes("G") && sockets[i].includes("B")) {
+                  if(tempValue <= rgbLinkedValue) {
+                    tempValue = 0;
+                    item.chaosValue = 0;
+                    rgbLinkedItems += (item.stackSize || 1);
+                  }
+                  break;
+                }
               }
+            }
+          } else {
+            if(ItemData.getQuality(item) >= 20 && item.frameType === 4) {
+              if(tempValue <= gcpValue) {
+                tempValue = 0;
+                item.chaosValue = 0;
+                gcpItems++;
+              }              
             }
           }
           
@@ -699,45 +711,35 @@
         });
         
         if(sixSocketItems > 0) {
-          var tempItemValue = await getCurrencyByName("Jeweller's Orb");
-          var tempItem = {
-            id: "6S",
-            displayName: "6-socket Items",
-            w: 1,
-            h: 1,
-            stackSize: sixSocketItems,
-            chaosValue: (tempItemValue ? (sixSocketItems * 7 * tempItemValue).toFixed(2) : 0),
-            icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketNumbers.png?scale=1&scaleIndex=0"
-          };
+          let tempItem = Utils.getPseudoItem("6S");
+          tempItem.stackSize = sixSocketItems;
+          tempItem.chaosValue = (sixSocketItems * sixSocketValue).toFixed(2);
+          tempItem.displayName = tempItem.name;
           itemsById["6S"] = tempItem;
           totalValue += Number.parseFloat(tempItem.chaosValue);
         }
         if(sixLinkItems > 0) {
-          var tempItemValue = await getCurrencyByName("Divine Orb");
-          var tempItem = {
-            id: "6L",
-            displayName: "6-link Items",
-            w: 1,
-            h: 1,
-            stackSize: sixLinkItems,
-            chaosValue: (tempItemValue ? (sixLinkItems * tempItemValue).toFixed(2) : 0),
-            icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyModValues.png?scale=1&scaleIndex=0"
-          };
+          let tempItem = Utils.getPseudoItem("6L");
+          tempItem.stackSize = sixLinkItems;
+          tempItem.chaosValue = (sixLinkItems * sixLinkValue).toFixed(2);
+          tempItem.displayName = tempItem.name;
           itemsById["6L"] = tempItem;
           totalValue += Number.parseFloat(tempItem.chaosValue);
         }
         if(rgbLinkedItems > 0) {
-          var tempItemValue = await getCurrencyByName("Chromatic Orb");
-          var tempItem = {
-            id: "RGB",
-            displayName: "R-G-B linked Items",
-            w: 1,
-            h: 1,
-            stackSize: rgbLinkedItems,
-            chaosValue: (tempItemValue ? (rgbLinkedItems * tempItemValue).toFixed(2) : 0),
-            icon: "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketColours.png?scale=1&scaleIndex=0"
-          };
+          let tempItem = Utils.getPseudoItem("RGB");
+          tempItem.stackSize = rgbLinkedItems;
+          tempItem.chaosValue = (rgbLinkedItems * rgbLinkedValue).toFixed(2);
+          tempItem.displayName = tempItem.name;
           itemsById["RGB"] = tempItem;
+          totalValue += Number.parseFloat(tempItem.chaosValue);
+        }
+        if(gcpItems > 0) {
+          let tempItem = Utils.getPseudoItem("GCP");
+          tempItem.stackSize = gcpItems;
+          tempItem.chaosValue = (gcpItems * gcpValue).toFixed(2);
+          tempItem.displayName = tempItem.name;
+          itemsById["gcp"] = tempItem;
           totalValue += Number.parseFloat(tempItem.chaosValue);
         }
         
