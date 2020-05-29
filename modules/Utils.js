@@ -76,6 +76,11 @@ class Utils {
   
   static getSuffix(item) {
     
+    // special case for pseudo-items
+    if(item.typeLine === "6-link Items" || item.typeLine === "6-socket Items" ) {
+      return "";
+    }
+    
     if(item.frameType === 4) {  // skill gems
       
       var suffix = "";
@@ -135,19 +140,31 @@ class Utils {
       
     } else {
       
-      var suffix = "";      
-      var sockets = ItemData.getSockets(item);
-      for(var i = 0; i < sockets.length; i++) {
-        if(sockets[i].length >= 5) {
-          suffix = `${sockets[i].length}L`;
+      // suffix only displayed for normal, magic, rare, unique equipment
+      if(!ItemCategoryParser.isNonStackable(item.typeLine) || item.frameType > 3) {
+        return "";
+      }
+      
+      let suffixes = [];
+      
+      // ilvl and influence are irrelevant for uniques
+      if(item.frameType !== 3) {
+        if(item.influences) {
+          Object.keys(item.influences).forEach(inf => suffixes.push(`${inf.charAt(0).toUpperCase()}${inf.slice(1)}`));
+        }
+        if(item.frameType !== 3 && item.ilvl && item.ilvl >= 82) {
+          suffixes.push(`Lvl ${item.ilvl}`);
         }
       }
       
-      if(suffix === "6L" && item.typeLine === "6-link Items") {
-        return "";
-      } else {
-        return suffix;
+      var sockets = ItemData.getSockets(item);
+      for(var i = 0; i < sockets.length; i++) {
+        if(sockets[i].length >= 5) {
+          suffixes.push(`${sockets[i].length}L`);
+        }
       }
+      
+      return suffixes.join(", ");
       
     }
       
@@ -453,6 +470,61 @@ class Utils {
     
     return params;
     
+  }
+  
+  static getPseudoItem(itemType) {
+    switch(itemType) {
+      case "6L":
+        return {
+          "pseudo": true,
+          "w": 1,
+          "h": 1,
+          "icon": "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyModValues.png?scale=1&scaleIndex=0",
+          "id": "6L",
+          "name": "6-link Items",
+          "typeLine": "6-link Items",
+          "ilvl": 0,
+          "frameType": 5
+        };
+      case "6S":
+        return {
+          "pseudo": true,
+          "w": 1,
+          "h": 1,
+          "icon": "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketNumbers.png?scale=1&scaleIndex=0",
+          "id": "6S",
+          "name": "6-socket Items",
+          "typeLine": "6-socket Items",
+          "ilvl": 0,
+          "frameType": 5
+        };
+      case "GCP":
+        return {
+          "pseudo": true,
+          "w": 1,
+          "h": 1,
+          "icon": "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyGemQuality.png?scale=1&scaleIndex=0",
+          "id": "GCP",
+          "name": "20% quality Gems",
+          "typeLine": "20% quality Gems",
+          "ilvl": 0,
+          "frameType": 5
+        };
+      case "RGB":
+        return {
+          "pseudo": true,
+          "w": 1,
+          "h": 1,
+          "icon": "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketColours.png?scale=1&scaleIndex=0",
+          "id": "RGB",
+          "name": "R-G-B linked Items",
+          "typeLine": "R-G-B linked Items",
+          "ilvl": 0,
+          "frameType": 5
+        };
+      default:
+        throw new Exception(`Invalid pseudo item ${itemType}`);
+    }
   }
 
 }
