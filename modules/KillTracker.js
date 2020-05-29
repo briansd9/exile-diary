@@ -4,6 +4,21 @@ const moment = require('moment');
 
 var emitter = new EventEmitter();
 
+const incubatorGearSlots = [
+  "Helm",
+  "BodyArmour",
+  "Gloves",
+  "Boots",
+  "Ring",
+  "Ring2",
+  "Amulet",
+  "Boots",
+  "Weapon",
+  "Offhand"
+  // weapon2 and offhand2 not included - alternate weapon set does not accumulate monster kills
+  // seems inconsistent with gem leveling??
+];
+
 async function logKillCount(timestamp, eqp) {
   
   var incubators = {};
