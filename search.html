@@ -410,10 +410,11 @@
         var totalValue = 0;
 
         items.forEach(item => {
-          totalValue += item.chaosValue;
           item.displayName = Utils.getDisplayName(item);
+          totalValue += item.chaosValue;
         });
-
+        
+        
         items.sort(itemCompare);
 
         items.forEach(item => {
@@ -443,12 +444,12 @@
         
         if (!i.chaosValue) return;
         
-        var item = ItemData.createItem(i);
+        var itemClass = ItemCategoryParser.getCategory(i);
         
         var displayStackSize = (i.displayName === "6-socket Items") ? i.stackSize * 7 : i.stackSize;
         
-        var str = `<tr data-itemclass="${item.itemClass}" data-itemvalue="${i.chaosValue}">`;
-        str += `<td bgcolor=0 style='position:relative;min-width:60px'><img class='lazy' style='height:${i.h * 40}px;width:${i.w * 40}px;' data-src='${i.icon}'/><span class='stackSize'>${(displayStackSize || "")}</span></td>`;
+        var str = `<tr data-itemid="${i.id}" data-itemclass="${itemClass}" data-itemvalue="${i.chaosValue}">`;
+        str += `<td bgcolor=0 style='position:relative;min-width:60px'><img class='lazy' style='height:${i.h * 40}px;width:${i.w * 40}px;' data-src="${i.icon}"/><span class='stackSize'>${(displayStackSize || "")}</span></td>`;
         str += `<td style='text-align: right;'>${i.stackSize || "&nbsp;"}</td>`;
         str += `<td style='padding-left:10px;padding-right:10px'>${i.stackSize ? "x" : "&nbsp;"}</td>`;
         str += `<td style='padding-left:10px;padding-right:10px;min-width:300px'>${i.displayName}</td>`;
