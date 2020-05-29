@@ -164,6 +164,7 @@
           if(!text) {
             $(".itemRow").show();
             $("#filtered").hide();
+            $("#clearFilter").hide();
           } else {
             let totalValue = 0;
             $(".itemRow").each(function() {
@@ -177,8 +178,16 @@
             totalValue = Number(totalValue).toFixed(2);
             $("#filteredValue").html(totalValue);
             $("#filtered").show();
+            $("#clearFilter").css("display", "flex");
           }
         });
+        
+        $("#clearFilter").on("click", function() {
+          $(".itemRow").show();
+          $("#filterItems").val("");
+          $(this).hide();
+          $("#filtered").hide();
+        })
         
         var stashID = await getStashID();
         loadStash(stashID);
@@ -238,7 +247,7 @@
         ["itemsTable", "prevCell", "nextCell"].forEach( str => {
           $(`#${str}`).empty();
         });
-        $("#itemsHeader").hide();
+        $("#itemsByValue").hide();
         
         loadStashList(id);
         loadNavLinks(id);
@@ -258,7 +267,6 @@
           }
           displayItems(currStash);
           $("#topnav").show();
-          $("#itemsByValue").show();          
         } else {
           $("#noStash").show();
           logger.info("No stash found!");
@@ -283,7 +291,10 @@
           } else {
             var parsedItem = parseItem(item);
             var value = await ItemPricer.price(parsedItem, false);
-            item.chaosValue = value;
+            if(value.isVendor) {
+              console.log(value);
+            }
+            item.chaosValue = value.isVendor ? value.val : value;
           }
 
           if(item.chaosValue) {
@@ -302,17 +313,18 @@
 
 
         var chaosString, exaltString;
-        chaosString = `${Number(s.value).toFixed(2)} <img style='vertical-align:middle;' src='res/img/c.png'/>`;
+        chaosString = `${Number(s.value).toFixed(2)} <img style='vertical-align:middle;height:1em;width:1em;' src='res/img/c.png'/>`;
         
         
         
         if(s.value > exaltRate) {
           var exaltValue = s.value / exaltRate;
-          exaltString = `${Number(exaltValue).toFixed(2)} <img style='vertical-align:middle;' src='res/img/ex.png'/>`;
+          exaltString = `${Number(exaltValue).toFixed(2)} <img style='vertical-align:middle;height:1em;width:1em;' src='res/img/ex.png'/>`;
         }        
 
         $("#netWorth").html(`Net Worth: ${chaosString} ${exaltString ? `(${exaltString})` : ""}`);
-        $("#itemsHeader").show();
+        $("#itemsByValue").show();          
+        
         
         function parseItem(rawdata) {
           var arr = ItemParser.parseItem(rawdata);
@@ -461,24 +473,20 @@
     <div id='itemsByValue' style="display:none;">
       <hr style='border:1px solid #999;' />
       <div class='tableLink' style='display:inline-flex;width:100%'>
-        <div id='netWorth' class='netWorth'>
+        <div id='netWorth' class='netWorth' style='padding:6px;'>
         </div>      
         <div style='padding-left:20px;'>
-          <input type='text' id='filterItems' style='border-radius:3px;background-color:#111;' placeholder="Filter...">
+          <div style='display:inline-flex;flex-direction:row;position:relative;'>
+            <input type='text' id='filterItems' maxlength='30' size='30' style='border-radius:8px;background-color:#111;' placeholder="Filter . . ." />
+            <div id='clearFilter' style='display:none;align-items:center;justify-content:center;position:absolute;right:8px;top:16px;width:1em;height:1em;background-color:#444'>×</div>
+          </div>
           <span id='filtered' style='display:none;'>
             <span id='filteredValue'>0</span>
-            <img style='vertical-align:middle;height:30px;width:30px' src='res/img/c.png'/>
+            <img style='vertical-align:middle;height:1em;width:1em' src='res/img/c.png'/>
           </span>
         </div>
       </div>
-      <table id='total' style='display:block;'>
-        <thead id="itemsHeader">
-          <tr class='ui-text'>
-            <th>&nbsp;</th>
-            <th>Item</th>
-            <th>Value</th>
-          </tr>
-        </thead>
+      <table id='total' style='display:block;padding-top:0.5em;'>
         <tbody id="itemsTable">
         </tbody>
       </table>
