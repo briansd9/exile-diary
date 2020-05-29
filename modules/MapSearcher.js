@@ -4,16 +4,19 @@ const moment = require('moment');
 const momentDurationFormatSetup = require("moment-duration-format");
 const logger = require("./Log").getLogger(__filename);
 const Utils = require("./Utils");
+const ItemData = require('./ItemData');
 const ItemPricer = require('./ItemPricer');
 const ItemCategoryParser = require('./ItemCategoryParser');
 
 var emitter = new EventEmitter();
 var settings;
+var pseudoItemPriceCache;
 var DB;
 
 function search(formData) {
   DB = require('./DB').getDB();
   settings = require('./settings').get();
+  pseudoItemPriceCache = {};
   var data = qs.parse(formData);
   var query = getSQL(data);
   var mapIDs = [];
@@ -138,15 +141,37 @@ async function getItems(mapID) {
   });
 }
 
+async function getPseudoItemPriceFor(date) {
+  if(!pseudoItemPriceCache[date]) {
+    pseudoItemPriceCache[date] = {
+      sixSocketValue: 7 * (await ItemPricer.getCurrencyByName(date, "Jeweller's Orb")),
+      sixLinkValue: await ItemPricer.getCurrencyByName(date, "Divine Orb"),
+      rgbLinkedValue: await ItemPricer.getCurrencyByName(date, "Chromatic Orb"),
+      gcpValue: await ItemPricer.getCurrencyByName(date, "Gemcutter's Prism")
+    };
+  }
+  return pseudoItemPriceCache[date];
+}
+
 async function getItemsFromEvent(mapID, eventID) {
   var items = [];
   return new Promise( (resolve, reject) => {
     DB.all("select rawdata, stacksize, category, sockets, value from items where event_id = ?", [eventID], async (err, rows) => {
+      
       if(err) {
         logger.info(`Error getting items: ${err}`);
         resolve(null);
       }
-      for(var i = 0; i < rows.length; i++) {
+      
+      let date = mapID.substring(0, 8);
+      let rates = await getPseudoItemPriceFor(date);
+
+      let sixSocketItems = 0;
+      let sixLinkItems = 0;
+      let rgbLinkedItems = 0;
+      let gcpItems = 0;
+        
+      for(let i = 0; i < rows.length; i++) {
         
         var item = JSON.parse(rows[i].rawdata);
         
@@ -157,55 +182,47 @@ async function getItemsFromEvent(mapID, eventID) {
           item.chaosValue = await getItemValue(eventID, item);
         }
         
-        var sockets = rows[i].sockets;
-        if(sockets) {
-          if(!item.chaosValue) {       
-            item.chaosValue = null;
-            // check if item has 6 sockets (filter out delve sockets by replacing "DV")
-            if(sockets.replace(/[DV\- ]/g, "").length === 6) {
-              // check if item has 6 links (links are indicated by a - between sockets)
-              if(sockets.replace(/[RGBWDV ]/g, "").length === 5) {
-                item.icon = "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyModValues.png?scale=1&scaleIndex=0";
-                item.name = "";
-                item.w = 1;
-                item.h = 1;
-                item.stackSize = 1;
-                item.frameType = 6;
-                item.typeLine = "Divine Orb";
-                item.chaosValue = await getCurrencyValue(eventID, item);
-                item.typeLine = "6-link Items";
+        // check if vendor recipe
+        var sockets = ItemData.getSockets(item);
+        if(sockets.length) {
+          if(ItemData.countSockets(sockets) === 6) {
+            if(sockets.length === 1) {
+              if(item.chaosValue <= rates.sixLinkValue) {
+                item.chaosValue = 0;
+                sixLinkItems += (item.stackSize || 1);
               } else {
-                item.icon = "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketNumbers.png?scale=1&scaleIndex=0";
-                item.name = "";
-                item.w = 1;
-                item.h = 1;
-                item.stackSize = 7;
-                item.frameType = 6;
-                item.typeLine = "Jeweller's Orb";
-                item.chaosValue = await getCurrencyValue(eventID, item);
-                item.stackSize = 1;
-                item.typeLine = "6-socket Items";
+                logger.info(`${mapID} ${item.typeLine} value ${item.chaosValue} > 6L ${rates.sixLinkValue}`);
               }
             } else {
-              // item has less than 6 sockets - check if it has RGB links
-              var socketGroups = sockets.split(" ");
-              for(var j = 0; j < socketGroups.length; j++) {
-                var s = socketGroups[j];
-                if(s.includes("R") && s.includes("G") && s.includes("B")) {
-                  item.icon = "https://web.poecdn.com/image/Art/2DItems/Currency/CurrencyRerollSocketColours.png?scale=1&scaleIndex=0";
-                  item.name = "";
-                  item.w = 1;
-                  item.h = 1;
-                  item.stackSize = 1;
-                  item.frameType = 6;
-                  item.typeLine = "Chromatic Orb";
-                  item.chaosValue = await getCurrencyValue(eventID, item);
-                  item.typeLine = "R-G-B linked Items";
-                  break;
-                }
+              if(item.chaosValue <= rates.sixSocketValue) {
+                item.chaosValue = 0;
+                sixSocketItems += (item.stackSize || 1);
+              } else {
+                logger.info(`${mapID} ${item.typeLine} value ${item.chaosValue} > 6S ${rates.sixSocketValue}`);
               }
             }            
-          }          
+          } else {
+            for(let j = 0; j < sockets.length; j++) {
+              if(sockets[j].includes("R") && sockets[j].includes("G") && sockets[j].includes("B")) {
+                if(item.chaosValue <= rates.rgbLinkedValue) {
+                  item.chaosValue = 0;
+                  rgbLinkedItems += (item.stackSize || 1);
+                } else {
+                  logger.info(`${mapID} ${item.typeLine} value ${item.chaosValue} > RGB ${rates.rgbLinkedValue}`);
+                }
+                break;
+              }
+            }
+          }
+        } else {
+          if(ItemData.getQuality(item) >= 20 && item.frameType === 4) {
+            if(item.chaosValue <= rates.gcpValue) {
+              item.chaosValue = 0;
+              gcpItems++;
+            } else {
+              logger.info(`${mapID} ${item.typeLine} value ${item.chaosValue} > GCP ${rates.gcpValue}`);
+            }              
+          }
         }
         
         if(item.chaosValue) {
@@ -214,6 +231,32 @@ async function getItemsFromEvent(mapID, eventID) {
         }
         
       }
+      
+      if(sixSocketItems > 0) {
+        let tempItem = Utils.getPseudoItem("6S");
+        tempItem.stackSize = sixSocketItems;
+        tempItem.chaosValue = sixSocketItems * rates.sixSocketValue;
+        items.push(tempItem);
+      }
+      if(sixLinkItems > 0) {
+        let tempItem = Utils.getPseudoItem("6L");
+        tempItem.stackSize = sixLinkItems;
+        tempItem.chaosValue = sixLinkItems * rates.sixLinkValue;
+        items.push(tempItem);        
+      }
+      if(rgbLinkedItems > 0) {
+        let tempItem = Utils.getPseudoItem("RGB");
+        tempItem.stackSize = rgbLinkedItems;
+        tempItem.chaosValue = rgbLinkedItems * rates.rgbLinkedValue;
+        items.push(tempItem);
+      }
+      if(gcpItems > 0) {
+        let tempItem = Utils.getPseudoItem("GCP");
+        tempItem.stackSize = gcpItems;
+        tempItem.chaosValue = gcpItems * rates.gcpValue;
+        items.push(tempItem);
+      }
+      
       resolve(items);
     });
   });
