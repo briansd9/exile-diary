@@ -160,15 +160,23 @@
         $("#messages").load("messages.html");
         
         $("#filterItems").on("input", function() {
+          
+          // double quotes = exact word match only
           let text = $(this).val().trim().toLowerCase();
+          if(text.length > 3 && text.startsWith('"') && text.endsWith('"')) {
+            text = text.replace(/"/g, "\\b");
+          }
+          
           if(!text) {
             $(".itemRow").show();
             $("#filtered").hide();
             $("#clearFilter").hide();
           } else {
             let totalValue = 0;
+            let r = new RegExp(text);
+            console.log(r);
             $(".itemRow").each(function() {
-              if($(this).data("itemName").includes(text)) {
+              if($(this).data("itemName").match(r)) {
                 totalValue += Number($(this).data("itemValue"));
                 $(this).show();
               } else {

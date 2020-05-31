@@ -784,9 +784,17 @@ function getMapExtraInfo(mapID) {
    
     let conq = null;
     let conqCount = 0;
+    let dieBeams = 0;
+    let dieBeamDeaths = 0;
     
     for(let i = 0; i < events.length; i++) {
       if(events[i].event_type === "conqueror") {
+        if(events[i].event_text === "Sirus, Awakener of Worlds: Die.") {
+          dieBeams++;
+          if(i + 1 < events.length && events[i + 1].event_type === "slain") {
+            dieBeamDeaths++;
+          }
+        }
         if(!conq) {
           conq = Constants.conquerors.find( str => { return events[i].event_text.startsWith(str); } );
         }
@@ -794,9 +802,13 @@ function getMapExtraInfo(mapID) {
       }
     }
     
-    if(conq && !conq.includes("Sirus")) {
-      var c = {};
-      c[conq] = (conqCount > 1 ? "battle" : "encounter");
+    if(conq) {
+      let c = {};
+      if(conq.includes("Sirus")) {
+        c[conq] = { dieBeams : dieBeams, dieBeamDeaths : dieBeamDeaths };
+      } else {
+        c[conq] = (conqCount > 1 ? "battle" : "encounter");
+      }
       return c;
     }
     
