@@ -174,7 +174,6 @@
           } else {
             let totalValue = 0;
             let r = new RegExp(text);
-            console.log(r);
             $(".itemRow").each(function() {
               if($(this).data("itemName").match(r)) {
                 totalValue += Number($(this).data("itemValue"));
