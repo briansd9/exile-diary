@@ -2,10 +2,19 @@ const levenshtein = require('js-levenshtein');
 const logger = require("./Log").getLogger(__filename);
 const Constants = require('./Constants');
 
-class StringMatcher {
+var allAreas;
 
+class StringMatcher {
+  
   static getMap(str) {
-    return this.getClosest(str, Constants.areas);
+    if(!allAreas) {
+      allAreas = [];
+      let keys = Object.keys(Constants.areas);
+      for(let i = 0; i < keys.length; i++) {
+        allAreas.push( ...Constants.areas[keys[i]] );
+      }
+    }
+    return this.getClosest(str, allAreas);
   }
 
   static getMod(str) {
