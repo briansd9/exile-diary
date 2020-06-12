@@ -184,7 +184,7 @@ function getFor(timestamp, repeatCount) {
         logger.info(`Unable to get rates for ${date}: ${err}`);
         resolve(null);
       } else if(!row) {
-        logger.info(`No old rates found for ${date}`);
+        // logger.info(`No old rates found for ${date}`);
         resolve(null);
       } else {
         DB.all("select item, value from rates where date = ?", [row.date], (err, rows) => {
