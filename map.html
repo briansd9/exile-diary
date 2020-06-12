@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="res/jquery-ui.structure.min.css" />
     <link rel="stylesheet" type="text/css" href="res/jquery-ui.theme.min.css" />
 
-    <script>if (typeof module === 'object') {
+    <script>if(typeof module === 'object') {
         window.module = module;
         module = undefined;
       }</script>
@@ -20,7 +20,7 @@
     <script src="res/page-utils.js"></script>
 
     <!-- Insert this line after script imports -->
-    <script>if (window.module)
+    <script>if(window.module)
         module = window.module;</script>
 
 
@@ -46,10 +46,10 @@
       const {ipcRenderer, remote} = require('electron');
       const ItemData = require('./modules/ItemData');
       const ItemPricer = require('./modules/ItemPricer');
-      
+
       var maprun, mapID, modal, parser, rates, itemsByType, itemsById, currScroll;
-      
-      ipcRenderer.on("done-capturing", () => { 
+
+      ipcRenderer.on("done-capturing", () => {
         if(!modal) {
           $("#sidenav").show();
           $("#messages").show();
@@ -57,60 +57,74 @@
           $("#topnav").show();
         }
         $("#mods").removeClass('mapModScreenshot');
-        $("#mods").addClass('dropdown-content');
+        $("#mods").addClass('dropdown-mapmods-content');
         $("#mods").addClass('mapMod');
         $("body").removeClass('bodyScreenshot');
         $(".footer").hide();
         $(document).scrollTop(currScroll);
         logger.info("Done capturing");
       });
-      
+
       $(document).ready(() => {
 
-//        DB.all(`select id from mapruns order by id desc limit 50`, (err, rows) => {
-//          for(let i = 0; i < rows.length; i++) {
-//            RunParser.getMapExtraInfo(rows[i].id);
-//          }
-//        });
-    
+        //require("./modules/ClientTxtWatcher").getOldNPCEvents();
+
         $("#sidenav").load("sidenav.html", () => {
           $("#sidenav-items").append("<div><a class='ui-text' onclick='screenshot()'>Screenshot</a></div>");
         });
         $("#messages").load("messages.html");
-        
+
         if(modal) {
           $("body").css({
-            "margin" : "0px",
-            "border" : "4px double #999"
+            "margin": "0px",
+            "border": "4px double #999"
           });
           $("#outerDiv").css({
-            "margin-left" : "20px",
-            "height" : window.innerHeight - 8,
-            "overflow-y" : "auto"
+            "margin-left": "20px",
+            "height": window.innerHeight - 8,
+            "overflow-y": "auto"
           });
           $("#mapCanvas").css({
-            "margin" : "10px 20px 10px 0px"
+            "margin": "10px 20px 10px 0px"
           });
           ["sidenav", "topnav", "footer", "messages", "messagePadding", "bottomHR"].forEach((elem) => {
             $(`#${elem}`).hide();
           });
         }
         
-      });
+        $(".dropdown-mapmods").hover(
+          function() { $(".dropdown-mapmods-content").show(); },
+          function() { $(".dropdown-mapmods-content").hide(); }
+        );
+
+        $(".dropdown-areatimes").hover(
+          function() {
+            if($(".dropdown-areatimes-content").html()) {
+              $(".dropdown-areatimes-content").show(); 
+            } else {
+              $(".dropdown-mapmods-content").show(); 
+            }
+          },
+          function() {
+            if($(".dropdown-areatimes-content").html()) {
+              $(".dropdown-areatimes-content").hide();
+            } else {
+              $(".dropdown-mapmods-content").hide(); 
+            }
+          },
+        );
       
-      $(document).on("click", ".item-container", function() {
-        alert(1);
       });
-      
+
       $(document).keydown(e => {
         switch (e.key) {
           case "ArrowLeft":
-            if (document.getElementById("prevMap")) {
+            if(document.getElementById("prevMap")) {
               $("#prevMap")[0].click();
             }
             break;
           case "ArrowRight":
-            if (document.getElementById("nextMap")) {
+            if(document.getElementById("nextMap")) {
               $("#nextMap")[0].click();
             }
             break;
@@ -135,13 +149,13 @@
             break;
         }
       });
-  
+
       $(document).click(() => {
         if(modal) {
           window.close();
         }
       });
-      
+
       function screenshot() {
         if(!modal) {
           $("#sidenav").hide();
@@ -149,13 +163,13 @@
           $("#messagePadding").hide();
           $("#topnav").hide();
         }
-        $("#mods").removeClass('dropdown-content');
+        $("#mods").removeClass('dropdown-mapmods-content');
         $("#mods").removeClass('mapMod');
         $("#mods").addClass('mapModScreenshot');
         $("body").addClass('bodyScreenshot');
         $(".footer").show();
         currScroll = $(document).scrollTop();
-        remote.getCurrentWindow().captureFullPage(img => { 
+        remote.getCurrentWindow().captureFullPage(img => {
           img.getBase64('image/png', (err, imgdata) => {
             ipcRenderer.send("screenshotCaptured", imgdata);
           });
@@ -183,19 +197,19 @@
             let popup = $(`#${id}_${arrayIndex}_popup`);
             return (popup.length ? popup.clone() : null);
           },
-          position: { my: "left", at: "right" },
-          open: function(event, ui) {
+          position: {my: "left", at: "right"},
+          open: function (event, ui) {
             if(ui.tooltip.offset().top < $(window).scrollTop()) {
-              ui.tooltip.offset({ top: $(window).scrollTop() });
+              ui.tooltip.offset({top: $(window).scrollTop()});
             } else if(ui.tooltip.offset().top - $(window).scrollTop() + ui.tooltip.height() + 16 > window.innerHeight) {
-              ui.tooltip.offset({ top: window.innerHeight - ui.tooltip.height() - 16 + $(window).scrollTop() });
+              ui.tooltip.offset({top: window.innerHeight - ui.tooltip.height() - 16 + $(window).scrollTop()});
             }
           }
         });
 
         if(!modal) {
-          ipcRenderer.on("runProcessed", (event, run) => { 
-            addToRunList(run.id); 
+          ipcRenderer.on("runProcessed", (event, run) => {
+            addToRunList(run.id);
           });
           loadRunList(mapID);
         }
@@ -210,12 +224,12 @@
           from areainfo, mapruns
           where mapruns.id = ? and ifnull(mapruns.gained, 0) != -1 and ifnull(mapruns.kills, 0) != -1 and areainfo.id = mapruns.id    
         `, [id], (err, row) => {
-            if(row) {
-              logger.info("Adding to run list " + JSON.stringify(row));
-              $("#runs").append(getSelectMapOption(row));
-            }
+          if(row) {
+            logger.info("Adding to run list " + JSON.stringify(row));
+            $("#runs").append(getSelectMapOption(row));
+          }
         });
-        
+
         DB.get(`
           select id from mapruns where id < ? and ifnull(gained, 0) != -1 and ifnull(kills, 0) != -1 order by id desc limit 1
         `, [id], (err, row) => {
@@ -241,41 +255,41 @@
         `, (err, rows) => {
           rows.forEach(row => {
             var opt = getSelectMapOption(row);
-            if(row.id == selectedID) {
+            if(row.id === selectedID) {
               opt.attr("selected", true)
-            };
+            }
             $("#runs").append(opt);
           });
         })
       }
-      
+
       function getSelectMapOption(row) {
-          var deathStr = Utils.getDeathCount(row.deaths);
-          if (Utils.isLabArea(row.name)) {
-            switch(row.level) {
-              case 33:
-                row.name = "The Labyrinth";
-                break;
-              case 55:
-                row.name = "The Cruel Labyrinth";
-                break;
-              case 68:
-                row.name = "The Merciless Labyrinth";
-                break;
-              case 75:
-                row.name = "The Eternal Labyrinth";
-                break;
-              default:
-                row.name = "The Lord's Labyrinth";
-                break;
-            }
-            row.level = '';
+        var deathStr = Utils.getDeathCount(row.deaths);
+        if(Utils.isLabArea(row.name)) {
+          switch (row.level) {
+            case 33:
+              row.name = "The Labyrinth";
+              break;
+            case 55:
+              row.name = "The Cruel Labyrinth";
+              break;
+            case 68:
+              row.name = "The Merciless Labyrinth";
+              break;
+            case 75:
+              row.name = "The Eternal Labyrinth";
+              break;
+            default:
+              row.name = "The Lord's Labyrinth";
+              break;
           }
-          var levelStr = (row.level ? ` (${Utils.getMapTierString(row)})` : '');
-          var str = `${row.id} - ${row.name}${levelStr} - ${Number(row.gained).toFixed(2)}C${deathStr == '-' ? '' : `, ${deathStr}`}`;
-          return $("<option>").val(row.id).html(str);
+          row.level = '';
+        }
+        var levelStr = (row.level ? ` (${Utils.getMapTierString(row)})` : '');
+        var str = `${row.id} - ${row.name}${levelStr} - ${Number(row.gained).toFixed(2)}C${deathStr == '-' ? '' : `, ${deathStr}`}`;
+        return $("<option>").val(row.id).html(str);
       }
-      
+
       function loadMap(mapRun) {
         clearCurrentMap();
         parser = mapRun.parser;
@@ -286,43 +300,41 @@
         $("#runs").val(mapRun.id);
         $("body").show();
       }
-      
+
       function clearCurrentMap() {
-        
         [
           "itemsTable", "prevCell", "nextCell",
-          "IIQ", "IIR", "packSize", "eventsDiv", "mods", 
+          "IIQ", "IIR", "packSize", "eventsDiv", "mods", "areaTimes",
           "beastCount", "incursionCount", "sulphiteCount",
           "popupContainer"
-        ].forEach( str => {
+        ].forEach(str => {
           $(`#${str}`).empty();
         });
-        
+
         $("#masterDiv").hide();
         $("#xpDiv").hide();
-        
-        ["Zana", "Einhar", "Alva", "Niko", "Jun"].forEach( str => {
+
+        ["Zana", "Einhar", "Alva", "Niko", "Jun"].forEach(str => {
           $(`#${str}Icon`).hide();
           $(`#${str}Favour`).hide();
         });
-        ["Crusader", "Hunter", "Redeemer", "Warlord"].forEach( str => {
+        ["Crusader", "Hunter", "Redeemer", "Warlord"].forEach(str => {
           $(`#${str}Icon`).hide();
           $(`#${str}Icon`).removeData();
         });
-        
+
         itemsByType = {};
         itemsById = {};
-        
       }
-      
-      
+
+
       function getMapID() {
         var params = Utils.getParams(window.location.toString());
         var id = params['id'];
         if(id) {
           return id;
         } else {
-          return new Promise( (resolve, reject) => {
+          return new Promise((resolve, reject) => {
             DB.get(" select max(id) as id from mapruns where ifnull(mapruns.gained, 0) != -1 and ifnull(mapruns.kills, 0) != -1 ", (err, row) => {
               if(err) {
                 logger.info(`Unable to get latest map run: ${err}`);
@@ -333,7 +345,7 @@
           });
         }
       }
-      
+
       function showNavigation(run) {
         if(run.nav.prev && run.nav.prev != -1) {
           $("#prevCell").html(`<a class='ui-text' id='prevMap' onclick='goToRun("${run.nav.prev}")'><< ${run.nav.prev}</a>`);
@@ -344,53 +356,34 @@
       }
 
       function showInfo(run) {
-        
+
         var info = run.info;
         var f = new Intl.NumberFormat();
-        
-        if (Utils.isLabArea(info.name)) {
+
+        if(Utils.isLabArea(info.name)) {
           info.name = "The Lord's Labyrinth";
         }
         $("#name").html(info.name);
         $("#level").html(info.level ? `Monster Level: ${info.level}` : '');
         $("#depth").html(info.depth ? `Delve Depth: ${info.depth}` : '');
         $("#league").html(`${run.league} League`);
-        
-        if (info.iiq) {
-          $("#IIQ").html(`Item Quantity<br/><span class='mapStatValue'>${info.iiq}%</span><br/>`);
-        }
-        if (info.iir) {
-          $("#IIR").html(`Item Rarity<br/><span class='mapStatValue'>${info.iir}%</span><br/>`);
-        }
-        if (info.packsize) {
-          $("#packSize").html(`Monster Pack Size<br/><span class='mapStatValue'>${info.packsize}%</span><br/>`);
-        }
-        
-        run.mods.forEach(mod => {
-          $("#mods").append(
-            $("<span>", {
-              "class": "mapMod",
-              "html": mod + "<br/>"
-            })
-            );
-        });
-        if(run.mods.length > 0) {
-          $("#mods").addClass('dropdown-content');
-          $("#mods").addClass('mapMod');
-        } else {
-          $("#mods").removeClass('dropdown-content');
-          $("#mods").removeClass('mapMod');
-        }
-        
+
+        $("#IIQ").html(info.iiq ? `Item Quantity<br/><span class='mapStatValue'>${info.iiq}%</span><br/>` : '&nbsp;');
+        $("#IIR").html(info.iir ? `Item Rarity<br/><span class='mapStatValue'>${info.iir}%</span><br/>` : '&nbsp;');
+        $("#packSize").html(info.packsize ? `Monster Pack Size<br/><span class='mapStatValue'>${info.packsize}%</span><br/>` : '&nbsp;');
+
+        addMapMods(run.mods);
+
+        addAreaTimes(run.info.areaTimes);
+
         if(info.kills) {
           $("#killCount").html(f.format(info.kills));
           $("#killText").html(info.kills === 1 ? "monster" : "monsters");
-          $("#killCountDiv").css("display","block");
+          $("#killCountDiv").css("display", "block");
+        } else {
+          $("#killCountDiv").css("display", "none");
         }
-        else {
-          $("#killCountDiv").css("display","none");
-        }
-        
+
         var xpgained;
         if(info.xp) {
           xpgained = (info.prevxp > 0 ? info.xp - info.prevxp : 0);
@@ -400,26 +393,57 @@
             $("#xp").html(
               xpString
               + (xpgained === 0 ? " · +0" : ` · ${Utils.formatSignedNumber(xpgained)}` + (xpgained > 0 ? ` · ${Utils.getXPRate(xpgained, events[0].id, events[events.length - 1].id)}/hr` : ""))
-            );
-            $("#xpDiv").css("display","block");
+              );
+            $("#xpDiv").css("display", "block");
           }
         }
-        
+
         if(info.kills || xpgained) {
           $("#xpKillCountHR").show();
         } else {
           $("#xpKillCountHR").hide();
-        }        
-        
+        }
+
         $(".mapArea").show();
-        
+
       }
-      
+
+      function addMapMods(modList) {
+        if(modList.length > 0) {
+          modList.forEach(mod => {
+            $("#mods").append(
+              $("<span>", {
+                "class": "mapMod",
+                "html": mod + "<br/>"
+              })
+              );
+          });
+          $("#mods").addClass('dropdown-mapmods-content');
+          $("#mods").addClass('mapMod');
+        } else {
+          $("#mods").removeClass('dropdown-mapmods-content');
+          $("#mods").removeClass('mapMod');
+        }
+      }
+
+      function addAreaTimes(t) {
+        let keys = Object.keys(t);
+        keys.forEach(key => {
+          if(t[key]) {
+            $("#areaTimes").append(`
+              <span style='color:#aaa'>${key}:</span> ${moment.utc(1000 * t[key]).format("m:ss")}<br/>
+            `);
+          }
+        });
+        $("#areaTimes").addClass('dropdown-areatimes-content');
+        $("#areaTimes").addClass('mapMod');
+      }
+
       function getEventString(e) {
 
         var eventType = e.event_type;
         var eventText = e.event_text;
-        
+
         if(eventType === "master") {
           if(eventText.startsWith("Alva")) {
             var templeRoom = Utils.getTempleRoom(eventText.substring(eventText.indexOf(":") + 1).trim());
@@ -432,11 +456,12 @@
             return null;
           }
         }
-        
+
         switch (eventType) {
           case "favourGained":
           case "conqueror":
           case "leagueNPC":
+          case "shrine":
             return null;
           case "note":
             eventType = "";
@@ -452,37 +477,37 @@
       }
 
       function drawItem(itemData) {
-        
+
         var item = ItemData.createItem(itemData);
         var itemDiv = item.draw();
         MiscUtils.applyDefaultStyle(item);
-        
+
         var lastMatchedRule = null;
         for (var j = 0; j < parser.ruleSet.length; j++) {
           var rule = parser.ruleSet[j];
-          if (rule.match(item)) {
+          if(rule.match(item)) {
             lastMatchedRule = rule;
             if(!rule.continue) {
               break;
             }
           }
         }
-        
+
         if(lastMatchedRule) {
           lastMatchedRule.applyTo(item);
         }
-        
+
         return itemDiv;
-        
+
       }
 
       function getItemDiv(item) {
         itemDiv = drawItem(item);
         itemDiv.setAttribute("arrayIndex", item.arrayIndex);
-        if (item.frameType === 3) {
+        if(item.frameType === 3) {
           MiscUtils.preload(item.icon);
           itemDiv.setAttribute("icon", item.icon);
-          if (!item.identified && item.secretName) {
+          if(!item.identified && item.secretName) {
             itemDiv.setAttribute("secretName", item.secretName);
           }
         }
@@ -490,39 +515,35 @@
       }
 
       function showEvents(mapRun) {
-        
+
         var events = mapRun.events;
-        
+
         var runningTime = Utils.getRunningTime(events[0].id, events[events.length - 1].id);
         $("#runningTime").html(`Time<br/><span class='mapStatValue'>${runningTime}</span>`);
-        
+
         for (var i = 0; i < events.length; i++) {
-          
+
           var eventTime = "[" + events[i].id.substring(8, 10) + ":" + events[i].id.substring(10, 12) + ":" + events[i].id.substring(12, 14) + "]";
           var currEvent = events[i];
-          
+
           if(currEvent.event_type === "master") {
-            if(currEvent.event_text.includes("Zana")) {
+            if(currEvent.event_text.includes("Zana") && !mapRun.info.name.includes("The Shaper's Realm") && !mapRun.info.name.includes("Absence of Value and Meaning")) {
               $("#masterDiv").show();
               $(`#ZanaIcon`).show();
-            }
-            else if(currEvent.event_text.includes("Jun") && !mapRun.info.name.includes("Syndicate Hideout") && !mapRun.info.name.includes("Mastermind's Lair")) {
+            } else if(currEvent.event_text.includes("Jun") && !mapRun.info.name.includes("Syndicate Hideout") && !mapRun.info.name.includes("Mastermind's Lair")) {
               $("#masterDiv").show();
               $(`#JunIcon`).show();
-            }
-            else if(currEvent.event_text.includes("Niko")) {
+            } else if(currEvent.event_text.includes("Niko")) {
               $("#masterDiv").show();
               $(`#NikoIcon`).show();
               $(`#sulphiteCount`).append($('<img>', {src: 'res/img/sulphite.png'}));
-            }
-            else if(currEvent.event_text.includes("Alva") && !mapRun.info.name.includes("Atzoatl")) {
+            } else if(currEvent.event_text.includes("Alva") && !mapRun.info.name.includes("Atzoatl")) {
               if(currEvent.event_text.includes("Good job")) {
                 $("#masterDiv").show();
                 $(`#AlvaIcon`).show();
                 $(`#incursionCount`).append($('<img>', {src: 'res/img/incursion.png'}));
               }
-            }
-            else if(currEvent.event_text.includes("Einhar") && !mapRun.info.name.includes("Menagerie")) {
+            } else if(currEvent.event_text.includes("Einhar") && !mapRun.info.name.includes("Menagerie")) {
               Constants.beastCaptureQuotes.forEach(str => {
                 if(currEvent.event_text.includes(str)) {
                   $("#masterDiv").show();
@@ -532,11 +553,11 @@
               });
             }
           }
-          
+
           if(currEvent.event_type === "conqueror") {
             ["Crusader", "Hunter", "Redeemer", "Warlord"].forEach(str => {
               if(currEvent.event_text.includes(str + ":")) {
-                $("#masterDiv").show();                
+                $("#masterDiv").show();
                 var conq = $(`#${str}Icon`);
                 conq.show();
                 if(conq.data("count")) {
@@ -547,87 +568,88 @@
               }
             });
           }
-          
+
           if(currEvent.event_type === 'favourGained') {
-            displayFavour(currEvent, events[i+1]);
+            displayFavour(currEvent, events[i + 1]);
           }
-          
-          if (i > 0 && !lastEnteredTown(events, i) && currEvent.event_type === "entered") {
+
+          if(i > 0 && !lastEnteredTown(events, i) && currEvent.event_type === "entered") {
             var lootString = getInventoryDiffs(mapRun.items, events[i].id);
-            if (lootString.length > 0) {
+            if(lootString.length > 0) {
               $("#eventsDiv").append(
                 "<div class='eventInfo'>"
                 + "<span class='eventTime'>" + eventTime + "</span> "
                 + lootString
                 + "</div>"
-                );
+              );
             }
           }
-          
+
           if(i > 0) {
-            var prevEvent = events[i-1];
+            var prevEvent = events[i - 1];
             // don't spam multiple entries for Azurite Mine
             if(currEvent.event_type === "entered" && prevEvent.event_type === "entered" && currEvent.event_text === prevEvent.event_text) {
               continue;
             }
           }
-          
+
           var eventString = getEventString(currEvent);
-          if (eventString && eventString.length > 0) {
+          if(eventString && eventString.length > 0) {
             $("#eventsDiv").append(
               "<div class='eventInfo'>"
               + "<span class='eventTime'>" + eventTime + "</span> "
               + eventString
               + "</div>"
-              );
+            );
           }
-        }        
-        
+          
+        }
+
         if(remote.getGlobal("ssf")) {
           $("#itemsByValue").hide();
         } else {
           displayItemsByValue();
         }
         $(".eventsArea").show();
-  
-      }
-      
-      function displayFavour(currEvent, nextEvent) {
         
+      }
+
+      function displayFavour(currEvent, nextEvent) {
+
         var favourGained = "+" + new Intl.NumberFormat().format(currEvent.event_text);
         var found = false;
-        ["Einhar", "Alva", "Niko", "Jun"].forEach( str => {
+        ["Einhar", "Alva", "Niko", "Jun"].forEach(str => {
           if(nextEvent.event_type === "master" && nextEvent.event_text.startsWith(str)) {
             $(`#${str}Favour`).html(favourGained);
             $(`#${str}Favour`).show();
             found = true;
           }
         });
-        
+
         if(!found) {
           $(`#ZanaFavour`).html(favourGained);
           $(`#ZanaFavour`).show();
         }
-        
+
       }
-      
+
       function lastEnteredTown(events, currIndex) {
         for (var i = currIndex - 1; i >= 0; i--) {
           var event = events[i];
-          if (event.event_type === "entered") {
+          if(event.event_type === "entered") {
             return Utils.isTown(event.event_text);
           }
         }
       }
 
       function getInventoryDiffs(items, timestamp) {
-        
+
         if(!items[timestamp]) return "";
-        
+
         var inventoryDiv = document.createElement("div");
         var itemPickedUp = false;
-        
-        for(let i = 0; i < items[timestamp].length; i++) {
+
+        for (let i = 0; i < items[timestamp].length; i++) {
           var item = JSON.parse(items[timestamp][i]);
           if(item.inventoryId === "MainInventory") {
             itemPickedUp = true;
@@ -640,37 +662,37 @@
               $("#popupContainer").append(popup);
             }
           }
-        };
-        
+        }
+
         return (itemPickedUp ? `<span class='eventType'>Picked up:</span> <span class='eventText'>${inventoryDiv.outerHTML}</span></div>` : "");
 
       }
 
       async function displayItemsByValue() {
-        
+
         var items = itemsById;
         var tbl = $("#itemsTable");
 
         var totalValue = 0;
-        
+
         var sixSocketItems = 0;
         var sixLinkItems = 0;
         var rgbLinkedItems = 0;
         var gcpItems = 0;
-        
+
         let sixSocketValue = 7 * (await getCurrencyByName("Jeweller's Orb"));
         let sixLinkValue = await getCurrencyByName("Divine Orb");
         let rgbLinkedValue = await getCurrencyByName("Chromatic Orb");
         let gcpValue = await getCurrencyByName("Gemcutter's Prism");
 
         Object.keys(items).forEach(function (k) {
-          
+
           var item = items[k];
 
           item.displayName = Utils.getDisplayName(item);
-          
+
           var tempValue = Number.parseFloat(setValue(item));
-          
+
           // check if value is from vendor recipe
           var sockets = ItemData.getSockets(item);
           if(sockets.length) {
@@ -687,9 +709,9 @@
                   item.chaosValue = 0;
                   sixSocketItems += (item.stackSize || 1);
                 }
-              }            
+              }
             } else {
-              for(var i = 0; i < sockets.length; i++) {
+              for (var i = 0; i < sockets.length; i++) {
                 if(sockets[i].includes("R") && sockets[i].includes("G") && sockets[i].includes("B")) {
                   if(tempValue <= rgbLinkedValue) {
                     tempValue = 0;
@@ -706,16 +728,16 @@
                 tempValue = 0;
                 item.chaosValue = 0;
                 gcpItems++;
-              }              
+              }
             }
           }
-          
+
           if(tempValue) {
             totalValue += tempValue;
           }
-          
+
         });
-        
+
         if(sixSocketItems > 0) {
           let tempItem = Utils.getPseudoItem("6S");
           tempItem.stackSize = sixSocketItems;
@@ -748,7 +770,7 @@
           itemsById["gcp"] = tempItem;
           totalValue += Number.parseFloat(tempItem.chaosValue);
         }
-        
+
         if(totalValue == 0) {
           logger.info("Total value is 0, hiding");
           $("#itemsByValue").hide();
@@ -756,18 +778,18 @@
         } else {
           $("#itemsByValue").show();
         }
-        
+
         var values = Object.values(items);
         values.sort(itemCompare);
 
         for (var v of values) {
           tbl.append(itemToString(v));
         }
-        
+
         $("#netWorth").html(
           `Gained: ${totalValue.toFixed(2)} <img style='vertical-align:middle;' src='res/img/c.png'/>`
-        );
-        
+          );
+
         function itemCompare(a, b) {
           a1 = (a.chaosValue || -1);
           b1 = (b.chaosValue || -1);
@@ -777,17 +799,17 @@
       }
 
       function processItem(item) {
-        
+
         // need to identify by both type and rarity, otherwise unique and normal maps of the same basetype will be grouped together
-        var typeIdentifier  = item.typeLine.replace("Superior ", "");
+        var typeIdentifier = item.typeLine.replace("Superior ", "");
         if(item.frameType === 3) {
           typeIdentifier += ` ${item.secretName} ${item.typeLine}`;
         }
-        
+
         if(ItemCategoryParser.isNonStackable(typeIdentifier)) {
           itemsById[item.id] = item;
         } else {
-          if (!itemsByType[typeIdentifier]) {
+          if(!itemsByType[typeIdentifier]) {
             itemsById[item.id] = item;
             itemsByType[typeIdentifier] = item.id;
             itemsById[item.id].stackSize = item.stackSize || 1;
@@ -805,12 +827,12 @@
 
       function displayName(i) {
         var name = "";
-        if (!i.identified && i.frameType == 3 && i.typeLine.endsWith(" Map")) {
+        if(!i.identified && i.frameType == 3 && i.typeLine.endsWith(" Map")) {
           name = Utils.getUniqueMap(i.typeLine);
           return name;
         }
-        if (i.hasOwnProperty("name")) {
-          if (i.name.length > 0)
+        if(i.hasOwnProperty("name")) {
+          if(i.name.length > 0)
             name += i.name.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "") + ", ";
         }
         name += i.typeLine.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "");
@@ -819,13 +841,13 @@
       }
 
       function itemToString(i) {
-        
-        if (!i.chaosValue) {
+
+        if(!i.chaosValue) {
           return;
         }
 
         var displayStackSize = (i.displayName === "6-socket Items") ? i.stackSize * 7 : i.stackSize;
-        
+
         var str = `
           <tr>
             <td bgcolor=0 style='min-width:60px;position:relative;'>
@@ -836,7 +858,7 @@
             <td style='padding-left:10px;padding-right:10px'>${i.chaosValue ? Number(i.chaosValue).toFixed(2) + "" : "&nbsp;"}</td>
           `;
         return str;
-        
+
       }
 
       async function getCurrencyByName(curr) {
@@ -849,9 +871,9 @@
 
 
       function setValue(item) {
-        
+
         var tempValue;
-        
+
         if(item.value) {
           tempValue = item.value;
         } else if(item.chaosValue) {
@@ -859,17 +881,19 @@
         } else {
           tempValue = Utils.getItemValue(item, rates);
         }
-        
+
         item.chaosValue = tempValue;
-        if(tempValue > 0) tempValue = tempValue.toFixed(2);
+        if(tempValue > 0)
+          tempValue = tempValue.toFixed(2);
         return tempValue || 0;
 
       }
 
       function goToRun(id) {
-        if(modal) return;
+        if(modal)
+          return;
         var m = new MapRun(id);
-        m.on("MapRunReady", () => { 
+        m.on("MapRunReady", () => {
           window.history.pushState("", "", `map.html?id=${id}`);
           loadMap(m);
         });
@@ -901,32 +925,24 @@
         </tr>
       </table>
       <div id='mapCanvas'>
-        <div class='dropdown' style='text-align:left;width:100%;'>
-          <div class='dropbtn'>
-            <table class='mapArea mapTable' style='width:100%;'>
-              <tr style='vertical-align: top;'>
-                <td>
-                  <div id='mapDiv' class='mapInfo'>
-                    <div id='name'></div>
-                    <div id='level'></div>
-                    <div id='depth'></div>
-                    <div id='league'></div>
-                  </div>
-                </td>
-                <td class='mapStat' id='IIQ'>
-                </td>
-                <td class='mapStat' id='IIR'>
-                </td>
-                <td class='mapStat' id='packSize'>
-                </td>
-                <td class='mapStat' id='runningTime'>
-                </td>
-              </tr>
-            </table>
+        <div class='dropbtn grid' style='text-align:left;width:100%;'>
+          <div class='dropdown-mapmods'>
+            <div id='mapDiv' class='mapInfo'>
+              <div id='name'></div>
+              <div id='level'></div>
+              <div id='depth'></div>
+              <div id='league'></div>
+            </div>
           </div>
-          <div id='mods' class='mapMod'></div>
-          <hr class='mapArea' style='border:1px solid #999;' />
-        </div>						
+          <div class='mapStat dropdown-mapmods' id='IIQ'></div>
+          <div class='mapStat dropdown-mapmods' id='IIR'></div>
+          <div class='mapStat dropdown-mapmods' id='packSize'></div>
+          <div class='mapStat dropdown-areatimes' id='runningTime'></div>
+        </div>
+          <div id='mods' class='mapMod'></div>          
+          <div id='areaTimes' class='areaTime'></div>
+
+        <hr class='mapArea' style='border:1px solid #999;' />
         <div id='xpDiv' style='display:none;'>
           <span id='xp'></span>
         </div>
