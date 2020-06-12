@@ -29,7 +29,6 @@ class MapRun extends EventEmitter {
     this.league = await getLeague(mapID);
     
     if(this.info.level) {
-      logger.info(`Setting AreaLevel to ${this.info.level} for filter parser`);
       this.parser.setAreaLevel(this.info.level);
     }
     
@@ -67,15 +66,15 @@ async function getNextMap(mapID) {
 async function getInfo(mapID) {
   return new Promise((resolve, reject) => {
     DB.get(`
-      select name, level, depth, iiq, iir, packsize, xp, kills,
+      select name, level, depth, iiq, iir, packsize, xp, kills, runinfo,
       (select xp from mapruns m where m.id < mapruns.id and xp is not null order by m.id desc limit 1) prevxp
       from areainfo, mapruns where mapruns.id = ? and areainfo.id = ?
     `, [mapID, mapID], (err, row) => {
       if (err) {
-        logger.error(`Unable to get map info: ${serr}`);
+        logger.error(`Unable to get map info: ${err}`);
         resolve(null);
       } else {
-        resolve({
+        let info = {
           name: row.name,
           level: row.level,
           depth: row.depth,
@@ -85,7 +84,9 @@ async function getInfo(mapID) {
           xp: row.xp,
           prevxp: row.prevxp,
           kills: row.kills
-        });
+        };
+        Object.assign(info, JSON.parse(row.runinfo));
+        resolve(info);
       }
     });
   });

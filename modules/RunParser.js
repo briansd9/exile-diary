@@ -79,6 +79,8 @@ async function tryProcess(obj) {
   var xpDiff = await getXPDiff(xp);
   var items = await checkItems(areaInfo, firstEvent.timestamp, lastEvent.timestamp);
   var killCount  = await getKillCount(firstEvent.timestamp, lastEvent.timestamp);
+  var extraInfo = await getMapExtraInfo(areaInfo.name, firstEvent.timestamp, lastEvent.timestamp);
+  
   var ignoreMapRun = false;
   
   DB.run("insert into areainfo(id, name) values(?, ?)", [firstEvent.timestamp, firstEvent.area], (err) => {
@@ -99,7 +101,7 @@ async function tryProcess(obj) {
     areaInfo.id, 
     firstEvent.timestamp, lastEvent.timestamp, 
     mapStats.iiq || null, mapStats.iir || null, mapStats.packsize || null, 
-    items.value, xp, killCount
+    items.value, xp, killCount, extraInfo
   ];
   insertMapRun(runArr).then(() => {
     if(!ignoreMapRun) {
@@ -278,6 +280,7 @@ async function process() {
   var xpDiff = await getXPDiff(xp);
   var items = await checkItems(currArea, firstEvent, lastEvent);
   var killCount  = await getKillCount(firstEvent, lastEvent);
+  var extraInfo = await getMapExtraInfo(currArea.name, firstEvent, lastEvent);
   var ignoreMapRun = false;
   
   // if no items picked up, no kills, and no xp gained, log map run but ignore it (profit = -1, kills = -1)
@@ -292,7 +295,7 @@ async function process() {
     currArea.id, 
     firstEvent, lastEvent, 
     mapStats.iiq, mapStats.iir, mapStats.packsize, 
-    items.value, xp, killCount
+    items.value, xp, killCount, extraInfo
   ];
   insertMapRun(runArr).then(() => {
     if(!ignoreMapRun) {
@@ -584,7 +587,7 @@ function updateItemValues(arr) {
 async function insertMapRun(arr) {
   return new Promise( (resolve, reject) => {
     DB.run(`
-      insert into mapruns(id, firstevent, lastevent, iiq, iir, packsize, gained, xp, kills) values (?, ?, ?, ?, ?, ?, ?, ?, ?) 
+      insert into mapruns(id, firstevent, lastevent, iiq, iir, packsize, gained, xp, kills, runinfo) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
     `, arr, (err) => {
       if(err) {
         logger.error(`Unable to insert map run ${JSON.stringify(arr)}: ${err}`);
@@ -695,6 +698,7 @@ function getPrevMapStartEvent() {
     });    
   });
 }
+
 function getMapMods(id) {
   return new Promise( (resolve, reject) => {
     DB.all("select mod from mapmods where area_id = ? order by cast(id as integer)", [id], (err, rows) => {
@@ -741,108 +745,305 @@ function getMapStats(arr) {
   return mapStats;
 }
 
-function getMapExtraInfo(mapID) {
-  DB = require('./DB').getDB();
-  DB.get(" select * from mapruns where id = :id", [mapID], async (err, row) => {
-    
-    let extraInfo = {};
-    
-    let events = await getEvents(row.firstevent, row.lastevent);
-    
-    let blightCount = getBlightCount(events);
-    if(blightCount > 8) {
-      extraInfo.blightedMap = true;
-    } else if(blightCount > 0) {
-      extraInfo.blightEncounter = true;
+async function getMapExtraInfo(areaName, firstevent, lastevent) {
+  
+  logger.info(`Getting map extra info for ${areaName} between ${firstevent} and ${lastevent}`);
+  
+  let events = await getEvents(firstevent, lastevent);
+  
+  console.log(events);
+
+  let run = {};
+  let blightCount = 0;
+  let conqCount = 0;    
+  let conqueror;
+  
+  run.areaTimes = getRunAreaTimes(events);
+
+  for(let i = 0; i < events.length; i++) {
+
+    let evt = events[i];
+    let line;
+
+    switch(evt.event_type) {
+      case "entered":
+        let area = evt.event_text;
+        if(area === "Abyssal Depths") {
+          run.abyssalDepths = true;
+        } else if(Constants.areas.vaalSideAreas.includes(area)) {
+          run.vaalSideAreas = true;
+        }
+        continue;
+      case "slain":
+        run.deaths = ++run.deaths || 1;
+        continue;
+      case "favourGained":
+        let master = getMasterFavour(events[i + 1]);
+        run.masters = run.masters || {};
+        run.masters[master] = run.masters[master] || { encountered : true };
+        run.masters[master].favourGained = (run.masters[master].favourGained || 0) + Number(evt.event_text);
+        continue;
+      case "shrine":
+        if(Constants.areas.labyrinth.includes(areaName)) {
+          run.labyrinth = run.labyrinth || {};
+          run.labyrinth.darkshrines = run.labyrinth.darkshrines || [];
+          run.labyrinth.darkshrines.push(evt.event_text);
+        } else {
+          run.shrines = run.shrines || [];
+          run.shrines.push(Constants.shrineQuotes[evt.event_text]);
+        }
+        continue;
+      case "master":
+        line = getLine(evt.event_text);
+        break;
+      case "conqueror":
+        conqueror = conqueror || {};
+        line = getLine(evt.event_text);
+        break;
+      case "leagueNPC":
+        line = getLine(evt.event_text);
+        break;
+      default:
+        // ignore other event types
+        continue;
     }
-    
-    let conq = getConqueror(events);
-    if(conq) { extraInfo.conqueror = conq; }
-    
-    let deaths = getDeaths(events);
-    if(deaths) { extraInfo.deaths = deaths; }
-    
-    let master = getMaster(row, events);
-    if(master) { extraInfo.master = master; }
-    
-    if(Object.keys(extraInfo).length) {
-      console.log(JSON.stringify(row));
-      console.log(JSON.stringify(extraInfo, null, 4));
-    }
-    
-  });
-  
-  function getMaster(row, events) {
-    
-  }
-  
-  function getDeaths(events) {    
-    return events.reduce( (total, e) => { return total + (e.event_type === "slain" ? 1 : 0); }, 0);    
-  }  
-  
-  function getConqueror(events) {
-   
-    let conq = null;
-    let conqCount = 0;
-    let dieBeams = 0;
-    let dieBeamDeaths = 0;
-    
-    for(let i = 0; i < events.length; i++) {
-      if(events[i].event_type === "conqueror") {
-        if(events[i].event_text === "Sirus, Awakener of Worlds: Die.") {
-          dieBeams++;
-          if(i + 1 < events.length && events[i + 1].event_type === "slain") {
-            dieBeamDeaths++;
+
+    switch(line.npc) {
+      case "Sister Cassia":
+        if(Constants.blightBranchQuotes.includes(line.text)) {
+          blightCount++;            
+        }
+        continue;
+      case "Strange Voice":
+        if(Constants.areas.simulacrum.includes(areaName)) {
+          if(Constants.simulacrumWaveQuotes[line.text]) {
+            run.simulacrumProgress = run.simulacrumProgress || {};
+            run.simulacrumProgress[Constants.simulacrumWaveQuotes[line.text]] = evt.id;
+          }
+        } else {
+          run.strangeVoiceEncountered = true;
+        }
+        continue;
+      case "The Shaper":
+        if(areaName === "The Shaper's Realm" && Constants.shaperBattleQuotes[line.text]) {
+          run.shaperBattle = run.shaperBattle || {};
+          run.shaperBattle[Constants.shaperBattleQuotes[line.text]] = evt.id;
+        }
+        continue;
+      case "Catarina, Master of Undeath":
+        if(areaName === "Mastermind's Lair" && Constants.mastermindBattleQuotes[line.text]) {
+          run.mastermindBattle = run.mastermindBattle || {};
+          run.mastermindBattle[Constants.mastermindBattleQuotes[line.text]] = evt.id;
+        }
+        continue;
+      case "Izaro": 
+        if(Constants.labyrinthQuotes[line.text]) {
+          run.labyrinth = run.labyrinth || {};
+          run.labyrinth[Constants.labyrinthQuotes[line.text]] = evt.id;
+        }
+        continue;
+      case "Einhar, Beastmaster":
+        if(areaName === "The Menagerie") {
+          if(Constants.beastRecipeQuotes.includes(line.text)) {
+            run.beastRecipes = ++run.beastRecipes || 1;
+          }
+        } else {
+          run.masters = run.masters || {};
+          run.masters[line.npc] = run.masters[line.npc] || { encountered : true };
+          if(Constants.beastCaptureQuotes.includes(line.text)){
+            run.masters[line.npc].beasts = ++run.masters[line.npc].beasts || 1;
           }
         }
-        if(!conq) {
-          conq = Constants.conquerors.find( str => { return events[i].event_text.startsWith(str); } );
+        continue;
+      case "Alva, Master Explorer":
+        run.masters = run.masters || {};
+        run.masters[line.npc] = run.masters[line.npc] || {};
+        if(areaName === "The Temple of Atzoatl") {
+          if(Constants.templeRoomQuotes[line.text]) {
+            run.masters[line.npc].tier3Rooms = run.masters[line.npc].tier3Rooms || [];
+            run.masters[line.npc].tier3Rooms.push(Constants.templeRoomQuotes[line.text]);
+          }
+        } else {
+          run.masters[line.npc].encountered = true;
+          if(line.text.includes("Good job")) {
+            run.masters[line.npc].incursions = ++run.masters[line.npc].incursions || 1;
+          }
         }
-        conqCount++;
+        continue;
+      case "Niko, Master of the Depths":
+        run.masters = run.masters || {};
+        run.masters[line.npc] = run.masters[line.npc] || { encountered : true };
+        run.masters[line.npc].sulphite = ++run.masters[line.npc].sulphite || 1;
+        continue;
+      case "Zana, Master Cartographer":
+        if(areaName === "Absence of Value and Meaning") {
+          if(Constants.elderDefeatedQuotes.includes(line.text)) {
+            run.elderDefeated = true;
+          }
+        } else {
+          if(areaName !== "The Shaper's Realm" && areaName !== "Eye of the Storm") {
+            run.masters = run.masters || {};
+            run.masters[line.npc] = run.masters[line.npc] || { encountered : true };
+            let missionMap = getZanaMissionMap(events);
+            if(missionMap) {
+              run.masters[line.npc].missionMap = missionMap;
+            }
+          }
+        } 
+        continue;
+      case "Jun, Veiled Master":
+        if(areaName !== "Syndicate Hideout" && areaName !== "Mastermind's Lair") {
+          run.masters = run.masters || {};
+          run.masters[line.npc] = run.masters[line.npc] || { encountered : true };
+        }
+        if(line.text.includes("[")) {
+          let subLine = getLine(line.text.substring(1, line.text.length - 1));
+          run.syndicate = run.syndicate || {};            
+          run.syndicate[subLine.npc] = run.syndicate[subLine.npc] || { encountered : true };
+          let q = Constants.syndicateMemberQuotes[subLine.npc];
+          if(q.defeated.includes(subLine.text)) {
+            run.syndicate[subLine.npc].defeated = ++run.syndicate[subLine.npc].defeated || 1;
+          } else if(q.killPlayer.includes(subLine.text)) {
+            run.syndicate[subLine.npc].killedPlayer = ++run.syndicate[subLine.npc].killedPlayer || 1;
+          } else if(q.safehouseLeaderDefeated === subLine.text) {
+            run.syndicate[subLine.npc].safehouseLeaderDefeated = true;
+          }
+        } else {
+          let member = Constants.syndicateMemberQuotes.jun[line.text];
+          if(member) {
+            run.syndicate = run.syndicate || {};
+            run.syndicate[member] = run.syndicate[member] || { encountered : true };
+            run.syndicate[member].defeated = ++run.syndicate[member].defeated || 1;
+          }
+        }
+        continue;
+      case "Al-Hezmin, the Hunter":
+      case "Baran, the Crusader":
+      case "Drox, the Warlord":
+      case "Veritania, the Redeemer":
+        conqueror = conqueror || {};
+        conqueror[line.npc] = conqueror[line.npc] || {};
+        if(++conqCount > 1) {
+          conqueror[line.npc].battle = true;
+        }
+        let deathQuotes = Constants.conquerorDeathQuotes[line.npc];
+        for(let j = 0; j < deathQuotes.length; j++) {
+          if(line.text.includes(deathQuotes[j])) {
+            conqueror[line.npc].defeated = true;
+          }
+        }
+        continue;
+      case "Sirus, Awakener of Worlds":
+        run.sirusBattle = run.sirusBattle || {};          
+        if(Constants.sirusBattleQuotes[line.text]) {
+          run.sirusBattle[Constants.sirusBattleQuotes[line.text]] = evt.id;
+        } else if(line.text === "Die.") {
+          run.sirusBattle.dieBeamsFired = ++run.sirusBattle.dieBeamsFired || 1;
+          if(events[i+1] && events[i+1].event_type === "slain") {
+            run.sirusBattle.dieBeamKills = ++run.sirusBattle.dieBeamKills || 1;
+          }
+        }
+        continue;
+      case "Queen Hyrri Ngamaku":
+      case "General Marceus Lioneye":
+      case "Viper Napuatzi":
+      case "Cardinal Sanctus Vox":
+      case "Aukuna, the Black Sekhema":
+        if(areaName !== "Domain of Timeless Conflict") {
+          run.legionGenerals = run.legionGenerals || {};
+          run.legionGenerals[line.npc] = run.legionGenerals[line.npc] || { encountered : true };
+          if(Constants.legionDeathQuotes[line.npc].includes(line.text)) {
+            run.legionGenerals[line.npc].defeated = ++run.legionGenerals[line.npc].defeated || 1;
+          }
+        }
+        continue;
+    }      
+  }
+
+  // max paths in normal blight encounter is 8
+  if(blightCount > 8) {
+    run.blightedMap = true;
+  } else if(blightCount > 0) {
+    run.blightEncounter = true;
+  }
+
+  if(conqCount) {
+    Object.keys(conqueror).forEach( key => {
+      let c = conqueror[key];
+      if(!Object.keys(c).length) {
+        c.encountered = true;
+      }
+    })
+    run.conqueror = conqueror;
+  }
+  
+  return JSON.stringify(run); 
+  
+  function getZanaMissionMap(events) {
+    let start = events[0];
+    for(let i = 1; i < events.length; i++) {
+      let curr = events[i];
+      if(curr.event_type !== "entered") continue;
+      if(curr.event_text !== start.event_text || curr.server !== start.server) {
+        if(Constants.areas.normalMaps.includes(curr.event_text) || Constants.areas.uniqueMaps.includes(curr.event_text)) {
+          return curr.event_text;          
+        }
       }
     }
-    
-    if(conq) {
-      let c = {};
-      if(conq.includes("Sirus")) {
-        c[conq] = { dieBeams : dieBeams, dieBeamDeaths : dieBeamDeaths };
-      } else {
-        c[conq] = (conqCount > 1 ? "battle" : "encounter");
-      }
-      return c;
-    }
-    
     return null;
-    
   }
   
-  function getBlightCount(events) {
+  function getRunAreaTimes(e) {
     
-    const blightBranchEvents = [
-      "The Blight is trying to spread!",
-      "It's put out new mycelium! ... New roots!",
-      "It's branching, exile!"
-    ];
+    let events = [];
+    for(let i = 0; i < e.length; i++) {
+      if(e[i].event_type === "entered") {
+        events.push(e[i]);
+      }
+    }
     
-    return events.reduce( (total, e) => {
-      return total + (e.event_type === "leagueNPC" && blightBranchEvents.some(str => { return e.event_text.endsWith(str) }) ? 1 : 0);
-    }, 0);
+    let times = {};
+    for(let k = 0; k < events.length - 1; k++) {
+      let curr = events[k];
+      let next = events[k + 1];
+      let area = curr.event_text;
+      let runningTime = Utils.getRunningTime(curr.id, next.id, "s", { useGrouping : false } );
+      times[area] = (times[area] || 0) + Number(runningTime);
+    }    
+    
+    return times;
     
   }
-  
-  function getMods(id) {
-    return new Promise( (resolve, reject) => {
-      DB.all(" select mod from mapmods where area_id = :id order by id", [id], (err, rows) => {
-        var mods = [];
-        for(let i = 0; i < rows.length; i++) {
-          mods.push(rows[i].mod);
-        }
-        resolve(mods);
-      });
-    });
+
+  function getMasterFavour(evt) {
+
+    // no completion quote for zana missions
+    if(evt.event_type !== "master") {
+      return "Zana, Master Cartographer";
+    }
+
+    for(let i = 0; i < Constants.masters.length; i++) {
+      if(evt.event_text.startsWith(Constants.masters[i])) {
+        return Constants.masters[i];
+      }
+    }
+
+    return null;
+
+  }
+
+  function getLine(str) {
+    if(str.indexOf(":") < 0) {
+      return null;
+    }
+    return {
+      npc : str.substr(0, str.indexOf(":")).trim(),
+      text : str.substr(str.indexOf(":") + 1).trim()
+    };
   }
 
   function getEvents(firstevent, lastevent) {
+    DB = require('./DB').getDB();
     return new Promise( (resolve, reject) => {
       DB.all(" select * from events where id between :first and :last order by id", [firstevent, lastevent], (err, rows) => { 
         var events = [];

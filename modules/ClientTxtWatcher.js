@@ -148,6 +148,15 @@ function getEvent(arg) {
         text: str.replace(/[^0-9]/g, ''),
         instanceServer: ""
       };
+    } else {
+      let text = str.substring(2);
+      if(Constants.shrineQuotes[text] || Constants.darkshrineQuotes.includes(text)) {
+        return {
+          type: "shrine",
+          text: text,
+          instanceServer: ""
+        };
+      }      
     }
   } else if(str.startsWith("@") && (str.includes("@From") || str.includes("@To"))) {
     var fromString = `@from ${settings.activeProfile.characterName.toLowerCase()}:`;
@@ -174,49 +183,26 @@ function getEvent(arg) {
 }
 
 function hasMaster(str) {
-  
-  for(var i = 0; i < Constants.masters.length; i++) {
-    var master = Constants.masters[i];
-    if(str.startsWith(master)) {
-      if(str.startsWith("Zana") && !str.includes("Still sane, exile?")) {
-        continue;
-      } else {
-        return str;      
-      }
-    }
+  let npc = str.substr(0, str.indexOf(":")).trim();
+  if(Constants.masters.includes(npc)) {
+    return str;
   }
-  
   // 3.8.0: Jun sometimes does not talk at all during missions; scan for Syndicate member lines instead
-  for(var i = 0; i < Constants.syndicateMembers.length; i++) {
-    var synd = Constants.syndicateMembers[i];
-    if(str.startsWith(synd)) {
-      return `Jun, Veiled Master: [${str}]`;
-    }
+  if(Constants.syndicateMembers.includes(npc)) {
+    return `Jun, Veiled Master: [${str}]`;
   }
-  
-  return false;
-  
+  return null;
 }
 
 function hasConqueror(str) {
-  for(var i = 0; i < Constants.conquerors.length; i++) {
-    var conq = Constants.conquerors[i];
-    if(str.startsWith(conq)) {
-      return str;      
-    }
-  }
-  return false;
+  let npc = str.substr(0, str.indexOf(":")).trim();
+  return (Constants.conquerors.includes(npc) ? str : null);
 }
 
-  function hasNPC(str) {
-    for(var i = 0; i < Constants.leagueNPCs.length; i++) {
-      var npc = Constants.leagueNPCs[i];
-      if(str.startsWith(npc)) {
-        return str;      
-      }
-    }
-    return false;
-  }
+function hasNPC(str) {
+  let npc = str.substr(0, str.indexOf(":")).trim();
+  return (Constants.leagueNPCs.includes(npc) ? str : null);
+}
 
 async function getOldNPCEvents() {
   
@@ -226,11 +212,11 @@ async function getOldNPCEvents() {
   var fs = require('fs');
   var readline = require('readline');
   
-  var minTimestamp = await new Promise((resolve, reject) => {
-    DB.get("select min(id) as id from events", (err, row) => { resolve(row.id); })
+  var bounds = await new Promise((resolve, reject) => {
+    DB.get("select min(id) as minId, max(id) as maxId from events", (err, row) => { resolve(row); })
   });
   
-  console.log(`Min timestamp is ${minTimestamp}`);
+  logger.info(`Adding events in ${JSON.stringify(bounds)}`);
 
   var rl = readline.createInterface({
       input: fs.createReadStream(settings.clientTxt),
@@ -238,21 +224,71 @@ async function getOldNPCEvents() {
   });
     
   rl.on('line', function(line) {
-    var str = line.substring(line.indexOf("] ") + 2);
+    
     var timestamp = line.substring(0, 19).replace(/[^0-9]/g, '');
-    var npcString  = hasNPC(str);
+    if(timestamp < bounds.minId || timestamp > bounds.maxId) return;
+    
+    var str = line.substring(line.indexOf("] ") + 2);
+    var npcString = hasNPC(str);
     if(npcString) {
       DB.run(
         "insert into events(id, event_type, event_text, server) values(?, ?, ?, ?)",
         [timestamp, "leagueNPC", npcString.trim(), ""],
         (err) => {
           if (err) {
-            logger.info("Failed to insert event: " + err.message);
+              if(!err.message.includes("UNIQUE constraint failed")) {
+                logger.info("Failed to insert event: " + err.message);
+              }
           } else {
             logger.info(`Inserted league NPC event ${timestamp} -> ${npcString}`);
           }
         }
       );        
+    }     if(npcString) {
+      DB.run(
+        "insert into events(id, event_type, event_text, server) values(?, ?, ?, ?)",
+        [timestamp, "leagueNPC", npcString.trim(), ""],
+        (err) => {
+          if (err) {
+              if(!err.message.includes("UNIQUE constraint failed")) {
+                logger.info("Failed to insert event: " + err.message);
+              }
+          } else {
+            logger.info(`Inserted league NPC event ${timestamp} -> ${npcString}`);
+          }
+        }
+      );        
+    } else if(hasConqueror(str)) {
+      DB.run(
+        "insert into events(id, event_type, event_text, server) values(?, ?, ?, ?)",
+        [timestamp, "conqueror", str.trim(), ""],
+        (err) => {
+          if (err) {
+              if(!err.message.includes("UNIQUE constraint failed")) {
+                logger.info("Failed to insert event: " + err.message);
+              }
+          } else {
+            logger.info(`Inserted master event ${timestamp} -> ${str}`);
+          }
+        }
+      );        
+    } else if(str.startsWith(":")) {      
+      str = str.substring(2).trim();
+      if(Constants.shrineQuotes[str] || Constants.darkshrineQuotes.includes(str)) {
+        DB.run(
+          "insert into events(id, event_type, event_text, server) values(?, ?, ?, ?)",
+          [timestamp, "shrine", str, ""],
+          (err) => {
+            if (err) {
+              if(!err.message.includes("UNIQUE constraint failed")) {
+                logger.info("Failed to insert event: " + err.message);
+              }
+            } else {
+              logger.info(`Inserted master event ${timestamp} -> ${str}`);
+            }
+          }
+        );
+      }
     }
   });
   
