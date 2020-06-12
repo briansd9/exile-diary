@@ -20,7 +20,7 @@ class Utils {
 
   static isTown(str) {
     for(var i = 0; i < Constants.townstrings.length; i++) {
-      if(str == Constants.townstrings[i]) {
+      if(str === Constants.townstrings[i]) {
         return true;
       }
     }
@@ -31,15 +31,15 @@ class Utils {
   }
   
   static isLabArea(str) {
-    for(var i = 0; i < Constants.labAreas.length; i++) {
-      if(str.includes(Constants.labAreas[i])) {
+    for(var i = 0; i < Constants.areas.labyrinth.length; i++) {
+      if(str.includes(Constants.areas.labyrinth[i])) {
         return true;
       }
     }
     return false;
   }
   
-  static getDisplayName(item, htmlDisplay = true) {
+  static getDisplayName(item) {
     
     let baseName = this.getBaseName(item);
     let uniqueName = this.getItemName(item.icon);
@@ -380,8 +380,8 @@ class Utils {
 
   }
   
-  static getRunningTime(firstevent, lastevent, format = null) {
-    return moment.duration(moment(lastevent, "YYYYMMDDHHmmss").diff(moment(firstevent, "YYYYMMDDHHmmss"))).format(format);
+  static getRunningTime(firstevent, lastevent, format = null, options = null) {
+    return moment.duration(moment(lastevent, "YYYYMMDDHHmmss").diff(moment(firstevent, "YYYYMMDDHHmmss"))).format(format, options);
   }
 
   static getXPRate(xp, firstevent, lastevent) {
@@ -525,6 +525,18 @@ class Utils {
       default:
         throw new Exception(`Invalid pseudo item ${itemType}`);
     }
+  }
+  
+  static getAreaType(area) {
+    let types = Object.keys(Constants.areas);
+    for(let i = 0; i < types.length; i++) {
+      let t = Constants.areas[types[i]];
+      if(t.includes(area)) {
+        return types[i];
+      }
+    }
+    logger.info(`No area type found for "${area}"`);
+    return null;
   }
 
 }
