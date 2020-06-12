@@ -90,6 +90,14 @@ html {
 		color: #8888ff;
 	}
   
+	.areaTime {
+		text-align: left;
+		font-family: FontinSmallCaps;
+		padding-top: 5px;
+		padding-bottom: 5px;
+		font-size: 20px;
+	}
+  
 	table.mapTable > tbody > tr > td {
 		width: 20%;
 	}
@@ -100,7 +108,7 @@ html {
 		text-align: center;
 	}
 
-	table.mapTable > tbody > tr > td.mapStat {
+	.mapStat {
 		font-size: 20px;
 		text-align: center;
 	}
@@ -122,29 +130,28 @@ html {
     cursor: pointer;
     text-align: left;
 	}	
-	
-	.dropdown {
-	    position: relative;
-	    display: inline-block;
-	}
 
 	/* Dropdown Content (Hidden by Default) */
-	.dropdown-content {
+	.dropdown-mapmods-content {
     background: rgba(0, 0, 0, 0.8);
     border: 2px ridge #aaaaaa;
     padding: 6px;
     display: none;
     position: absolute;
-    right: 0px;
+    right: 5%;
     z-index: 25;
 	}	
-	
-	/* Show the dropdown menu on hover */
-	.dropdown:hover .dropdown-content {
-	    display: block;
-	    white-space: nowrap;
-	}
-	
+
+	.dropdown-areatimes-content {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px ridge #aaaaaa;
+    padding: 6px;
+    display: none;
+    position: absolute;
+    right: 5%;
+    z-index: 25;
+	}	
+  
 	.eventInfo {
 		font-family: Fontin;
 		font-size: 24px;
@@ -542,4 +549,10 @@ input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+.grid {
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  grid-template-rows: 1fr;
 }
