@@ -119,7 +119,7 @@ function checkLeague(settings, foundLeague) {
     settings.activeProfile.league = foundLeague;
     Settings.set("activeProfile", settings.activeProfile);
   }
-  var db = DB.getDB(true);
+  var db = DB.getDB();
   db.run(
     "insert into leagues(timestamp, league) values(?, ?)", 
     [moment().format('YYYYMMDDHHmmss'), foundLeague], 
@@ -148,7 +148,6 @@ function init() {
         logger.info("Done checking, character status is " + characterCheckStatus);
         if(characterCheckStatus === "valid") {
           logger.info("Starting components");
-          DB.getDB(true);
           RateGetterV2.update();
           ClientTxtWatcher.start();
           ScreenshotWatcher.start();
