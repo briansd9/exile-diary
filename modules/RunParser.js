@@ -750,8 +750,6 @@ async function getMapExtraInfo(areaName, firstevent, lastevent) {
   logger.info(`Getting map extra info for ${areaName} between ${firstevent} and ${lastevent}`);
   
   let events = await getEvents(firstevent, lastevent);
-  
-  console.log(events);
 
   let run = {};
   let blightCount = 0;
@@ -815,7 +813,7 @@ async function getMapExtraInfo(areaName, firstevent, lastevent) {
         }
         continue;
       case "Strange Voice":
-        if(Constants.areas.simulacrum.includes(areaName)) {
+        if(Constants.areas.delirium.includes(areaName)) {
           if(Constants.simulacrumWaveQuotes[line.text]) {
             run.simulacrumProgress = run.simulacrumProgress || {};
             run.simulacrumProgress[Constants.simulacrumWaveQuotes[line.text]] = evt.id;
