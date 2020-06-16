@@ -149,30 +149,6 @@
           
           $("#mapRows").empty();
           
-          var mapData = [];          
-          rows.forEach(row => {
-            var obj = {
-              name: row.name,
-              time: moment.duration(moment(row.lastevent, "YYYYMMDDHHmmss").diff(moment(row.firstevent, "YYYYMMDDHHmmss"))).asSeconds(),
-              id: row.id,
-              xp: row.xp
-            };
-            if(row.level) {
-              obj.tier = row.level;
-            }
-            if(row.depth) {
-              obj.depth = row.depth;
-            }
-            if(row.gained) {
-              obj.gained = row.gained;
-            }
-            if(row.kills) {
-              obj.kills = row.kills;
-            }
-            mapData.push(obj);
-          });          
-          mapDataList = JSON.stringify(mapData);
-          
           exportData.mapList = {
             data: [],
             colWidths: [],
@@ -190,7 +166,33 @@
             }
           };
           
+          var mapData = [];
           rows.forEach(row => {
+            
+            row.runinfo = JSON.parse(row.runinfo);
+            row.areaType = ( row.runinfo.blightedMap ? "blightedMaps" : Utils.getAreaType(row.name) );
+            
+            var obj = {
+              name: row.name,
+              areaType: row.areaType,
+              time: moment.duration(moment(row.lastevent, "YYYYMMDDHHmmss").diff(moment(row.firstevent, "YYYYMMDDHHmmss"))).asSeconds(),
+              id: row.id,
+              xp: row.xp
+            };
+            if(row.level) {
+              obj.tier = row.level;
+            }
+            if(row.depth) {
+              obj.depth = row.depth;
+            }
+            if(row.gained) {
+              obj.gained = row.gained;
+            }
+            if(row.kills) {
+              obj.kills = row.kills;
+            }
+            mapData.push(obj);
+            
             Utils.addMapRow({
               table: $("#mapRows"),
               data: row,
@@ -199,9 +201,11 @@
               hardcore: hardcore,
               modal: true
             });            
+            
             exportData.mapList.addRow({
               id: row.id,
               area: row.name,
+              areaType: row.areaType,
               level: row.level,
               depth: row.depth,
               iiq: row.iiq,
@@ -213,7 +217,10 @@
               kills: row.kills,
               profit: parseFloat(Number(row.gained).toFixed(2))
             });
+            
           });
+          
+          mapDataList = JSON.stringify(mapData);          
           
           $("#mapTable").trigger("update");
           $("#searchButton").prop("value", `${rows.length} results found`);
