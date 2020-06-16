@@ -527,7 +527,7 @@
           var currEvent = events[i];
 
           if(currEvent.event_type === "master") {
-            if(currEvent.event_text.includes("Zana") && !mapRun.info.name.includes("The Shaper's Realm") && !mapRun.info.name.includes("Absence of Value and Meaning")) {
+            if(currEvent.event_text.includes("Zana") && !["The Shaper's Realm", "Absence of Value and Meaning", "Eye of the Storm"].includes(mapRun.info.name)) {
               $("#masterDiv").show();
               $(`#ZanaIcon`).show();
             } else if(currEvent.event_text.includes("Jun") && !mapRun.info.name.includes("Syndicate Hideout") && !mapRun.info.name.includes("Mastermind's Lair")) {
@@ -951,55 +951,55 @@
         </div>
         <hr id='xpKillCountHR' style='border:1px solid #999;' />
         <div id="masterDiv" style="display:none;">
-          <div id='ZanaIcon' style='display:none;'>
+          <div id='ZanaIcon' style='display:inline-block;'>
             <div style='position:relative;display:inline;'>
               <img src='res/img/zana.png'/>
               <span id='ZanaFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
             </div>
           </div>
-          <div id='EinharIcon' style='display:none;'>
+          <div id='EinharIcon' style='display:inline-block;'>
             <div style='position:relative;display:inline;'>
               <img src='res/img/einhar.png'/>
               <span id='EinharFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
             </div>
             <div id='beastCount' style='display:inline;'></div>
           </div>
-          <div id='AlvaIcon' style='display:none;'>
+          <div id='AlvaIcon' style='display:inline-block;'>
             <div style='position:relative;display:inline;'>
               <img src='res/img/alva.png'/>
               <span id='AlvaFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
             </div>
             <div id='incursionCount' style='display:inline;'></div>
           </div>
-          <div id='NikoIcon' style='display:none;'>
+          <div id='NikoIcon' style='display:inline-block;'>
             <div style='position:relative;display:inline;'>
               <img src='res/img/niko.png'/>
               <span id='NikoFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
             </div>
             <div id='sulphiteCount' style='display:inline;'></div>
           </div>
-          <div id='JunIcon' style='display:none;'>
+          <div id='JunIcon' style='display:inline-block;'>
             <div style='position:relative;display:inline;'>
               <img src='res/img/jun.png'/>
               <span id='JunFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
             </div>
           </div>
-          <div id='CrusaderIcon' style='display:none;'>
+          <div id='CrusaderIcon' style='display:inline-block;'>
             <div style='position:relative;display:inline;'>
               <img src='res/img/crusaderinfluence.png'/>
             </div>
           </div>
-          <div id='HunterIcon' style='display:none;'>
+          <div id='HunterIcon' style='display:inline-block;'>
             <div style='position:relative;display:inline;'>
               <img src='res/img/hunterinfluence.png'/>
             </div>
           </div>
-          <div id='RedeemerIcon' style='display:none;'>
+          <div id='RedeemerIcon' style='display:inline-block;'>
             <div style='position:relative;display:inline;'>
               <img src='res/img/redeemerinfluence.png'/>
             </div>
           </div>
-          <div id='WarlordIcon' style='display:none;'>
+          <div id='WarlordIcon' style='display:inline-block;'>
             <div style='position:relative;display:inline;'>
               <img src='res/img/warlordinfluence.png'/>
             </div>
@@ -1009,7 +1009,7 @@
         <div class='eventsDiv' id='eventsDiv'></div>
         <hr class='eventsArea' style='border:1px solid #999;' />
         <div id='itemsByValue'>
-          <div id='netWorth' class='tableLink netWorth' onclick='$("#total").toggle()'></div>
+          <div id='netWorth' class='tableLink tableLinkHeader' onclick='$("#total").toggle()'></div>
           <table id='total' style='display:block;'>
             <thead>
               <tr class='ui-text'>
