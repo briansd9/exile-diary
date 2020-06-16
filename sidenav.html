@@ -4,6 +4,8 @@
   <script>
     
     const renderer = require('electron').ipcRenderer;
+    const openLink = require('opn');
+    
     renderer.on("incubatorsUpdated", (event, incubators) => {
       console.log(incubators);
     });            
@@ -57,11 +59,8 @@
   <div><a class='ui-text' id='sidenav-main' href="index.html">Main</a></div>
   <div><a class='ui-text' href="stash.html">Net Worth</a></div>
   <div><a class='ui-text' href="search.html">Search</a></div>
-  <div>
-    <a class='ui-text' href="config.html">
-      Settings
-    </a>
-  </div>
+  <div><a class='ui-text' href="stats.html">Stats</a></div>
+  <div><a class='ui-text' href="config.html">Settings</a></div>
 </div>
 
 <hr style='border:1px solid #333'/>
@@ -71,6 +70,13 @@
     <img class='newVersion' src="res/img/!.png" style="display:none;height:25px;width:25px;vertical-align:middle;"/>
   </a>
 </div>
+
+<hr style='border:1px solid #333'/>
+
+<div>
+  <img onclick='openLink("https://patreon.com/briansd9");' style='width: 100%;' src='res/img/patreon.png'/>
+</div>
+  
 
 <div id="myModal" class="modal">
   <div id="modalContent" class="modal-content">
