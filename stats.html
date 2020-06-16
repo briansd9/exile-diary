@@ -53,29 +53,35 @@
         });
         $("#messages").load("messages.html");
         
-//        DB.all(`
-//          select areainfo.name, mapruns.* from areainfo, mapruns 
-//          where mapruns.id = areainfo.id 
-//          and ifnull(kills, 0) > -1 and ifnull(gained, 0) > -1
-//          and runinfo is null
-//          order by mapruns.id desc
-//        `, async (err, rows) => {
-//            console.log(rows.length);
-//            for(let i = 0; i < rows.length; i++) {
-//              let row = rows[i];
-//              let info = await RunParser.getMapExtraInfo(row.name, row.firstevent, row.lastevent);
-//              DB.run("update mapruns set runinfo = ? where id = ?", [info, row.id], (err) => {
-//                if(!err) {
-//                  console.log(`Updated ${row.id}`);
-//                } else {
-//                  console.log(`Failed to update ${row.id}`);
-//                }
-//              })
-//            }
-//        });
-//        
-//        return;
+        await new Promise( (resolve, reject) => {
+          DB.all(`
+            select areainfo.name, mapruns.* from areainfo, mapruns 
+            where mapruns.id = areainfo.id 
+            and ifnull(kills, 0) > -1 and ifnull(gained, 0) > -1
+            and runinfo is null
+            order by mapruns.id desc
+          `, async (err, rows) => {
+              if(rows.length > 0) {
+                $("#loading").show();
+                $("#oldMapsTotal").html(rows.length);
+              }
+              for(let i = 0; i < rows.length; i++) {
+                let row = rows[i];
+                let info = await RunParser.getMapExtraInfo(row.name, row.firstevent, row.lastevent);
+                DB.run("update mapruns set runinfo = ? where id = ?", [info, row.id], (err) => {
+                  if(!err) {
+                    console.log(`Updated ${row.id}`);
+                  } else {
+                    console.log(`Failed to update ${row.id}`);
+                  }
+                })
+                $("#oldMapsUpdated").html(i + 1);
+              }
+              resolve();
+          });
+        });
         
+        $("#loading").hide();
         
         let stats = await StatsGetter.get();
         
@@ -415,6 +421,16 @@
     <div id="outerDiv">
     
       <div class='sidenav' id='sidenav'></div>
+      
+      <div id="loading" style="display:none;text-align:center;margin-top:11%;">
+        <img src="res/img/loading.gif"/>
+        <br/>
+        <span style="font-family: Fontin;">
+          One moment please, gathering statistics for old map runs... 
+          <br>
+          (<span id="oldMapsUpdated">0</span> / <span id="oldMapsTotal">0</span> complete)
+        </span>
+      </div>
       
       <div id="totalStatsContainer" style='display:none;'>
         <div class='tableLink' style='padding:16px 20px;position:relative;' onclick='toggleMainSection("totalStats")'>
