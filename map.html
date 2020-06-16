@@ -373,8 +373,10 @@
         $("#packSize").html(info.packsize ? `Monster Pack Size<br/><span class='mapStatValue'>${info.packsize}%</span><br/>` : '&nbsp;');
 
         addMapMods(run.mods);
-
-        addAreaTimes(run.info.areaTimes);
+        
+        if(run.info.areaTimes) {
+          addAreaTimes(run.info.areaTimes);
+        }
 
         if(info.kills) {
           $("#killCount").html(f.format(info.kills));
