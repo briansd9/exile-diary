@@ -61,7 +61,7 @@ function createDivCardPopup(data) {
       </div>
       <span class="r"></span>
     </div>
-    <div class="stackSize">${data.pickupStackSize}/${data.maxStackSize}</div>
+    <div class="stackSize">${data.pickupStackSize || data.stackSize}/${data.maxStackSize}</div>
   `));
   d.append(getDivCardMods(data));
   d.append(getDivCardFlavourText(data));
@@ -226,7 +226,7 @@ function createItemPopup(data) {
   
   d.append($(`
     <div style='border: 1px solid #333;display:inline-block;padding:4px;background-color:rgba(0,0,0);vertical-align:top;z-index:1998'>
-      <span class='stackSize' style='top:12px;left:18px;'>${data.maxStackSize ? data.pickupStackSize : ""}</span>
+      <span class='stackSize' style='top:12px;left:18px;'>${data.maxStackSize ? data.pickupStackSize || data.stackSize : ""}</span>
       <img style='vertical-align:top;${backgroundImageStyle}' src="${data.icon}"/>
     </div>
   `));
@@ -241,7 +241,7 @@ function fixStackSize(data) {
   for(var i = 0; i < data.properties.length; i++) {
     let prop = data.properties[i];
     if(prop.name === "Stack Size") {
-      prop.values[0][0] = `${data.pickupStackSize}/${data.maxStackSize}`;
+      prop.values[0][0] = `${data.pickupStackSize || data.stackSize}/${data.maxStackSize}`;
       return;
     }
   }
