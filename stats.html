@@ -1,0 +1,479 @@
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="res/style.css" />
+    <link rel="stylesheet" type="text/css" href="res/itempopup.css" />
+    <link rel="stylesheet" type="text/css" href="res/poedit.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.min.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.structure.min.css" />
+    <link rel="stylesheet" type="text/css" href="res/jquery-ui.theme.min.css" />
+
+    <script>if (typeof module === 'object') {
+        window.module = module;
+        module = undefined;
+      }</script>
+
+    <script src="res/jquery-3.3.1.min.js"></script>
+    <script src="res/jquery.lazy.js"></script>
+    <script src="res/jquery-ui.js"></script>
+    <script src="res/utils.js"></script>
+    <script src="res/itempopup.js"></script>
+    <script src="res/page-utils.js"></script>
+    <script src="res/jquery.tablesorter.js"></script>
+    <script src="res/jquery.tablesorter.widgets.js"></script>
+    
+    <!-- Insert this line after script imports -->
+    <script>if (window.module)
+        module = window.module;</script>
+    <script>
+
+      const RunParser = require('./modules/RunParser');
+      const settings = require('./modules/settings').get();
+      const logger = require('./modules/Log').getLogger(__filename);
+      const DB = require('./modules/DB').getDB();
+      const {ipcRenderer, remote} = require('electron');
+      const StatsGetter = require('./modules/StatsGetter');
+      const ItemData = require('./modules/ItemData');
+      const Utils = require('./modules/Utils');
+      const moment = require('moment');
+      
+      const areaTypeText = {
+        "normalMaps" : "Maps",
+        "blightedMaps" : "Blighted Maps",
+        "vaalSideAreas" : "Vaal Side Areas",	
+        "endgame" : "Endgame Areas",
+        "uniqueMaps" : "Unique Maps"
+      };
+      const f = new Intl.NumberFormat();
+      const curr = new Intl.NumberFormat(navigator.language || 'en', { minimumFractionDigits: 2 });
+      
+      $(document).ready(async () => {
+        
+        $("#sidenav").load("sidenav.html", () => {
+          //$("#sidenav-items").append("<div><a class='ui-text' onclick='screenshot()'>Screenshot</a></div>");
+        });
+        $("#messages").load("messages.html");
+        
+//        DB.all(`
+//          select areainfo.name, mapruns.* from areainfo, mapruns 
+//          where mapruns.id = areainfo.id 
+//          and ifnull(kills, 0) > -1 and ifnull(gained, 0) > -1
+//          and runinfo is null
+//          order by mapruns.id desc
+//        `, async (err, rows) => {
+//            console.log(rows.length);
+//            for(let i = 0; i < rows.length; i++) {
+//              let row = rows[i];
+//              let info = await RunParser.getMapExtraInfo(row.name, row.firstevent, row.lastevent);
+//              DB.run("update mapruns set runinfo = ? where id = ?", [info, row.id], (err) => {
+//                if(!err) {
+//                  console.log(`Updated ${row.id}`);
+//                } else {
+//                  console.log(`Failed to update ${row.id}`);
+//                }
+//              })
+//            }
+//        });
+//        
+//        return;
+        
+        
+        let stats = await StatsGetter.get();
+        
+//        if( Object.keys(stats.totalStats).length > 0) {
+//          displayTotalStats(stats.totalStats);
+//        }
+        
+        if( Object.keys(stats.areaStats).length > 0) {
+
+          let totalAreaStats = { count: 0, time: 0, gained: 0, kills: 0, deaths: 0 };
+          let areaTypes = Object.keys(stats.areaStats);
+          
+          for(let i = 0; i < areaTypes.length; i++) {
+            let areaType = areaTypes[i];
+            let stat = stats.areaStats[areaType];
+            ["count", "time", "gained", "kills", "deaths"].forEach(key => {
+              totalAreaStats[key] += stat[key]
+            });
+            let row = $(`
+              <tr class='mapRow' id='${areaType}Row' onclick='toggleDetailRow("${areaType}");'>
+                <td id='${areaType}Toggle' style='font-size:32px;'>+</td>
+                <td style='text-transform:capitalize;'>${ areaTypeText[areaType] || areaType }</td>
+                <td>${f.format(stat.count)}</td>
+                <td>${moment.duration(stat.time, "seconds").format("HH:mm:ss", { trim: false })}</td>
+                <td>${curr.format(Number(stat.gained).toFixed(2))}</td>
+                <td>${curr.format(Number(stat.gained / (stat.time/3600) ).toFixed(2))}</td>
+                <td>${stat.kills === 0 ? "-" : f.format(stat.kills)}</td>
+                <td>${f.format(stat.deaths)}</td>
+              </tr>
+            `);
+            $("#areaStatsRows").append(row);
+
+            let subRow = $(`
+              <tr id='${areaType}Detail' style='display:none;' class='tablesorter-childRow'>
+                <td colspan='8' id='${areaType}DetailTable'>
+                </td>
+              </tr>
+            `);
+            $("#areaStatsRows").append(subRow);
+            
+            let subTable = getSubTable(areaType, stats.areaStats[areaType].areas);
+            $(`#${areaType}DetailTable`).append(subTable);
+            
+          }
+          
+          let totalRow = $(`
+            <tbody class='no-sort'>
+              <tr class='mapRow statsTableFooter'>
+                <td>&nbsp;</td>
+                <td>Total</td>
+                <td>${f.format(totalAreaStats.count)}</td>
+                <td>${moment.duration(totalAreaStats.time, "seconds").format("HH:mm:ss", { trim: false })}</td>
+                <td>${curr.format(Number(totalAreaStats.gained).toFixed(2))}</td>
+                <td>${curr.format(Number(totalAreaStats.gained / (totalAreaStats.time/3600) ).toFixed(2))}</td>
+                <td>${totalAreaStats.kills === 0 ? "-" : f.format(totalAreaStats.kills)}</td>
+                <td>${f.format(totalAreaStats.deaths)}</td>
+              </tr>
+            </tbody>
+          `);
+          $("#areaStatsTable").append(totalRow);          
+          
+          $("#areaStatsTable").tablesorter({
+            headers: { 
+              0: { sorter: false, parser: false },
+              2: { sortInitialOrder: "desc" },
+              3: { sortInitialOrder: "desc" },
+              4: { sortInitialOrder: "desc" },
+              5: { sortInitialOrder: "desc" },
+              6: { sortInitialOrder: "desc" },
+            },
+            cssInfoBlock: 'no-sort'
+          }).trigger("sorton", [[[2, "d"]]]);
+          
+          for(let i = 0; i < areaTypes.length; i++) {
+            $(`#${areaTypes[i]}StatsTable`).tablesorter({
+              headers: { 
+                2: { sortInitialOrder: "desc" },
+                3: { sortInitialOrder: "desc" },
+                4: { sortInitialOrder: "desc" },
+                5: { sortInitialOrder: "desc" },
+                6: { sortInitialOrder: "desc" }
+              }
+            });
+            $(`#${areaTypes[i]}StatsTable`).trigger("sorton", [[[2, "d"]]]);
+          }
+          $("#areaStatsContainer").show();
+
+        }
+        
+        if(stats.bigDrops.length > 0) {          
+          for(let i = 0; i < stats.bigDrops.length; i++) {
+            let item = stats.bigDrops[i];
+            item.parsedItem = JSON.parse(item.rawdata);          
+            item.arrayIndex = i;
+            $("#bigDropsTable").append(getItemDiv(item));
+            item.parsedItem.arrayIndex = i;
+            item.parsedItem.secretName = Utils.getItemName(item.icon);
+            var popup = createPopup(item.parsedItem);
+            if(popup) {
+              $("#popupContainer").append(popup);
+            }
+          }
+          $(document).tooltip({
+            classes: { "ui-tooltip": "tooltipOverride" },
+            show: "true",
+            hide: "false",
+            items: ".item-container",
+            content: function () {
+              let id = $(this).attr("id");
+              let arrayIndex = $(this).attr("arrayIndex");
+              let popup = $(`#${id}_${arrayIndex}_popup`);
+              return (popup.length ? popup.clone() : null);
+            },
+            position: {my: "left", at: "right"},
+            open: function (event, ui) {
+              if(ui.tooltip.offset().top < $(window).scrollTop()) {
+                ui.tooltip.offset({top: $(window).scrollTop()});
+              } else if(ui.tooltip.offset().top - $(window).scrollTop() + ui.tooltip.height() + 16 > window.innerHeight) {
+                ui.tooltip.offset({top: window.innerHeight - ui.tooltip.height() - 16 + $(window).scrollTop()});
+              }
+            }
+          });
+          $("#bigDropsContainer").show();
+        }
+        
+    });
+        
+    function getSubTable(id, data) {
+      
+      let table = $(`
+        <table class='searchResults statsTable' id="${id}StatsTable" style='background-color:#222;'>
+          <thead>
+            <tr>
+              <th>&nbsp;</th>
+              <th>Area Name</th>
+              <th>Count</th>
+              <th>Time</th>
+              <th><img src='res/img/c.png' class='currencyText'></th>
+              <th><img src='res/img/c.png' class='currencyText'> / hr</th>
+              <th>Kills</th>
+              <th>Deaths</th>
+            </tr>
+          </thead>          
+        </table>      
+      `);
+    
+      let body = $(`<tbody id="${id}StatsRows"></tbody>`);
+      let keys = Object.keys(data);
+      for(let i = 0; i < keys.length; i++) {
+        let key = keys[i];
+        let stat = data[key];
+        let row = $(`
+          <tr id='${id}${i}Row' class='areaNameRow' style='text-align:center;'>
+            <td id='${id}${i}Toggle' style='font-size:24px;'>+</td>
+            <td>${key}</td>
+            <td>${f.format(stat.count)}</td>
+            <td>${moment.duration(stat.time, "seconds").format("HH:mm:ss", { trim: false })}</td>
+            <td>${curr.format(Number(stat.gained).toFixed(2))}</td>
+            <td>${curr.format(Number(stat.gained / (stat.time/3600) ).toFixed(2))}</td>
+            <td>${stat.kills === 0 ? "-" : f.format(stat.kills)}</td>
+            <td>${f.format(stat.deaths)}</td>
+          </tr>
+        `);
+        $(row).click(function() {
+          loadAreaDetails(key, `${id}${i}`);
+        });
+        body.append(row);
+        
+        let subRow = $(`
+          <tr id='${id}${i}Detail' style='display:none;' class='tablesorter-childRow'>
+            <td colspan='8'>
+              <table class='searchResults statsTable' style='background-color:#333;' id="${id}${i}DetailTable">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th><img src='res/img/c.png' class='currencyText'></th>
+                    <th><img src='res/img/c.png' class='currencyText'> / hr</th>
+                    <th>Kills</th>
+                    <th>Deaths</th>
+                  </tr>
+                </thead>          
+                <tbody id="${id}${i}DetailTableRows">
+                </tbody>
+              </table>      
+            </td>
+          </tr>
+        `);
+        body.append(subRow);
+      }
+      
+      table.append(body);
+    
+      return table;
+      
+    }
+    
+    async function loadAreaDetails(area, id) {
+      
+      if(!$(`#${id}DetailTable`).data("loaded")) {
+        let rows = await StatsGetter.getAreaByName(area, id.includes("blighted"));
+        for(let i = 0; i < rows.length; i++) {          
+          let map = rows[i];
+          let row = $(`
+            <tr style='text-align:center;' class='areaRunRow' onclick='window.open("map.html?id=${map.id}&modal=true");'>
+              <td>${moment(map.id, "YYYYMMDDHHmmss").format("YYYY-MM-DD HH:mm:ss")}</td>
+              <td>${moment.duration(map.time, "seconds").format("HH:mm:ss", { trim: false })}</td>
+              <td>${curr.format(Number(map.gained).toFixed(2))}</td>
+              <td>${curr.format(Number(map.gained / (map.time/3600) ).toFixed(2))}</td>
+              <td>${map.kills === 0 ? "-" : f.format(map.kills)}</td>
+              <td>${f.format(map.deaths)}</td>
+            </tr>
+          `);
+          $(`#${id}DetailTableRows`).append(row);
+        }
+        $(`#${id}DetailTable`).data("loaded", true);
+        $(`#${id}DetailTable`).tablesorter({
+          headers: {
+            1: { sortInitialOrder: "desc" },
+            2: { sortInitialOrder: "desc" },
+            3: { sortInitialOrder: "desc" },
+            4: { sortInitialOrder: "desc" }
+          }
+        });
+      }
+      
+      let t = $(`#${id}Detail`);
+      let btn = $(`#${id}Toggle`);
+      let parentRow = $(`#${id}Row`);
+      t.toggle();
+      if(t.is(":visible")) {
+        btn.html("-");
+        parentRow.addClass("tableAreaDetailRowSelected");
+      } else {
+        btn.html("+");
+        parentRow.removeClass("tableAreaDetailRowSelected");
+      }
+      
+    }
+        
+    function drawItem(itemData) {
+      
+      var item = ItemData.createItem(JSON.parse(itemData.rawdata));
+      var itemDiv = item.draw();
+      MiscUtils.applyDefaultStyle(item);
+
+      var lastMatchedRule = null;
+      for (var j = 0; j < itemData.parser.ruleSet.length; j++) {
+        var rule = itemData.parser.ruleSet[j];
+        if(rule.match(item)) {
+          lastMatchedRule = rule;
+          if(!rule.continue) {
+            break;
+          }
+        }
+      }
+
+      if(lastMatchedRule) {
+        lastMatchedRule.applyTo(item);
+      }
+
+      return itemDiv;
+
+    }
+
+    function getItemDiv(item) {
+      
+      let itemDiv = drawItem(item);
+      itemDiv.setAttribute("arrayIndex", item.arrayIndex);
+      $(itemDiv).css("display", "inline-block");
+      
+      let tableRow = $('<div>');
+      tableRow.append($(`<span class='eventTime'>[${moment(item.event_id, "YYYYMMDDHHmmss").format("YYYY-MM-DD HH:mm:ss")}] </span>`));
+      tableRow.append(itemDiv);
+      tableRow.append($(`
+        <span>
+          ${item.typeline === 'Exalted Orb' ? "" : `(<span class='eventText'>${Number(item.exaltValue).toFixed(2)}</span> <img src='res/img/ex.png' class='currencyText'>)`}
+          found in <a onclick='window.open("map.html?id=${item.map_id}&modal=true");'>${item.area}</a>
+        </span>
+      `));
+      
+      return tableRow;
+    }
+    
+    function toggleMainSection(cat) {
+      let table = $(`#${cat}Table`);
+      let icon = $(`#${cat}Icon`);
+      table.toggle();
+      icon.html(table.is(":visible") ? "-" : "+");      
+    }
+    
+    function toggleDetailRow(cat) {
+      let parentRow = $(`#${cat}Row`);
+      let row = $(`#${cat}Detail`);
+      let button = $(`#${cat}Toggle`);
+      row.toggle();
+      if(row.is(":visible")) {
+        button.html("-");
+        parentRow.addClass("tableDetailRowSelected");
+      } else {
+        button.html("+");
+        parentRow.removeClass("tableDetailRowSelected");
+      }      
+    }
+    
+//    function displayTotalStats(s) {
+//      
+//      let t = $("#totalStatsTable");
+//      
+//      appendStatDiv(t, "Abyssal Depths Entered", s.abyssalDepths);
+//      appendStatDiv(t, "Beast Recipes completed in the Menagerie", s.beastRecipes);
+//      appendStatDiv(t, "Blight Encounters", s.blightEncounter);
+//      appendStatDiv(t, "Blighted Maps Run", s.blightedMap);
+//      appendStatDiv(t, "Deaths", s.deaths);
+//      appendStatDiv(t, "Delirium Mirrors Triggered", s.strangeVoiceEncountered);
+//      appendStatDiv(t, "Delirium Mirrors Triggered", s.strangeVoiceEncountered);
+//      
+//    }
+//    
+//    function appendStatDiv(elem, str, stat) {
+//      if(!stat) return;
+//      elem.append($(`
+//        <div>
+//          ${str}: ${stat}
+//        </div>
+//      `));
+//    }
+
+
+    </script>
+    
+  </head>
+  <body style='overflow-x: hidden;'>
+    
+    <div id="popupContainer" style="pointer-events:none;display:none;height:100%;width:100%;z-index:999;position:absolute;top:0;left:0"></div>
+    
+    <div id="outerDiv">
+    
+      <div class='sidenav' id='sidenav'></div>
+      
+      <div id="totalStatsContainer" style='display:none;'>
+        <div class='tableLink' style='padding:16px 20px;position:relative;' onclick='toggleMainSection("totalStats")'>
+          <div style='display:inline-block;'>
+            <div class='tableLinkHeader'>Total Stats</div>
+          </div>
+          <div id="totalStatsIcon" class="tableToggleIcon">-</div>
+        </div>
+        <div id="totalStatsTable">
+        </div>
+        <br/>
+      </div>
+      
+      
+      <div id="areaStatsContainer" style='display:none;'>
+        <div class='tableLink' style='padding:16px 20px;position:relative;' onclick='toggleMainSection("areaStats")'>
+          <div style='display:inline-block;'>
+            <div class='tableLinkHeader'>Stats by Area</div>
+          </div>
+          <div id="areaStatsIcon" class="tableToggleIcon">-</div>
+        </div>
+        <table class='searchResults statsTable' style='width:100%;border-spacing:0;padding:10px;' id="areaStatsTable">
+          <thead>
+            <tr>
+              <th>&nbsp;</th>
+              <th>Area Type</th>
+              <th>Count</th>
+              <th>Time</th>
+              <th><img src='res/img/c.png' class='currencyText'/></th>
+              <th><img src='res/img/c.png' class='currencyText'/> / hr</th>
+              <th>Kills</th>
+              <th>Deaths</th>
+            </tr>
+          </thead>
+          <tbody id="areaStatsRows"></tbody>
+        </table>
+        <br/>
+      </div>
+      
+      
+      <div id="bigDropsContainer" style='display:none;'>
+        <div class='tableLink' style='padding:16px 20px;position:relative;' onclick='toggleMainSection("bigDrops")'>
+          <div style='display:inline-block;'>
+            <div class='tableLinkHeader'>Items picked up worth at least 1 <img src='res/img/ex.png' class='currencyText'/></div>
+          </div>
+          <div id="bigDropsIcon" class="tableToggleIcon">-</div>
+        </div>
+        <div id='bigDropsTable' style='padding:10px;'></div>
+      </div>
+
+      <div class="footer">
+        Generated by Exile Diary v<span id='appVersionFooter'></span> https://github.com/briansd9/exile-diary
+        <script>
+          $("#appVersionFooter").html(require('electron').remote.app.getVersion());
+        </script>      
+      </div>
+      <div id="messagePadding" style="height:150px;visibility:hidden;">&nbsp;</div>
+      <div id="messages" class="messageSection"></div>
+      
+    </div>
+  </body>
+</html>
