@@ -48,12 +48,14 @@ html {
     border-radius: 20px;
     text-align: left;
     cursor: pointer;
+    user-select: none;
 	}
 
 	a {
     color: #6666ff;
     text-decoration: none;
     font-size: 24px;
+    cursor: pointer;
 	}
 	a.visited {
 		color: #3333ff;
@@ -67,7 +69,7 @@ html {
 		font-size: 20px;
 	}
 	
-	div.netWorth {
+	div.tableLinkHeader {
 		font-family: FontinSmallCaps;
 		font-size: 30px;
 	}
@@ -555,4 +557,54 @@ input::-webkit-inner-spin-button {
   display: inline-grid;
   grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
   grid-template-rows: 1fr;
+}
+
+img.currencyText {
+  height: 1em;
+  width: 1em;
+  vertical-align: middle;
+}
+
+.tableToggleIcon {
+  display: inline-block;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 30px;
+  font-family: monospace;
+  font-weight: bold;
+  font-size: 50px;
+}
+
+table.statsTable {
+  width: 100%;
+  border-spacing: 0;
+  padding: 5px 25px 10px;
+  border-radius: 0 0 12px 12px;
+  margin-bottom: 10px;
+}
+
+tr.tableDetailRowSelected {
+  background-color: #222;
+}
+
+tr.tableAreaDetailRowSelected {
+  background-color: #333;
+}
+
+tr.areaNameRow:hover {
+  background-color: #333;
+}
+
+tr.areaRunRow:hover {
+  background-color: #444;
+}
+
+tr.statsTableFooter, tr.statsTableFooter:hover {
+  background-color: #222;
+}
+
+thead > tr > th > * {
+  font-weight: bold !important;
 }
