@@ -180,7 +180,7 @@ function initWindow(window) {
         <span style='cursor:pointer;' onclick='window.location.href="stash.html";'>
         Net worth update: 
         <span class='eventText'>${data.value}</span>
-        <img src='res/img/c.png' style='vertical-align:middle'>
+        <img src='res/img/c.png' class='currencyText'>
         ${data.change === 0 ? "" : `(${Utils.formatSignedNumber(data.change)})`}
         </span>
       `,
@@ -221,7 +221,7 @@ function initWindow(window) {
       `<span style='cursor:pointer;' onclick='window.location.href="map.html?id=${run.id}";'>`      
         + `Completed run in <span class='eventText'>${run.name}</span> `
         + `(${Utils.getRunningTime(run.firstevent, run.lastevent)}`
-        + (run.gained ? `, ${run.gained} <img src='res/img/c.png' style='vertical-align:middle'>` : "")
+        + (run.gained ? `, ${run.gained} <img src='res/img/c.png' class='currencyText'>` : "")
         + (run.kills ? `, ${f.format(run.kills)} kills` : "")
         + (run.xp ? `, ${f.format(run.xp)} XP` : "")
         + `)</span>`,
