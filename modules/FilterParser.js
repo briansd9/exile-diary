@@ -84,7 +84,8 @@ function Parser() {
     'Width', 'Height', 'Identified', 'Corrupted', 'ElderItem', 'ShaperItem', 'ShapedMap', 'HasExplicitMod', 'MapTier',
     'GemLevel', 'StackSize', 'ElderMap', 'Prophecy', 'FracturedItem', 'SynthesisedItem', 'AnyEnchantment', 'HasEnchantment',
     'BlightedMap', 'HasInfluence',
-    'Mirrored', 'CorruptedMods', 'AreaLevel'
+    'Mirrored', 'CorruptedMods', 'AreaLevel',
+    'EnchantmentPassiveNode'
   ];
 	var MODIFIER_TOKENS = [
 	    'SetBackgroundColor', 'SetBorderColor', 'SetTextColor', 'PlayAlertSound', 'PlayAlertSoundPositional',
@@ -271,7 +272,8 @@ function Parser() {
       'HasInfluence' : HasInfluenceFilter,
       'Mirrored' : MirroredFilter,
       'CorruptedMods' : CorruptedModsFilter,
-      'AreaLevel' : AreaLevelFilter
+      'AreaLevel' : AreaLevelFilter,
+      'EnchantmentPassiveNode' : HasEnchantmentFilter
 		};
 
 		switch (token) {
@@ -298,6 +300,7 @@ function Parser() {
 			case 'HasExplicitMod':
       case 'Prophecy':
 			case 'HasEnchantment':
+      case 'EnchantmentPassiveNode':
 				parseMultiStringFilter( self, filters[token], arguments );
 				return;
 
@@ -422,6 +425,10 @@ function Parser() {
         var influences = [];
         for (var i = 0; i < tokens.length; i++) {
             var inf = tokens[i].toLowerCase().replace(/"/g, '');
+            if(inf === "none") {
+              influences = "none";
+              break;
+            }
             if (!INFLUENCE_TOKENS.includes(inf)) {
                 reportTokenError( self, tokens[i], 'influence')
                 return;
@@ -1097,6 +1104,9 @@ function BlightedMapFilter (value) {
 
 function HasInfluenceFilter (comparer, influences) {
 	this.match = function (item) {
+    if(influences === "none") {
+      return (item.influence.length === 0);
+    }
 		return comparer( item.influence, influences );
 	};
 }
