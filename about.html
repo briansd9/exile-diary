@@ -6,13 +6,8 @@
     openLink(target);      
   });
   
-  function openLink(href) {
-    var opn = require('opn');
-    opn(href);
-  }
-    
   $(document).ready(() => {
-    $("#appVersionAbout").html(require('electron').remote.app.getVersion());
+    $("#appVersionAbout").html("v" + require('electron').remote.app.getVersion());
   });
   
 </script>
@@ -21,7 +16,7 @@
     <tr style='width:100%;'>
       <td>
         <div class='aboutInfo' style='display:inline-block;'>
-         <span class='eventText' style='font-family:FontinSmallCaps;'>Exile Diary v<span id='appVersionAbout'></span></span>
+         <span class='eventText' style='font-family:FontinSmallCaps;'>Exile Diary <span id='appVersionAbout'></span></span>
          <span style='font-size:smaller;'>made with love by <a style="font-size:100%;" class='aboutlink' href="https://www.reddit.com/message/compose/?to=briansd9">/u/briansd9</a></span>
        </div>
        <div class='aboutInfo'>
