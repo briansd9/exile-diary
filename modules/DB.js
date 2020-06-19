@@ -202,8 +202,20 @@ const initSQL = [
     `drop table events`,
     `alter table events_copy rename to events`,
     `alter table mapruns add runinfo text`
-  ]
+  ],
   
+  // version 3 - add gear checker
+  [
+    `pragma user_version = 3`,
+    `
+      create table if not exists gear (
+        timestamp text not null,
+        data text not null,
+        diff text,
+        primary key (timestamp)
+      )
+    `
+  ]
   
   
 ];
