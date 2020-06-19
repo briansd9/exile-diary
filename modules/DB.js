@@ -144,7 +144,6 @@ const initSQL = [
         xp number
       )
     `,
-    `insert or ignore into mapruns(id, firstevent, lastevent, gained, kills) values(-1, -1, -1, -1, -1)`,
     `
       create table if not exists filters (
         timestamp text primary key not null,
@@ -170,7 +169,6 @@ const initSQL = [
         data text not null
       )
     `,
-    `alter table mapruns add kills number`,
     `
       create table if not exists fullrates (
         date text primary key not null,
@@ -215,6 +213,14 @@ const initSQL = [
         primary key (timestamp)
       )
     `
+  ],
+  
+  
+  // version 4 - fixes critical bug that caused previous versions to fail on first run
+  [
+    `pragma user_version = 4`,
+    `alter table mapruns add kills number`,
+    `insert or ignore into mapruns(id, firstevent, lastevent, gained, kills) values(-1, -1, -1, -1, -1)`
   ]
   
   
