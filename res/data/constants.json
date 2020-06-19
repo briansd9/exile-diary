@@ -1470,6 +1470,9 @@
       "The Syndrome Encampment",
       "Oriath Delusion"
     ],
+    "harvest" : [
+      "The Sacred Grove"
+    ],
     "endgame" : [
       "Absence of Value and Meaning",
       "Eye of the Storm",
@@ -2909,7 +2912,11 @@
     "Unique Bosses are possessed by Tormented Thug",
     "Unique Bosses are possessed by Tormented Warlord",
     "Area is Overgrown with Large Caustic Plants",
-    "Area is Overgrown with Parasitic Caustic Plants"
+    "Area is Overgrown with Parasitic Caustic Plants",
+    
+    "Map has a Vaal Side Area",
+    "Map doesn't consume Sextant charges",
+    "Map boss is surrounded by Tormented Spirits"
     
   ],
 
