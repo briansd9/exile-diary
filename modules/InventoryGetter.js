@@ -3,6 +3,7 @@ const https = require('https');
 const moment = require('moment');
 const XPTracker = require('./XPTracker');
 const KillTracker = require('./KillTracker');
+const GearChecker = require('./GearChecker');
 const EventEmitter = require('events');
 
 var DB;
@@ -26,6 +27,7 @@ class InventoryGetter extends EventEmitter {
 
     this.on("xp", XPTracker.logXP);
     this.on("equipment", KillTracker.logKillCount);
+    this.on("equipment", GearChecker.check);
 
     logger.info(`Inventory getter started with query path ${this.queryPath}`);
 
@@ -152,15 +154,13 @@ class InventoryGetter extends EventEmitter {
       });
       var timestamp = moment().format('YYYYMMDDHHmmss')
       DB.run(
-        "insert into lastinv(timestamp, inventory) values(?, ?)",
-        [timestamp, dataString],
-        (err) => {
-        if (err) {
-          logger.info(`Unable to update last inventory: ${err}`);
-        } else {
-          logger.info(`Updated last inventory at ${timestamp} (length: ${dataString.length})`);
+        "insert into lastinv(timestamp, inventory) values(?, ?)", [timestamp, dataString], (err) => {
+          if (err) {
+            logger.info(`Unable to update last inventory: ${err}`);
+          } else {
+            logger.info(`Updated last inventory at ${timestamp} (length: ${dataString.length})`);
+          }
         }
-      }
       );
     });
   }
@@ -176,6 +176,7 @@ class InventoryGetter extends EventEmitter {
         equippedItems[item.id] = item;
         if(item.socketedItems) {
           for(let i = 0; i < item.socketedItems.length; i++) {
+            // this prevents gem swaps from being counted as newly picked up
             let socketedItem = item.socketedItems[i];
             mainInventory[socketedItem.id] = socketedItem;
             equippedItems[socketedItem.id] = socketedItem;
