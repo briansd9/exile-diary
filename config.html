@@ -40,7 +40,7 @@
       const fs = require('fs');
       const logger = require('./modules/Log').getLogger(__filename);
       const Utils = require('./modules/Utils');
-      const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled"];
+      const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled", "minimizeToTray"];
 
       var settings = {};
       var tabsLoaded = false;
@@ -198,7 +198,7 @@
       function loadSettings() {
 
         configKeys.forEach((key) => {
-          if(key === "overlayEnabled") {
+          if(key === "overlayEnabled" || key === "minimizeToTray") {
             $("#" + key).prop("checked", settings[key]);
           } else {
             $("#" + key).val(settings[key]);
@@ -292,7 +292,7 @@
         
         configKeys.forEach((key) => {
           var inputField = $("#" + key);
-          if(key === 'overlayEnabled') {
+          if(key === 'overlayEnabled' || key === 'minimizeToTray') {
             settings[key] = inputField.is(':checked');
           } else if(inputField.val()) {
             settings[key] = inputField.val();
@@ -655,16 +655,24 @@
           <tr>
             <td colspan="2">
               <div class='configLabel ui-text'>
-                Enable overlay popup messages (experimental)
-                <input style='margin-left:20px;' name='overlayEnabled' id='overlayEnabled' type='checkbox'/>
+                <input style='margin:0 16px;' name='minimizeToTray' id='minimizeToTray' type='checkbox'/>
+                Minimize to Tray
               </div>
             </td>
           </tr>
           <tr>
             <td colspan="2">
               <div class='configLabel ui-text'>
+                <input style='margin:0 16px;' name='overlayEnabled' id='overlayEnabled' type='checkbox'/>
+                Enable overlay popup messages (experimental)
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <div class='configLabel ui-text'>
+                <input style='margin:0 16px;' name='overrideSSF' id='overrideSSF' type='checkbox'/>
                 Get item prices even in SSF mode (experimental)
-                <input style='margin-left:20px;' name='overrideSSF' id='overrideSSF' type='checkbox'/>
               </div>
             </td>
           </tr>

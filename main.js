@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, dialog, ipcMain } = require('electron');
+const { app, Menu, Tray, BrowserWindow, dialog, ipcMain } = require('electron');
 const logger = require("./modules/Log").getLogger(__filename);
 const ClientTxtWatcher = require("./modules/ClientTxtWatcher");
 const DB = require("./modules/DB");
@@ -24,9 +24,13 @@ const activeWin = require('active-win');
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 let overlayWindow;
+let trayIcon;
 
 const lock = app.requestSingleInstanceLock();
 if(!lock) {
+  if(trayIcon) {
+    trayIcon.destroy();
+  }
   app.quit();
 } else {
   // Someone tried to run a second instance, we should focus our window.
@@ -299,7 +303,8 @@ async function createWindow() {
     transparent: false,
     icon: path.join(__dirname, "res/img/icons/png/64x64.png"),
     webPreferences: {
-        preload: __dirname + '/modules/electron-capture/src/preload.js'
+        preload: __dirname + '/modules/electron-capture/src/preload.js',
+        nodeIntegration: true
     }
   });
   
@@ -341,7 +346,8 @@ async function createWindow() {
     fullscreenable: false,
     opacity: 0.75,
     show: false,
-    skipTaskbar: true
+    skipTaskbar: true,
+    webPreferences: { nodeIntegration: true }
   });
   overlayWindow.loadFile("overlay.html");
 
@@ -383,9 +389,36 @@ async function createWindow() {
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
+    trayIcon.destroy();
     overlayWindow.destroy();
     overlayWindow = null;
     mainWindow = null;
+  });
+  
+  mainWindow.on('minimize', function (event) {
+    try {
+      if(settings.minimizeToTray) {
+        if(!trayIcon) {
+          trayIcon = new Tray(path.join(__dirname, "res/img/icons/win/ExileDiary.ico"));
+          trayIcon.setToolTip(`Exile Diary v${app.getVersion()}\n${settings.activeProfile.characterName} (${settings.activeProfile.league} league)`);
+          trayIcon.setContextMenu(
+            Menu.buildFromTemplate([
+              { label: 'Quit', role: 'quit' } 
+            ])
+          );
+          trayIcon.on('double-click', () => {
+            if(mainWindow) {
+              mainWindow.show();
+            }
+          });
+        }
+        event.preventDefault();
+        mainWindow.hide();
+        
+      }
+    } catch(e) {
+      // just swallow error and minimize normally
+    }
   });
 
   mainWindow.webContents.on('new-window', function(event, urlToOpen) {
@@ -397,7 +430,8 @@ async function createWindow() {
       titleBarStyle: "hidden",
       width: Math.floor(mainWindow.getBounds().width * 0.85),
       height: Math.floor(mainWindow.getBounds().height * 0.85),
-      parent: mainWindow
+      parent: mainWindow,
+      webPreferences: { nodeIntegration: true }
     });
     win.loadURL(urlToOpen);
     win.once('ready-to-show', () => {
@@ -413,6 +447,7 @@ async function createWindow() {
   } else {
     mainWindow.maximize();
   }
+  
   mainWindow.show();
     
 }
@@ -548,6 +583,9 @@ app.on('window-all-closed', function () {
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
+    if(trayIcon) {
+      trayIcon.destroy();
+    }
     app.quit();
   }
 });
@@ -559,3 +597,4 @@ app.on('activate', function () {
     createWindow();
   }
 });
+  
