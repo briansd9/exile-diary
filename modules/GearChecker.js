@@ -64,7 +64,6 @@ async function check(timestamp, eqp) {
         currGear["WeaponsSockets"] = currGear["WeaponsSockets"] || [];
         currGear["WeaponsSockets"] = [ ...currGear["WeaponsSockets"], ...item.socketedItems ];
       }
-      delete(item.socketedItems);
     }
     
     // avoid unnecessary change logs when migrating to a different league
@@ -87,10 +86,16 @@ async function check(timestamp, eqp) {
     for(let i = 0; i < jewels.length; i++) {
       currGear["TreeJewels"].push(jewels[i]);
     }
+  } else {
+    logger.info("Error getting equipped jewels, will not check diffs for now");
+    return;
   }
   
   let prevGear = await getPreviousEquipment(timestamp, currGear);
   if(!prevGear) {
+    logger.info("Error getting previous gear, will not check diffs for now");
+    return;
+  } else if(prevGear === "none") {
     insertEquipment(timestamp, currGear);
   } else {
     compareEquipment(timestamp, prevGear, currGear);
@@ -117,6 +122,8 @@ function getEquippedJewels() {
         try {
           var data = JSON.parse(body);
           if( !data.items || (data.error && data.error.message === "Forbidden") ) {
+            logger.info(`Failed to get skill tree, returning null`);
+            resolve(null);
           } else {
             resolve(data.items);
           }
@@ -148,7 +155,7 @@ function getPreviousEquipment(timestamp) {
         resolve(null);
       } else if(!row) {
         logger.info(`No previous equipment found!`);
-        resolve(null);
+        resolve("none");
       } else {
         logger.info("Returning previous equipment");
         resolve(JSON.parse(row.data));
@@ -164,8 +171,6 @@ function compareEquipment(timestamp, prev, curr) {
   
   for(var slot of gearSlots) {
     
-    logger.info(`Checking ${slot}`);
-    
     if(!prev[slot] && curr[slot]) {
       logger.info(`Diff: new equipment in ${slot}`);
       addDiff(slot, null, curr[slot]);
@@ -173,10 +178,8 @@ function compareEquipment(timestamp, prev, curr) {
       logger.info(`Diff: removed equipment in ${slot}`);
       addDiff(slot, prev[slot], null);
     } else {     
-      if(!deepEqual(prev[slot], curr[slot])) {
+      if(!itemsEqual(prev[slot], curr[slot])) {
         addDiff(slot, prev[slot], curr[slot]);
-      } else {
-        logger.info(`No diffs found in ${slot}`);
       }
     }
   }
@@ -188,39 +191,26 @@ function compareEquipment(timestamp, prev, curr) {
     prev[slot] = prev[slot] || [];
     curr[slot] = curr[slot] || [];
     
-    // create copies of the items, as some properties will have to be removed before comparing
-    let prevTemp = [];
-    let currTemp = [];
-    let prevOriginal = {};
-    let currOriginal = {};
-    
-    for(let i = 0; i < prev[slot].length; i++) {
-      prevOriginal[prev[slot][i].id] = JSON.parse(JSON.stringify(prev[slot][i]));
-      prevTemp.push(getTempItem(slot, prev[slot][i]));
-    }
-    for(let i = 0; i < curr[slot].length; i++) {
-      currOriginal[curr[slot][i].id] = JSON.parse(JSON.stringify(curr[slot][i]));
-      currTemp.push(getTempItem(slot, curr[slot][i]));
-    }
+    let prevTemp = JSON.parse(JSON.stringify(prev[slot]));
+    let currTemp = JSON.parse(JSON.stringify(curr[slot]));
     
     for(let i = prevTemp.length - 1; i >= 0; i--) {
       let p = prevTemp[i];
       for(let j = currTemp.length - 1; j >= 0; j--) {
         let c = currTemp[j];
-        if(deepEqual(p, c)) {
+        if(itemsEqual(p, c)) {
+          logger.info(`Found same ${slot} in prev${i} and curr${j}`);
           prevTemp.splice(i, 1);
           currTemp.splice(j, 1);
           break;
         }
       }
     }
+
+    logger.info(`prevlength ${prevTemp.length} currlength ${currTemp.length}`);
     
     if(prevTemp.length > 0 || currTemp.length > 0) {
-      let prevRet = [];
-      let currRet = [];
-      prevTemp.forEach( item => { prevRet.push(prevOriginal[item.id]); });
-      currTemp.forEach( item => { currRet.push(currOriginal[item.id]); });
-      addDiff(slot, prevRet, currRet);
+      addDiff(slot, prevTemp, currTemp);
     } else {
       logger.info(`No diffs found in ${slot}`);
     }
@@ -233,38 +223,45 @@ function compareEquipment(timestamp, prev, curr) {
     logger.info("No diffs found in equipment, returning");
   }
   
-  
-  
-  
-  function getTempItem(slot, item) {
-    let tempItem = Object.assign({}, item);
-    if(slot === "Flask") {
-      // remove current number of charges 
-      // remove flask icon (changes depending on charges)
-      for(let i = 0; i < tempItem.properties.length; i++) {
-        if(tempItem.properties[i].name === "Currently has %0 Charges") {
-          tempItem.properties.splice(i, 1);
-          break;
-        }
-      }
-      delete tempItem.icon;
-    } else if(slot === "Weapons") {
-      // remove requirements (may be changed by socketed gems)
-      // remove inventory id (ignore weapon swaps)
-      delete tempItem.requirements;
-      delete tempItem.inventoryId;
-    } else {
-      // remove additionalProperties (only contains XP on skill gems)
-      delete tempItem.additionalProperties;          
-    }
-    return tempItem;
-  }
-  
   function addDiff(s, p, c) {
-    logger.info(`Diffs found in ${slot}`);
+    logger.info(`Diffs found in ${s}`);
     diffs[s] = { prev: p, curr: c };
   }
   
+}
+
+function itemsEqual(a, b) {
+  return deepEqual(getTempItem(a), getTempItem(b));
+}
+
+function getTempItem(item) {
+  let tempItem;
+  try {
+    tempItem = JSON.parse(JSON.stringify(item));
+  } catch(e) {
+    logger.info(`Error parsing, item follows`);
+    logger.info(JSON.stringify(item));
+  }
+  if(tempItem.properties) {
+    for(let i = 0; i < tempItem.properties.length; i++) {
+      // remove current number of charges from flasks
+      if(tempItem.properties[i].name === "Currently has %0 Charges") {
+        tempItem.properties.splice(i, 1);
+        break;
+      }
+    }
+  }
+  // remove icon (ignore flask icon changes)
+  delete tempItem.icon;
+  // remove inventory id (ignore weapon swaps)
+  delete tempItem.inventoryId;
+  // remove requirements (may be changed by socketed gems)
+  delete tempItem.requirements;
+  // remove additionalProperties (only contains XP on skill gems)
+  delete tempItem.additionalProperties;          
+  // remove socketed items
+  delete tempItem.socketedItems;
+  return tempItem;
 }
 
 function insertEquipment(timestamp, currData, diffData = "") {
@@ -280,3 +277,4 @@ function insertEquipment(timestamp, currData, diffData = "") {
 }
 
 module.exports.check = check;
+module.exports.itemsEqual = itemsEqual;
