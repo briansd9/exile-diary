@@ -44,7 +44,9 @@ function getCategory(item, subcategory = false) {
     case 5:  
       if(t.startsWith("Captured Soul")) {
         return "Pantheon Soul";
-      } 
+      } else if(t.endsWith("Seed") || t.endsWith("Grain") || t.endsWith("Bulb") || t.endsWith("fruit")) {
+        return "Harvest Seed";
+      }
       return "Labyrinth Items";
     case 6:
       return "Divination Card";
