@@ -18,7 +18,8 @@
     "General Marceus Lioneye",
     "Viper Napuatzi",
     "Cardinal Sanctus Vox",
-    "Aukuna, the Black Sekhema"    
+    "Aukuna, the Black Sekhema",
+    "Oshabi"
   ],
   
   "conquerors" : [
@@ -855,7 +856,8 @@
     "SynthesisGolemGuardianMap" : "Rewritten Distant Memory",
     "HarbingerRed" : "The Beachhead",
     "HarbingerYellow" : "The Beachhead",
-    "HarbingerWhite" : "The Beachhead"  
+    "HarbingerWhite" : "The Beachhead",
+    "HarbingerUber" : "Infused Beachhead"
   },
 
   "baseMaps" : [
@@ -2389,7 +2391,27 @@
     "https://web.poecdn.com/image/Art/2DItems/Jewels/Veteran'sAwarenessJewel.png" : "The Front Line",
     "https://web.poecdn.com/image/Art/2DItems/Jewels/SecretsOfAgonyJewel.png" : "The Interrogation",
     "https://web.poecdn.com/image/Art/2DItems/Jewels/KineticismJewel.png" : "The Siege",
-    "https://web.poecdn.com/image/Art/2DItems/Jewels/UniqueJewelBase3.png" : "Voices"
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/UniqueJewelBase3.png" : "Voices",
+    
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/DecayingGrip.png" : "Abhorrent Interrogation",
+    "https://web.poecdn.com/image/Art/2DItems/Belts/BearsClutch.png" : "Bear's Girdle",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/ShockCloak.png" : "Doryani's Prototype",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/HighPriestShield.png" : "Emperor's Vigilance",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/EssenceGifter.png" : "Fleshcrafter",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/TheEpiphany.png" : "Forbidden Shako",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/ImpaleGloves.png" : "Great Old One's Tentacles",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/RavensCrown.png" : "Plume of Pursuit",
+    "https://web.poecdn.com/image/Art/2DItems/Amulets/SharedUnsight.png" : "Retaliation Charm",
+    "https://web.poecdn.com/image/Art/2DItems/Quivers/BloodSandQuiver.png" : "Scorpion's Call",
+    "https://web.poecdn.com/image/Art/2DItems/Rings/ThunderLoop.png" : "Storm Secret",
+    "https://web.poecdn.com/image/Art/2DItems/Amulets/SabertoothsPendant.png" : "The Felbog Fang",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/HarbingerShieldUpgraded.png" : "The Immortal Will",
+    "https://web.poecdn.com/image/Art/2DItems/Quivers/HarbingerQuiverUpgraded.png" : "The Shattered Divinity",
+    "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSwords/HarbingerSwordUpgraded.png" : "The Surging Thoughts",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/HarbingerHelmUpgraded.png" : "The Tempest's Liberation",
+    "https://web.poecdn.com/image/Art/2DItems/Belts/HarbingerBeltUpgraded.png" : "The Torrent's Reclamation",
+    "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/HarbingerStaffUpgraded.png" : "The Yielding Mortality",
+    "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/BrandDetonateStaff.png" : "Witchhunter's Judgment"    
     
   },
   
@@ -2548,11 +2570,11 @@
     "Area has 50% chance to contain Gifts of the Sacrificed per Sacrifice Fragment used",
     "Area has a #% chance to contain Cadiro Perandus",
     "Area has increased monster variety",
-    "Area has patches of burning ground",
-    "Area has patches of chilled ground",
-    "Area has patches of desecrated ground",
-    "Area has patches of shocking ground",
-    "Area has patches of shocking ground which increase Damage taken by #%",
+    "Area has patches of Burning Ground",
+    "Area has patches of Chilled Ground",
+    "Area has patches of Desecrated Ground",
+    "Area has patches of Shocking Ground",
+    "Area has patches of Shocked Ground which increase Damage taken by #%",
     "Area has patches of tar",
     "Area is a large Maze",
     "Area is Alluring",
@@ -2916,7 +2938,18 @@
     
     "Map has a Vaal Side Area",
     "Map doesn't consume Sextant charges",
-    "Map boss is surrounded by Tormented Spirits"
+    "Map boss is surrounded by Tormented Spirits",
+    "You will receive # additional uses of the Divine Font",
+    "#% increased Damage Taken from Hits from Labyrinth Traps",
+    "#% increased effectiveness of Damage over Time Debuffs from Labyrinth Traps on Players",
+    "Izaro deals #% increased Damage",
+    "Izaro has #% increased maximum Life",
+    "Labyrinth Monsters have #% increased Attack, Cast and Movement Speed",
+    "Labyrinth Monsters deal #% increased Damage",
+    "Labyrinth Monsters have #% increased maximum Life",
+    "Labyrinth Monsters deal #% increased Damage",
+    "The Divine Font may bless belts",
+    "The Labyrinth's rewards have been enriched"
     
   ],
 
