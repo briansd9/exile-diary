@@ -11,16 +11,19 @@ const frameTypes = [
   "relic"          
 ];
 
-const valueColourNames = [ 
-  "colourDefault",
-  "colourAugmented",
-  "colourUnmet",
-  "colourPhysicalDamage",
-  "colourFireDamage",
-  "colourColdDamage",
-  "colourLightningDamage",
-  "colourChaosDamage"
-];
+const valueColourNames = {
+  0 : "colourDefault",
+  1 : "colourAugmented",
+  2 : "colourUnmet",
+  3 : "colourPhysicalDamage",
+  4 : "colourFireDamage",
+  5 : "colourColdDamage",
+  6 : "colourLightningDamage",
+  7 : "colourChaosDamage",
+  12 : "colourHarvestRed",
+  13 : "colourHarvestGreen",
+  14 : "colourHarvestBlue"
+};
 
 var maxLength = -1;
 
@@ -395,6 +398,9 @@ function getExplicitMods(data) {
   if(data.craftedMods) {
     for(let i = 0; i < data.craftedMods.length; i++) {
       let str = data.craftedMods[i].replace("\r\n", "<br/>");
+      if(str.includes(">{")) {
+        str = replaceColorTags(str);
+      }
       div.append($(`<div class='craftedMod'>${str}</div>`));
       setMaxLength(str);
     }
@@ -418,6 +424,26 @@ function getExplicitMods(data) {
   }
   
   return div;
+}
+
+function replaceColorTags(str) {
+  // only used for horticrafting stations (so far)
+  // "<white>{Augment} an item with a new <white>{Defence} modifier with Lucky values (81)"
+  let r = /(<[a-z]+>)({[a-z]+})/i;
+  let m = str.match(r);
+  let x = 0;
+  while(m) {
+    let fullText = m[0];
+    let tag = m[1].substring(1, m[1].length - 1);
+    let text = m[2].substring(1, m[2].length - 1);
+    str = str.replace(fullText, `<span style='color:${tag};'>${text}</span>`);
+    m = str.match(r);
+    if(x++ > 10) {
+      // prevent infinite loops from bad input - only replace up to 10 tags
+      break;
+    }
+  }
+  return str;
 }
 
 function getAdditionalProperties(data) {

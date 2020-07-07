@@ -205,6 +205,12 @@
   color: gold; }
 .newItemPopup .colourChaosDamage {
   color: #d02090; }
+.newItemPopup .colourHarvestRed {
+  color: magenta; }
+.newItemPopup .colourHarvestGreen {
+  color: yellow; }
+.newItemPopup .colourHarvestBlue {
+  color: cyan; }
 
 .explicitMod, .implicitMod, .utilityMod {
   color: #8888FF; }
