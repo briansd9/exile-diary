@@ -69,7 +69,7 @@
     "xlsx": "^0.14.4"
   },
   "devDependencies": {
-    "electron": "^3.0.10",
+    "electron": "^7.2.4",
     "electron-builder": "^20.38.2"
   }
 }
