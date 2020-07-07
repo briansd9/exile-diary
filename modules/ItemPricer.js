@@ -283,6 +283,7 @@
           if(icon.includes("mn=5")) return "Blight";
           if(icon.includes("mn=6")) return "Metamorph";
           if(icon.includes("mn=7")) return "Delirium";
+          if(icon.includes("mn=8")) return "Harvest";
         } else {
           if(icon.includes("2DItems/Maps/AtlasMaps")) return "Atlas";
           if(icon.includes("2DItems/Maps/Map")) return "Pre 2.4";
@@ -307,6 +308,7 @@
           case 5: return "Blight";
           case 6: return "Metamorph";
           case 7: return "Delirium";
+          case 8: return "Harvest";
         }
       } else {
         if(data.f.includes("2DItems/Maps/AtlasMaps")) return "Atlas";
