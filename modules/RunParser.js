@@ -715,22 +715,6 @@ function getMapMods(id) {
   });
 }
 
-async function recheckGained(mapID) {
-  DB = require('./DB').getDB();  
-  return new Promise( (resolve, reject) => {
-    DB.get("select id, firstevent, lastevent, gained from mapruns where id = ?", [mapID], async (err, row) => {
-      if(row && row.gained !== -1) {
-        var allItems = await getItems(row.id, row.firstevent, row.lastevent);
-        if(allItems.value - row.gained !== 0) {
-          console.log(`update mapruns set gained = ${allItems.value} where id = ${row.id}; -- was: ${row.gained}`);
-        }
-      }
-      resolve(null);
-    });
-  });
-  
-}
-
 function getMapStats(arr) {
   var mapStats = {};
   arr.forEach( (mod) => {
@@ -1054,6 +1038,45 @@ async function getMapExtraInfo(areaName, firstevent, lastevent) {
   }
   
 }
+
+async function recheckGained() {
+  DB = require('./DB').getDB();
+  return new Promise( (resolve, reject) => {
+    DB.all(`select areainfo.name, mapruns.id, firstevent, lastevent, gained from mapruns, areainfo where mapruns.gained > -1 and areainfo.id = mapruns.id`, async (err, rows) => {
+      if(err) {
+        logAndEmit(err.message);
+      } else {
+        for(let i = 0; i < rows.length; i++) {
+          let row = rows[i];
+          logAndEmit(`Processing ${i+1}/${rows.length} ${row.name} ${row.id} with profit ${row.gained}`);
+          var allItems = await getItems(row.id, row.firstevent, row.lastevent);
+          if(allItems.value - row.gained !== 0) {
+            logAndEmit(`Updating profit from ${row.gained} to ${allItems.value}`);
+            updateMapRun(row, allItems.value);
+          }
+        }
+      }
+      resolve(null);
+    });
+  });
+
+  function updateMapRun(row, gained) {
+    DB.run(`update mapruns set gained = ? where id = ?`, [gained, row.id], (err) => {
+      if(err) {
+        logAndEmit(`Error updating ${row.name} ${row.id}: ${err.message}`);
+      } else {
+        logAndEmit(`Updated ${row.name} ${row.id} profit to ${gained} (was: ${row.gained})`);
+      }
+    });
+  }
+  
+  function logAndEmit(str) {
+    logger.info(str);
+    emitter.emit("logMessage", str);
+  }
+  
+}
+
 
 module.exports.process = process;
 module.exports.tryProcess = tryProcess;

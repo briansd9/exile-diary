@@ -17,6 +17,7 @@
     <script src="res/jquery.lazy.js"></script>
     <script src="res/jquery-ui.js"></script>
     <script src="res/utils.js"></script>
+    <script src="res/debug.js"></script>
     <script src="res/page-utils.js"></script>
 
     <!-- Insert this line after script imports -->
@@ -43,6 +44,7 @@
       const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled", "minimizeToTray"];
 
       var settings = {};
+      var disabledTabsArray = [ 1 ];
       var tabsLoaded = false;
       var filterData = null;
       var requiresRestart = false;
@@ -81,8 +83,11 @@
           try {
             settings = require(settingsPath);
           } catch(err) {
+            disabledTabsArray = [ 1, 2, 3 ];
             // if settings file contains invalid JSON, ignore and prompt for fresh setup
           }
+        } else {
+          disabledTabsArray = [ 1, 2, 3 ];
         }
 
         $("#sidenav").load("sidenav.html", () => {
@@ -118,45 +123,48 @@
         loadSettings();
 
         $("#clientTxt").click(() => {
-          dialog.showOpenDialog(
-            require('electron').remote.getCurrentWindow(),
-            {properties: ['openFile']},
-            function (filepath) {
-              if (filepath && filepath.length == 1 && typeof (filepath[0] == "string") && filepath[0].endsWith("Client.txt")) {
-                $("#clientTxt").val(filepath[0]);
-              }
+          
+          let win = require('electron').remote.getCurrentWindow();
+          let opts = { properties: ['openFile'] };
+          dialog.showOpenDialog(win, opts).then( r => {
+            let filepath = r.filePaths;
+            if (filepath && filepath.length === 1 && typeof (filepath[0]) === "string" && filepath[0].endsWith("Client.txt")) {
+              $("#clientTxt").val(filepath[0]);
             }
-          );
+          });
+          
         });
         
         $("#uploadFilter").click(() => {
-          dialog.showOpenDialog(
-            require('electron').remote.getCurrentWindow(),
-            {
-              properties: ['openFile'],
-              filters: [ { name: "Item Filters", extensions: ["filter"] } ]
-            },
-            function (filepath) {
-              if (filepath && filepath.length == 1 && typeof (filepath[0] == "string") && filepath[0].endsWith(".filter")) {
-                processFilter(filepath[0]);
-              }
-            }
-          );
+          
+          let win = require('electron').remote.getCurrentWindow();
+          let opts = {
+            properties: ['openFile'],
+            filters: [ { name: "Item Filters", extensions: ["filter"] } ]
+          };
+          dialog.showOpenDialog(win, opts).then( r => {
+            let filepath = r.filePaths;
+            if (filepath && filepath.length === 1 && typeof (filepath[0]) === "string" && filepath[0].endsWith(".filter")) {
+              processFilter(filepath[0]);
+            }            
+          });
+          
         });        
 
         $("#screenshotDir").click(() => {
           if($("#screenshotDirDisable").prop("checked")) {
             return;
           }
-          dialog.showOpenDialog(
-            require('electron').remote.getCurrentWindow(),
-            {properties: ['openDirectory']},
-            function (filepath) {
-              if (filepath && filepath.length == 1 && typeof (filepath[0] == "string")) {
-                $("#screenshotDir").val(filepath[0]);
-              }
+          
+          let win = require('electron').remote.getCurrentWindow();
+          let opts = { properties: ['openDirectory'] };
+          dialog.showOpenDialog(win, opts).then( r => {
+            let filepath = r.filePaths;
+            if (filepath && filepath.length === 1 && typeof (filepath[0]) === "string") {
+              $("#screenshotDir").val(filepath[0]);
             }
-          );
+          });
+
         });
         
         $("#screenshotDirDisable").change(() => {
@@ -189,7 +197,14 @@
         
         $("#tabs").tabs({
           active: 0,
-          disabled: [1]
+          disabled: disabledTabsArray,
+          activate: function(event) {
+            if(event.currentTarget.id === "debugLink") {
+              $("#buttonsDiv").hide();
+            } else {
+              $("#buttonsDiv").show();
+            }
+          }
         });
         $("#body").show();
         
@@ -594,6 +609,7 @@
         <li><a id="accountLink" href="#account">Account</a></li>
         <li><a id="stashLink" href="#stash">Stash</a></li>
         <li><a id="filterLink" href="#filter">Filter</a></li>
+        <li><a id="debugLink" href="#debug">Debug</a></li>
       </ul>
       <div id="account">
         <table id='mapFilters'>
@@ -663,7 +679,7 @@
           <tr>
             <td colspan="2">
               <div class='configLabel ui-text'>
-                <input style='margin:0 16px;' name='overlayEnabled' id='overlayEnabled' type='checkbox'/>
+                <input style='margin:0 16px;' name='overlayEnabled' id='overlayEnabled' type='checkbox' title="Displays notifications about completed maps and net worth updates as an overlay in your PoE window. Warning: may cause FPS drops"/>
                 Enable overlay popup messages (experimental)
               </div>
             </td>
@@ -717,11 +733,29 @@
           </span>
         </div>
         <hr style='clear:left;'>
-        <div id='itemFilterCategories'/>
+        <div id='itemFilterCategories'></div>
+      </div>
+      <div id="debug">
+        <div style='display:flex;align-items:center'>
+          <img src="res/img/howa.png" style='height:100px;margin-right:10px'/> 
+          <span>
+            Tools for fixing bugged data.<br/>
+            Please do not use unless specifically instructed
+          </span>
+        </div>
+        <hr style='clear:left;'>
+        <div style="display: flex; flex-direction: row;">
+          <button id="recheckGainedButton" style="width:320px;margin:0 16px;" onclick="recheckGained();">Recheck Map Profit</button>
+          <div style='line-height: 200%;vertical-align: middle;'>Recalculates the value of items picked up for all map runs.</div>
+        </div>
+        <hr style='clear:left;'>
+        <textarea id="debugOutput" style="resize:none;background-color:#333;color:#ccc;width:100%;height:40%;font-family:monospace;font-size:medium" readonly>Debug output will be displayed here.</textarea>
       </div>
     </div>
-    <button class='ui-text' style='width:48%;float:left;' id='saveSettings' onclick='saveSettings()'>Save</button>
-    <button class='ui-text' style='width:48%;float:right;' onclick='backToMain()'>Back to Main</button>
+    <div id="buttonsDiv">
+      <button class='ui-text' style='width:48%;float:left;' id='saveSettings' onclick='saveSettings()'>Save</button>
+      <button class='ui-text' style='width:48%;float:right;' onclick='backToMain()'>Back to Main</button>
+    </div>
     <div id="messagePadding" style="height:150px;visibility:hidden;">&nbsp;</div>
     <div id="messages" class="messageSection"></div>
   </body>
