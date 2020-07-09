@@ -24,7 +24,7 @@ ipcMain.on('return-move-page', function (events, page) {
     options.height = contentSize.height - ((captureTimes - 1) * contentSize.windowHeight)
     options.y = contentSize.windowHeight - options.height
   }
-  targetWindow.capturePage(options, function (image) {
+  targetWindow.capturePage(options).then( (image) => {
     if (!fsExistsSync(tempDir)) {
       fs.mkdirSync(tempDir)
     }

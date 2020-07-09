@@ -303,7 +303,7 @@ async function createWindow() {
     transparent: false,
     icon: path.join(__dirname, "res/img/icons/png/64x64.png"),
     webPreferences: {
-        preload: __dirname + '/modules/electron-capture/src/preload.js',
+        preload: path.join(__dirname, "/modules/electron-capture/src/preload.js"),
         nodeIntegration: true
     }
   });
@@ -389,7 +389,9 @@ async function createWindow() {
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
-    trayIcon.destroy();
+    if(trayIcon) {
+      trayIcon.destroy();
+    }
     overlayWindow.destroy();
     overlayWindow = null;
     mainWindow = null;
@@ -490,27 +492,25 @@ function saveScreenshot(img) {
     }
   }
   
-  dialog.showMessageBox({    
+  let opts = {    
     type: "question",
-    buttons: [
-      "Save to file",
-      "Upload to imgur",
-      "Cancel"
-    ],
+    buttons: [ "Save to file", "Upload to imgur", "Cancel" ],
     title: "Exile Diary",
     message: "Screenshot generated",
     detail: "Where should the generated screenshot be saved?",
     checkboxLabel: "Don't ask again"  
-  }, (buttonIndex, checked) => {
-    switch(buttonIndex) {
+  };
+  
+  dialog.showMessageBox(opts).then( result => {
+    switch(result.response) {
       case 0:
-        if(checked) {
+        if(result.checkboxChecked) {
           Settings.set("screenshotMode", "local");
         }
         saveLocal(img);
         break;
       case 1:
-        if(checked) {
+        if(result.checkboxChecked) {
           Settings.set("screenshotMode", "imgur");
         }
         saveToImgur(img);
@@ -522,35 +522,31 @@ function saveScreenshot(img) {
 }
 
 function saveLocal(img) {
-  var fileName = `screenshot-${moment().format("YYYYMMDDhhmmss")}.png`;
-  dialog.showSaveDialog(
-    {
-      defaultPath: fileName,
-      filters: [{ name: 'PNG', extensions: ['png'] }]
-    },
-    (savePath) => { 
-      if(savePath) {
-        var Jimp = require('jimp');
-        Jimp.read(Buffer.from(img, 'base64')).then(imgdata => imgdata.write(savePath));
-      }
+  let fileName = `screenshot-${moment().format("YYYYMMDDhhmmss")}.png`;
+  let opts = {
+    defaultPath: fileName,
+    filters: [{ name: 'PNG', extensions: ['png'] }]
+  };
+  dialog.showSaveDialog(opts).then(r => {
+    if(r.filePath) {
+      let Jimp = require('jimp');
+      Jimp.read(Buffer.from(img, 'base64')).then(imgdata => imgdata.write(r.filePath));
     }
-  );
+  });
 }
 
 function saveExport(sheetData) {
-  var fileName = `export-${moment().format("YYYYMMDDhhmmss")}.xlsx`;
-  dialog.showSaveDialog(
-    {
-      defaultPath: fileName,
-      filters: [{ name: 'XLSX', extensions: ['xlsx'] }]
-    },
-    (savePath) => { 
-      if(savePath) {
-        const XLSX = require('xlsx');
-        XLSX.writeFile(sheetData, savePath);
-      }
+  let fileName = `export-${moment().format("YYYYMMDDhhmmss")}.xlsx`;
+  let opts = {
+    defaultPath: fileName,
+    filters: [{ name: 'XLSX', extensions: ['xlsx'] }]
+  };
+  dialog.showSaveDialog(opts).then(r => {
+    if(r.filePath) {
+      let XLSX = require('xlsx');
+      XLSX.writeFile(sheetData, r.filePath);
     }
-  );          
+  });          
 }
 
 function saveToImgur(img) {
