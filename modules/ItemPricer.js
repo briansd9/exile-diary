@@ -108,6 +108,9 @@
     if(item.category === "Map Fragments" || item.typeline === "Offering to the Goddess" || item.typeline === "Simulacrum Splinter" || (item.typeline.includes("Timeless") && item.typeline.includes("Splinter"))) {
       return getValueFromTable("Fragment");
     }
+    if(item.category === "Harvest Seed") {
+      return getSeedValue();
+    }
     if(item.rarity === "Currency" || item.typeline.includes("Incubator")) {
       return getCurrencyValue();
     }
@@ -145,6 +148,11 @@
     /* sub-functions for getting value per item type*/    
 
     function getValueFromTable(table, identifier = null) {
+      
+      if(!rates[table]) {
+        logger.info(`No price list found for category ${table}, returning 0`);
+        return 0;
+      }
       
       if(!identifier) {
         identifier = item.typeline;
@@ -320,6 +328,23 @@
       return "";
       
     }
+    
+    function getSeedValue() {
+
+      var identifier = item.typeline + (getSeedLevel() >= 76 ? " L76+" : "");
+      return getValueFromTable("Seed", identifier);
+      
+      function getSeedLevel() {
+        for(let i = 0; i < item.parsedItem.properties.length; i++) {
+          let prop = item.parsedItem.properties[i];
+          if(prop.name === "Spawns a Level %0 Monster when Harvested") {
+            return prop.values[0][0];
+          }
+        }
+      }
+
+    }
+    
 
     function getBaseTypeValue() {
 
@@ -570,7 +595,7 @@
           break;
       }
 
-    }    
+    }
 
   }
 

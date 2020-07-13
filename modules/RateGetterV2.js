@@ -27,7 +27,8 @@ const rateTypes = {
   "UniqueAccessory" : cleanUniqueItems,
   "Watchstone" : cleanWatchstones,
   "Vial" : cleanNameValuePairs,
-  "DeliriumOrb" : cleanNameValuePairs
+  "DeliriumOrb" : cleanNameValuePairs,
+  "Seed" : cleanSeeds
 };
 
 const specialGems = ["Empower Support", "Enlighten Support", "Enhance Support"];
@@ -115,6 +116,7 @@ async function getRates(date) {
   rates["UniqueMap"] = tempRates["UniqueMap"];
   rates["Map"] = tempRates["Map"];
   rates["Watchstone"] = tempRates["Watchstone"];
+  rates["Seed"] = tempRates["Seed"];
   
   var data = await Utils.compress(rates);
   DB.run("insert into fullrates(date, data) values(?, ?)", [date, data], (err) => {
@@ -153,6 +155,7 @@ function getNinjaURL(category) {
     case "Watchstone":
     case "Vial":
     case "DeliriumOrb":
+    case "Seed":
       url = `/api/data/itemoverview?type=${category}`;
       break;
     default:
@@ -314,6 +317,18 @@ function cleanWatchstones(arr) {
   });
   return a;
 }
+
+function cleanSeeds(arr) {
+  var a = {};
+  arr.lines.forEach(item => {
+    if(item.count && item.count < 10) return; // ignore low confidence listings
+    var identifier = item.name;
+    if(item.levelRequired >= 76) identifier += ` L76+`;
+    a[identifier] = item.chaosValue;
+  });
+  return a;
+}
+
 
       
 module.exports.update = update;
