@@ -12,12 +12,12 @@
     
     $(document).ready(() => {
       
-      var version = require('electron').remote.app.getVersion();
+      let version = require('electron').remote.app.getVersion();
       $("#appVersion").html(version);
       $("#myModal").click(hideModal);
       $("#myModal").appendTo($("body"));
       
-      var settings = require("./modules/settings").get();
+      let settings = require("./modules/settings").get();
       if(!settings || !settings.version || settings.version !== version) {
         $(".newVersion").show();
       }
@@ -67,8 +67,11 @@
 <hr style='border:1px solid #333'/>
 <div>
   <a class='ui-text' onclick='about()'>
-    About
-    <img class='newVersion' src="res/img/!.png" style="display:none;height:25px;width:25px;vertical-align:middle;"/>
+    <span>About</span>
+    <div style="display:inline-block;position:relative; top: 0; left: 0;">
+      <img class='newVersion' src="res/img/!.png" style="position:relative;top:0;left:0;display:none;height:25px;width:25px;vertical-align:middle;"/>
+      <img class='newVersion pulse' src="res/img/!.png" style="position:absolute;top:0;left:0;display:none;height:25px;width:25px;vertical-align:middle;"/>
+    </div>
   </a>
 </div>
 

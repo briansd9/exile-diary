@@ -608,3 +608,18 @@ tr.statsTableFooter, tr.statsTableFooter:hover {
 thead > tr > th > * {
   font-weight: bold !important;
 }
+
+.pulse {
+  animation: pulsate 0.5s infinite;
+}
+
+@keyframes pulsate {
+    0% {
+        transform: scale(1.0, 1.0); 
+        opacity: 1;
+    }
+    100% {
+        transform: scale(3, 3);
+        opacity: 0.25;
+    }
+}

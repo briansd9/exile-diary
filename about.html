@@ -7,8 +7,10 @@
   });
   
   $(document).ready(() => {
-    $("#appVersionAbout").html("v" + require('electron').remote.app.getVersion());
+    $("#appVersionAbout").html(`v${require('electron').remote.app.getVersion()}`);
   });
+  
+  
   
 </script>
 <div style="background-color:black;">
@@ -29,9 +31,22 @@
     </tr>
   </table>
   
+  <div id='alert'>
+    <hr style='border:1px solid #333'/>
+    <span class='eventText'>IMPORTANT: A bug in v0.2.61 has caused all map drops in Harvest league to have an incorrect value of 0 chaos. If you are affected by this, please go to Settings -> Debug -> Recheck Map Profit to fix it.</span>
+  </div>
+  
   <hr style='border:1px solid #333'/>
   Change log:
   <textarea class='changelog' readonly>
+v0.2.62 (2020-07-13)
+  • added: debug tab for data recovery in settings
+  • added: icons for blight, metamorph, delirium tabs
+  • added: new harvest uniques, seed enhancer items
+  • added: seed pricing from poe.ninja
+  • fixed: map drops now properly priced
+  • fixed: handling for harvest item markup
+
 v0.2.61 (2020-06-19)
   • added: gear history checking (not displayed yet)
   • fixed: critical bug that caused app to fail on first run
