@@ -429,7 +429,7 @@ function getExplicitMods(data) {
 function replaceColorTags(str) {
   // only used for horticrafting stations (so far)
   // "<white>{Augment} an item with a new <white>{Defence} modifier with Lucky values (81)"
-  let r = /(<[a-z]+>)({[a-z]+})/i;
+  let r = /(<[a-z]+>)({[a-z- ]+})/i;
   let m = str.match(r);
   let x = 0;
   while(m) {
