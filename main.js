@@ -294,6 +294,11 @@ async function createWindow() {
   });
 
   require('./modules/electron-capture/src/main');
+  
+  const isDev = require('electron-is-dev');
+  if(!isDev) {
+    Menu.setApplicationMenu(null);
+  }
 
   // Create the browser window.
   mainWindow = new BrowserWindow({

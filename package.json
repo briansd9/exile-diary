@@ -51,6 +51,7 @@
   "dependencies": {
     "active-win": "^5.1.3",
     "color-convert": "^1.9.3",
+    "electron-is-dev": "^1.2.0",
     "electron-updater": "^4.0.4",
     "fast-equals": "^2.0.0",
     "imgur": "^0.3.1",
