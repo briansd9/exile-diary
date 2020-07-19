@@ -74,7 +74,12 @@
     var filter = ItemFilter.filter(item.parsedItem);
     if(filter.ignore) {
       if(filter.minValue) {
-        minItemValue = filter.minValue;
+        if(filter.option && filter.option === "fullStack" && item.parsedItem.maxStackSize) {
+          logger.info(`Minvalue is ${filter.minValue}, stacksize of ${item.parsedItem.typeLine} is ${item.parsedItem.maxStackSize}, minvalue per card is ${filter.minValue/item.parsedItem.maxStackSize}`);
+          minItemValue = filter.minValue / item.parsedItem.maxStackSize;
+        } else {
+          minItemValue = filter.minValue;
+        }
       } else {
         // unconditional ignore - stop here and get vendor recipe instead, if any
         return getVendorRecipeValue();

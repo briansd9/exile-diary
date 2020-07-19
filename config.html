@@ -42,7 +42,7 @@
       const logger = require('./modules/Log').getLogger(__filename);
       const Utils = require('./modules/Utils');
       const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled", "minimizeToTray"];
-
+      
       var settings = {};
       var disabledTabsArray = [ 1 ];
       var tabsLoaded = false;
@@ -54,7 +54,14 @@
         { id: "unique", desc: "Unique equipment", hint: "Weapons, armour, jewellery, flasks and jewels" },
         { id: "gem", desc: "Skill Gems" },
         { id: "map", desc: "Maps", hint: "Also includes unique maps" },
-        { id: "divcard", desc: "Divination cards" },
+        { 
+          id: "divcard", 
+          desc: "Divination cards", 
+          opts: {
+            "card" : "per Card",
+            "fullStack" : "per Full Stack"
+          }
+        },
         { id: "prophecy", desc: "Prophecies" },
         { id: "oil", desc: "Oils" },
         { id: "fragment", desc: "Fragments" },
@@ -105,6 +112,7 @@
           
           let d = $("<div style='margin: 4px 0'>");
           let valueHint = cat.valueHint || 'If no value is specified, ALL items of the selected category will be ignored';
+          let dropdown = cat.opts ? getDropdown() : "";
           
           d.append($(`<input type='checkbox' id='${cat.id}Checkbox' class='itemtypecheckbox' style='width:25px;height:25px;vertical-align:middle' title='${cat.hint || ""}'/>`));
           d.append($(`<span class='itemtypeicon'><img src='res/img/itemtypeicons/${cat.id}.png' class='itemtypeicon' style='height:35px;padding:0 8px;vertical-align:middle;'/>${cat.desc}</span>`));
@@ -114,9 +122,19 @@
               <input type='number' min='0' max='999' step='0.1' maxlength='5' style='margin:0!important;width:50px' id='${cat.id}MinValue' title='${valueHint}'/>
               <img src='res/img/c.png' style='height:25px;vertical-align:middle;' />
               in value
+              ${dropdown}
             </span>
           `));
           $("#itemFilterCategories").append(d);
+          
+          function getDropdown() {
+            let select = `<select class='ui-text' style='font-family:FontinSmallCaps;' id='${cat.id}Dropdown'>`;
+            for(let val in cat.opts) {
+              select += `<option value='${val}'>${cat.opts[val]}</option>`;
+            }
+            select += `</select>`;
+            return select;
+          }
           
         }
         
@@ -199,7 +217,7 @@
           active: 0,
           disabled: disabledTabsArray,
           activate: function(event) {
-            if(event.currentTarget.id === "debugLink") {
+            if(event.currentTarget && event.currentTarget.id === "debugLink") {
               $("#buttonsDiv").hide();
             } else {
               $("#buttonsDiv").show();
@@ -273,6 +291,9 @@
               $(`#${key}Checkbox`).prop("checked", true);
               if(cat.minValue) {
                 $(`#${key}MinValue`).val(cat.minValue);
+              }
+              if(cat.option) {
+                $(`#${key}Dropdown`).val(cat.option);
               }
             }
           };
@@ -364,6 +385,9 @@
             let v = Number.parseFloat($(`#${cat.id}MinValue`).val());
             if(v) {
               itemFilter[cat.id].minValue = v;
+              if($(`#${cat.id}Dropdown`)) {
+                itemFilter[cat.id].option = $(`#${cat.id}Dropdown`).val();
+              }
             }
           }
         });
@@ -453,7 +477,7 @@
       function listTabs(data) {
         var div = $("#tabList");
         data.tabs.forEach(tab => {
-          if(tab.type === "MapStash") return;
+          if(tab.type === "MapStash" || tab.type === "UniqueStash") return;
           var color = `#${toHex(tab.colour.r)}${toHex(tab.colour.g)}${toHex(tab.colour.b)}`;
           var checked = settings.tabs && settings.tabs[settings.activeProfile.league] && settings.tabs[settings.activeProfile.league].includes(tab.id);
           div.append(`
@@ -747,6 +771,10 @@
         <div style="display: flex; flex-direction: row;">
           <button id="recheckGainedButton" style="width:320px;margin:0 16px;" onclick="recheckGained();">Recheck Map Profit</button>
           <div style='line-height: 200%;vertical-align: middle;'>Recalculates the value of items picked up for all map runs.</div>
+        </div>
+        <div style="display: flex; flex-direction: row; padding-top:10px;">
+          <button id="recheckGainedButton" style="width:320px;margin:0 16px;" onclick="checkGearDuplicates();">Recheck Gear Changes</button>
+          <div style='line-height: 200%;vertical-align: middle;'>Removes gear changes for which the item was not actually changed.</div>
         </div>
         <hr style='clear:left;'>
         <textarea id="debugOutput" style="resize:none;background-color:#333;color:#ccc;width:100%;height:40%;font-family:monospace;font-size:medium" readonly>Debug output will be displayed here.</textarea>
