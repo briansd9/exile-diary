@@ -235,6 +235,7 @@ function itemsEqual(a, b) {
 }
 
 function getTempItem(item) {
+  
   let tempItem;
   try {
     tempItem = JSON.parse(JSON.stringify(item));
@@ -242,15 +243,17 @@ function getTempItem(item) {
     logger.info(`Error parsing, item follows`);
     logger.info(JSON.stringify(item));
   }
+  
+  // remove current number of charges from flasks
   if(tempItem.properties) {
     for(let i = 0; i < tempItem.properties.length; i++) {
-      // remove current number of charges from flasks
       if(tempItem.properties[i].name === "Currently has %0 Charges") {
         tempItem.properties.splice(i, 1);
         break;
       }
     }
   }
+  
   // remove icon (ignore flask icon changes)
   delete tempItem.icon;
   // remove inventory id (ignore weapon swaps)
@@ -261,7 +264,9 @@ function getTempItem(item) {
   delete tempItem.additionalProperties;          
   // remove socketed items
   delete tempItem.socketedItems;
+  
   return tempItem;
+  
 }
 
 function insertEquipment(timestamp, currData, diffData = "") {
