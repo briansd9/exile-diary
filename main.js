@@ -404,10 +404,11 @@ async function createWindow() {
   
   mainWindow.on('minimize', function (event) {
     try {
-      if(settings.minimizeToTray) {
+      let s = Settings.get();
+      if(s.minimizeToTray) {
         if(!trayIcon) {
           trayIcon = new Tray(path.join(__dirname, "res/img/icons/win/ExileDiary.ico"));
-          trayIcon.setToolTip(`Exile Diary v${app.getVersion()}\n${settings.activeProfile.characterName} (${settings.activeProfile.league} league)`);
+          trayIcon.setToolTip(`Exile Diary v${app.getVersion()}\n${s.activeProfile.characterName} (${s.activeProfile.league} league)`);
           trayIcon.setContextMenu(
             Menu.buildFromTemplate([
               { label: 'Quit', role: 'quit' } 
@@ -421,7 +422,10 @@ async function createWindow() {
         }
         event.preventDefault();
         mainWindow.hide();
-        
+      } else {
+        if(trayIcon) {
+          trayIcon.destroy();
+        }
       }
     } catch(e) {
       // just swallow error and minimize normally
@@ -472,11 +476,11 @@ function addMessage(text, sendToOverlay = false) {
   var settings = Settings.get();
   if(sendToOverlay && settings.overlayEnabled) { 
     (async () => {
-      var win = await activeWin();
-      if(win.title === "Path of Exile" && win.owner.name.startsWith("PathOfExile")) {
+//      var win = await activeWin();
+//      if(win.title === "Path of Exile" && win.owner.name.startsWith("PathOfExile")) {
         overlayWindow.webContents.send("message", msg);
         overlayWindow.showInactive();
-      }
+//      }
     })();
   }
 }
