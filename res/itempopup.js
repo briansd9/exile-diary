@@ -429,14 +429,20 @@ function getExplicitMods(data) {
 function replaceColorTags(str) {
   // only used for horticrafting stations (so far)
   // "<white>{Augment} an item with a new <white>{Defence} modifier with Lucky values (81)"
-  let r = /(<[a-z]+>)({[a-z- ]+})/i;
+  
+  const tags = {
+    "unmet" : "red"
+  };
+  
+  let r = /(<[a-z0-9]+>)({[a-z0-9- ]+})/i;
   let m = str.match(r);
   let x = 0;
   while(m) {
     let fullText = m[0];
     let tag = m[1].substring(1, m[1].length - 1);
     let text = m[2].substring(1, m[2].length - 1);
-    str = str.replace(fullText, `<span style='color:${tag};'>${text}</span>`);
+    let color = tags[tag] || tag;
+    str = str.replace(fullText, `<span style='color:${color};'>${text}</span>`);
     m = str.match(r);
     if(x++ > 10) {
       // prevent infinite loops from bad input - only replace up to 10 tags
@@ -579,7 +585,10 @@ function getProphecyText(data) {
 function getPropertyString(prop) {  
   
   if(!prop.values || !prop.values.length) {
-    return prop.name;
+    if(prop.name.includes(">{")) {
+      prop.name = replaceColorTags(prop.name);
+    }
+    return `<span>${prop.name}</span>`;
   } else {
     switch(prop.displayMode) {
       case 0:
