@@ -658,3 +658,168 @@
 .newItemPopup.divinationCard {
   border: none !important;
 }
+
+  .newItemContainer .verticalLink, .newItemContainer.iW1 .socketLink0, .newItemContainer.iW1 .socketLink1, .newItemContainer.iW1 .socketLink2, .newItemContainer.iW2 .socketLink1, .newItemContainer.iW2 .socketLink3 {
+    background: url('img/itemicons/socket.png') no-repeat;
+    background-position: -140px 0px;
+    width: 15px;
+    height: 38px; }
+  .newItemContainer .horizontalLink, .newItemContainer.iW2 .socketLink0, .newItemContainer.iW2 .socketLink2, .newItemContainer.iW2 .socketLink4 {
+    background: url('img/itemicons/socket.png') no-repeat;
+    background-position: 0px -140px;
+    width: 38px;
+    height: 15px; }
+  .newItemContainer .socketLink {
+    position: absolute;
+    z-index: 1;
+    -webkit-pointer-events: none;
+    -moz-pointer-events: none;
+    pointer-events: none; }
+  .newItemContainer .sockets {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    display: none; }
+  .newItemContainer.showSockets .sockets {
+    display: block !important; }
+  .newItemContainer.iW1 .socketLink0 {
+    left: 16.23225px;
+    top: 28.4645px; }
+  .newItemContainer.iW1 .socketLink1 {
+    left: 16.23225px;
+    top: 75.929px; }
+  .newItemContainer.iW1 .socketLink2 {
+    left: 16.23225px;
+    top: 123.3935px; }
+  .newItemContainer.iW1 .icon {
+    width: 47.4645px; }
+  .newItemContainer.iW1 .sockets {
+    width: 47.4645px; }
+  .newItemContainer.iW1.iH2 .sockets.numSockets1 {
+    top: 23.73225px; }
+  .newItemContainer.iW1.iH3 .sockets.numSockets1 {
+    top: 47.4645px; }
+  .newItemContainer.iW1.iH3 .sockets.numSockets2 {
+    top: 23.73225px; }
+  .newItemContainer.iW1.iH4 .sockets.numSockets1 {
+    top: 71.19675px; }
+  .newItemContainer.iW1.iH4 .sockets.numSockets2 {
+    top: 47.4645px; }
+  .newItemContainer.iW1.iH4 .sockets.numSockets3 {
+    top: 23.73225px; }
+  .newItemContainer.iW2 .icon {
+    width: 94.929px; }
+  .newItemContainer.iW2 .socketLink0 {
+    left: 28.4645px;
+    top: 16.23225px; }
+  .newItemContainer.iW2 .socketLink1 {
+    left: 63.69675px;
+    top: 28.4645px; }
+  .newItemContainer.iW2 .socketLink2 {
+    left: 28.4645px;
+    top: 63.69675px; }
+  .newItemContainer.iW2 .socketLink3 {
+    left: 16.23225px;
+    top: 75.929px; }
+  .newItemContainer.iW2 .socketLink4 {
+    left: 28.4645px;
+    top: 111.16125px; }
+  .newItemContainer.iW2 .sockets {
+    width: 94.929px; }
+  .newItemContainer.iW2.iH1 .sockets.numSockets1, .newItemContainer.iW2.iH2 .sockets.numSockets1, .newItemContainer.iW2.iH3 .sockets.numSockets1, .newItemContainer.iW2.iH4 .sockets.numSockets1 {
+    left: 23.73225px;
+    width: 47.4645px; }
+  .newItemContainer.iW2.iH2 .sockets.numSockets1, .newItemContainer.iW2.iH2 .sockets.numSockets2 {
+    top: 23.73225px; }
+  .newItemContainer.iW2.iH3 .sockets.numSockets1, .newItemContainer.iW2.iH3 .sockets.numSockets2 {
+    top: 47.4645px; }
+  .newItemContainer.iW2.iH3 .sockets.numSockets3, .newItemContainer.iW2.iH3 .sockets.numSockets4 {
+    top: 23.73225px; }
+  .newItemContainer.iW2.iH4 .sockets.numSockets1, .newItemContainer.iW2.iH4 .sockets.numSockets2 {
+    top: 71.19675px; }
+  .newItemContainer.iW2.iH4 .sockets.numSockets3, .newItemContainer.iW2.iH4 .sockets.numSockets4 {
+    top: 47.4645px; }
+  .newItemContainer.iW2.iH4 .sockets.numSockets5, .newItemContainer.iW2.iH4 .sockets.numSockets6 {
+    top: 23.73225px; }
+  .newItemContainer .socket {
+    width: 30px;
+    height: 30px;
+    margin: 8.73225px;
+    float: left;
+    border-radius: 50%;
+    background: none no-repeat center; }
+    .newItemContainer .socket.socketed:hover {
+      cursor: pointer;
+      box-shadow: 0px 0px 4px 2px white; }
+    .newItemContainer .socket.socketed::after {
+      display: block;
+      content: ' ';
+      width: 100%;
+      height: 100%;
+      background: none no-repeat center; }
+    .newItemContainer .socket.socketStr {
+      background: url('img/itemicons/socket.png') no-repeat;
+      background-position: -2.5px -107.5px; }
+    .newItemContainer .socket.socketDex {
+      background: url('img/itemicons/socket.png') no-repeat;
+      background-position: -107.5px -72.5px; }
+    .newItemContainer .socket.socketInt {
+      background: url('img/itemicons/socket.png') no-repeat;
+      background-position: -2.5px -2.5px; }
+    .newItemContainer .socket.socketGen {
+      background: url('img/itemicons/socket.png') no-repeat;
+      background-position: -37.5px -107.5px; }
+    .newItemContainer .socket.socketed.strGem::after {
+      background: url('img/itemicons/socket.png') no-repeat;
+      background-position: -72.5px -2.5px; }
+    .newItemContainer .socket.socketed.dexGem::after {
+      background: url('img/itemicons/socket.png') no-repeat;
+      background-position: -37.5px -37.5px; }
+    .newItemContainer .socket.socketed.intGem::after {
+      background: url('img/itemicons/socket.png') no-repeat;
+      background-position: -2.5px -37.5px; }
+    .newItemContainer .socket.socketed.genGem::after {
+      background: url('img/itemicons/socket.png') no-repeat;
+      background-position: -72.5px -37.5px; }
+    .newItemContainer .socket.socketed.socketSupport.strGem::after {
+      background: url('img/itemicons/socket.png') no-repeat;
+      background-position: -2.5px -72.5px; }
+    .newItemContainer .socket.socketed.socketSupport.dexGem::after {
+      background: url('img/itemicons/socket.png') no-repeat;
+      background-position: -37.5px -72.5px; }
+    .newItemContainer .socket.socketed.socketSupport.intGem::after {
+      background: url('img/itemicons/socket.png') no-repeat;
+      background-position: -72.5px -107.5px; }
+    .newItemContainer .socket.socketed.socketSupport.genGem::after {
+      background: url('img/itemicons/socket.png') no-repeat;
+      background-position: -107.5px -107.5px; }
+    .newItemContainer .socket.socketAbyss {
+      background: url('img/itemicons/socket.png') no-repeat;
+      background-position: -70.5px -70.5px;
+      width: 34px;
+      height: 34px;
+      margin: 6.73225px; }
+      .newItemContainer .socket.socketAbyss.socketed.abyssJewel::after {
+        background: url('img/itemicons/socket.png') no-repeat;
+        background-position: -35.5px -0.5px; }
+    .newItemContainer .socket.socketDelve {
+      background: url('img/itemicons/socket.png') no-repeat;
+      background-position: -107.5px -37.5px; }
+      .newItemContainer .socket.socketDelve.socketed.delve::after {
+        background: url('img/itemicons/socket.png') no-repeat;
+        background-position: -107.5px -2.5px; }
+  .newItemContainer .socketRight {
+    float: right; }
+  
+  .itemPopupContainer {
+    white-space: nowrap;
+  }
+  
+  .popupIconContainer {
+    border: 1px solid #333;
+    display: inline-block;
+    padding: 4px;
+    background-color: rgba(0,0,0);
+    vertical-align: top;
+    z-index: 1998;
+  }

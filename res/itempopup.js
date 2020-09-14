@@ -34,12 +34,13 @@ function setMaxLength(str) {
   }
 }
 
-function createPopup(data) {
+function createPopup(data, opts) {
+  opts = Object.assign({ showIcon: true, setId: true, showSocketedItems: true }, opts);
   try {
     if(data.frameType === 6) {
-      return createDivCardPopup(data);
+      return createDivCardPopup(data, opts);
     } else {
-      return createItemPopup(data);
+      return createItemPopup(data, opts);
     }
   } catch(e) {
     let log = require('./modules/Log').getLogger(__filename);
@@ -48,9 +49,12 @@ function createPopup(data) {
   }
 }
 
-function createDivCardPopup(data) {
+function createDivCardPopup(data, opts) {
   
-  let containerDiv = $(`<div id='${data.id}_${data.arrayIndex}_popup' style='position:relative;' class='itemPopupContainer newItemPopup divinationCard'/>`);
+  let containerDiv = $(`<div style='position:relative;' class='itemPopupContainer newItemPopup divinationCard'/>`);
+  if(opts.setId) {
+    containerDiv.prop('id', `${data.id}_${data.arrayIndex || ""}_popup`);
+  }
   containerDiv.append(`<div class='cardFace'><img src='https://web.poecdn.com/image/divination-card/${data.artFilename}.png'/></div>`);
   
   fixStackSize(data);
@@ -144,11 +148,15 @@ function getDivCardFlavourText(data) {
 }
 
 
-function createItemPopup(data) {
+function createItemPopup(data, opts) {
   
   maxLength = -1;
   
-  let d = $(`<div id='${data.id}_${data.arrayIndex}_popup' style='white-space:nowrap;'/>`);
+  let d = $(`<div class='itemPopupContainer' />`);
+  if(opts.setId) {
+    d.prop('id', `${data.id}_${data.arrayIndex || ""}_popup`);
+  }
+  
         
   let t = $(`<table class='newItemPopup'/>`);
   if(frameTypes[data.frameType]) {
@@ -213,12 +221,25 @@ function createItemPopup(data) {
         }
       }
     }
-    contentCell.css("width", `${maxLength * 0.9}ch`);
+    contentCell.css("width", `${Math.floor(maxLength * 0.9)}ch`);
   }
-  //console.log(`${data.typeLine} maxlength is ${maxLength}`);
 
   contentRow.append(contentCell);
   t.append(contentRow);
+  
+  if(opts.showIcon) {
+    d.append(getPopupIcon(data, opts));
+  }
+  
+  d.append(t);
+  
+  return d.get(0);
+
+}
+
+function getPopupIcon(data, opts) {
+  
+  opts = Object.assign({ showIcon: true, setId: true, showSocketedItems: true }, opts);
   
   let backgroundImageStyle = "";
   if(data.shaper) {
@@ -227,16 +248,93 @@ function createItemPopup(data) {
     backgroundImageStyle = `background-image: url("res/img/itemicons/ElderBackground${data.w}x${data.h}.png")`;
   }
   
-  d.append($(`
-    <div style='border: 1px solid #333;display:inline-block;padding:4px;background-color:rgba(0,0,0);vertical-align:top;z-index:1998'>
-      <span class='stackSize' style='top:12px;left:18px;'>${data.maxStackSize ? data.pickupStackSize || data.stackSize : ""}</span>
-      <img style='vertical-align:top;${backgroundImageStyle}' src="${data.icon}"/>
-    </div>
-  `));
-  d.append(t);
+  let sockets = getSockets(data, opts);
   
-  return d.get(0);
+  return $(`
+    <div class='popupIconContainer'>
+      <span class='stackSize' style='top:12px;left:18px;z-index:24'>${data.maxStackSize ? data.pickupStackSize || data.stackSize : ""}</span>
+      <div style='position:relative;min-width:${data.w * 47}px;min-height:${data.h * 47}px;' class='icon newItemContainer iW${data.w} iH${data.h}'>
+        <img style='vertical-align:top;${backgroundImageStyle}' src="${data.icon}"/>
+        ${sockets}
+      </div>
+    </div>
+  `);  
+  
+}
 
+function getSockets(data, opts) {
+  
+  const socketTypes = {
+    "S" : "Str",
+    "D" : "Dex",
+    "I" : "Int",
+    "G" : "Gen",
+    "A" : "Abyss",
+    "DV" : "Delve"    
+  };
+  
+  if(!data.sockets) {
+    return "";
+  }
+  
+  let socketedItems = {};
+  if(opts.showSocketedItems && data.socketedItems) {
+    data.socketedItems.forEach( item => {
+      socketedItems[item.socket] = item;      
+    });
+  }
+  
+  let s = data.sockets;
+  let str = `<div id="${data.id}_sockets" class="sockets numSockets${s.length}">`;
+  
+  
+  for(let i = 0; i < s.length; i++) {
+
+    if(i < s.length - 1 && s[i].group === s[i + 1].group) {
+      str += `<div class="socketLink socketLink${i}"></div>`;
+    }
+    
+    let socketClass = `socket socket${i} socket${socketTypes[s[i].attr]}`;
+    let socketId = null;
+    
+    if(i === 2 || i === 3) {
+      socketClass += " socketRight ";
+    }
+    
+    if(socketedItems[i]) {
+      socketClass += " socketed ";
+      let gem = socketedItems[i];
+      socketId = gem.id;
+      if(gem.properties[0].name.includes("Support")) {
+        socketClass += " socketSupport ";
+      } else if(gem.properties[0].name.includes("Abyss")) {
+        socketClass += " abyssJewel ";
+      }
+      if(gem.colour) {
+        switch(gem.colour) {
+          case "S":
+            socketClass += " strGem ";
+            break;
+          case "D":
+            socketClass += " dexGem ";
+            break;
+          case "I":
+            socketClass += " intGem ";
+            break;
+          case "G":
+            socketClass += " genGem ";
+            break;
+        }
+      }
+    }
+    
+    str += `<div class="${socketClass}" ${socketId ? `id="${socketId}"` : ""}></div>`;
+    
+  }
+  
+  str += "</div>";
+  return str;
+  
 }
 
 function fixStackSize(data) {
@@ -465,7 +563,7 @@ function getAdditionalProperties(data) {
       let progress = Math.floor(prop.progress * 100);
       div.append($(`
         <div class="additionalProperty">
-          <span class="lc">
+          <span class="lc" style="white-space:nowrap;">
             <span class="experienceBar"><span class="fill"><span style="width: ${progress}%;"></span></span></span>
             <span class="colourDefault">${currXP}/${maxXP}</span>
           </span>
@@ -601,6 +699,9 @@ function getPropertyString(prop) {
       case 3:
         let str = prop.name;
         for(let i = 0; i < prop.values.length; i++) {
+          if(str.startsWith("Stored Experience")) {
+            prop.values[i][0] = (new Intl.NumberFormat()).format(Number.parseInt(prop.values[i][0]));
+          }
           str = str.replace(`%${i}`, formatValue(prop.values[i]));
         }
         return `<span>${str}</span>`;
