@@ -112,6 +112,7 @@ async function get() {
   
   var tabList = await getTabList(params);
   if(!tabList) {
+    logger.info("Failed to get tab list, will try again later");
     return;
   }
   
@@ -128,6 +129,10 @@ async function get() {
     var t = tabList[i];
     logger.info(`Checking tab ${t.name} of type ${t.type}`);
     var tabData = await getTab(t, params);
+    if(tabData === -1) {
+      logger.info(`Failed to get data for tab ${t.name}, aborting stash retrieval - will try again later`);
+      return;
+    }
     if(tabData && tabData.items && tabData.items.length > 0) {
       tabs.value += Number(tabData.value);
       tabs.items = tabs.items.concat(tabData.items);
@@ -240,18 +245,19 @@ async function getTab(t, s) {
           var tabData = await parseTab(data.items, s.timestamp);
           resolve(tabData);
         } catch(err) {
+          console.log(body);
           logger.info(`Failed to get tab ${t.name}: ${err}`);
-          resolve();
+          resolve(-1);
         }
       });
       response.on('error', (err) => {
         logger.info(`Failed to get tab ${t.name}: ${err}`);
-        resolve();
+        resolve(-1);
       });
     });
     request.on('error', (err) => {
       logger.info(`Failed to get tab ${t.name}: ${err}`);
-      resolve();
+      resolve(-1);
     });
     request.end();
   });
