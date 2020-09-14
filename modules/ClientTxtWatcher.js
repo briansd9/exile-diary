@@ -152,7 +152,7 @@ function getEvent(arg) {
         instanceServer: ""
       };
     } else {
-      let text = str.substring(2);
+      let text = (str.substring(2)).trim();
       if(Constants.shrineQuotes[text] || Constants.darkshrineQuotes.includes(text)) {
         return {
           type: "shrine",
