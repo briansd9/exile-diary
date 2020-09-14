@@ -75,7 +75,7 @@
     if(filter.ignore) {
       if(filter.minValue) {
         if(filter.option && filter.option === "fullStack" && item.parsedItem.maxStackSize) {
-          logger.info(`Minvalue is ${filter.minValue}, stacksize of ${item.parsedItem.typeLine} is ${item.parsedItem.maxStackSize}, minvalue per card is ${filter.minValue/item.parsedItem.maxStackSize}`);
+          // logger.info(`Minvalue is ${filter.minValue}, stacksize of ${item.parsedItem.typeLine} is ${item.parsedItem.maxStackSize}, minvalue per card is ${filter.minValue/item.parsedItem.maxStackSize}`);
           minItemValue = filter.minValue / item.parsedItem.maxStackSize;
         } else {
           minItemValue = filter.minValue;
@@ -248,9 +248,6 @@
           if(level >= 20) identifier += ` L${level}`;
           if(quality >= 20) {
             identifier += ` Q${quality}`;
-          } else if(identifier.startsWith("Awakened")) {
-            // temporary workaround for poe.ninja issue
-            identifier += ` Q20`;
           }
           break;
       }
@@ -365,10 +362,21 @@
         identifier = ItemCategoryParser.getEquipmentBaseType(identifier);
       }
       identifier += ` L${item.parsedItem.ilvl > 86 ? 86 : item.parsedItem.ilvl}`;
-      if(item.parsedItem.shaper) {
-        identifier += " Shaper";
-      } else if(item.parsedItem.elder) {
-        identifier += " Elder";
+      if(item.parsedItem.influences) {
+        let inf = item.parsedItem.influences;
+        if(inf.shaper) {
+          identifier += " Shaper";  
+        } else if(inf.elder) {
+          identifier += " Elder";  
+        } else if(inf.crusader) {
+          identifier += " Crusader";  
+        } else if(inf.redeemer) {
+          identifier += " Redeemer";  
+        } else if(inf.warlord) {
+          identifier += " Warlord";  
+        } else if(inf.hunter) {
+          identifier += " Hunter";  
+        }
       }
 
       let value = getValueFromTable("BaseType", identifier);
@@ -385,16 +393,13 @@
       if(sockets.length) {
         if(ItemData.countSockets(sockets) === 6) {
           if(sockets.length === 1) {
-            logger.info("Returning vendor recipe: 6L");
             vendorValue = rates["Currency"]["Divine Orb"];
           } else {
-            logger.info("Returning vendor recipe: 6S");
             vendorValue = rates["Currency"]["Jeweller's Orb"] * 7;
           }
         } else {
           for(var i = 0; i < sockets.length; i++) {
             if(sockets[i].includes("R") && sockets[i].includes("G") && sockets[i].includes("B")) {
-              logger.info("Returning vendor recipe: RGB");
               vendorValue = rates["Currency"]["Chromatic Orb"];
             }
           }
@@ -402,7 +407,6 @@
       } else if(item.category.includes("Skill Gems")) {
         let quality = ItemData.getQuality(item.parsedItem);
         if(quality >= 20) {
-          logger.info("Returning vendor recipe: GCP");
           vendorValue = rates["Currency"]["Gemcutter's Prism"];
         }
       }
