@@ -48,6 +48,7 @@
       const ItemPricer = require('./modules/ItemPricer');
 
       var maprun, mapID, modal, parser, rates, itemsByType, itemsById, currScroll;
+      
 
       ipcRenderer.on("done-capturing", () => {
         if(!modal) {
@@ -59,13 +60,14 @@
         $("#mods").removeClass('mapModScreenshot');
         $("#mods").addClass('dropdown-mapmods-content');
         $("#mods").addClass('mapMod');
+        $("#mods").hide();
         $("body").removeClass('bodyScreenshot');
         $(".footer").hide();
         $(document).scrollTop(currScroll);
         logger.info("Done capturing");
       });
 
-      $(document).ready(() => {
+      $(document).ready(async () => {
 
         //require("./modules/ClientTxtWatcher").getOldNPCEvents();
 
@@ -131,6 +133,7 @@
           case "Alt":
             $(".itemLevel").show();
             $(".itemLevelOnly + .separator").show();
+            $(".newItemContainer .sockets").show();
             break;
           case "Escape":
           case "Esc":
@@ -146,6 +149,7 @@
           case "Alt":
             $(".itemLevel").hide();
             $(".itemLevelOnly + .separator").hide();
+            $(".newItemContainer .sockets").hide();
             break;
         }
       });
@@ -166,6 +170,7 @@
         $("#mods").removeClass('dropdown-mapmods-content');
         $("#mods").removeClass('mapMod');
         $("#mods").addClass('mapModScreenshot');
+        $("#mods").show();
         $("body").addClass('bodyScreenshot');
         $(".footer").show();
         currScroll = $(document).scrollTop();
@@ -313,15 +318,10 @@
 
         $("#masterDiv").hide();
         $("#xpDiv").hide();
-
-        ["Zana", "Einhar", "Alva", "Niko", "Jun"].forEach(str => {
-          $(`#${str}Icon`).hide();
-          $(`#${str}Favour`).hide();
-        });
-        ["Crusader", "Hunter", "Redeemer", "Warlord"].forEach(str => {
-          $(`#${str}Icon`).hide();
-          $(`#${str}Icon`).removeData();
-        });
+        
+        $(".encounterIcon").hide();
+        $(".masterFavour").hide();
+        $(".encounterIcon").removeData();
 
         itemsByType = {};
         itemsById = {};
@@ -374,8 +374,8 @@
 
         addMapMods(run.mods);
         
-        if(run.info.areaTimes) {
-          addAreaTimes(run.info.areaTimes);
+        if(info.areaTimes) {
+          addAreaTimes(info.areaTimes);
         }
 
         if(info.kills) {
@@ -405,10 +405,73 @@
         } else {
           $("#xpKillCountHR").hide();
         }
-
+        
+        if(info.strangeVoiceEncountered) {
+          $("#masterDiv").show();
+          $("#DeliriumIcon").show();
+        }
+        if(info.blightEncounter) {
+          $("#masterDiv").show();
+          $("#BlightIcon").show();
+        }
+        if(info.metamorph) {
+          $("#masterDiv").show();
+          $("#MetamorphIcon").show();
+        }
+        
+        if(info.masters) {
+          $("#masterDiv").show();
+          let m = Object.keys(info.masters);
+          m.forEach( key => {            
+            let enc = info.masters[key];
+            let master = key.substring(0, key.indexOf(","));
+            if(enc.favourGained) {
+              let fav = "+" + new Intl.NumberFormat().format(enc.favourGained);
+              $(`#${master}Favour`).html(fav);
+              $(`#${master}Favour`).show();
+            }            
+            $(`#${master}Icon`).show();
+            switch(master) {
+              case "Alva":
+                if(!enc.encountered) {
+                  // temple of atzoatl not counted as master encounter
+                  $(`#AlvaIcon`).hide();
+                } else {
+                  for(let i = 0; i < (enc.incursions || 0); i++) {
+                    $(`#incursionCount`).append($('<img>', {src: 'res/img/incursion.png'}));
+                  }
+                }
+                break;
+              case "Einhar":
+                for(let i = 0; i < (enc.beasts || 0); i++) {
+                  $(`#beastCount`).append($('<img>', {src: 'res/img/beast.png'}));
+                }
+                break;
+              case "Jun":
+                // no special icons to display for jun
+                break;
+              case "Niko":
+                for(let i = 0; i < (enc.sulphite || 0); i++) {
+                  $(`#sulphiteCount`).append($('<img>', {src: 'res/img/sulphite.png'}));
+                }
+                break;
+              case "Zana":
+                // no special icons to display for zana
+                break;                
+            }
+          });
+        }
+        
+        if(info.conqueror) {
+          $("#masterDiv").show();
+          let conq = Object.keys(info.conqueror)[0];
+          conq = conq.substring(conq.indexOf("the ") + 4);
+          $(`#${conq}Icon`).show();
+        }
+        
         $(".mapArea").show();
-
       }
+      
 
       function addMapMods(modList) {
         if(modList.length > 0) {
@@ -517,7 +580,7 @@
       }
 
       function showEvents(mapRun) {
-
+        
         var events = mapRun.events;
 
         var runningTime = Utils.getRunningTime(events[0].id, events[events.length - 1].id);
@@ -527,53 +590,6 @@
 
           var eventTime = "[" + events[i].id.substring(8, 10) + ":" + events[i].id.substring(10, 12) + ":" + events[i].id.substring(12, 14) + "]";
           var currEvent = events[i];
-
-          if(currEvent.event_type === "master") {
-            if(currEvent.event_text.includes("Zana") && !["The Shaper's Realm", "Absence of Value and Meaning", "Eye of the Storm"].includes(mapRun.info.name)) {
-              $("#masterDiv").show();
-              $(`#ZanaIcon`).show();
-            } else if(currEvent.event_text.includes("Jun") && !mapRun.info.name.includes("Syndicate Hideout") && !mapRun.info.name.includes("Mastermind's Lair")) {
-              $("#masterDiv").show();
-              $(`#JunIcon`).show();
-            } else if(currEvent.event_text.includes("Niko")) {
-              $("#masterDiv").show();
-              $(`#NikoIcon`).show();
-              $(`#sulphiteCount`).append($('<img>', {src: 'res/img/sulphite.png'}));
-            } else if(currEvent.event_text.includes("Alva") && !mapRun.info.name.includes("Atzoatl")) {
-              if(currEvent.event_text.includes("Good job")) {
-                $("#masterDiv").show();
-                $(`#AlvaIcon`).show();
-                $(`#incursionCount`).append($('<img>', {src: 'res/img/incursion.png'}));
-              }
-            } else if(currEvent.event_text.includes("Einhar") && !mapRun.info.name.includes("Menagerie")) {
-              Constants.beastCaptureQuotes.forEach(str => {
-                if(currEvent.event_text.includes(str)) {
-                  $("#masterDiv").show();
-                  $(`#EinharIcon`).show();
-                  $(`#beastCount`).append($('<img>', {src: 'res/img/beast.png'}));
-                }
-              });
-            }
-          }
-
-          if(currEvent.event_type === "conqueror") {
-            ["Crusader", "Hunter", "Redeemer", "Warlord"].forEach(str => {
-              if(currEvent.event_text.includes(str + ":")) {
-                $("#masterDiv").show();
-                var conq = $(`#${str}Icon`);
-                conq.show();
-                if(conq.data("count")) {
-                  conq.data("count", conq.data("count") + 1);
-                } else {
-                  conq.data("count", 1);
-                }
-              }
-            });
-          }
-
-          if(currEvent.event_type === 'favourGained') {
-            displayFavour(currEvent, events[i + 1]);
-          }
 
           if(i > 0 && !lastEnteredTown(events, i) && currEvent.event_type === "entered") {
             var lootString = getInventoryDiffs(mapRun.items, events[i].id);
@@ -616,25 +632,6 @@
         
       }
 
-      function displayFavour(currEvent, nextEvent) {
-
-        var favourGained = "+" + new Intl.NumberFormat().format(currEvent.event_text);
-        var found = false;
-        ["Einhar", "Alva", "Niko", "Jun"].forEach(str => {
-          if(nextEvent.event_type === "master" && nextEvent.event_text.startsWith(str)) {
-            $(`#${str}Favour`).html(favourGained);
-            $(`#${str}Favour`).show();
-            found = true;
-          }
-        });
-
-        if(!found) {
-          $(`#ZanaFavour`).html(favourGained);
-          $(`#ZanaFavour`).show();
-        }
-
-      }
-
       function lastEnteredTown(events, currIndex) {
         for (var i = currIndex - 1; i >= 0; i--) {
           var event = events[i];
@@ -655,7 +652,7 @@
           var item = JSON.parse(items[timestamp][i]);
           if(item.inventoryId === "MainInventory") {
             itemPickedUp = true;
-            item.arrayIndex = i;
+            item.arrayIndex = i.toString();
             processItem(item);
             var itemDiv = getItemDiv(item);
             inventoryDiv.appendChild(itemDiv);
@@ -953,59 +950,74 @@
         </div>
         <hr id='xpKillCountHR' style='border:1px solid #999;' />
         <div id="masterDiv" style="display:none;">
-          <div id='ZanaIcon' style='display:inline-block;'>
+          <div class='encounterIcon' id='ZanaIcon'>
             <div style='position:relative;display:inline;'>
-              <img src='res/img/zana.png'/>
-              <span id='ZanaFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
+              <img src='res/img/encountericons/zana.png'/>
+              <span id='ZanaFavour' class='stackSize masterFavour'></span>
             </div>
           </div>
-          <div id='EinharIcon' style='display:inline-block;'>
+          <div class='encounterIcon' id='EinharIcon'>
             <div style='position:relative;display:inline;'>
-              <img src='res/img/einhar.png'/>
-              <span id='EinharFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
+              <img src='res/img/encountericons/einhar.png'/>
+              <span id='EinharFavour' class='stackSize masterFavour'></span>
             </div>
-            <div id='beastCount' style='display:inline;'></div>
+            <div id='beastCount' style='display:inline;margin-left:-5px;'></div>
           </div>
-          <div id='AlvaIcon' style='display:inline-block;'>
+          <div class='encounterIcon' id='AlvaIcon'>
             <div style='position:relative;display:inline;'>
-              <img src='res/img/alva.png'/>
-              <span id='AlvaFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
+              <img src='res/img/encountericons/alva.png'/>
+              <span id='AlvaFavour' class='stackSize masterFavour'></span>
             </div>
-            <div id='incursionCount' style='display:inline;'></div>
+            <div id='incursionCount' style='display:inline;margin-left:-5px;'></div>
           </div>
-          <div id='NikoIcon' style='display:inline-block;'>
+          <div class='encounterIcon' id='NikoIcon'>
             <div style='position:relative;display:inline;'>
-              <img src='res/img/niko.png'/>
-              <span id='NikoFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
+              <img src='res/img/encountericons/niko.png'/>
+              <span id='NikoFavour' class='stackSize masterFavour'></span>
             </div>
-            <div id='sulphiteCount' style='display:inline;'></div>
+            <div id='sulphiteCount' style='display:inline;margin-left:-5px;'></div>
           </div>
-          <div id='JunIcon' style='display:inline-block;'>
+          <div class='encounterIcon' id='JunIcon'>
             <div style='position:relative;display:inline;'>
-              <img src='res/img/jun.png'/>
-              <span id='JunFavour' style='display:inline;vertical-align:top;' class='stackSize'></span>
-            </div>
-          </div>
-          <div id='CrusaderIcon' style='display:inline-block;'>
-            <div style='position:relative;display:inline;'>
-              <img src='res/img/crusaderinfluence.png'/>
+              <img src='res/img/encountericons/jun.png'/>
+              <span id='JunFavour' class='stackSize masterFavour'></span>
             </div>
           </div>
-          <div id='HunterIcon' style='display:inline-block;'>
+          <div class='encounterIcon' id='CrusaderIcon'>
             <div style='position:relative;display:inline;'>
-              <img src='res/img/hunterinfluence.png'/>
+              <img src='res/img/encountericons/crusader.png'/>
             </div>
           </div>
-          <div id='RedeemerIcon' style='display:inline-block;'>
+          <div class='encounterIcon' id='HunterIcon'>
             <div style='position:relative;display:inline;'>
-              <img src='res/img/redeemerinfluence.png'/>
+              <img src='res/img/encountericons/hunter.png'/>
             </div>
           </div>
-          <div id='WarlordIcon' style='display:inline-block;'>
+          <div class='encounterIcon' id='RedeemerIcon'>
             <div style='position:relative;display:inline;'>
-              <img src='res/img/warlordinfluence.png'/>
+              <img src='res/img/encountericons/redeemer.png'/>
             </div>
-          </div>        
+          </div>
+          <div class='encounterIcon' id='WarlordIcon'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/warlord.png'/>
+            </div>
+          </div>
+          <div class='encounterIcon' id='DeliriumIcon'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/delirium.png'/>
+            </div>
+          </div>
+          <div class='encounterIcon' id='BlightIcon'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/blight.png'/>
+            </div>
+          </div>
+          <div class='encounterIcon' id='MetamorphIcon'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/metamorph.png'/>
+            </div>
+          </div>
           <hr style='border:1px solid #999;' />
         </div>
         <div class='eventsDiv' id='eventsDiv'></div>
