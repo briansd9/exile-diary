@@ -6,6 +6,31 @@
     <link rel="stylesheet" type="text/css" href="res/jquery-ui.min.css" />
     <link rel="stylesheet" type="text/css" href="res/jquery-ui.structure.min.css" />
     <link rel="stylesheet" type="text/css" href="res/jquery-ui.theme.min.css" />
+    
+    <style type="text/css">
+      
+      #gearByDate .popupIconContainer {
+        padding: 0px !important;
+        border: none !important;
+        background: none !important;
+      }
+      #gearByDate .newItemPopup {
+        display: block !important;
+      }      
+      #gearByDate .itemPopupContainer {
+        text-align: center;
+        width: auto;
+        padding: 20px;
+      }
+      
+      #gearByItemType .itemPopupContainer {
+        padding: 25px !important;
+      }
+      #gearByItemType .sockets {
+        display: block !important;
+      }
+      
+    </style>
 
     <script>if (typeof module === 'object') {
         window.module = module;
@@ -25,7 +50,7 @@
     <script>if (window.module)
         module = window.module;</script>
     <script>
-
+    
       const RunParser = require('./modules/RunParser');
       const settings = require('./modules/settings').get();
       const logger = require('./modules/Log').getLogger(__filename);
@@ -35,7 +60,28 @@
       const ItemData = require('./modules/ItemData');
       const Utils = require('./modules/Utils');
       const moment = require('moment');
+      const zlib = require('zlib');
       const GearChecker = require('./modules/GearChecker');
+      
+      const gearSlotButtons = {
+        "Helm": { label: "Helm", icon: "helm" },
+        "BodyArmour": { label: "Body<br/>Armour", icon: "bodyarmour" },
+        "Gloves": { label: "Gloves", icon: "gloves" },
+        "Amulet": { label: "Amulet", icon: "amulet" },
+        "Ring": { label: "Left<br/>Ring", icon: "ring" },
+        "Ring2":  { label: "Right<br/>Ring", icon: "ring", flipped: true },
+        "Belt": { label: "Belt", icon: "belt" },
+        "Boots": { label: "Boots", icon: "boots" },
+        "Weapon": { label: "Weapon", icon: "weapon" },
+        "Offhand": { label: "Offhand", icon: "weapon", flipped: true },
+//        "Flask": { label: "Flasks", icon: "flask" },
+//        "TreeJewels": { label: "Jewels", icon: "jewel" }
+      };
+      
+      var diffs = {};
+      var diffsBySlot = {};
+      var selectedTimestamps = {};
+      const weaponSlots = ["Weapon", "Weapon2", "Offhand", "Offhand2"];
       
       $(document).ready(async () => {
         
@@ -44,57 +90,448 @@
         });
         $("#messages").load("messages.html");
         
-//        GearChecker.fixGearDiffs();
-        
-        var gear = await new Promise( (resolve, reject) => {
-          DB.all(`select timestamp, diff from gear order by 1 desc limit 120 `, async (err, rows) => {
-            resolve(rows);
-          });
-        });
-        
-        console.log(gear);
-        
-        for(let i = 0; i < gear.length; i++) {
-          let diff = JSON.parse(gear[i].diff);
-          display(gear[i].timestamp, diff);
-        }
-        
-      });
-      
-      function display(timestamp, diff) {
-        a(timestamp);
-        let keys = Object.keys(diff);
-        keys.forEach(key => {
-          let d = diff[key];
-          if(d.prev && d.curr) {
-            if(!d.prev.length && !d.curr.length) {
-              let itemsEqual = GearChecker.itemsEqual(d.prev, d.curr);
-              if(!itemsEqual) {
-                a(key);
-                displayItem(d.prev);
-                displayItem(d.curr);
-              } else {
-                a("SAIME");
-              }
+        $(document).tooltip({
+          classes: {
+            "ui-tooltip": "tooltipOverride",
+          },
+          show: "true",
+          hide: "false",
+          items: ".gearItem, .socketed",
+          content: function () {
+            let id = $(this).attr("id");
+            let popup = $(`#${id}__popup`);
+            return (popup.length ? popup.clone() : null);
+          },
+          position: {my: "left", at: "right"},
+          open: function (event, ui) {
+            if(ui.tooltip.offset().top < $(window).scrollTop()) {
+              ui.tooltip.offset({top: $(window).scrollTop()});
+            } else if(ui.tooltip.offset().top - $(window).scrollTop() + ui.tooltip.height() + 16 > window.innerHeight) {
+              ui.tooltip.offset({top: window.innerHeight - ui.tooltip.height() - 16 + $(window).scrollTop()});
             }
           }
-        })
+        });        
+        
+        $(document).keydown(e => {
+          switch (e.key) {
+            case "ArrowLeft":
+              if(document.getElementById("prevGear")) {
+                $("#prevGear")[0].click();
+              }
+              break;
+            case "ArrowRight":
+              if(document.getElementById("nextGear")) {
+                $("#nextGear")[0].click();
+              }
+              break;
+          }
+        });
+        
+        var hasGear = await loadAllGear();
+        
+        if(hasGear) {
+          
+          await loadGearList();
+          
+          for(let key in gearSlotButtons) {
+            createGearSlotButton(key);
+          }
+          selectGearType("Helm");
+
+          weaponSlots.forEach(slot => {
+            $(`#${slot}`).click(swapWeaponSets);
+          });
+
+          $("#mainContent").tabs({ active: 1 });
+          $('*'). removeClass('ui-widget-content');
+          $('*'). removeClass('ui-widget');
+
+          $("#loadingImg").attr("src", "res/img/loadingComplete.png");
+          $("#loadingImg").css("filter", "brightness(150%)");
+          $("#loadingText").html("Loading complete!");        
+          setTimeout(() => { $("#loading").hide(); $("#mainContent").show(); }, 750);
+          
+        }
+    
+      });
+      
+      function swapWeaponSets() {
+        
+        // don't swap if no alternate weapon set
+        if($("#Weapon2").is(":empty") && $("#Offhand2").is(":empty")) {
+          return;
+        }
+        
+        $("#Weapon").toggleClass("DisplayedWeapon MinimizedWeapon smallIcon swapped");
+        $("#Weapon2").toggleClass("DisplayedWeapon MinimizedWeapon smallIcon");
+        $("#Offhand").toggleClass("DisplayedOffhand MinimizedOffhand smallIcon");
+        $("#Offhand2").toggleClass("DisplayedOffhand MinimizedOffhand smallIcon");
       }
       
-      function displayItem(item) {
-        if(!item) {
-          a("Null");
+      async function loadAllGear() {
+
+        return new Promise((resolve, reject) => {
+          DB.all("select timestamp, data, diff from gear order by timestamp", async (err, rows) => {
+            if(err) {
+              logger.info("Error retrieving gear");
+              logger.info(err);
+              resolve(false);
+            } else {
+              
+              if(rows.length > 0) {
+                $("#loading").show();
+              } else {
+                $("#noDataFound").show();
+                resolve(false);
+              }
+              
+              for(let i = 0; i < rows.length; i++) {
+
+                $("#loadingText").html(`Loading gear changes... (${i+1} / ${rows.length})`);
+            
+                let d = JSON.parse(rows[i].diff);
+                
+                diffs[rows[i].timestamp] = {
+                  gear: await getGear(rows[i].data),
+                  diff: d
+                };
+                
+                let slots = Object.keys(d);
+                slots.forEach(slot => {
+                  diffsBySlot[slot] = diffsBySlot[slot] || {};
+                  diffsBySlot[slot][rows[i].timestamp] = d[slot];
+                });
+                
+              }
+              
+              resolve(true);
+              
+            }
+          });
+        });
+      }
+      
+      async function loadGear(timestamp) {
+        
+        if(diffs[timestamp]) {
+          
+          $(".inventoryItem").empty();
+          $("#popupContainer").empty();
+          
+          let d = diffs[timestamp];
+          displayEquipment(d.gear);
+          displayEquipmentChanges(d.diff);
+          $("#gearSets").val(timestamp);
+          
+          let t = selectedTimestamps[timestamp];
+          if(t.prev) {
+            $("#prevCell").html(`<a class='ui-text' id='prevGear' onclick='loadGear("${t.prev}")'><< ${t.prev}</a>`);
+          } else {
+            $("#prevCell").empty();
+          }
+          if(t.next) {
+            $("#nextCell").html(`<a class='ui-text' id='nextGear' onclick='loadGear("${t.next}")'>${t.next} >></a>`);
+          } else {
+            $("#nextCell").empty();
+          }
+          
+        }
+        
+      }        
+        
+      function displayEquipment(inv) {
+        
+        for(let i = 0; i < GearChecker.gearSlots.length; i++) {
+          let gearSlot = GearChecker.gearSlots[i];
+          if(!inv[gearSlot]) continue;
+          displayInSlot(inv[gearSlot], gearSlot);
+        }
+        
+        let hasWeaponSwap = false;
+        if(inv["Weapons"]) {
+          for(let i = 0; i < inv["Weapons"].length; i++) {
+            let item = inv["Weapons"][i];
+            displayInSlot(item, item.inventoryId);
+            if(item.inventoryId === "Weapon2") {
+              hasWeaponSwap = true;              
+            }
+          }
+        }
+        weaponSlots.forEach(slot => {
+          if(hasWeaponSwap) {
+            $(`#${slot}`).addClass("swappableWeapon");
+          } else {
+            $(`#${slot}`).removeClass("swappableWeapon");
+          }            
+        });
+        
+        
+        if(inv["Flask"]) {
+          for(let i = 0; i < inv["Flask"].length; i++) {
+            let item = inv["Flask"][i];
+            displayInSlot(item, "Flask");
+          }
+        }
+        
+        if(inv["TreeJewels"]) {
+          for(let i = 0; i < inv["TreeJewels"].length; i++) {
+            let item = inv["TreeJewels"][i];
+            displayInSlot(item, "TreeJewels");
+          }
+        }
+        
+        if($("#Weapon").hasClass("swapped")) {
+          swapWeaponSets();
+        }
+        
+        $(".sockets").show();
+        
+      }
+      
+      function displayInSlot(item, gearSlot) {
+        let icon = getPopupIcon(item);
+        let style = (gearSlot === 'Flask' || gearSlot === 'TreeJewels') ? 'gearMultiItem' : 'gearDefaultItem';        
+        let div = $(`<div class='${style} gearItem' id='${item.id}'></div>`)
+        div.append(icon);
+        $(`#${gearSlot}`).append(div);
+        $("#popupContainer").append(createPopup(item, {showIcon:false}));
+        
+        if(item.socketedItems) {
+          item.socketedItems.forEach( s => {
+            $("#popupContainer").append(createPopup(s, {showIcon:false}));
+          });
+        }
+        
+      }
+      
+      function displayEquipmentChanges(diff) {
+        let changedSlots = Object.keys(diff);
+         changedSlots.forEach(s => {
+          if(GearChecker.gearSlots.includes(s)) {
+            $(`#${s} img`).addClass("gearDiff");
+          } else if(s === "Flask" || s === "TreeJewels" || s === "Weapons") {
+            diff[s].curr.forEach(item => {
+              $(`#${item.id} img`).addClass("gearDiff");
+            });
+          } else if(!$("#ignoreSocketedItems").is(":checked") && s.endsWith("Sockets")) {
+            diff[s].curr.forEach(item => {
+              $(`#${item.id}`).addClass("gearDiff");
+            });
+          }
+        });
+      }      
+      
+      function getGear(data) {
+        return new Promise((resolve, reject) => {
+          zlib.inflate(data, (err, buffer) => {
+            if(err) {
+              // old data - compression not implemented yet, just parse directly
+              resolve(JSON.parse(data));
+            } else {
+              resolve(JSON.parse(buffer));
+            }
+          });
+        });
+      }
+      
+      async function loadGearList() {
+        
+        $("#gearSets").empty();
+        selectedTimestamps = {};
+        
+        let keys = Object.keys(diffs);
+        let selectedKeys = [];
+        
+        for(let i = 0; i < keys.length; i++) {
+          if(shouldDisplayDiff(keys[i])) {
+            selectedKeys.push(keys[i]);
+          }
+        }
+        
+        for(let i = 0; i < selectedKeys.length; i++) {
+          selectedTimestamps[selectedKeys[i]] = {
+            prev: ( i === 0 ? null : selectedKeys[i-1] ),
+            next: ( i === keys.length - 1 ? null : selectedKeys[i+1] )
+          };
+          $("#gearSets").append(
+            $("<option>").html(`${selectedKeys[i]}`).val(selectedKeys[i]).attr("selected", i === selectedKeys.length - 1)
+          );
+        }
+        
+        loadGear(selectedKeys[selectedKeys.length - 1]);
+        
+      }
+      
+      function shouldDisplayDiff(timestamp) {
+        return socketedItemsFilter(timestamp) && gearSwapFilter(timestamp);
+      }
+      
+      // check if diff contains any changes other than socketed items      
+      function socketedItemsFilter(timestamp) {
+        if(!$("#ignoreSocketedItems").is(":checked")) return true;
+        let slots = Object.keys(diffs[timestamp].diff);
+        for(let i = 0; i < slots.length; i++) {
+          if(GearChecker.equipmentSlots.includes(slots[i])) {
+            return true;
+          }
+        }
+        return false;
+      }
+      
+      // check if diff is a gear swap
+      function gearSwapFilter(timestamp) {
+        
+        if(!$("#ignoreGearSwaps").is(":checked")) return true;
+        
+        let retval = true;
+        
+        let d = diffs[timestamp].diff;
+        let slots = Object.keys(d);
+        for(let i = 0; i < slots.length; i++) {
+          
+          // ignore socketed items
+          if(!GearChecker.equipmentSlots.includes(slots[i])) continue;
+          
+          retval = false;
+          let slotDiff = diffsBySlot[slots[i]];
+          let s = Object.keys(slotDiff);
+          let currIndex = s.indexOf(timestamp);
+          if(currIndex > 0) {
+            let d1 = slotDiff[timestamp];
+            let d2 = slotDiff[s[currIndex - 1]];
+            if(!isGearSwap(d1, d2)) {
+              return true;
+            }
+          }
+          
+        }
+        
+        return retval;
+        
+      }
+      
+      function isGearSwap(diff1, diff2) {
+        return GearChecker.itemsEqual(diff1.prev, diff2.curr) && GearChecker.itemsEqual(diff1.curr, diff2.prev);
+      }
+      
+      function loadGearBySlot(s) {
+        $("#gearByItemTypeContainer").empty();
+        if(GearChecker.gearSlots.includes(s)) {
+          showGearHistory(s);
         } else {
-          let g = $("#gearContainer");
-          let div = createPopup(item);
-          g.append(div);
+          switch(s) {
+            case "Weapon":
+            case "Offhand":
+              showWeaponHistory(s);
+              break;
+            case "Flask":
+            case "TreeJewels":
+              showMultiGearHistory(s);
+              break;
+          }
         }
       }
       
-      function a(s) {
-        let g = $("#gearContainer");
-        g.append($(`<div>${s}</div>`));
+      
+      function showGearHistory(s) {
+        let itemCache = {};
+        let diff = diffsBySlot[s];
+        let t = Object.keys(diff);
+        for(let i = 0; i < t.length; i++) {
+          let item = diff[t[i]].curr;
+          if(item) {
+            if(itemCache[item.id] && GearChecker.itemsEqual(item, itemCache[item.id])) {
+              continue;
+            } else {
+              itemCache[item.id] = item;
+              let p = createPopup(item, {showSocketedItems: false});
+              $("#gearByItemTypeContainer").append(p);
+            }
+          }
+        }
       }
+
+      function showMultiGearHistory(s) {
+        let itemCache = {};
+        let diff = diffsBySlot[s];
+        let t = Object.keys(diff);
+        for(let i = 0; i < t.length; i++) {
+          let items = diff[t[i]].curr;
+          for(var item of items) {
+            if(itemCache[item.id] && GearChecker.itemsEqual(item, itemCache[item.id])) {
+              continue;
+            } else {
+              itemCache[item.id] = item;
+              let p = createPopup(item, {showSocketedItems: false});
+              $("#gearByItemTypeContainer").append(p);
+            }
+          }
+        }
+      }
+
+      function showWeaponHistory(s) {
+        let itemCache = {};
+        let diff = diffsBySlot["Weapons"];
+        let t = Object.keys(diff);
+        for(let i = 0; i < t.length; i++) {
+          let item = null;
+          let allItems = diff[t[i]].curr;
+          let idInSlot = getWeaponIdInSlot(t[i], s);
+          for(let j = 0; j < allItems.length; j++) {
+            if(allItems[j].id === idInSlot) {
+              item = allItems[j];
+              break;
+            }
+          }
+          if(item) {
+            if(itemCache[item.id] && GearChecker.itemsEqual(item, itemCache[item.id])) {
+              continue;
+            } else {
+              itemCache[item.id] = item;
+              let p = createPopup(item, {showSocketedItems: false});
+              $("#gearByItemTypeContainer").append(p);
+            }
+          }
+        }
+      }
+      
+      function getWeaponIdInSlot(timestamp, slot) {
+        let weapons = diffs[timestamp].gear["Weapons"];
+        if(!weapons) return null;
+        for(let w of weapons) {
+          if(w.inventoryId === slot) {
+            return w.id;
+          }
+        }
+        return null;
+      }
+      
+      function createGearSlotButton(s) {
+        let slot = gearSlotButtons[s];
+        if(!slot) return;
+        let btn = $(`
+          <div class="gearTypeButton" id="${s}Button" onclick="selectGearType('${s}')">
+            <img src="res/img/geartypeicons/${slot.icon}.png" class="gearTypeIcon ${slot.flipped ? 'flipped' : ''}"/>
+            <br>
+            <span class="gearTypeLabel">${slot.label}</span>
+          </div>
+        `);
+        $("#gearTypeButtonRow").append(btn);
+      }
+      
+      function selectGearType(s) {
+        
+        if($(`#${s}Button`).hasClass("selected")) return;
+        
+        $(`.gearTypeButton`).removeClass("selected");
+        $(`#${s}Button`).addClass("selected");
+        loadGearBySlot(s);
+        $("#gearByItemTypeContainer").focus();
+        $("#gearByItemTypeContainer").scrollTop(0);
+        
+        
+      }
+  
 
     </script>
     
@@ -104,10 +541,79 @@
     <div id="popupContainer" style="pointer-events:none;display:none;height:100%;width:100%;z-index:999;position:absolute;top:0;left:0"></div>
     
     <div id="outerDiv">
-    
+      
       <div class='sidenav' id='sidenav'></div>
       
-      <div id="gearContainer">
+      <div id="loading" style="text-align:center;margin-top:15%;display:none;">
+        <img id="loadingImg" src="res/img/loading.gif"/>
+        <br/>
+        <br/>
+        <span id="loadingText" style="font-size: smaller"></span>
+      </div>
+      <div id='noDataFound' style='display:none;padding:80px;'>
+        <img src='res/img/stash.png' style='display:inline-block;vertical-align:middle;'/>
+        No gear changes found yet. Items you equip will be tracked automatically as you progress through the game.<br/>        
+      </div>
+      
+      
+      <div id="mainContent" style="display:none;">
+        <ul>
+          <li><a id="gearByDateLink" onclick="this.blur();" href="#gearByDate">By Date</a></li>
+          <li><a id="gearByItemTypeLink" onclick="this.blur();" href="#gearByItemType">By Item Type</a></li>
+        </ul>
+        
+        <div id="gearByDate">
+
+          <table id='topnav' style='width:100%;'>
+            <tr>
+              <td id='prevCell' style='text-align:left;width:25%;'/>
+              <td style='text-align:center;'>
+                <select class='ui-text' id='gearSets' style='width:100%;' onchange='loadGear($("#gearSets").val());'>
+                </select>
+              </td>
+              <td id='nextCell' style='text-align:right;width:25%;'/>
+            </tr>
+          </table>
+
+          <hr>
+
+          <div class='inventoryContainer'>
+            <div id='Weapon' class='inventoryItem Weapon DisplayedWeapon'></div>
+            <div id='Offhand' class='inventoryItem Offhand DisplayedOffhand'></div>
+            <div id='Weapon2' class='inventoryItem smallIcon Weapon2 MinimizedWeapon'></div>
+            <div id='Offhand2' class='inventoryItem smallIcon Offhand2 MinimizedOffhand'></div>
+            <div id='Ring' class='inventoryItem Ring'></div>
+            <div id='Ring2' class='inventoryItem Ring2'></div>
+            <div id='Helm' class='inventoryItem Helm'></div>
+            <div id='Amulet' class='inventoryItem Amulet'></div>
+            <div id='BodyArmour' class='inventoryItem BodyArmour'></div>
+            <div id='Gloves' class='inventoryItem Gloves'></div>
+            <div id='Boots' class='inventoryItem Boots'></div>
+            <div id='Belt' class='inventoryItem Belt'></div>
+            <div id='FlaskRow' class='FlaskRow'>
+              <div id='Flask' class='inventoryItem Flask'></div>
+            </div>
+            <div id='TreeJewels' class='inventoryItem TreeJewels'></div>
+          </div>
+
+          <hr>
+
+          <input type="checkbox" onchange="loadGearList();" id="ignoreSocketedItems"/> <label for="ignoreSocketedItems">Ignore socketed item changes</label>
+          <br/>
+          <input type="checkbox" onchange="loadGearList();" checked id="ignoreGearSwaps"/> <label for="ignoreGearSwaps">Ignore gear swaps</label>
+          
+        </div>
+        
+        <div id="gearByItemType" style="text-align: center">
+          
+          <div id="gearTypeButtonRow"></div>
+          
+          <hr>
+          
+          <div id="gearByItemTypeContainer" tabindex="1" style="outline:none; height:60%; overflow-y:scroll;"></div>
+          
+        </div>
+        
       </div>
 
       <div class="footer">

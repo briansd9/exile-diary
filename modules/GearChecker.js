@@ -1,19 +1,21 @@
 const logger = require("./Log").getLogger(__filename);
+const Utils = require("./Utils");
 const https = require('https');
+const zlib = require('zlib');
 const { deepEqual } = require('fast-equals');
 
 var DB;
 var settings;
 
 const gearSlots = [
-  "Amulet",
-  "Belt",
-  "BodyArmour",
-  "Boots",  
-  "Gloves",
   "Helm",
+  "Amulet",
+  "BodyArmour",
+  "Gloves",
   "Ring",
-  "Ring2"
+  "Ring2",
+  "Belt",
+  "Boots"  
 //  "Weapon", 
 //  "Weapon2",
 //  "Offhand",
@@ -34,6 +36,27 @@ const multiGearSlots = [
   "WeaponsSockets",
   "Flask",    
   "TreeJewels" 
+];
+
+const equipmentSlots = [
+  "Helm",
+  "Amulet",
+  "BodyArmour",
+  "Gloves",
+  "Ring",
+  "Ring2",
+  "Belt",
+  "Boots",
+  "Weapons",
+  "Flask",    
+  "TreeJewels"   
+];
+
+const flaskIgnoreProperties = [
+  "Lasts %0 Seconds",
+  "Consumes %0 of %1 Charges on use",
+  "Currently has %0 Charge",
+  "Currently has %0 Charges"
 ];
 
 async function check(timestamp, eqp) {
@@ -158,7 +181,14 @@ function getPreviousEquipment(timestamp) {
         resolve("none");
       } else {
         logger.info("Returning previous equipment");
-        resolve(JSON.parse(row.data));
+        zlib.inflate(row.data, (err, buffer) => {
+          if(err) {
+            // old data - compression not implemented yet, just parse directly
+            resolve(JSON.parse(row.data));
+          } else {
+            resolve(JSON.parse(buffer.toString()));
+          }
+        });        
       }
     });
   });
@@ -172,10 +202,8 @@ function compareEquipment(timestamp, prev, curr) {
   for(var slot of gearSlots) {
     
     if(!prev[slot] && curr[slot]) {
-      logger.info(`Diff: new equipment in ${slot}`);
       addDiff(slot, null, curr[slot]);
     } else if(!prev[slot] && curr[slot]) {
-      logger.info(`Diff: removed equipment in ${slot}`);
       addDiff(slot, prev[slot], null);
     } else {     
       if(!itemsEqual(prev[slot], curr[slot])) {
@@ -185,8 +213,6 @@ function compareEquipment(timestamp, prev, curr) {
   }
   
   for(var slot of multiGearSlots) {
-    
-    logger.info(`Checking ${slot}`);
     
     prev[slot] = prev[slot] || [];
     curr[slot] = curr[slot] || [];
@@ -199,7 +225,7 @@ function compareEquipment(timestamp, prev, curr) {
       for(let j = currTemp.length - 1; j >= 0; j--) {
         let c = currTemp[j];
         if(itemsEqual(p, c)) {
-          logger.info(`Found same ${slot} in prev${i} and curr${j}`);
+          //logger.info(`Found same ${slot} in prev${i} and curr${j}`);
           prevTemp.splice(i, 1);
           currTemp.splice(j, 1);
           break;
@@ -207,17 +233,16 @@ function compareEquipment(timestamp, prev, curr) {
       }
     }
 
-    logger.info(`prevlength ${prevTemp.length} currlength ${currTemp.length}`);
-    
     if(prevTemp.length > 0 || currTemp.length > 0) {
       addDiff(slot, prevTemp, currTemp);
     } else {
-      logger.info(`No diffs found in ${slot}`);
+      //logger.info(`No diffs found in ${slot}`);
     }
     
   }
   
   if(Object.keys(diffs).length > 0) {
+    logger.info("Inserting equipment diff");
     insertEquipment(timestamp, curr, diffs);
   } else {
     logger.info("No diffs found in equipment, returning");
@@ -231,6 +256,7 @@ function compareEquipment(timestamp, prev, curr) {
 }
 
 function itemsEqual(a, b) {
+  if(!a || !b) return (a == b);
   return deepEqual(getTempItem(a), getTempItem(b));
 }
 
@@ -244,12 +270,12 @@ function getTempItem(item) {
     logger.info(JSON.stringify(item));
   }
   
-  // remove current number of charges from flasks
-  if(tempItem.properties) {
-    for(let i = 0; i < tempItem.properties.length; i++) {
-      if(tempItem.properties[i].name === "Currently has %0 Charges") {
+  if(tempItem.inventoryId === "Flask") {
+    // ignore flask charges and enchantment mods
+    delete tempItem.enchantMods;
+    for(let i = tempItem.properties.length - 1; i >= 0; i--) {
+      if(flaskIgnoreProperties.includes(tempItem.properties[i].name)) {
         tempItem.properties.splice(i, 1);
-        break;
       }
     }
   }
@@ -265,12 +291,16 @@ function getTempItem(item) {
   // remove socketed items
   delete tempItem.socketedItems;
   
+  // ignore jewel socket position on tree
+  delete tempItem.x;
+  delete tempItem.y;
+  
   return tempItem;
   
 }
 
-function insertEquipment(timestamp, currData, diffData = "") {
-  let data = JSON.stringify(currData);
+async function insertEquipment(timestamp, currData, diffData = "") {
+  let data = await Utils.compress(currData);
   let diff = JSON.stringify(diffData);
   DB.run("insert into gear(timestamp, data, diff) values(?, ?, ?)", [timestamp, data, diff], (err) => {
     if(err) {
@@ -283,3 +313,6 @@ function insertEquipment(timestamp, currData, diffData = "") {
 
 module.exports.check = check;
 module.exports.itemsEqual = itemsEqual;
+module.exports.gearSlots = gearSlots;
+module.exports.multiGearSlots = multiGearSlots;
+module.exports.equipmentSlots = equipmentSlots;
