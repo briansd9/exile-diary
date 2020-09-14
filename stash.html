@@ -16,7 +16,9 @@
     <script src="res/jquery-ui.js"></script>
     <script src="res/utils.js"></script>
     <script src="res/page-utils.js"></script>
-
+    <script src="res/jquery.tablesorter.js"></script>
+    <script src="res/jquery.tablesorter.widgets.js"></script>
+    
     <!-- Insert this line after script imports -->
     <script>if (window.module)
         module = window.module;</script>
@@ -42,6 +44,7 @@
           this.value = 0;
           this.itemsByType = [];
           this.itemsById = [];
+          this.horticrafts = {};
         }
         
         getStashItems() {
@@ -75,8 +78,14 @@
           });
         }
         
-        processItem(item) {          
+        processItem(item) {
           // need to identify by both type and rarity, otherwise unique and normal maps of the same basetype will be grouped together
+          
+          if(item.typeLine === "Horticrafting Station") {
+            this.processCrafts(item.craftedMods);
+          }
+
+          
           var typeIdentifier  = item.typeLine.replace("Superior ", "");
           var uniqueName = Utils.getItemName(item.icon);
           if(uniqueName) {
@@ -98,6 +107,34 @@
               this.itemsById[this.itemsByType[typeIdentifier]].stackSize += item.stackSize || 1;
             }          
           }
+        }
+        
+        processCrafts(mods) {
+          mods.forEach(m => {
+            let mod = m.substring(0, m.indexOf("(") - 1);
+            
+            if(!this.horticrafts[mod]) {
+              
+              let craftType, tier;
+              let source = Constants.horticrafts[mod];
+              if(!source) return;
+              if(source.startsWith("Primal")) craftType = "Primal";
+              if(source.startsWith("Wild")) craftType = "Wild";
+              if(source.startsWith("Vivid")) craftType = "Vivid";            
+              if(source.endsWith("Seed")) tier = "T1";
+              if(source.endsWith("Grain")) tier = "T2";
+              if(source.endsWith("Bulb")) tier = "T3";
+              if(source.endsWith("fruit")) tier = "T4";
+              
+              this.horticrafts[mod] = {
+                type : craftType,
+                tier : tier
+              };
+            }
+            
+            this.horticrafts[mod].count = (this.horticrafts[mod].count || 0) + 1;
+          })
+          
         }
         
         getSortedItems() {          
@@ -170,7 +207,7 @@
           if(!text) {
             $(".itemRow").show();
             $("#filtered").hide();
-            $("#clearFilter").hide();
+            $("#clearItemsFilter").hide();
           } else {
             let totalValue = 0;
             let r = new RegExp(text);
@@ -185,16 +222,53 @@
             totalValue = Number(totalValue).toFixed(2);
             $("#filteredValue").html(totalValue);
             $("#filtered").show();
-            $("#clearFilter").css("display", "flex");
+            $("#clearItemsFilter").css("display", "flex");
           }
+          
         });
         
-        $("#clearFilter").on("click", function() {
+        $("#filterCrafts").on("input", function() {
+          
+          // double quotes = exact word match only
+          let text = $(this).val().trim().toLowerCase();
+          if(text.length > 3 && text.startsWith('"') && text.endsWith('"')) {
+            text = text.replace(/"/g, "\\b");
+          }
+          
+          if(!text) {
+            $(".craftRow").show();
+            $("#clearCraftsFilter").hide();
+          } else {
+            let totalValue = 0;
+            let r = new RegExp(text);
+            $(".craftRow").each(function() {
+              if($(this).data("craft").match(r)) {
+                $(this).show();
+              } else {
+                $(this).hide();
+              }
+            });
+            totalValue = Number(totalValue).toFixed(2);
+            $("#clearCraftsFilter").css("display", "flex");
+          }
+          
+        });        
+        
+        $("#clearItemsFilter").on("click", function() {
           $(".itemRow").show();
           $("#filterItems").val("");
           $(this).hide();
           $("#filtered").hide();
         })
+        
+        $("#clearCraftsFilter").on("click", function() {
+          $(".craftRow").show();
+          $("#filterCrafts").val("");
+          $(this).hide();
+        })
+        
+        
+        $("#horticraftsTable").tablesorter();
         
         var stashID = await getStashID();
         loadStash(stashID);
@@ -251,7 +325,7 @@
       
       async function loadStash(id) {
         
-        ["itemsTable", "prevCell", "nextCell"].forEach( str => {
+        ["itemsTable", "prevCell", "nextCell", "craftsTable"].forEach( str => {
           $(`#${str}`).empty();
         });
         $("#itemsByValue").hide();
@@ -273,11 +347,46 @@
             currStash.compareTo(prevStash);
           }
           displayItems(currStash);
+          displayHorticrafts(currStash);
           $("#topnav").show();
         } else {
           $("#noStash").show();
           logger.info("No stash found!");
         }
+        
+      }
+      
+      async function displayHorticrafts(s) {
+        
+        const colors = {
+          "Primal" : "cyan",
+          "Wild" : "magenta",
+          "Vivid" : "yellow"
+        };
+        
+        if(!s.horticrafts) {
+          $("#horticraftsHeader").hide();
+          $("#horticraftsTable").hide();          
+        } else {
+          let crafts = Object.keys(s.horticrafts);
+          crafts.forEach(craft => {
+            let c = s.horticrafts[craft];
+            let craftData = `${c.tier} ${c.type} ${craft}`.toLowerCase();
+            let row = $(`
+              <tr class='craftRow' data-craft="${craftData}">
+                <td style='vertical-align:top;'>${c.tier}</td>
+                <td style='vertical-align:top;color:${colors[c.type]};'>${c.type}</td>
+                <td>${craft}</td>
+                <td style='vertical-align:top;'>${c.count}</td>
+              </tr>
+            `);
+            $("#craftsTable").append(row);
+          });
+          $("#horticraftsTable").trigger("update");
+          $("your-table").trigger("sorton",[[[0, 0]]]);
+        }
+        
+        
         
       }
       
@@ -298,9 +407,9 @@
           } else {
             var parsedItem = parseItem(item);
             var value = await ItemPricer.price(parsedItem, false);
-            if(value.isVendor) {
-              console.log(value);
-            }
+//            if(value.isVendor) {
+//              console.log(value);
+//            }
             item.chaosValue = value.isVendor ? value.val : value;
           }
 
@@ -320,13 +429,13 @@
 
 
         var chaosString, exaltString;
-        chaosString = `${Number(s.value).toFixed(2)} <img style='vertical-align:middle;height:1em;width:1em;' src='res/img/c.png'/>`;
+        chaosString = `${Number(s.value).toFixed(2)} <img class='currencyText' src='res/img/c.png'/>`;
         
         
         
         if(s.value > exaltRate) {
           var exaltValue = s.value / exaltRate;
-          exaltString = `${Number(exaltValue).toFixed(2)} <img style='vertical-align:middle;height:1em;width:1em;' src='res/img/ex.png'/>`;
+          exaltString = `${Number(exaltValue).toFixed(2)} <img class='currencyText' src='res/img/ex.png'/>`;
         }        
 
         $("#netWorth").html(`Net Worth: ${chaosString} ${exaltString ? `(${exaltString})` : ""}`);
@@ -458,6 +567,13 @@
         }
       }
       
+      function toggleMainSection(cat) {
+        let table = $(`#${cat}Table`);
+        let icon = $(`#${cat}Icon`);
+        table.toggle();
+        icon.html(table.is(":visible") ? "-" : "+");      
+      }      
+      
       
     </script>
 
@@ -479,13 +595,15 @@
     
     <div id='itemsByValue' style="display:none;">
       <hr style='border:1px solid #999;' />
-      <div class='tableLink' style='display:inline-flex;width:100%'>
+      
+      <div class='tableLink' style='display:inline-flex;width:100%;position:relative'>
         <div id='netWorth' class='tableLinkHeader' style='padding:6px;'>
         </div>      
+        <div id='stashItemsIcon' class='tableToggleIcon' onclick='toggleMainSection("stashItems")'>-</div>
         <div style='padding-left:20px;'>
           <div style='display:inline-flex;flex-direction:row;position:relative;'>
             <input type='text' id='filterItems' maxlength='30' size='30' style='border-radius:8px;background-color:#111;' placeholder="Filter . . ." />
-            <div id='clearFilter' style='display:none;align-items:center;justify-content:center;position:absolute;right:8px;top:16px;width:1em;height:1em;background-color:#444'>×</div>
+            <div id='clearItemsFilter' style='display:none;align-items:center;justify-content:center;position:absolute;right:8px;top:16px;width:1em;height:1em;background-color:#444'>×</div>
           </div>
           <span id='filtered' style='display:none;'>
             <span id='filteredValue'>0</span>
@@ -493,10 +611,36 @@
           </span>
         </div>
       </div>
-      <table id='total' style='display:block;padding-top:0.5em;'>
+      <table id='stashItemsTable' style='display:block;padding-top:0.5em;'>
         <tbody id="itemsTable">
         </tbody>
       </table>
+      
+      <div id='horticraftsHeader' class='tableLink' style='display:inline-flex;width:100%;position:relative'>
+        <div class='tableLinkHeader' style='padding:6px;'>
+          Horticrafts
+        </div>      
+        <div id='horticraftsIcon' class='tableToggleIcon' onclick='toggleMainSection("horticrafts")'>-</div>
+          <div style='display:inline-flex;flex-direction:row;position:relative;'>
+            <div style='padding-left:20px;'>
+              <input type='text' id='filterCrafts' maxlength='30' size='30' style='border-radius:8px;background-color:#111;' placeholder="Filter . . ." />
+              <div id='clearCraftsFilter' style='display:none;align-items:center;justify-content:center;position:absolute;right:8px;top:16px;width:1em;height:1em;background-color:#444'>×</div>
+            </div>
+          </div>
+      </div>
+      <table id='horticraftsTable' class='statsTable' style='border-spacing:10px;display:block;padding-top:0.5em;width:100%;'>
+        <thead>
+          <tr>
+            <td>Tier</td>
+            <td>Type</td>
+            <td>Craft</td>
+            <td>Count</td>
+          </tr>
+        </thead>        
+        <tbody id="craftsTable">
+        </tbody>
+      </table>
+      
     </div>
     
     <div id='noStash' style='display:none;padding:80px;'>
