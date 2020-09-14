@@ -919,7 +919,9 @@ function SocketGroupFilter (operator, groups, mode ) {
       case "unlinked":
         var socketString = "";
         item.sockets.forEach( s => {
-          socketString += s;
+          if(s !== 'DV') {
+            socketString += s;
+          }
         })
         socketsToCheck = [ socketString ];
         break;
