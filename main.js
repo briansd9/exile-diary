@@ -176,7 +176,7 @@ function initWindow(window) {
   
   StashGetter.emitter.removeAllListeners();
   StashGetter.emitter.on("invalidSessionID", () => {
-    addMessage(`<span class='eventText'>Unable to get stash information. Please check your POESESSID</span>`);
+    addMessage(`<span class='eventText'>Unable to get stash information. Please check your POESESSID</span>`, true);
   });
   StashGetter.emitter.on("netWorthUpdated", (data) => {
     addMessage(
@@ -476,11 +476,12 @@ function addMessage(text, sendToOverlay = false) {
   var settings = Settings.get();
   if(sendToOverlay && settings.overlayEnabled) { 
     (async () => {
-//      var win = await activeWin();
-//      if(win.title === "Path of Exile" && win.owner.name.startsWith("PathOfExile")) {
+      var win = await activeWin();
+      if(win.title === "Path of Exile" && win.owner.name.startsWith("PathOfExile")) {
         overlayWindow.webContents.send("message", msg);
-        overlayWindow.showInactive();
-//      }
+        overlayWindow.setAlwaysOnTop(true, "pop-up-menu");
+        overlayWindow.showInactive();        
+      }
     })();
   }
 }
