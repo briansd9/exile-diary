@@ -3,6 +3,7 @@ const Constants = require('./Constants');
 const logger = require("./Log").getLogger(__filename);
 const https = require('https');
 const Utils = require('./Utils');
+const zlib = require('zlib');
 
 const rateTypes = {
   "Currency" : cleanCurrency, 
@@ -78,6 +79,7 @@ async function getRates(date) {
   
   try {
     for(var key in rateTypes) {
+      logger.info(`Getting prices for item type ${key}`);
       var process = rateTypes[key];
       var data = await getNinjaData(getNinjaURL(key));
       tempRates[key] = process(data);
@@ -168,17 +170,23 @@ function getNinjaURL(category) {
 function getNinjaData(path) {
   return new Promise((resolve, reject) => {
     var request = https.request(
-      { hostname: 'poe.ninja', path: path, method: 'GET'}, response => {
-        var body = '';
-        response.setEncoding('utf8');
+      { hostname: 'poe.ninja', path: path, method: 'GET', headers: { "Accept-Encoding" : "gzip" } }, response => {
+        var buffers = [];
         response.on('data', (chunk) => {
-          body += chunk;
+          buffers.push(chunk);
         });
         response.on('end', () => {
           try {
-            var data = JSON.parse(body);
-            logger.info(`Got data from ${path}, length ${body.length}`);
-            resolve(data);
+            var data;
+            var body = Buffer.concat(buffers);
+            try {
+              data = zlib.gunzipSync(body);
+            } catch(e) {
+              logger.info("Error unzipping received data: " + e);
+              reject(e);
+            }
+            logger.info(`Got data from ${path}, length ${body.length} (${data.length} uncompressed)`);
+            resolve(JSON.parse(data));
           } catch(e) {
             logger.info(`Failed to get data from [${path}]: ${e}`);
             reject(e);
