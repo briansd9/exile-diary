@@ -638,7 +638,7 @@
       
       for(var m of Constants.masters) {
         if(s.masters[m]) {        
-          let n = m.substring(0, m.indexOf(','));
+          let n = m.substring(0, m.indexOf(',')).toLowerCase();
           let info = s.masters[m];
           let extraInfo = getExtraMasterInfo(s, m);
           let masterDiv = `
