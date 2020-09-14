@@ -79,7 +79,7 @@ async function tryProcess(obj) {
   var xpDiff = await getXPDiff(xp);
   var items = await checkItems(areaInfo, firstEvent.timestamp, lastEvent.timestamp);
   var killCount  = await getKillCount(firstEvent.timestamp, lastEvent.timestamp);
-  var extraInfo = await getMapExtraInfo(areaInfo.name, firstEvent.timestamp, lastEvent.timestamp);
+  var extraInfo = await getMapExtraInfo(areaInfo.name, firstEvent.timestamp, lastEvent.timestamp, items);
   
   var ignoreMapRun = false;
   
@@ -280,7 +280,7 @@ async function process() {
   var xpDiff = await getXPDiff(xp);
   var items = await checkItems(currArea, firstEvent, lastEvent);
   var killCount  = await getKillCount(firstEvent, lastEvent);
-  var extraInfo = await getMapExtraInfo(currArea.name, firstEvent, lastEvent);
+  var extraInfo = await getMapExtraInfo(currArea.name, firstEvent, lastEvent, items);
   var ignoreMapRun = false;
   
   // if no items picked up, no kills, and no xp gained, log map run but ignore it (profit = -1, kills = -1)
@@ -483,6 +483,7 @@ function getItems(areaID, firstEvent, lastEvent) {
         } else {
           var numItems = 0;
           var totalProfit = 0;
+          var importantDrops = {};
           for(var i = 1; i < rows.length; i++) {
             var prevRow = rows[i - 1];            
             if(!Utils.isTown(prevRow.event_text)) {
@@ -490,12 +491,18 @@ function getItems(areaID, firstEvent, lastEvent) {
               var items = await getItemsFor(rows[i].id);
               numItems += items.count;
               totalProfit += Number.parseFloat(items.value);
+              if(items.importantDrops) {
+                for(let m in items.importantDrops) {
+                  importantDrops[m] = (importantDrops[m] || 0) + items.importantDrops[m];
+                }
+                
+              }
             } else {
               logger.info(`Ignoring items picked up in town area ${prevRow.id} ${prevRow.event_text}`);
             }
           }
           totalProfit = Number(totalProfit).toFixed(2);
-          resolve({count: numItems, value: totalProfit});
+          resolve({count: numItems, value: totalProfit, importantDrops: importantDrops});
         }
       });
   });
@@ -504,6 +511,7 @@ function getItems(areaID, firstEvent, lastEvent) {
 function getItemsFor(evt) {
   var count = 0;
   var totalValue = 0;
+  var importantDrops = {};
   var itemArr = [];
   return new Promise( (resolve, reject) => {
     DB.all( " select * from items where event_id = ? ", [evt], async (err, rows) => {
@@ -518,6 +526,14 @@ function getItemsFor(evt) {
           var jsonData = JSON.parse(item.rawdata);
           if(jsonData.inventoryId === "MainInventory") {          
             count++;
+            
+            if(item.category === "Metamorph Sample") {
+              let organ = (item.typeline.substr(item.typeline.lastIndexOf(" ") + 1)).toLowerCase();
+              importantDrops[organ] = (importantDrops[organ] || 0) + 1;
+            } else if(item.typeline.endsWith("'s Exalted Orb") || item.typeline === "Awakener's Orb") {
+              importantDrops[item.typeline] = (importantDrops[item.typeline] || 0) + 1;
+            }
+            
             if(item.value) {
               totalValue += item.value;
             } else {
@@ -540,7 +556,7 @@ function getItemsFor(evt) {
           updateItemValues(itemArr);
         }
         
-        resolve({count: count, value: totalValue});
+        resolve({count: count, value: totalValue, importantDrops: importantDrops});
         
       }
     });
@@ -729,7 +745,7 @@ function getMapStats(arr) {
   return mapStats;
 }
 
-async function getMapExtraInfo(areaName, firstevent, lastevent) {
+async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
   
   logger.info(`Getting map extra info for ${areaName} between ${firstevent} and ${lastevent}`);
   
@@ -760,7 +776,8 @@ async function getMapExtraInfo(areaName, firstevent, lastevent) {
         run.deaths = ++run.deaths || 1;
         continue;
       case "favourGained":
-        let master = getMasterFavour(events[i + 1]);
+        // no need for null checking adjacent events, map runs must always start and end with an "entered" event
+        let master = getMasterFavour(events[i-1], events[i+1]);
         run.masters = run.masters || {};
         run.masters[master] = run.masters[master] || { encountered : true };
         run.masters[master].favourGained = (run.masters[master].favourGained || 0) + Number(evt.event_text);
@@ -959,6 +976,46 @@ async function getMapExtraInfo(areaName, firstevent, lastevent) {
     run.conqueror = conqueror;
   }
   
+  if(items.importantDrops) {
+    for(var key in items.importantDrops) {
+      switch(key) {
+        case "brain":
+        case "lung":
+        case "heart":
+        case "eye":
+        case "liver":
+          run.metamorph = run.metamorph || {};
+          run.metamorph[key] = (run.metamorph[key] || 0) + items.importantDrops[key];
+          break;
+        case "Hunter's Exalted Orb":
+          if(run.conqueror && run.conqueror["Al-Hezmin, the Hunter"] && run.conqueror["Al-Hezmin, the Hunter"].defeated) {
+            run.conqueror["Al-Hezmin, the Hunter"].droppedOrb = true;
+          }
+          break;
+        case "Warlord's Exalted Orb":
+          if(run.conqueror && run.conqueror["Drox, the Warlord"] && run.conqueror["Drox, the Warlord"].defeated) {
+            run.conqueror["Drox, the Warlord"].droppedOrb = true;
+          }
+          break;
+        case "Redeemer's Exalted Orb":
+          if(run.conqueror && run.conqueror["Veritania, the Redeemer"] && run.conqueror["Veritania, the Redeemer"].defeated) {
+            run.conqueror["Veritania, the Redeemer"].droppedOrb = true;
+          }
+          break;
+        case "Crusader's Exalted Orb":
+          if(run.conqueror && run.conqueror["Baran, the Crusader"] && run.conqueror["Baran, the Crusader"].defeated) {
+            run.conqueror["Baran, the Crusader"].droppedOrb = true;
+          }
+          break;
+        case "Awakener's Orb":
+          if(run.sirusBattle && run.sirusBattle.completed) {
+            run.sirusBattle.droppedOrb = true;
+          }
+          break;
+      }
+    }
+  }
+  
   return JSON.stringify(run); 
   
   function getZanaMissionMap(events) {
@@ -997,20 +1054,26 @@ async function getMapExtraInfo(areaName, firstevent, lastevent) {
     
   }
 
-  function getMasterFavour(evt) {
+  function getMasterFavour(prevEvt, nextEvt) {
 
-    // no completion quote for zana missions
-    if(evt.event_type !== "master") {
-      return "Zana, Master Cartographer";
-    }
-
-    for(let i = 0; i < Constants.masters.length; i++) {
-      if(evt.event_text.startsWith(Constants.masters[i])) {
-        return Constants.masters[i];
+    if(prevEvt.event_type === "master") {
+      for(let i = 0; i < Constants.masters.length; i++) {
+        if(prevEvt.event_text.startsWith(Constants.masters[i])) {
+          return Constants.masters[i];
+        }
       }
     }
 
-    return null;
+    if(nextEvt.event_type === "master") {
+      for(let i = 0; i < Constants.masters.length; i++) {
+        if(nextEvt.event_text.startsWith(Constants.masters[i])) {
+          return Constants.masters[i];
+        }
+      }
+    }
+
+    // if no completion quote found, must be a zana mission
+    return "Zana, Master Cartographer";
 
   }
 
