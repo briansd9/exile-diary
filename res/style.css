@@ -623,3 +623,318 @@ thead > tr > th > * {
         opacity: 0.25;
     }
 }
+
+  .inventoryContainer {
+    display: grid;
+    grid-template-columns: repeat(8, 64px);
+    grid-template-rows: repeat(8, 64px);
+    column-gap: 4px;
+    row-gap: 4px;
+    justify-content: center;
+  }
+  
+  .inventoryContainer .inventoryItem {
+    position: relative;
+    border: 4px ridge #999;
+    border-radius: 4px;
+  }
+  
+  .inventoryContainer .inventoryItem:empty {
+    position: relative;
+    border: 4px ridge #333;
+    border-radius: 4px;
+  }
+  
+  .inventoryContainer .DisplayedWeapon {
+    grid-column: 1 / span 2;
+    grid-row: 1 / span 4;
+  }
+  
+  .inventoryContainer .DisplayedOffhand {
+    grid-column: 7 / span 2;
+    grid-row: 1 / span 4;
+  }
+  
+  .inventoryContainer .MinimizedWeapon {
+    grid-column: 3;
+    grid-row: 1 / span 2;
+  }
+
+  .inventoryContainer .MinimizedOffhand {
+    grid-column: 6;
+    grid-row: 1 / span 2;
+  }
+
+  .smallIcon img {
+    transform: scale(0.5);
+  }
+  
+  .inventoryContainer .Helm {
+    grid-column: 4 / span 2;
+    grid-row: 1 / span 2;
+  }
+
+  .inventoryContainer .Amulet {
+    grid-column: 6;
+    grid-row: 3;
+  }
+
+  .inventoryContainer .Ring {
+    grid-column: 3;
+    grid-row: 4;
+  }
+
+  .inventoryContainer .Ring2 {
+    grid-column: 6;
+    grid-row: 4;
+  }
+
+  .inventoryContainer .Gloves {
+    grid-column: 2 / span 2;
+    grid-row: 5 / span 2;
+  }
+
+  .inventoryContainer .Boots {
+    grid-column: 6 / span 2;
+    grid-row: 5 / span 2;
+  }
+  
+  .inventoryContainer .Belt {
+    grid-column: 4 / span 2;
+    grid-row: 6;
+  }
+
+  .inventoryContainer .BodyArmour {
+    grid-column: 4 / span 2;
+    grid-row: 3 / span 3;
+  }
+  
+  .inventoryContainer .FlaskRow {
+    grid-column: 3 / span 4;
+    grid-row: 7 / span 2;
+    position: relative;
+  } 
+  
+  .inventoryContainer .TreeJewels {
+    grid-column-start: 1;
+    grid-column-end: 9;
+    grid-row-start: 9;
+  }
+  
+  .gearDefaultItem, .inventoryContainer .FlaskRow .Flask {
+    margin: 0;
+    position: absolute; 
+    top: 50%;  
+    left: 50%; 
+    margin-right: -50%; 
+    transform: translate(-50%, -50%);
+  }
+  
+  .gearMultiItem {
+    position: relative;
+    display: inline-block;
+  }
+
+  .Flask .gearMultiItem { padding: 2px; }
+  .TreeJewels .gearMultiItem { padding: 5px; }
+  
+  .TreeJewels:empty {
+    visibility: hidden;
+  }
+  
+  .smallIcon .sockets {
+    transform: scale(0.5); 
+    /*visibility: hidden;*/
+  }
+    
+  .gearDiff, .pseudoGearDiff {
+    animation: glowPulse 1s infinite;
+  }
+  
+  @keyframes glowPulse {
+    0% {
+      filter: brightness(100%) drop-shadow(-1px -1px 1px #000) drop-shadow(1px 1px 1px #000) drop-shadow(-1px 1px 1px #000) drop-shadow(1px -1px 1px #000);
+    }
+    50% {
+      filter: brightness(200%) drop-shadow(-1px -1px 1px #fff) drop-shadow(1px 1px 1px #fff) drop-shadow(-1px 1px 1px #fff) drop-shadow(1px -1px 1px #fff);
+    }
+    100% {
+      filter: brightness(100%) drop-shadow(-1px -1px 1px #000) drop-shadow(1px 1px 1px #000) drop-shadow(-1px 1px 1px #000) drop-shadow(1px -1px 1px #000);
+    }
+  }
+  
+  .displayedWeapon.swappableWeapon:not(:empty):hover, .displayedOffhand.swappableWeapon:not(:empty):hover {
+    background-image:url("img/weaponswap.png");
+    background-size: 15%;
+    background-position: 95% 2%;
+    background-repeat: no-repeat;
+  }
+  
+  .minimizedWeapon.swappableWeapon:not(:empty):hover, .minimizedOffhand.swappableWeapon:not(:empty):hover {
+    background-image:url("img/weaponswap.png");
+    background-size: 20%;
+    background-position: 95% 2%;
+    background-repeat: no-repeat;
+  }
+  
+  .gearTypeButton {
+    border: 5px outset #B2833C;
+    border-radius: 12px;
+    width: 75px;
+    height: 100px;
+    display: inline-block;
+    margin-right: 20px;
+    filter: brightness(80%);
+  }
+
+  .gearTypeButton.selected {
+    filter: brightness(400%);
+  }
+  
+  .gearTypeIcon {
+    width: 50px;
+    height: 50px;
+    padding-top: 10px;
+  }
+
+  .gearTypeIcon.flipped {
+    transform: scaleX(-1);
+  }
+  
+  .gearTypeLabel {
+    color: #DEA64A;
+    font-size: small;    
+  }
+  
+  .masterFavour {
+    display:inline;
+    vertical-align:top;
+  }
+  
+  .encounterIcon {
+    display:inline-block;
+  }
+  
+  .totalStatHeader {
+    padding: 10px 25px;
+    background-image: linear-gradient(to right, black, #444 5%, black);
+    margin-bottom: 20px;
+    margin-left: 15px;
+    color: #FFECAF;
+    font-size: 1.5em;
+    letter-spacing: 3px;
+    text-shadow: 2px 2px black;
+    position: relative;
+  }
+  
+  .totalStatInfo {
+    margin-bottom: 80px;
+  }
+  
+  table.extraInfo {
+    text-align: center;
+    margin: 0 auto;
+    border-collapse: collapse;
+  }
+  
+  table.extraInfo td {
+    padding: 0px 20px;
+  }
+
+  table.extraInfo thead {
+    background-color: #222;
+  }
+  
+  .totalStatInfoText {
+    margin-left: 20px;
+  }
+  
+  .statValue {
+    color: #ffff88;
+  }
+  
+  .conqIcon {
+    height: 2em;
+    width: 2em;
+    margin-right:5px;
+    vertical-align:middle;
+    position:absolute;
+    left: -10px;
+  }
+  
+  .masterIcon {
+    height: 2.75em;
+    width: 2.75em;
+    margin-right:5px;
+    vertical-align:middle;
+    position:absolute;
+    top: -6px;
+    left: -18px;
+  }
+  
+  .conqLabel {
+    line-height: 2em;
+    padding-left: 40px;
+  }
+
+  .masterLabel {
+    line-height: 2em;
+    padding-left: 50px;
+  }
+  
+  .totalStatSection {
+    margin-bottom: 1em;
+  }
+  
+  .totalStatSubInfoHeader {
+    position:relative;
+    height:2em;
+    vertical-align:middle;
+    border-radius: 3em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px black;
+    color: white;
+    background-image: linear-gradient(to right, #CCC, black);
+  }
+  
+  .totalStatSubInfoHeader.redeemer {
+    background-image: linear-gradient(to right, #363A96, black 75%);
+  }
+  .totalStatSubInfoHeader.crusader {
+    background-image: linear-gradient(to right, #5D1E19, black 75%);
+  }
+  .totalStatSubInfoHeader.hunter {
+    background-image: linear-gradient(to right, #526942, black 75%);
+  }
+  .totalStatSubInfoHeader.warlord {
+    background-image: linear-gradient(to right, #63513A, black 75%);
+  }  
+  .totalStatSubInfoHeader.sirus {
+    background-image: linear-gradient(to right, #330000, black 75%);
+    color: #AA0000; 
+    text-shadow: 2px 2px black;
+  }
+  
+  .totalStatSubInfoHeader.Zana {
+    background-image: linear-gradient(to right, #382B1D 35%, #837A2F 60%, #32A4A8 85%, black);
+  }
+  .totalStatSubInfoHeader.Einhar {
+    background-image: linear-gradient(to right, #3F1411 55%, #B5B28C 85%, black);
+  }
+  .totalStatSubInfoHeader.Alva {
+    background-image: linear-gradient(to right, #3F131D 55%, #58AE8F 85%, black);
+  }
+  .totalStatSubInfoHeader.Niko {
+    background-image: linear-gradient(to right, #15191E 55%, #31F7FF 85%, black);
+  }  
+  .totalStatSubInfoHeader.Jun {
+    background-image: linear-gradient(to right, #3F2E0F 55%, #B7B13E 85%, black);
+  }
+  
+  .statIcon {
+    display:inline-block;
+    height:1.25em;
+    width:1.25em;
+    margin: 3px 0;
+    vertical-align:middle;
+  }
