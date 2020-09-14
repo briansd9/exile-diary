@@ -26,18 +26,31 @@ async function get() {
   for(let i = 0; i < allMaps.length; i++) {
     
     let m = allMaps[i];
+    
     m.runinfo = JSON.parse(m.runinfo);
     m.areaType = (m.runinfo.blightedMap ? "blightedMaps" : Utils.getAreaType(m.name));
     
-    //mergeRunInfo(totalStats, m);
+    mergeRunInfo(totalStats, m);
     mergeAreaStats(areaStats, m);
     
   }
   
-  bigDrops = await getBigDrops();  
+  totalStats.unrighteousTurnedToAsh = await getUnrighteousTurnedToAsh();  
+  bigDrops = await getBigDrops();
   
   return({ totalStats : totalStats, areaStats : areaStats, bigDrops: bigDrops });
 
+}
+
+async function getUnrighteousTurnedToAsh() {
+  return new Promise((resolve, reject) => {
+    DB.get(`select count(1) as count from events where event_text like 'Sister Cassia: And the unrighteous were turned to ash!%'`, (err, row)  => {
+      if(err) {
+        resolve(0);
+      }
+      resolve(row.count);
+    });
+  });  
 }
 
 async function getAreaByName(area, blighted = false) {
@@ -104,11 +117,21 @@ function mergeRunInfo(totalStats, map) {
   
   let info = map.runinfo;
   
+  totalStats.kills = (totalStats.kills || 0) + Number(map.kills);
   totalStats.gained = (totalStats.gained || 0) + Number(map.gained);
+  
+  const boolStats = [
+    "abyssalDepths", 
+    "vaalSideAreas", 
+    "blightedMap", 
+    "blightEncounter", 
+    "strangeVoiceEncountered", 
+    "elderDefeated"
+  ];
 
-  ["abyssalDepths", "vaalSideAreas", "blightedMap", "blightEncounter", "strangeVoiceEncountered", "elderDefeated"].forEach( boolStat => {
-    if(info[boolStat]) {
-      totalStats[boolStat] = ++totalStats[boolStat] || 1;
+  boolStats.forEach( stat => {
+    if(info[stat]) {
+      totalStats[stat] = ++totalStats[stat] || 1;
     }
   });
   
@@ -217,12 +240,17 @@ function mergeRunInfo(totalStats, map) {
       }
     }
   }
-
+  
+  
   if(info.sirusBattle) {
-    totalStats.sirusBattle = totalStats.sirusBattle || { started: 0, completed: 0, dieBeamsFired: 0, dieBeamKills: 0 };
+    totalStats.sirusBattle = totalStats.sirusBattle || { started: 0, completed: 0, dieBeamsFired: 0, dieBeamKills: 0, orbs: 0, lastPhaseTime: 0 };
     totalStats.sirusBattle.started++;
     if(info.sirusBattle.completed) {
       totalStats.sirusBattle.completed++;
+      if(info.sirusBattle.finalPhaseStart) {
+        let lastPhaseTime = Utils.getRunningTime(info.sirusBattle.finalPhaseStart, info.sirusBattle.completed, "s", { useGrouping : false });
+        totalStats.sirusBattle.lastPhaseTime += Number(lastPhaseTime);
+      }
     }
     if(info.sirusBattle.dieBeamsFired) {
       totalStats.sirusBattle.dieBeamsFired += info.sirusBattle.dieBeamsFired;
@@ -230,20 +258,64 @@ function mergeRunInfo(totalStats, map) {
     if(info.sirusBattle.dieBeamKills) {
       totalStats.sirusBattle.dieBeamKills += info.sirusBattle.dieBeamKills;
     }
+    if(info.sirusBattle.droppedOrb) {
+      totalStats.sirusBattle.orbs++;
+    }
+      
   }
 
   if(info.legionGenerals) {
-    totalStats.legionGenerals = totalStats.legionGenerals || {};
+    totalStats.legionGenerals = totalStats.legionGenerals || { encounters: 0, kills: 0 };
     let keys = Object.keys(info.legionGenerals);
     for(let i = 0; i < keys.length; i++) {
       let g = keys[i];
       totalStats.legionGenerals[g] = totalStats.legionGenerals[g] || { encounters: 0, kills: 0 };
       totalStats.legionGenerals[g].encounters++;
+      totalStats.legionGenerals.encounters++;
       if(info.legionGenerals[g].defeated) {
         totalStats.legionGenerals[g].kills++;
+        totalStats.legionGenerals.kills++;
       }
     }
   }
+  
+  if(info.conqueror) {
+    totalStats.conquerors = totalStats.conquerors || {};
+    for(var conq in info.conqueror) {
+      totalStats.conquerors[conq] = totalStats.conquerors[conq] || { encounters: 0, battles: 0, kills: 0, orbs: 0 };
+      let c = info.conqueror[conq];
+      if(c.encountered) {
+        totalStats.conquerors[conq].encounters++;
+      }
+      if(c.battle) {
+        totalStats.conquerors[conq].battles++;
+      }
+      if(c.defeated) {
+        totalStats.conquerors[conq].kills++;
+      }
+      if(c.droppedOrb) {
+        totalStats.conquerors[conq].orbs++;
+      }
+    }
+  }
+  
+  if(info.importantDrops) {
+    for(var key in info.importantDrops) {
+      switch(key) {
+        case "brain":
+        case "lung":
+        case "heart":
+        case "eye":
+        case "liver":
+          totalStats.metamorph = totalStats.metamorph || { encounters: 0 };
+          totalStats.metamorph.encounters++;
+          totalStats.metamorph[key] = (totalStats.metamorph[key] || 0) + info.importantDrops[key];
+          break;
+      }
+    }
+  }
+  
+  
 
 }
 

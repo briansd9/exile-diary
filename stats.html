@@ -34,6 +34,7 @@
       const StatsGetter = require('./modules/StatsGetter');
       const ItemData = require('./modules/ItemData');
       const Utils = require('./modules/Utils');
+      const Constants = require('./modules/Constants');
       const moment = require('moment');
       
       const areaTypeText = {
@@ -46,12 +47,26 @@
       const f = new Intl.NumberFormat();
       const curr = new Intl.NumberFormat(navigator.language || 'en', { minimumFractionDigits: 2 });
       
+      var currScroll;      
+      ipcRenderer.on("done-capturing", () => {
+        $("#sidenav").show();
+        $("#messages").show();
+        $("#messagePadding").show();
+        $("#topnav").show();
+        $("body").removeClass('bodyScreenshot');
+        $(".footer").hide();
+        $(document).scrollTop(currScroll);
+        logger.info("Done capturing");
+      });      
+      
       $(document).ready(async () => {
         
         $("#sidenav").load("sidenav.html", () => {
-          //$("#sidenav-items").append("<div><a class='ui-text' onclick='screenshot()'>Screenshot</a></div>");
+          $("#sidenav-items").append("<div><a class='ui-text' onclick='screenshot()'>Screenshot</a></div>");
         });
         $("#messages").load("messages.html");
+        
+        $("#loading").show();
         
         await new Promise( (resolve, reject) => {
           DB.all(`
@@ -62,32 +77,46 @@
             order by mapruns.id desc
           `, async (err, rows) => {
               if(rows.length > 0) {
-                $("#loading").show();
-                $("#oldMapsTotal").html(rows.length);
-              }
-              for(let i = 0; i < rows.length; i++) {
-                let row = rows[i];
-                let info = await RunParser.getMapExtraInfo(row.name, row.firstevent, row.lastevent);
-                DB.run("update mapruns set runinfo = ? where id = ?", [info, row.id], (err) => {
-                  if(!err) {
-                    console.log(`Updated ${row.id}`);
-                  } else {
-                    console.log(`Failed to update ${row.id}`);
-                  }
-                })
-                $("#oldMapsUpdated").html(i + 1);
+                for(let i = 0; i < rows.length; i++) {
+                  let row = rows[i];
+                  let info = await RunParser.getMapExtraInfo(row.name, row.firstevent, row.lastevent);
+                  DB.run("update mapruns set runinfo = ? where id = ?", [info, row.id], (err) => {
+                    if(err) {
+                      logger.info(`Failed to update run info for map ${row.id}`);
+                    }
+                  })
+                }
               }
               resolve();
           });
         });
         
-        $("#loading").hide();
+//        $("#loading").hide();
         
+        loadMsg(`Loading stats from database...`);
+        
+        let tabOptions = {
+          disabled: []
+        };
+        
+//        let stats = {areaStats: {}, bigDrops: {}}; 
+//        stats.totalStats = tmpstats;
         let stats = await StatsGetter.get();
         
-//        if( Object.keys(stats.totalStats).length > 0) {
-//          displayTotalStats(stats.totalStats);
-//        }
+        stats.totalStats.rawEx = 0;
+        stats.bigDrops.forEach( item => {
+          if(item.typeline === "Exalted Orb") {
+            stats.totalStats.rawEx += item.stacksize;
+          }
+        })
+        
+        console.log(JSON.stringify(stats.totalStats));
+        
+        if( Object.keys(stats.totalStats).length > 0) {
+          displayTotalStats(stats.totalStats);
+        } else {
+          tabOptions.disabled.push(0);
+        }
         
         if( Object.keys(stats.areaStats).length > 0) {
 
@@ -95,6 +124,7 @@
           let areaTypes = Object.keys(stats.areaStats);
           
           for(let i = 0; i < areaTypes.length; i++) {
+
             let areaType = areaTypes[i];
             let stat = stats.areaStats[areaType];
             ["count", "time", "gained", "kills", "deaths"].forEach(key => {
@@ -167,17 +197,18 @@
             });
             $(`#${areaTypes[i]}StatsTable`).trigger("sorton", [[[2, "d"]]]);
           }
-          $("#areaStatsContainer").show();
 
+        } else {
+          tabOptions.disabled.push(1);
         }
         
         if(stats.bigDrops.length > 0) {          
           for(let i = 0; i < stats.bigDrops.length; i++) {
             let item = stats.bigDrops[i];
             item.parsedItem = JSON.parse(item.rawdata);          
-            item.arrayIndex = i;
+            item.arrayIndex = i.toString();
             $("#bigDropsTable").append(getItemDiv(item));
-            item.parsedItem.arrayIndex = i;
+            item.parsedItem.arrayIndex = i.toString();
             item.parsedItem.secretName = Utils.getItemName(item.icon);
             var popup = createPopup(item.parsedItem);
             if(popup) {
@@ -204,10 +235,27 @@
               }
             }
           });
-          $("#bigDropsContainer").show();
+
+        } else {
+          tabOptions.disabled.push(2);
         }
         
+    
+        $("#mainContent").tabs(tabOptions);
+        $('*'). removeClass('ui-widget-content');
+        $('*'). removeClass('ui-widget');
+        
+        $("#loadingImg").attr("src", "res/img/loadingComplete.png");
+        $("#loadingImg").css("filter", "brightness(150%)");
+        $("#loadingText").html("Loading complete!");        
+        setTimeout(() => { $("#loading").hide(); $("#mainContent").show(); }, 750);
+        
+        
     });
+    
+    function loadMsg(msg) {
+      $("#loadingText").html(msg);
+    }
         
     function getSubTable(id, data) {
       
@@ -231,6 +279,7 @@
       let body = $(`<tbody id="${id}StatsRows"></tbody>`);
       let keys = Object.keys(data);
       for(let i = 0; i < keys.length; i++) {
+
         let key = keys[i];
         let stat = data[key];
         let row = $(`
@@ -353,24 +402,17 @@
       itemDiv.setAttribute("arrayIndex", item.arrayIndex);
       $(itemDiv).css("display", "inline-block");
       
-      let tableRow = $('<div>');
+      let tableRow = $(`<div class='bigDropRow' data-value="${Number(item.exaltValue)}">`);
       tableRow.append($(`<span class='eventTime'>[${moment(item.event_id, "YYYYMMDDHHmmss").format("YYYY-MM-DD HH:mm:ss")}] </span>`));
       tableRow.append(itemDiv);
       tableRow.append($(`
         <span>
-          ${item.typeline === 'Exalted Orb' ? "" : `(<span class='eventText'>${Number(item.exaltValue).toFixed(2)}</span> <img src='res/img/ex.png' class='currencyText'>)`}
+          ${item.typeline === 'Exalted Orb' ? "" : `(<span class='eventText'>${Number(item.exaltValue).toFixed(2)}</span> <img src='res/img/ex.png' style='height:20px;width:20px;'>)`}
           found in <a onclick='window.open("map.html?id=${item.map_id}&modal=true");'>${item.area}</a>
         </span>
       `));
       
       return tableRow;
-    }
-    
-    function toggleMainSection(cat) {
-      let table = $(`#${cat}Table`);
-      let icon = $(`#${cat}Icon`);
-      table.toggle();
-      icon.html(table.is(":visible") ? "-" : "+");      
     }
     
     function toggleDetailRow(cat) {
@@ -386,31 +428,393 @@
         parentRow.removeClass("tableDetailRowSelected");
       }      
     }
+
+    function screenshot() {
+      $("#sidenav").hide();
+      $("#messages").hide();
+      $("#messagePadding").hide();
+      $("#topnav").hide();
+      $("body").addClass('bodyScreenshot');
+      $(".footer").show();
+      currScroll = $(document).scrollTop();
+      remote.getCurrentWindow().captureFullPage(img => {
+        img.getBase64('image/png', (err, imgdata) => {
+          ipcRenderer.send("screenshotCaptured", imgdata);
+        });
+      });
+    }
+
+    function filterBigDrops() {
+      let v = Number($("#bigDropValueFilter").val());
+      if(v) {
+        $(".bigDropRow").each( (index, elem) => {
+          if($(elem).data("value") < v) {
+            $(elem).hide();
+          } else {
+            $(elem).show();
+          }
+        });
+      }
+    }
     
-//    function displayTotalStats(s) {
-//      
-//      let t = $("#totalStatsTable");
-//      
-//      appendStatDiv(t, "Abyssal Depths Entered", s.abyssalDepths);
-//      appendStatDiv(t, "Beast Recipes completed in the Menagerie", s.beastRecipes);
-//      appendStatDiv(t, "Blight Encounters", s.blightEncounter);
-//      appendStatDiv(t, "Blighted Maps Run", s.blightedMap);
-//      appendStatDiv(t, "Deaths", s.deaths);
-//      appendStatDiv(t, "Delirium Mirrors Triggered", s.strangeVoiceEncountered);
-//      appendStatDiv(t, "Delirium Mirrors Triggered", s.strangeVoiceEncountered);
-//      
-//    }
-//    
-//    function appendStatDiv(elem, str, stat) {
-//      if(!stat) return;
-//      elem.append($(`
-//        <div>
-//          ${str}: ${stat}
-//        </div>
-//      `));
-//    }
+    function resetBigDropsValue() {
+      let v = Number($("#bigDropValueFilter").val());
+      if(!v) {
+        $("#bigDropValueFilter").val(1);
+        $(".bigDropRow").show();
+      }
+    }
+    
+    function displayTotalStats(s) {
+      displayMiscStats(s);
+      displayConquerors(s);
+      displayMasters(s);
+      $(".extraInfo").tablesorter().trigger("update").trigger("sorton", [[[1, "d"]]]);
+    }
+    
+    function displayMiscStats(s) {
+      let div = `
+        <div class="totalStatInfo">
+          <div class="totalStatHeader">
+            <span>Total Stats</span>
+          </div>
+          <div class="totalStatInfoText" style="display: grid; grid-template-columns: 1fr 1fr;">
+      `;
+    
+      div += "<div>";
+      
+      div += "<div class='totalStatSection'>";
+      if(s.gained) {
+        div += statLine("Value of Items picked up", `${f.format(Number(s.gained).toFixed(2))} <img class='currencyText' src='res/img/c.png'/>`, "res/img/c.png");
+      }
+      if(s.rawEx) {
+        div += statLine("Raw Exalt Drops", s.rawEx, "res/img/ex.png");
+      }
+      div += "</div>";
+      
+      div += "<div class='totalStatSection'>";
+      if(s.kills) {
+        div += statLine("Monsters slain", f.format(s.kills), "res/img/encountericons/kills.png");
+      }
+      div += statLine("Deaths", f.format(s.deaths || 0), "res/img/encountericons/deaths.png");
+      if(s.kills) {
+        let ratio = (s.deaths === 0 ? "∞" : f.format(Number(s.kills/s.deaths).toFixed(2)));
+        div += statLine("k/d Ratio", ratio, "res/img/encountericons/kd.png");
+      }
+      div += "</div>";
+      
+      div += "<div class='totalStatSection'>";
+      if(s.shaper && s.shaper.completed) {
+        div += statLine("Shaper Kills", s.shaper.completed, "res/img/shaper.png");
+      }
+      if(s.elderDefeated) {
+        div += statLine("Elder Kills", s.elderDefeated, "res/img/elder.png");
+      }
+      div += "</div>";
 
+      div += "<div class='totalStatSection'>";
+      if(s.abyssalDepths) {
+        div += statLine("Abyssal Depths entered", s.abyssalDepths, "res/img/encountericons/abyss.png");
+      }
+      if(s.vaalSideAreas) {
+        div += statLine("Vaal Side Areas entered", s.vaalSideAreas, "res/img/encountericons/vaalsidearea.png");
+      }
+      div += "</div>";
+      
+      if(s.labyrinth) {
+        let darkshrines = 0;
+        if(s.labyrinth.darkshrines) {
+          darkshrines = Object.values(s.labyrinth.darkshrines).reduce((a, b) => a + b, 0);
+        }
+        let d = `
+            <div class='totalStatSection'>
+              <div>
+                ${statLineCompleted("Labyrinth runs", s.labyrinth.started, s.labyrinth.completed, "res/img/encountericons/labyrinth.png")}
+                ${statLine("Darkshrines activated", darkshrines || 0, "res/img/encountericons/darkshrine.png")}
+                ${statLine("Argus kills", s.labyrinth.argusKills || 0, "res/img/encountericons/argus.png")}
+              </div>
+            </div>
+        `;
+        div += d;
+      }
+      
+      if(s.shrines) {
+        let arr = [];
+        let totalShrines = 0;       
+        for(var key in s.shrines) {
+          totalShrines += s.shrines[key];
+          arr.push([key.replace(" Shrine", ""), s.shrines[key]]);
+        }
+        arr.sort( (a, b) => { return b[1] - a[1]; });
+        let d = "<div class='totalStatSection'><div>";
+        d += statLine("Shrines activated", totalShrines, "res/img/encountericons/shrine.png");
+        arr.forEach( s => {
+          d += statLine(s[0], s[1], `res/img/shrineicons/${s[0]}.png`);
+        });
+        d += "</div></div>";
+        div += d;
+      }
+      
+      div += "</div><div>";
+      
+      if(s.blightEncounter) {
+        let d = `
+            <div class='totalStatSection'>
+              <div>
+                ${statLine("Blight encounters", s.blightEncounter || 0, "res/img/encountericons/blight.png")}
+                ${statLine("Blighted Map runs", s.blightedMap || 0, "res/img/encountericons/blightedmap.png")}
+                ${s.unrighteousTurnedToAsh ? statLine("♫ Unrighteous turned to Ash", s.unrighteousTurnedToAsh, "res/img/encountericons/cassia.png") : ""}
+              </div>
+            </div>
+        `;
+        div += d;
+      }
 
+      if(s.strangeVoiceEncountered) {
+        let d = `
+            <div class='totalStatSection'>
+              <div>
+                ${statLine("Delirium mirrors", s.strangeVoiceEncountered || 0, "res/img/encountericons/delirium.png")}
+                ${statLineCompleted("Simulacrum runs", s.simulacrum.started || 0, s.simulacrum.completed || 0, "res/img/encountericons/simulacrum.png")}
+              </div>
+            </div>
+        `;
+        div += d;
+      }
+      
+      if(s.metamorph) {
+        var arr = [];
+        for(var key in s.metamorph) {
+          if(key === "encounters") continue;
+          arr.push([key, s.metamorph[key]]);
+        }
+        arr.sort( (a, b) => { return b[1] - a[1]; });
+        let d = "<div class='totalStatSection'><div>";
+        d += statLine("Metamorph encounters", s.metamorph.encounters, "res/img/encountericons/metamorph.png");
+        arr.forEach( org => {
+          let orgs = `${org[0].charAt(0).toUpperCase()}${org[0].substring(1)}s`;
+          d += statLine(`${orgs} harvested`, org[1], `res/img/encountericons/${org[0]}.png`);
+        });
+        d += "</div></div>";
+        div += d;
+      }
+
+      if(s.legionGenerals) {
+        let arr = [];
+        const legionIcons = {
+          "Queen Hyrri Ngamaku" : "karui",
+          "General Marceus Lioneye" : "eternal",
+          "Viper Napuatzi" : "vaal",
+          "Cardinal Sanctus Vox" : "templar",
+          "Aukuna, the Black Sekhema" : "maraketh",
+        };
+        for(var key in s.legionGenerals) {
+          if(key === "encounters" || key === "kills") continue;
+          arr.push([key, s.legionGenerals[key].encounters]);
+        }
+        arr.sort( (a, b) => { return b[1] - a[1]; });
+        let d = "<div class='totalStatSection'><div>";
+        d += statLine("Legion General encounters", s.legionGenerals.encounters, "res/img/encountericons/legion.png");
+        arr.forEach( gen => {
+          d += statLine(gen[0], gen[1], `res/img/encountericons/${legionIcons[gen[0]]}.png`);
+        });
+        d += "</div></div>";
+        div += d;
+      }
+
+      div += "</div></div></div>";
+      $("#totalStatsTable").append(div);
+    }
+    
+    function displayMasters(s) {
+      if(!s.masters) return;
+      let div = `
+        <div class="totalStatInfo">
+          <div class="totalStatHeader">
+            <span>Masters</span>
+          </div>
+          <div class="totalStatInfoText">
+      `;
+      
+      for(var m of Constants.masters) {
+        if(s.masters[m]) {        
+          let n = m.substring(0, m.indexOf(','));
+          let info = s.masters[m];
+          let extraInfo = getExtraMasterInfo(s, m);
+          let masterDiv = `
+              <div style='margin-bottom: 40px;'>
+                <div class="totalStatSubInfoHeader ${n}">
+                  <img class='masterIcon' src='res/img/encountericons/${n}.png'/>
+                  <span class='masterLabel'>${m}</span>
+                </div>
+                <div class="totalStatInfoText" style="display: grid; grid-template-columns: 1fr 2fr;">
+                  <div>
+                    ${statLine("Encounters", info.encounters)}
+                    ${statLine("Missions Completed", info.completed)}
+                    ${statLine("Favour Gained", f.format(info.favourGained))}
+                    ${extraInfo.text}
+                  </div>
+                  <div style='text-align: right;'>${extraInfo.table}</div>
+                </div>
+              </div>
+          `;
+          div += masterDiv;
+        }
+      }
+      
+      $("#totalStatsTable").append(div);
+      
+    }
+    
+    function displayConquerors(s) {
+      if(!s.conquerors) return;
+      let div = `
+        <div class="totalStatInfo">
+          <div class="totalStatHeader">
+            <span>Conquerors of the Atlas</span>
+          </div>
+          <div class="totalStatInfoText" style="display: grid; grid-template-columns: 1fr 1fr;">
+      `;
+    
+      for(let conq in s.conquerors) {
+        let c = s.conquerors[conq];
+        let n = conq.substring(conq.lastIndexOf(" ") + 1);
+        div += `
+          <div style='margin-bottom: 20px;'>
+            <div class='totalStatSubInfoHeader ${n.toLowerCase()}'>
+              <img class='conqIcon' src='res/img/encountericons/${n.toLowerCase()}.png'/>
+              <span class='conqLabel'>${conq}</span>
+            </div>
+            <div class="totalStatInfoText">
+              ${statLine("Map Encounters", c.encounters)}
+              ${statLineCompleted("Citadel Battles", c.battles, c.kills)}
+              ${statLine(`${n}'s Exalted Orbs`, getOrbs(n, c.orbs || 0))}
+            </div>
+          </div>
+        `;
+      }
+      
+      if(s.sirusBattle) {
+        let c = s.sirusBattle;
+        div += `
+          <div style='margin-bottom:20px;grid-column:span 2;'>
+            <div class='totalStatSubInfoHeader sirus'>
+              <img class='conqIcon' src='res/img/encountericons/sirus.png'/>
+              <span class='conqLabel'>Sirus, Awakener of Worlds</span>
+            </div>
+            <div class="totalStatInfoText">
+              ${statLineCompleted("Citadel Battles", c.started, c.completed)}
+              <span>Die Beams:</span> <span class='statValue'>${c.dieBeamsFired}</span> fired, <span class='statValue'>${c.dieBeamKills}</span> kills<br/>
+              ${statLine("Average Time in Last Phase", moment.duration(c.lastPhaseTime/c.completed, "seconds").format("m:ss"))}
+              ${statLine(`Awakener's Orbs`, getOrbs("Awakener", c.orbs || 0))}
+            </div>
+          </div>
+        `;
+      }
+    
+      div += "</div></div>";
+      $("#totalStatsTable").append(div);
+    }
+    
+    function getOrbs(type, count) {
+      if(count === 0) {
+        return 0;
+      }
+      else if(count >= 10) {
+        return `<img class='currencyText' src='res/img/${type}Orb.png'/> × ${count}`;
+      } else {
+        return `<img class='currencyText' src='res/img/${type}Orb.png'/>`.repeat(count);
+      }
+    }
+    
+    function getExtraMasterInfo(s, m) {
+      let extraInfo = { text: "", table: "" };
+      let masterInfo = s.masters[m];
+      switch(m) {
+        case "Einhar, Beastmaster":
+          if(masterInfo.beasts) {
+            extraInfo.text += statLine("Beasts Captured", f.format(s.masters[m].beasts));
+          }
+          if(s["beastRecipes"]) {
+            extraInfo.text += statLine("Beasts Sacrificed", f.format(s["beastRecipes"] * 4));
+          }
+          break;
+        case "Alva, Master Explorer":
+          if(masterInfo.incursions) {
+            extraInfo.text += statLine("Incursions Completed", f.format(s.masters[m].incursions));
+          }
+          if(s.atzoatl) {
+            let templesStarted = 0;
+            let templesCompleted = 0;
+            let roomsTable = "";
+            for(let room in s.atzoatl) {
+              switch(room) {
+                case "temples":
+                  templesStarted = s.atzoatl[room];
+                  break;
+                case "Apex of Atzoatl":
+                  templesCompleted = s.atzoatl[room];
+                  break;
+                default:
+                  roomsTable = roomsTable || "<div style='max-height:14em;overflow-y:scroll;'><table class='extraInfo'><thead><tr><th>Tier 3 Rooms</th><th></th></tr></thead><tbody>";
+                  roomsTable += `<tr><td>${room}</td><td>${s.atzoatl[room]}</td></tr>`;
+                break;
+              }
+            }
+            extraInfo.text += `<span>Temples of Atzoatl:</span> <span class='statValue'>${templesStarted}</span> (<span class='statValue'>${templesCompleted}</span> completed)</span><br/>`;
+            if(roomsTable) {
+              roomsTable += "</tbody></table></div>";
+              extraInfo.table = roomsTable;
+            }
+          } 
+          break;
+        case "Niko, Master of the Depths":
+          if(masterInfo.sulphite) {
+            extraInfo.text += `<span>Sulphite Deposits Collected:</span> <span class='statValue'>${f.format(s.masters[m].sulphite)}</span><br/>`;
+          }
+          break;
+        case "Zana, Master Cartographer":
+          if(masterInfo.missionMaps) {
+            let mapTable = "<div style='max-height:14em;overflow-y:scroll;'><table class='extraInfo'><thead><tr><th>Mission Maps</th><th></th></tr></thead><tbody>";
+            for(var map in masterInfo.missionMaps) {
+              mapTable += `<tr><td>${map}</td><td>${masterInfo.missionMaps[map]}</td></tr>`;
+            }
+            mapTable += "</tbody></table></div>";
+            extraInfo.table = mapTable;
+          }
+          break;
+        case "Jun, Veiled Master":
+          if(s.mastermind) {
+            extraInfo.text += `<span>Mastermind Lairs:</span> <span class='statValue'>${s.mastermind.started}</span> (<span class='statValue'>${s.mastermind.completed}</span> completed)</span><br/>`;
+          }
+          if(s.syndicate) {
+            let syndTable = "<div style='max-height:14em;overflow-y:scroll;'><table class='extraInfo'><thead><tr><th>Syndicate Members</th><th>Encounters</th><th>Kills</th><th>Safehouse Leader</th></tr></thead><tbody>";
+            for(var member in s.syndicate) {
+              let info = s.syndicate[member];
+              syndTable += `<tr><td>${member}</td><td>${info.encounters}</td><td>${info.kills}</td><td>${info.safehouseLeaderKills}</td></tr>`;
+            }
+            syndTable += "</tbody></table></div>";
+            extraInfo.table = syndTable;
+          }
+          break;
+      }
+      return extraInfo;
+    }
+    
+    function statLine(label, value, img = null) {
+      return `
+        ${img ? `<img class='statIcon' src='${img}'/>` : ""}
+        <span>${label}:</span> <span class='statValue'>${value}</span><br/>
+      `;
+    }
+    
+    function statLineCompleted(label, started, completed, img = null, desc = "completed") {
+      return `
+        ${img ? `<img class='statIcon' src='${img}'/>` : ""}
+        <span>${label}:</span> <span class='statValue'>${started}</span> (<span class='statValue'>${completed}</span> ${desc})<br/>
+      `;
+    }
+    
     </script>
     
   </head>
@@ -422,63 +826,60 @@
     
       <div class='sidenav' id='sidenav'></div>
       
-      <div id="loading" style="display:none;text-align:center;margin-top:11%;">
-        <img src="res/img/loading.gif"/>
+      <div id="loading" style="text-align:center;margin-top:15%;display:none;">
+        <img id="loadingImg" src="res/img/loading.gif"/>
         <br/>
-        <span style="font-family: Fontin;">
-          One moment please, gathering statistics for old map runs... 
-          <br>
-          (<span id="oldMapsUpdated">0</span> / <span id="oldMapsTotal">0</span> complete)
-        </span>
+        <br/>
+        <span id="loadingText" style="font-size: smaller"></span>
       </div>
       
-      <div id="totalStatsContainer" style='display:none;'>
-        <div class='tableLink' style='padding:16px 20px;position:relative;' onclick='toggleMainSection("totalStats")'>
-          <div style='display:inline-block;'>
-            <div class='tableLinkHeader'>Total Stats</div>
+      <div id="mainContent" style="display:none;">
+        
+        <ul>
+          <li><a onclick="this.blur();" id="totalStatsContainerLink" href="#totalStatsContainer">Total Stats</a></li>
+          <li><a onclick="this.blur();" id="areaStatsContainerLink" href="#areaStatsContainer">Stats by Area</a></li>
+          <li><a onclick="this.blur();" id="bigDropsContainerLink" href="#bigDropsContainer"><img src="res/img/ex.png" style="height:30px;width:30px;"></a></li>
+        </ul>
+        
+      
+        <div id="totalStatsContainer" style='display:none;'>
+          <div id="totalStatsTable">
           </div>
-          <div id="totalStatsIcon" class="tableToggleIcon">-</div>
         </div>
-        <div id="totalStatsTable">
+
+
+        <div id="areaStatsContainer" style='display:none;'>
+          <table class='searchResults statsTable' style='width:100%;border-spacing:0;padding:10px;' id="areaStatsTable">
+            <thead>
+              <tr>
+                <th>&nbsp;</th>
+                <th>Area Type</th>
+                <th>Count</th>
+                <th>Time</th>
+                <th><img src='res/img/c.png' class='currencyText'/></th>
+                <th><img src='res/img/c.png' class='currencyText'/> / hr</th>
+                <th>Kills</th>
+                <th>Deaths</th>
+              </tr>
+            </thead>
+            <tbody id="areaStatsRows"></tbody>
+          </table>
         </div>
-        <br/>
-      </div>
-      
-      
-      <div id="areaStatsContainer" style='display:none;'>
-        <div class='tableLink' style='padding:16px 20px;position:relative;' onclick='toggleMainSection("areaStats")'>
-          <div style='display:inline-block;'>
-            <div class='tableLinkHeader'>Stats by Area</div>
+
+
+        <div id="bigDropsContainer" style='display:none;'>
+          <div class='tableLink' style='padding:16px 20px;position:relative;'>
+            <div style='display:inline-block;'>
+              <div class='tableLinkHeader'>
+                Items picked up worth at least 
+                <input id='bigDropValueFilter' style='margin-left:5px;' onblur='resetBigDropsValue()' oninput='filterBigDrops()' type='text' size='3' value='1'/> 
+                <img src='res/img/ex.png' class='currencyText'/>
+              </div>
+            </div>
           </div>
-          <div id="areaStatsIcon" class="tableToggleIcon">-</div>
+          <div id='bigDropsTable' style='padding:10px;'></div>
         </div>
-        <table class='searchResults statsTable' style='width:100%;border-spacing:0;padding:10px;' id="areaStatsTable">
-          <thead>
-            <tr>
-              <th>&nbsp;</th>
-              <th>Area Type</th>
-              <th>Count</th>
-              <th>Time</th>
-              <th><img src='res/img/c.png' class='currencyText'/></th>
-              <th><img src='res/img/c.png' class='currencyText'/> / hr</th>
-              <th>Kills</th>
-              <th>Deaths</th>
-            </tr>
-          </thead>
-          <tbody id="areaStatsRows"></tbody>
-        </table>
-        <br/>
-      </div>
-      
-      
-      <div id="bigDropsContainer" style='display:none;'>
-        <div class='tableLink' style='padding:16px 20px;position:relative;' onclick='toggleMainSection("bigDrops")'>
-          <div style='display:inline-block;'>
-            <div class='tableLinkHeader'>Items picked up worth at least 1 <img src='res/img/ex.png' class='currencyText'/></div>
-          </div>
-          <div id="bigDropsIcon" class="tableToggleIcon">-</div>
-        </div>
-        <div id='bigDropsTable' style='padding:10px;'></div>
+        
       </div>
 
       <div class="footer">
