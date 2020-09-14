@@ -42,7 +42,7 @@ class Utils {
   static getDisplayName(item) {
     
     let baseName = this.getBaseName(item);
-    let uniqueName = this.getItemName(item.icon);
+    let uniqueName = item.secretName || this.getItemName(item.icon);
     let suffix = this.getSuffix(item);
     
     let displayName = "";
