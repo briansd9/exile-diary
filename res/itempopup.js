@@ -472,8 +472,18 @@ function getItemLevelAndRequirements(data) {
 
 // these go in the same section w/o separator: explicit, crafted, veiled mods; corrupted status
 function getExplicitMods(data) {
-  if(!data.explicitMods && !data.craftedMods && !data.veiledMods && !data.corrupted) return null;
+  if(!data.explicitMods && !data.fracturedMods && !data.craftedMods && !data.veiledMods && !data.corrupted) return null;
   let div = $("<div/>");
+  if(data.fracturedMods) {
+    for(let i = 0; i < data.fracturedMods.length; i++) {
+      let str = data.fracturedMods[i].replace("\r\n", "<br/>");
+      if(str.includes(">{")) {
+        str = replaceColorTags(str);
+      }
+      div.append($(`<div class='fracturedMod'>${str}</div>`));
+      setMaxLength(str);
+    }
+  }
   if(data.explicitMods) {
     for(let i = 0; i < data.explicitMods.length; i++) {
       // horrible hack for incubator mod - actually two lines separated by \r\n
