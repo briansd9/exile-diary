@@ -1277,7 +1277,10 @@
     "General's Cry Support" : "Support Skill Gems",
     "Fist of War Support" : "Support Skill Gem",
     "Urgent Orders Support" : "Support Skill Gem",
-    "Swiftbrand Support" : "Support Skill Gem"
+    "Swiftbrand Support" : "Support Skill Gem",
+    
+    "Elemental Damage with Attacks Support" : "Support Skill Gems",
+    "Rune Blast" : "Active Skill Gems"
     
   },
 
