@@ -39,7 +39,7 @@ function getCategory(item, subcategory = false) {
         return gemBaseTypes[n];
       } else {
         logger.info(`No base type found for gem [${t}]`);
-        return null;
+        return "";
       }
     case 5:  
       if(t.startsWith("Captured Soul")) {
