@@ -245,7 +245,6 @@ async function getTab(t, s) {
           var tabData = await parseTab(data.items, s.timestamp);
           resolve(tabData);
         } catch(err) {
-          console.log(body);
           logger.info(`Failed to get tab ${t.name}: ${err}`);
           resolve(-1);
         }

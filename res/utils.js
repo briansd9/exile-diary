@@ -299,8 +299,6 @@ var MiscUtils = {
   getRunningTime : function(time1, time2) {
     t1 = getDate(time1);
     t2 = getDate(time2);
-    console.log("Start date is " + t1);
-    console.log("End date is " + t2);
     secdiff = (t2.getTime() - t1.getTime()) / 1000;
     seconds = secdiff % 60;
     minutes = Math.floor(secdiff / 60) % 60;
