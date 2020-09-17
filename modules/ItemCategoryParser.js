@@ -23,7 +23,15 @@ function getCategory(item, subcategory = false) {
   
   var t = item.typeLine;
   if(!t) return null;
-
+  
+  if(t.startsWith("Contract:")) {
+    return data.heistQuestItems.includes(t) ? "Quest Items" : "Contract";
+  }
+  
+  if(t.startsWith("Blueprint:")) {
+    return "Blueprint";
+  }
+  
   if(otherBaseTypes[t]) {
     if(!subcategory && Array.isArray(otherBaseTypes[t])) {
       return otherBaseTypes[t][0];
@@ -68,7 +76,6 @@ function getCategory(item, subcategory = false) {
   if(t.endsWith("Incubator")) {
     return "Incubator";
   }
-
   
   if(t.endsWith("Piece")) {
     return "Harbinger Item Piece";
@@ -102,7 +109,7 @@ function getCategory(item, subcategory = false) {
     }
   }
   
-  logger.info("No category found for item! JSON follows:")
+  logger.info("No category found for item! JSON follows:");
   logger.info(JSON.stringify(item));
   return null;  
 

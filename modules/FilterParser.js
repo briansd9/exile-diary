@@ -85,7 +85,8 @@ function Parser() {
     'GemLevel', 'StackSize', 'ElderMap', 'Prophecy', 'FracturedItem', 'SynthesisedItem', 'AnyEnchantment', 'HasEnchantment',
     'BlightedMap', 'HasInfluence',
     'Mirrored', 'CorruptedMods', 'AreaLevel',
-    'EnchantmentPassiveNode'
+    'EnchantmentPassiveNode',
+    'AlternateQuality', 'Replica'
   ];
 	var MODIFIER_TOKENS = [
 	    'SetBackgroundColor', 'SetBorderColor', 'SetTextColor', 'PlayAlertSound', 'PlayAlertSoundPositional',
@@ -273,7 +274,9 @@ function Parser() {
       'Mirrored' : MirroredFilter,
       'CorruptedMods' : CorruptedModsFilter,
       'AreaLevel' : AreaLevelFilter,
-      'EnchantmentPassiveNode' : HasEnchantmentFilter
+      'EnchantmentPassiveNode' : HasEnchantmentFilter,
+      'AlternateQuality' : AlternateQualityFilter,
+      'Replica' : ReplicaFilter
 		};
 
 		switch (token) {
@@ -1091,7 +1094,6 @@ function AnyEnchantmentFilter (value) {
     };
 }
 
-
 function HasEnchantmentFilter (mods) {
     this.match = function (item) {
         return mods.some( function(mod) { return item.hasEnchantment( mod ); } );
@@ -1133,6 +1135,17 @@ function AreaLevelFilter (comparer, level) {
     }
 }
 
+function ReplicaFilter (value) {
+    this.match = function (item) {
+        return item.replica === value;
+    }
+}
+
+function AlternateQualityFilter (value) {
+    this.match = function (item) {
+        return ( ["Anomalous", "Divergent", "Phantasmal"].some(prefix => item.baseType.startsWith(prefix)) === value );
+    }
+}
 
 // ------------------------ Modifiers --------------------------------------
 

@@ -192,6 +192,7 @@ static createItem(itemdata)
   obj.blightedMap = ItemData.isBlightedMap(itemdata);
   obj.mapTier = ItemData.getMapTier(itemdata);
 	obj.stackSize = itemdata.stackSize;
+  obj.replica = itemdata.replica;
 
   obj.veiled = itemdata.veiled;
   obj.synthesised = itemdata.synthesised || false;
