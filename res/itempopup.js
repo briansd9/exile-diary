@@ -175,7 +175,7 @@ function createItemPopup(data, opts) {
   let textArray = [];
   
   var textFunctions = [
-    getProperties,
+    getPropertiesAndUtilityMods,
     getItemLevelAndRequirements,
     getEnchantMods,
     getImplicitMods,
@@ -433,17 +433,29 @@ function getRightInfluence(data) {
   return inf;
 }
 
-function getProperties(data) {
-  if(!data.properties) return null;
+// properties and utility mods (flask-only) go in the same section without separator
+function getPropertiesAndUtilityMods(data) {
+  if(!data.properties && data.getUtilityMods) return null;
   let div = $("<div/>");
-  for(let i = 0; i < data.properties.length; i++) {
-    let propString = getPropertyString(data.properties[i]);
-    setMaxLength($(propString).text());
-    div.append($(`<div>${propString}</div>`));
+  if(data.properties) {
+    for(let i = 0; i < data.properties.length; i++) {
+      let propString = getPropertyString(data.properties[i]);
+      setMaxLength($(propString).text());
+      div.append($(`<div>${propString}</div>`));
+    }
   }
+  if(data.utilityMods) {
+    for(let i = 0; i < data.utilityMods.length; i++) {
+      let str = data.utilityMods[i].replace("\r\n", "<br/>");
+      if(str.includes(">{")) {
+        str = replaceColorTags(str);
+      }
+      div.append($(`<div class='utilityMod'>${str}</div>`));
+      setMaxLength(str);
+    }
+  }  
   return div;
 }
-
 
 function getItemLevelAndRequirements(data) {
   if(!data.requirements && data.ilvl === 0) return null;
@@ -712,7 +724,13 @@ function getPropertyString(prop) {
           if(str.startsWith("Stored Experience")) {
             prop.values[i][0] = (new Intl.NumberFormat()).format(Number.parseInt(prop.values[i][0]));
           }
-          str = str.replace(`%${i}`, formatValue(prop.values[i]));
+          // 3.12 - property format strings changed from %0 to {0} - https://www.pathofexile.com/forum/view-thread/2936225
+          // retaining old behavior for backward compatibility with pre-3.12 items
+          if(str.includes(`%${i}`)) {
+            str = str.replace(`%${i}`, formatValue(prop.values[i]));
+          } else if(str.includes(`{${i}}`)) {
+            str = str.replace(`{${i}}`, formatValue(prop.values[i]));
+          }
         }
         return `<span>${str}</span>`;
     }
