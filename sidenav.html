@@ -7,7 +7,7 @@
     const openLink = require('opn');
     
     renderer.on("incubatorsUpdated", (event, incubators) => {
-      console.log(incubators);
+      //console.log(incubators);
     });            
     
     $(document).ready(() => {
@@ -30,6 +30,10 @@
           case "Esc":
             $("#myModal").hide();
             break;
+          case "!":
+            if(e.ctrlKey && e.shiftKey) {
+              require('electron').remote.getCurrentWindow().openDevTools();
+            }
         }
       });
     
