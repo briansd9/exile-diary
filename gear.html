@@ -436,6 +436,7 @@
       function showGearHistory(s) {
         let itemCache = {};
         let diff = diffsBySlot[s];
+        if(!diff) return;
         let t = Object.keys(diff);
         for(let i = 0; i < t.length; i++) {
           let item = diff[t[i]].curr;
@@ -451,27 +452,10 @@
         }
       }
 
-      function showMultiGearHistory(s) {
-        let itemCache = {};
-        let diff = diffsBySlot[s];
-        let t = Object.keys(diff);
-        for(let i = 0; i < t.length; i++) {
-          let items = diff[t[i]].curr;
-          for(var item of items) {
-            if(itemCache[item.id] && GearChecker.itemsEqual(item, itemCache[item.id])) {
-              continue;
-            } else {
-              itemCache[item.id] = item;
-              let p = createPopup(item, {showSocketedItems: false});
-              $("#gearByItemTypeContainer").append(p);
-            }
-          }
-        }
-      }
-
       function showWeaponHistory(s) {
         let itemCache = {};
         let diff = diffsBySlot["Weapons"];
+        if(!diff) return;
         let t = Object.keys(diff);
         for(let i = 0; i < t.length; i++) {
           let item = null;
