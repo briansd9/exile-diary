@@ -24,11 +24,11 @@ function getCategory(item, subcategory = false) {
   var t = item.typeLine;
   if(!t) return null;
   
-  if(t.startsWith("Contract:")) {
+  if(t.includes("Contract:")) {
     return data.heistQuestItems.includes(t) ? "Quest Items" : "Contract";
   }
   
-  if(t.startsWith("Blueprint:")) {
+  if(t.includes("Blueprint:")) {
     return "Blueprint";
   }
   
