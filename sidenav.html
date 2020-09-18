@@ -32,7 +32,7 @@
             break;
           case "!":
             if(e.ctrlKey && e.shiftKey) {
-              require('electron').remote.getCurrentWindow().openDevTools();
+              require('electron').remote.getCurrentWindow().toggleDevTools();
             }
         }
       });
