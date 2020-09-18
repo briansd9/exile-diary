@@ -86,7 +86,7 @@ function Parser() {
     'BlightedMap', 'HasInfluence',
     'Mirrored', 'CorruptedMods', 'AreaLevel',
     'EnchantmentPassiveNode',
-    'AlternateQuality', 'Replica'
+    'AlternateQuality', 'Replica', 'GemQualityType'
   ];
 	var MODIFIER_TOKENS = [
 	    'SetBackgroundColor', 'SetBorderColor', 'SetTextColor', 'PlayAlertSound', 'PlayAlertSoundPositional',
@@ -276,7 +276,8 @@ function Parser() {
       'AreaLevel' : AreaLevelFilter,
       'EnchantmentPassiveNode' : HasEnchantmentFilter,
       'AlternateQuality' : AlternateQualityFilter,
-      'Replica' : ReplicaFilter
+      'Replica' : ReplicaFilter,
+      'GemQualityType' : GemQualityTypeFilter,
 		};
 
 		switch (token) {
@@ -1146,6 +1147,13 @@ function AlternateQualityFilter (value) {
         return ( ["Anomalous", "Divergent", "Phantasmal"].some(prefix => item.baseType.startsWith(prefix)) === value );
     }
 }
+
+function GemQualityTypeFilter (value) {
+	this.match = function (item) {
+		return item.baseType.startsWith(value);
+	};
+}
+
 
 // ------------------------ Modifiers --------------------------------------
 
