@@ -48,6 +48,9 @@ class Utils {
     let displayName = "";
     
     if(uniqueName) {
+      if(item.replica) {
+        uniqueName = "Replica " + uniqueName;
+      }
       displayName = uniqueName + ", ";
     }
     
