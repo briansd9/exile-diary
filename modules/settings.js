@@ -7,6 +7,7 @@ function get() {
   try {
     settings = require(path.join(app.getPath("userData"), "settings.json"));
   } catch (err) {
+    logger.info(err);
     logger.info("Unable to load settings.json");
     // do nothing if file doesn't exist
   }
