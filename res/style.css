@@ -748,7 +748,7 @@ thead > tr > th > * {
     /*visibility: hidden;*/
   }
     
-  .gearDiff, .pseudoGearDiff {
+  .gearDiff, .pseudoGearDiff, .lightPulse {
     animation: glowPulse 1s infinite;
   }
   
