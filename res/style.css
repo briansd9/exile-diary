@@ -298,6 +298,7 @@ input {
 
 input.invalid {
   outline: 1px dashed #cc0000;
+  background-color: #330000;
 }
 
 input.number {
