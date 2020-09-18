@@ -575,7 +575,7 @@
             <div class='totalStatSection'>
               <div>
                 ${statLine("Delirium mirrors", s.strangeVoiceEncountered || 0, "res/img/encountericons/delirium.png")}
-                ${statLineCompleted("Simulacrum runs", s.simulacrum.started || 0, s.simulacrum.completed || 0, "res/img/encountericons/simulacrum.png")}
+                ${s.simulacrum ? statLineCompleted("Simulacrum runs", s.simulacrum.started || 0, s.simulacrum.completed || 0, "res/img/encountericons/simulacrum.png") : ""}
               </div>
             </div>
         `;
