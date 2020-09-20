@@ -305,6 +305,7 @@ function Parser() {
       case 'Prophecy':
 			case 'HasEnchantment':
       case 'EnchantmentPassiveNode':
+      case 'GemQualityType':
 				parseMultiStringFilter( self, filters[token], arguments );
 				return;
 
@@ -326,6 +327,8 @@ function Parser() {
       case 'AnyEnchantment':
       case 'BlightedMap':
       case 'Mirrored':
+      case 'AlternateQuality':
+      case 'Replica':
 				parseBoolFilter( self, filters[token], arguments );
 				return;
         
