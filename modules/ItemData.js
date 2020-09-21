@@ -267,6 +267,7 @@ static createItem(itemdata)
 	}  
 
 	obj.draw = function() {
+    
 		var outerDiv = document.createElement( 'div' );
 		outerDiv.className = 'item-container';
     outerDiv.id = this.id;
@@ -324,12 +325,6 @@ static createItem(itemdata)
   }
 
 	obj.setVisibility = function (visibility) {
-		if (this.itemClass === 'Quest Items' || this.itemClass === 'Labyrinth Item' || this.itemClass === 'Labyrinth Trinket') {
-			visibility = true;
-		}
-		visibility = true;
-		this.outerElement.className = (visibility ? 'item-container' : 'hidden-item-container');
-		this.domElement.style.visibility = (visibility ? 'visible' : 'hidden');
 	}
 
 	obj.setTextColor = function (color) {
@@ -350,7 +345,7 @@ static createItem(itemdata)
 
 	obj.setFontSize = function (size) {
 		var actualSize = MathUtils.remap( size, 18, 45, 8, 24 );
-		getLabel( this ).style.fontSize = (actualSize).toString() + 'px';
+		getLabel( this ).style.fontSize = (Math.round(actualSize)).toString() + 'px';
 	}
   
   return obj;
