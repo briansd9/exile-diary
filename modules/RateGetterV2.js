@@ -28,8 +28,9 @@ const rateTypes = {
   "UniqueAccessory" : cleanUniqueItems,
   "Watchstone" : cleanWatchstones,
   "Vial" : cleanNameValuePairs,
-  "DeliriumOrb" : cleanNameValuePairs,
-  "Seed" : cleanSeeds
+  "DeliriumOrb" : cleanNameValuePairs
+  // RIP harvest :-(
+  // "Seed" : cleanSeeds 
 };
 
 const specialGems = ["Empower Support", "Enlighten Support", "Enhance Support"];
@@ -84,6 +85,7 @@ async function getRates(date) {
       var data = await getNinjaData(getNinjaURL(key));
       tempRates[key] = process(data);
     }
+    logger.info("Finished getting prices from poe.ninja");
   } catch(e) {
     logger.info("Error getting rates: " + e);
   }
@@ -124,6 +126,8 @@ async function getRates(date) {
   DB.run("insert into fullrates(date, data) values(?, ?)", [date, data], (err) => {
     if(err) {
       logger.info(`Error inserting rates for ${date}: [${err}]`);
+    } else {
+      logger.info(`Successfully inserted rates for ${date}`);
     }
   });
   
