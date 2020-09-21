@@ -689,7 +689,8 @@
     "The Templar Laboratory",
     "Crumbled Laboratory",
     "Memory Nexus",
-    "Karui Shores"
+    "Karui Shores",
+    "The Rogue Harbour"
   ],
 
   "uniqueMaps" : {
@@ -2420,10 +2421,12 @@
     "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/Blunderbore.png" : "Blunderbore",
     "https://web.poecdn.com/image/Art/2DItems/Belts/SlaversBelt.png" : "Chains of Emancipation",
     "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/DisturbTheDead.png" : "Corpsewalker",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/Magnification.png" : "Crest of Desire",
     "https://web.poecdn.com/image/Art/2DItems/Jewels/DischargeThresholdJewel.png" : "Endless Misery",
     "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/AdmiralsJacket.png" : "Expedition's End",
     "https://web.poecdn.com/image/Art/2DItems/Rings/ForbiddenSeal.png" : "Fated End",
     "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/FontOfThunder.png" : "Font of Thunder",
+    "https://web.poecdn.com/image/Art/2DItems/Amulets/KuraisMastery.png" : "Leadership's Price",
     "https://web.poecdn.com/image/Art/2DItems/Jewels/CallofSteelArea.png" : "Lord of Steel",
     "https://web.poecdn.com/image/Art/2DItems/Jewels/CallofSteelDmg.png" : "Lord of Steel",
     "https://web.poecdn.com/image/Art/2DItems/Jewels/CallofSteelFreq.png" : "Lord of Steel",
@@ -2435,6 +2438,9 @@
     "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/HeartoftheElements.png" : "The Admiral",
     "https://web.poecdn.com/image/Art/2DItems/Belts/TheDruggery.png" : "The Druggery",
     "https://web.poecdn.com/image/Art/2DItems/Amulets/Charge%20Amplifier.png" : "The Ephemeral Bond",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/ExtremeFocus.png" : "The Fledgling",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/SmokeAndMirrors.png" : "The Ghastly Theatre",
+    "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Daggers/SecretBlade.png" : "The Hidden Blade",
     "https://web.poecdn.com/image/Art/2DItems/Rings/BanditRing.png" : "The Highwayman",
     "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/OneHandSwords/SkeletonSword.png" : "The Iron Mass",
     "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/MindBlockMask.png" : "Willclash"    
