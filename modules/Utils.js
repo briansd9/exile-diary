@@ -114,7 +114,7 @@ class Utils {
       
       return `${item.enchantMods[0]}`;
       
-    } else if(item.typeLine.endsWith("Map")) {
+    } else if(item.typeLine.endsWith("Map") && !item.typeLine.startsWith("Maligaro")) {
       
       for(let i = 0; i < item.properties.length; i++) {
         let prop = item.properties[i];
