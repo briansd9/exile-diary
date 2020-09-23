@@ -320,6 +320,7 @@
           case 6: return "Metamorph";
           case 7: return "Delirium";
           case 8: return "Harvest";
+          case 9: return "Heist";
         }
       } else {
         if(data.f.includes("2DItems/Maps/AtlasMaps")) return "Atlas";
