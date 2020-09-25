@@ -1,3 +1,4 @@
+const EventEmitter = require('events');
 const moment = require('moment');
 const Constants = require('./Constants');
 const logger = require("./Log").getLogger(__filename);
@@ -38,6 +39,7 @@ const specialGems = ["Empower Support", "Enlighten Support", "Enhance Support"];
 var DB;
 var settings;
 var league;
+var emitter = new EventEmitter();
 
 /*
  * get today's rates from POE.ninja 
@@ -69,6 +71,7 @@ async function update() {
     return;
   }
   
+  emitter.emit("gettingPrices");
   logger.info(`Getting new rates in ${league} for ${today}`);
   getRates(today);
 
@@ -85,9 +88,11 @@ async function getRates(date) {
       var data = await getNinjaData(getNinjaURL(key));
       tempRates[key] = process(data);
     }
-    logger.info("Finished getting prices from poe.ninja");
+    logger.info("Finished getting prices from poe.ninja, processing now");
   } catch(e) {
+    emitter.emit("gettingPricesFailed");
     logger.info("Error getting rates: " + e);
+    return;
   }
   
   var rates = {};
@@ -125,8 +130,10 @@ async function getRates(date) {
   var data = await Utils.compress(rates);
   DB.run("insert into fullrates(date, data) values(?, ?)", [date, data], (err) => {
     if(err) {
+      emitter.emit("gettingPricesFailed");
       logger.info(`Error inserting rates for ${date}: [${err}]`);
     } else {
+      emitter.emit("doneGettingPrices");
       logger.info(`Successfully inserted rates for ${date}`);
     }
   });
@@ -198,6 +205,10 @@ function getNinjaData(path) {
         });
         response.on('error', (e) => {
           logger.info(`Failed to get data from [${path}]: ${e}`);
+          reject(e);
+        });
+        response.on('aborted', (e) => {
+          logger.info(`Failed to get data from [${path}]: response aborted!`);
           reject(e);
         });
       }
@@ -344,3 +355,4 @@ function cleanSeeds(arr) {
 
       
 module.exports.update = update;
+module.exports.emitter = emitter;

@@ -248,6 +248,17 @@ function initWindow(window) {
     webContents.send("incubatorsUpdated", incubators);
   });
   
+  RateGetterV2.emitter.removeAllListeners();
+  RateGetterV2.emitter.on("gettingPrices", () => {
+    addMessage("<span class='eventText'>Getting item prices from poe.ninja...</span>")
+  });
+  RateGetterV2.emitter.on("doneGettingPrices", () => {
+    addMessage("<span class='eventText'>Finished getting item prices from poe.ninja</span>")
+  });
+  RateGetterV2.emitter.on("gettingPricesFailed", () => {
+    addMessage("<span class='eventText removeRow' onclick='rateGetterRetry(this);'>Error getting item prices from poe.ninja, <span class='retry'>click on this message to try again</span></span>")
+  });
+  
 }
 
 async function createWindow() {
@@ -291,6 +302,9 @@ async function createWindow() {
   });
   ipcMain.on('pastebin-error', () => {
     addMessage(`Error uploading map list, please try again`);
+  });
+  ipcMain.on('rateGetterRetry', function(event) {
+    RateGetterV2.update();
   });
 
   require('./modules/electron-capture/src/main');

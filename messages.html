@@ -1,5 +1,12 @@
 <script>
-  
+
+  function rateGetterRetry(elem) {
+    elem.onclick = null;
+    $(elem).removeClass("removeRow");
+    $(".retry").html("retrying...");
+    require('electron').ipcRenderer.send("rateGetterRetry");
+  }
+
   function addMessageRow(msg) {
     $("#messages").append(`<div class='message'><span class='eventTime'>[${msg.timestamp}]</span> ${msg.text}</div>`);
     if($("#messages div").length > 10) {
