@@ -719,7 +719,7 @@ function getPropertyString(prop) {
         // progress bar type value - handle this later
         return null;
       case 3:
-        let str = prop.name;
+        let str = prop.name.replace(/\n/g, "<br/>");
         for(let i = 0; i < prop.values.length; i++) {
           if(str.startsWith("Stored Experience")) {
             prop.values[i][0] = (new Intl.NumberFormat()).format(Number.parseInt(prop.values[i][0]));
@@ -740,5 +740,6 @@ function getPropertyString(prop) {
 
 
 function formatValue(val) {
+  val[0] = val[0].replace(/\n/g, "<br/>");
   return `<span class='${valueColourNames[val[1]]}'>${val[0]}</span>`;
 }
