@@ -56,7 +56,11 @@ const flaskIgnoreProperties = [
   "Lasts %0 Seconds",
   "Consumes %0 of %1 Charges on use",
   "Currently has %0 Charge",
-  "Currently has %0 Charges"
+  "Currently has %0 Charges",
+  "Lasts {0} Seconds",
+  "Consumes {0} of {1} Charges on use",
+  "Currently has {0} Charge",
+  "Currently has {0} Charges"
 ];
 
 async function check(timestamp, eqp) {
