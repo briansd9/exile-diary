@@ -124,6 +124,15 @@ function getEvent(arg) {
       instanceServer: ""
     };
   }
+
+  var heistRogueString = hasHeistRogue(str);
+  if(heistRogueString) {
+    return {
+      type: "heistRogue",
+      text: heistRogueString.trim(),
+      instanceServer: ""
+    };
+  }
   
   if(str.startsWith(":")) {
     if (str.includes("You have entered")) {
@@ -207,6 +216,12 @@ function hasNPC(str) {
   return (Constants.leagueNPCs.includes(npc) ? str : null);
 }
 
+function hasHeistRogue(str) {
+  let npc = str.substr(0, str.indexOf(":")).trim();
+  return (Constants.heistRogues.includes(npc) ? str : null);
+}
+
+
 async function getOldNPCEvents() {
   
   DB = require('./DB').getDB();
@@ -246,22 +261,11 @@ async function getOldNPCEvents() {
             logger.info(`Inserted league NPC event ${timestamp} -> ${npcString}`);
           }
         }
-      );        
-    }     if(npcString) {
-      DB.run(
-        "insert into events(id, event_type, event_text, server) values(?, ?, ?, ?)",
-        [timestamp, "leagueNPC", npcString.trim(), ""],
-        (err) => {
-          if (err) {
-              if(!err.message.includes("UNIQUE constraint failed")) {
-                logger.info("Failed to insert event: " + err.message);
-              }
-          } else {
-            logger.info(`Inserted league NPC event ${timestamp} -> ${npcString}`);
-          }
-        }
-      );        
-    } else if(hasConqueror(str)) {
+      );
+      return;
+    }
+    
+    if(hasConqueror(str)) {
       DB.run(
         "insert into events(id, event_type, event_text, server) values(?, ?, ?, ?)",
         [timestamp, "conqueror", str.trim(), ""],
@@ -271,11 +275,32 @@ async function getOldNPCEvents() {
                 logger.info("Failed to insert event: " + err.message);
               }
           } else {
-            logger.info(`Inserted master event ${timestamp} -> ${str}`);
+            logger.info(`Inserted conqueror event ${timestamp} -> ${str}`);
           }
         }
-      );        
-    } else if(str.startsWith(":")) {      
+      );
+      return;
+    }
+    
+    var h = hasHeistRogue(str);
+    if(h) {
+      DB.run(
+        "insert into events(id, event_type, event_text, server) values(?, ?, ?, ?)",
+        [timestamp, "heistRogue", h.trim(), ""],
+        (err) => {
+          if (err) {
+              if(!err.message.includes("UNIQUE constraint failed")) {
+                logger.info("Failed to insert event: " + err.message);
+              }
+          } else {
+            logger.info(`Inserted heist rogue event ${timestamp} -> ${h}`);
+          }
+        }
+      );
+      return;
+    }
+    
+    if(str.startsWith(":")) {      
       str = str.substring(2).trim();
       if(Constants.shrineQuotes[str] || Constants.darkshrineQuotes.includes(str)) {
         DB.run(

@@ -30,6 +30,11 @@ async function get() {
     m.runinfo = JSON.parse(m.runinfo);
     m.areaType = (m.runinfo.blightedMap ? "blightedMaps" : Utils.getAreaType(m.name));
     
+    // Laboratory area name no longer unique :-(
+    if(m.areaType === "Laboratory" && m.runinfo.heistRogues) {
+      m.areaType = "Heist";
+    }
+    
     mergeRunInfo(totalStats, m);
     mergeAreaStats(areaStats, m);
     

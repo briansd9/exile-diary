@@ -50,6 +50,55 @@
     "Vorici, Silent Brother"
   ],
   
+  "heistRogues" : [
+    "Karst, the Lockpick",
+    "Isla, the Engineer",
+    "Nenet, the Scout",
+    "Gianna, the Master of Disguise",
+    "Vinderi, the Dismantler",
+    "Niles, the Interrogator",
+    "Huck, the Soldier",
+    "Tibbs, the Giant",
+    "Tullina, the Catburglar",
+    "Kurai, the Administrator"    
+  ],
+  
+  "heistCompleteLines" : [
+    "Adiyah, the Wayfinder: Another victory for crime.",
+    "Adiyah, the Wayfinder: Commendable discipline, Mr. Huck.",
+    "Adiyah, the Wayfinder: It appears you met great success.",
+    "Adiyah, the Wayfinder: Niles, do you still reject the gods?",
+    "Huck, the Soldier: That mission was a damned success!",
+    "Huck, the Soldier: I knew we could do it! Mostly!",    
+    "Huck, the Soldier: Savour it, Exile! Nothing's as sweet as success.",
+    "Huck, the Soldier: Victory! Didn't have many of those in my unit!",
+    "Karst, the Lockpick: Adiyah, you've never looked more lovely. Take us home, yeah?",
+    "Karst, the Lockpick: And with that, the rookie was forever indebted to the mighty Karst!",
+    "Karst, the Lockpick: He does it again! Can anyone stop him! I sure bloody hope not.",
+    "Karst, the Lockpick: Honestly didn't think we'd make it.",
+    "Gianna, the Master of Disguise: Faultless! Stunning! An incredible performance! And you were also very good!",
+    "Isla, the Engineer: Does this mean we're friends now?",
+    "Isla, the Engineer: My contraptions worked perfectly!",
+    "Isla, the Engineer: Plan, execute, success! I love logic!",
+    "Isla, the Engineer: This has inspired an idea for a new invention!",
+    "Nenet, the Scout: Let's return to that rat-ridden place we call home.",
+    "Nenet, the Scout: That was harrowing.",
+    "Niles, the Interrogator: Have I ever told you that your mind is incredibly ordered?",
+    "Niles, the Interrogator: Nothing quite like the thrill of avoiding death one more day!",
+    "Niles, the Interrogator: That made me nostalgic for my interrogator days.",
+    "Tibbs, the Giant: Hooey! That's how it's done!",
+    "Tibbs, the Giant: I am absolutely bloody exhausted.",
+    "Tibbs, the Giant: I'ma be sore tomorrow for sure! Good sore.",
+    "Tibbs, the Giant: We bloody did it mate! We bloody did it!",
+    "Tibbs, the Giant: Yes! I'm comin' home with the goods!",
+    "Tullina, the Catburglar: Ah, that's one for the books.",
+    "Tullina, the Catburglar: Adiyah, get us home to a cold drink and a warm fire.",
+    "Tullina, the Catburglar: If you plan on working with me in the future, you ought to get used to the feeling of success.",
+    "Tullina, the Catburglar: That could've gone better, but it could have gone a LOT worse!",
+    "Tullina, the Catburglar: Well done! Not as messy as I'd feared",
+    "Vinderi, the Dismantler: Gods, that was exhilarating."
+  ],
+  
   "templeRoomQuotes" : {
     "What on earth did they need this much energy for?" : "Conduit of Lightning",
     "Whew... I'm sweating like a hog in heat." : "Crucible of Flame",
@@ -1476,6 +1525,18 @@
     ],
     "harvest" : [
       "The Sacred Grove"
+    ],
+    "heist": [
+      "The Rogue Harbour",      
+      "Bunker",
+      "Smuggler's Den",
+      "Laboratory",
+      "Repository",
+      "Prohibited Library",
+      "Tunnels",
+      "Underbelly",
+      "Records Office",
+      "Mansion"
     ],
     "endgame" : [
       "Absence of Value and Meaning",

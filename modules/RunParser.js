@@ -755,6 +755,7 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
   let blightCount = 0;
   let conqCount = 0;    
   let conqueror;
+  let heistRogues = {};
   
   run.areaTimes = getRunAreaTimes(events);
 
@@ -801,6 +802,10 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
         break;
       case "leagueNPC":
         line = getLine(evt.event_text);
+        break;
+      case "heistRogue":
+        line = getLine(evt.event_text);
+        heistRogues[line.npc] = true;
         break;
       default:
         // ignore other event types
@@ -974,6 +979,10 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
       }
     })
     run.conqueror = conqueror;
+  }
+  
+  if(heistRogues) {
+    run.heistRogues = Object.keys(heistRogues);
   }
   
   if(items.importantDrops) {
