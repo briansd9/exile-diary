@@ -81,11 +81,13 @@ async function getRates(date) {
   
   var tempRates = {};
   
+  let useGzip = settings.hasOwnProperty("useGzip") ? settings.useGzip : true;
+  
   try {
     for(var key in rateTypes) {
       logger.info(`Getting prices for item type ${key}`);
       var process = rateTypes[key];
-      var data = await getNinjaData(getNinjaURL(key));
+      var data = await getNinjaData(getNinjaURL(key), useGzip);
       tempRates[key] = process(data);
     }
     logger.info("Finished getting prices from poe.ninja, processing now");
@@ -178,10 +180,13 @@ function getNinjaURL(category) {
   return `${url}&league=${encodeURIComponent(league)}`;
 }
 
-function getNinjaData(path) {
+function getNinjaData(path, useGzip) {
   return new Promise((resolve, reject) => {
+    
+    let headerObject = useGzip ? { "Accept-Encoding" : "gzip" } : {};
+    
     var request = https.request(
-      { hostname: 'poe.ninja', path: path, method: 'GET', headers: { "Accept-Encoding" : "gzip" } }, response => {
+      { hostname: 'poe.ninja', path: path, method: 'GET', headers: headerObject }, response => {
         var buffers = [];
         response.on('data', (chunk) => {
           buffers.push(chunk);
@@ -191,12 +196,11 @@ function getNinjaData(path) {
             var data;
             var body = Buffer.concat(buffers);
             try {
-              data = zlib.gunzipSync(body);
+              data = useGzip ? zlib.gunzipSync(body) : body.toString();
             } catch(e) {
               logger.info("Error unzipping received data: " + e);
-              reject(e);
             }
-            logger.info(`Got data from ${path}, length ${body.length} (${data.length} uncompressed)`);
+            logger.info(`Got data from ${path}, length ${body.length} ${ useGzip ? `(${data.length} uncompressed)` : "" }`);
             resolve(JSON.parse(data));
           } catch(e) {
             logger.info(`Failed to get data from [${path}]: ${e}`);
