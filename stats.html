@@ -756,7 +756,7 @@
                   templesCompleted = s.atzoatl[room];
                   break;
                 default:
-                  roomsTable = roomsTable || "<div style='max-height:14em;overflow-y:scroll;'><table class='extraInfo'><thead><tr><th>Tier 3 Rooms</th><th></th></tr></thead><tbody>";
+                  roomsTable = roomsTable || "<div style='max-height:14em;overflow-y:auto;'><table class='extraInfo'><thead><tr><th>Tier 3 Rooms</th><th></th></tr></thead><tbody>";
                   roomsTable += `<tr><td>${room}</td><td>${s.atzoatl[room]}</td></tr>`;
                 break;
               }
@@ -775,7 +775,7 @@
           break;
         case "Zana, Master Cartographer":
           if(masterInfo.missionMaps) {
-            let mapTable = "<div style='max-height:14em;overflow-y:scroll;'><table class='extraInfo'><thead><tr><th>Mission Maps</th><th></th></tr></thead><tbody>";
+            let mapTable = "<div style='max-height:14em;overflow-y:auto;'><table class='extraInfo'><thead><tr><th>Mission Maps</th><th></th></tr></thead><tbody>";
             for(var map in masterInfo.missionMaps) {
               mapTable += `<tr><td>${map}</td><td>${masterInfo.missionMaps[map]}</td></tr>`;
             }
@@ -788,7 +788,7 @@
             extraInfo.text += `<span>Mastermind Lairs:</span> <span class='statValue'>${s.mastermind.started}</span> (<span class='statValue'>${s.mastermind.completed}</span> completed)</span><br/>`;
           }
           if(s.syndicate) {
-            let syndTable = "<div style='max-height:14em;overflow-y:scroll;'><table class='extraInfo'><thead><tr><th>Syndicate Members</th><th>Encounters</th><th>Kills</th><th>Safehouse Leader</th></tr></thead><tbody>";
+            let syndTable = "<div style='max-height:14em;overflow-y:auto;'><table class='extraInfo'><thead><tr><th>Syndicate Members</th><th>Encounters</th><th>Kills</th><th>Safehouse Leader</th></tr></thead><tbody>";
             for(var member in s.syndicate) {
               let info = s.syndicate[member];
               syndTable += `<tr><td>${member}</td><td>${info.encounters}</td><td>${info.kills}</td><td>${info.safehouseLeaderKills}</td></tr>`;
