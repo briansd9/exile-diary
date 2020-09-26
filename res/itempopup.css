@@ -536,10 +536,16 @@
   height: 401px;
   background: transparent;
   font-size: 14px; }
+
 .divinationCard span.lc {
   padding: 0; 
   top: 4px;
 }
+
+.divinationCard .flavourText span.lc {
+  white-space:  normal;
+}
+
 .divinationCard .cardFace {
   position: absolute;
   z-index: -1;
