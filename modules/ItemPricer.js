@@ -27,7 +27,7 @@
 
     var DB = require('./DB').getDB();
     return new Promise((resolve, reject) => {
-      DB.get("select date, data from fullrates where date <= ? order by date desc", [date], async (err, row) => {
+      DB.get("select date, data from fullrates where date <= ? or date = (select min(date) from fullrates) order by date desc", [date], async (err, row) => {
         if(err) {
           logger.info(`Unable to get rates for ${date}: ${err}`);
           resolve(null);
