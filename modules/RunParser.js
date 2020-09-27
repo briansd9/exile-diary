@@ -530,6 +530,8 @@ function getItemsFor(evt) {
             if(item.category === "Metamorph Sample") {
               let organ = (item.typeline.substr(item.typeline.lastIndexOf(" ") + 1)).toLowerCase();
               importantDrops[organ] = (importantDrops[organ] || 0) + 1;
+            } else if(item.category === "Heist Target") {
+              importantDrops["heistTarget"] = 1;
             } else if(item.typeline.endsWith("'s Exalted Orb") || item.typeline === "Awakener's Orb") {
               importantDrops[item.typeline] = (importantDrops[item.typeline] || 0) + 1;
             }
@@ -755,7 +757,7 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
   let blightCount = 0;
   let conqCount = 0;    
   let conqueror;
-  let heistRogues = {};
+  let heistRogues;
   
   run.areaTimes = getRunAreaTimes(events);
 
@@ -805,6 +807,7 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
         break;
       case "heistRogue":
         line = getLine(evt.event_text);
+        heistRogues = heistRogues || {};
         heistRogues[line.npc] = true;
         break;
       default:
@@ -982,7 +985,7 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
   }
   
   if(heistRogues) {
-    run.heistRogues = Object.keys(heistRogues);
+    run.heistRogues = heistRogues;
   }
   
   if(items.importantDrops) {
@@ -995,6 +998,9 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
         case "liver":
           run.metamorph = run.metamorph || {};
           run.metamorph[key] = (run.metamorph[key] || 0) + items.importantDrops[key];
+          break;
+        case "heistTarget":
+          run.heistCompleted = true;
           break;
         case "Hunter's Exalted Orb":
           if(run.conqueror && run.conqueror["Al-Hezmin, the Hunter"] && run.conqueror["Al-Hezmin, the Hunter"].defeated) {
