@@ -85,9 +85,17 @@ async function getRates(date) {
   
   try {
     for(var key in rateTypes) {
-      logger.info(`Getting prices for item type ${key}`);
+      var data;
+      for(let i = 1; i <= 10; i++) {
+        logger.info(`Getting prices for item type ${key}, attempt ${i} of 10`);
+        try {
+          data = await getNinjaData(getNinjaURL(key), useGzip);
+          break;
+        } catch(err) {
+          if(i === 10) throw err;
+        }
+      }
       var process = rateTypes[key];
-      var data = await getNinjaData(getNinjaURL(key), useGzip);
       tempRates[key] = process(data);
     }
     logger.info("Finished getting prices from poe.ninja, processing now");
@@ -184,9 +192,14 @@ function getNinjaData(path, useGzip) {
   return new Promise((resolve, reject) => {
     
     let headerObject = useGzip ? { "Accept-Encoding" : "gzip" } : {};
+    let timeout = useGzip ? 10000 : 30000;
     
-    var request = https.request(
-      { hostname: 'poe.ninja', path: path, method: 'GET', headers: headerObject }, response => {
+    var request = https.request({ 
+        hostname: 'poe.ninja', 
+        path: path, 
+        method: 'GET', 
+        headers: headerObject 
+      }, response => {
         var buffers = [];
         response.on('data', (chunk) => {
           buffers.push(chunk);
@@ -221,6 +234,10 @@ function getNinjaData(path, useGzip) {
       logger.info(`Failed to get data from [${path}]: ${e}`);
       reject(e);
     });
+    request.on('timeout', () => {
+      request.destroy(new Error(`Timed out after ${timeout/1000} seconds`));
+    });
+    request.setTimeout(timeout);
     request.end();
   });
 }
