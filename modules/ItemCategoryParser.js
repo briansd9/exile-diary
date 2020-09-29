@@ -42,7 +42,7 @@ function getCategory(item, subcategory = false) {
   
   switch(item.frameType) {
     case 4:
-      var n = t.replace("Superior ", "");
+      var n = t.replace(/(Superior|Anomalous|Divergent) /g, "");
       if(gemBaseTypes[n]) {
         return gemBaseTypes[n];
       } else {
@@ -109,7 +109,7 @@ function getCategory(item, subcategory = false) {
     }
   }
   
-  logger.info("No category found for item! JSON follows:");
+  logger.info(`No category found for item ${item.id || "(no id)"}! JSON follows:`);
   logger.info(JSON.stringify(item));
   return null;  
 
