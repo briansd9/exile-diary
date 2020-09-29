@@ -712,7 +712,7 @@ function getPropertyString(prop) {
   } else {
     switch(prop.displayMode) {
       case 0:
-        return `<span>${prop.name}: ${formatValue(prop.values[0])}</span>`;
+        return `<span>${prop.name ? prop.name + ": " : ""}${formatValue(prop.values[0])}</span>`;
       case 1:
         return `<span>${formatValue(prop.values[0])} ${prop.name}</span>`;
       case 2:
