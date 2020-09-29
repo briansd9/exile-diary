@@ -31,8 +31,12 @@ async function get() {
     m.areaType = (m.runinfo.blightedMap ? "blightedMaps" : Utils.getAreaType(m.name));
     
     // Laboratory area name no longer unique :-(
-    if(m.areaType === "Laboratory" && m.runinfo.heistRogues) {
-      m.areaType = "Heist";
+    if(m.name === "Laboratory" && m.runinfo.heistRogues && Object.keys(m.runinfo.heistRogues).length > 0) {
+      m.areaType = "heist";
+    }
+    
+    if(m.areaType === "heist" && m.runinfo.heistRogues && Object.keys(m.runinfo.heistRogues).length > 1) {
+      m.areaType = "grandHeist";
     }
     
     mergeRunInfo(totalStats, m);
@@ -304,19 +308,11 @@ function mergeRunInfo(totalStats, map) {
     }
   }
   
-  if(info.importantDrops) {
-    for(var key in info.importantDrops) {
-      switch(key) {
-        case "brain":
-        case "lung":
-        case "heart":
-        case "eye":
-        case "liver":
-          totalStats.metamorph = totalStats.metamorph || { encounters: 0 };
-          totalStats.metamorph.encounters++;
-          totalStats.metamorph[key] = (totalStats.metamorph[key] || 0) + info.importantDrops[key];
-          break;
-      }
+  if(info.metamorph) {
+    for(var key in info.metamorph) {
+      totalStats.metamorph = totalStats.metamorph || { encounters: 0 };
+      totalStats.metamorph.encounters++;
+      totalStats.metamorph[key] = (totalStats.metamorph[key] || 0) + info.metamorph[key];
     }
   }
   
