@@ -225,7 +225,9 @@ static createItem(itemdata)
 		if (!this.identified || !this.name) {
       var name = (this.stackSize > 1 ? this.stackSize + " x " : "") + this.baseType;
       if(this.gemLevel) {
-        if(this.quality > 0) name = "Superior " + name;
+        if(this.quality > 0 && !name.includes("Anomalous") && !name.includes("Divergent") && name.includes("Phantasmal")) {
+          name = "Superior " + name;
+        }
         if(this.gemLevel > 1) name += ` (Level ${this.gemLevel})`;
       }
       return name;
