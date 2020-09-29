@@ -985,7 +985,7 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
   }
   
   if(heistRogues) {
-    run.heistRogues = heistRogues;
+    run.heistRogues = Object.keys(heistRogues);
   }
   
   if(items.importantDrops) {
