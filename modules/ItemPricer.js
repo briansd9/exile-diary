@@ -6,8 +6,7 @@
   const ItemFilter = require('./ItemFilter');
   const Utils = require('./Utils');
   const zlib = require('zlib');  
-  const settings = require('./settings').get();
-  
+  const settings = require('./settings').get();  
 
   const baseTypeRarities = ["Normal", "Magic", "Rare"];
   
@@ -128,8 +127,12 @@
     if(item.rarity === "Prophecy") {
       return getValueFromTable("Prophecy");
     }
-    if(item.category.includes("Skill Gems")) {
+    if(item.category && item.category.includes("Skill Gems")) {
       return getGemValue();
+    }
+    if(item.category === "Trinket" || item.category === "Heist Brooch" || item.category === "Heist Cloak" || item.category === "Heist Gear" || item.category === "Heist Tool") {
+      // value not tracked for heist equipment
+      return 0;
     }
 
     if(baseTypeRarities.includes(item.rarity) && Constants.baseTypeCategories.includes(item.category)) {
@@ -146,7 +149,7 @@
       return Math.max(helmetBaseValue, helmetEnchantValue);
     }
 
-    logger.info("Unable to get value for item:");
+    logger.info(`Unable to get value for item ${item.id || "(no id)"}:`);
     logger.info(JSON.stringify(item.parsedItem));
     return 0;
     
@@ -209,8 +212,7 @@
       if(!item.parsedItem.enchantMods) return 0;
       var identifier = item.parsedItem.enchantMods;
       return getValueFromTable("HelmetEnchant", identifier);      
-    }
-    
+    }    
 
     function getWatchstoneValue() {
       var identifier = item.name || Utils.getItemName(item.icon);
@@ -406,7 +408,7 @@
             }
           }
         }
-      } else if(item.category.includes("Skill Gems")) {
+      } else if(item.category && item.category.includes("Skill Gems")) {
         let quality = ItemData.getQuality(item.parsedItem);
         if(quality >= 20) {
           vendorValue = rates["Currency"]["Gemcutter's Prism"];
