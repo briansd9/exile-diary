@@ -1000,7 +1000,10 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
           run.metamorph[key] = (run.metamorph[key] || 0) + items.importantDrops[key];
           break;
         case "heistTarget":
-          run.heistCompleted = true;
+          if(run.heistRogues && run.heistRogues.length === 1) {
+            // only normal heists are completed by finding a heist target - can't track grand heist completion
+            run.heistCompleted = true;
+          }
           break;
         case "Hunter's Exalted Orb":
           if(run.conqueror && run.conqueror["Al-Hezmin, the Hunter"] && run.conqueror["Al-Hezmin, the Hunter"].defeated) {
