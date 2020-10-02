@@ -316,7 +316,21 @@ function mergeRunInfo(totalStats, map) {
     }
   }
   
-  
+  if(info.heistRogues && Object.keys(info.heistRogues).length > 0) {
+    totalStats.heist = totalStats.heist || { heists: 0, heistsCompleted: 0, grandHeists: 0, rogues: {} };
+    if(Object.keys(info.heistRogues).length === 1) {
+      totalStats.heist.heists++;
+      if(info.heistCompleted) {
+        totalStats.heist.heistsCompleted++;
+      }
+    } else if(Object.keys(info.heistRogues).length > 1) {
+      totalStats.heist.grandHeists++;
+    }
+    let rogues = Array.isArray(info.heistRogues) ? info.heistRogues : Object.keys(info.heistRogues);
+    rogues.forEach(r => {
+      totalStats.heist.rogues[r] = (totalStats.heist.rogues[r] || 0) + 1;
+    });
+  }
 
 }
 
