@@ -364,7 +364,7 @@
           "Vivid" : "yellow"
         };
         
-        if(!s.horticrafts) {
+        if(!s.horticrafts || Object.keys(s.horticrafts).length === 0) {
           $("#horticraftsHeader").hide();
           $("#horticraftsTable").hide();          
         } else {
@@ -616,7 +616,7 @@
         </tbody>
       </table>
       
-      <div id='horticraftsHeader' class='tableLink' style='display:inline-flex;width:100%;position:relative'>
+      <div id='horticraftsHeader' class='tableLink' style='display:inline-flex;width:100%;position:relative;'>
         <div class='tableLinkHeader' style='padding:6px;'>
           Horticrafts
         </div>      
