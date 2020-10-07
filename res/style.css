@@ -126,6 +126,9 @@ html {
 		color: #aaaaaa;
 		font-family: FontinSmallCaps;
 		font-size: 22px;
+    margin: 8px 0px;
+    padding: 4px;    
+    min-width: 76px;
 	}
 	
 	.dropbtn {
@@ -283,7 +286,8 @@ div.searchHeader {
 .searchLabel {
   vertical-align: middle;
   color: #fff8e1;
-  padding-right: 60px;
+  display: inline-block;
+  min-width: 230px;
 }
 
 input {

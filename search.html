@@ -66,7 +66,7 @@
         $("#mapFilters").append(numberInput("Level", "level"));
         $("#mapFilters").append(numberInput("Player Level", "playerlevel"));
         if(!ssf) {
-          $("#mapFilters").append(numberInput("Profit (<img style='vertical-align:middle;' src='res/img/c.png'/>)", "profit", 5));
+          $("#mapFilters").append(numberInput("Profit (<img class='currencyText' src='res/img/c.png'/>)", "profit", 5));
         }
         if(!hardcore) {
           $("#mapFilters").append(numberInput("Deaths", "deaths"));
@@ -385,21 +385,16 @@
 
       function numberInput(label, inputname, maxlength = 3, pattern = '[0-9]+') {
         return ` 
-            <tr id='${inputname}row'>
-              <td>
-                <div class='searchLabel' id='${inputname}label'>${label}</div>
-              </td>
-              <td>
-                <input name='${inputname}min' id='${inputname}min' class='number' type='text' placeholder='Min' min='0' pattern='${pattern}' maxlength='${maxlength}' size='5' />
-                <input name='${inputname}max' id='${inputname}max' class='number' type='text' placeholder='Max' min='0' pattern='${pattern}' maxlength='${maxlength}' size='5' />
-              </td>
-            </tr>
+            <div id='${inputname}row'>
+              <div class='searchLabel' id='${inputname}label'>${label}</div>
+              <input name='${inputname}min' id='${inputname}min' class='number' type='text' placeholder='Min' min='0' pattern='${pattern}' maxlength='${maxlength}' size='5' />
+              <input name='${inputname}max' id='${inputname}max' class='number' type='text' placeholder='Max' min='0' pattern='${pattern}' maxlength='${maxlength}' size='5' />
+            </div>
         `;
       }      
 
       function toggleFilters() {
         $("#mapFilters").toggle();
-        $("#mapFilterButtons").toggle();
         if($("#mapFiltersHeaderIcon").html() === "( - )") {
           $("#mapFiltersHeaderIcon").html("( + )");
         } else {
@@ -521,17 +516,28 @@
           <div class='searchHeader' id='mapFiltersHeader' onclick='toggleFilters()'>
             <span class='headerIcon' id='mapFiltersHeaderIcon'>( - )</span> Map Filters
           </div>
-          <table id='mapFilters'>
-            <tr id='mapnamerow'>
-              <td><div id='mapnamelabel' class='searchLabel'>Name</div></td>
-              <td><input class='autoclick' name='mapname' id='mapname' type='text' maxlength='30' size='40' /></td>
-            </tr>
-            <tr id='mapcountrow'>
-              <td><div id='mapcountlabel' class='searchLabel' style='padding-right:0px;'>Only search previous</div></td>
-              <td><input name='mapcount' id='mapcount' class='number' type='text'min='0' pattern='[0-9]+' maxlength='5' size='5' /> <span style='padding-left:8px;' class='searchLabel'>maps</span></td>
-            </tr>
-          </table>
-          <div id='getItems' style='padding:10px 0px'>
+          <div style='display:grid;grid-template-columns:1fr 1fr;'>
+            <div id='mapFilters' style='white-space: nowrap;'>
+              <div id='mapnamerow'>
+                <div id='mapnamelabel' class='searchLabel'>Area Name</div>
+                <input class='autoclick' name='mapname' id='mapname' type='text' maxlength='30' size='40' />
+              </div>
+              <div id='mapcountrow'>
+                <div id='mapcountlabel' class='searchLabel' style='padding-right:8px;'>Only search previous</div>
+                <input name='mapcount' id='mapcount' class='number' type='number' min='0' max='99999' size='5' />
+                <span style='padding-left:8px;' class='searchLabel'>maps</span>
+              </div>
+              <div id='mapcountrow'>
+                <div class='searchLabel'>Blighted</div>
+                <select name='blighted' id='blighted' style='font-size:22px;'>
+                  <option value='any' selected>Any</option>
+                  <option value='yes'>Yes</option>
+                  <option value='no'>No</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div id='getItems' style='padding:10px 0px;border-top:1px solid #333;margin-top:10px'>
             <span class='itemToggle'><input type='checkbox' id='getItemsCheckbox' checked name='getItems' value='true'/> Also retrieve items (may be very slow)</span>
           </div>
           <div id='mapFilterButtons'>

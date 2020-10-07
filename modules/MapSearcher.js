@@ -352,6 +352,7 @@ function getSQL(q) {
     (select count(1) from events e where e.id between mapruns.firstevent and mapruns.lastevent and e.event_type = 'slain') deaths
     from areainfo, 
   `;
+  var params = [];
   
   if(q.mapcount) {
     str += ` (select * from mapruns where gained > -1 order by id desc limit ${q.mapcount} ) mapruns `;
@@ -360,7 +361,10 @@ function getSQL(q) {
   }
     
   str += " where areainfo.id = mapruns.id and ifnull(mapruns.gained, 0) != -1 and ifnull(mapruns.kills, 0) != -1 ";
-  var params = [];
+  
+  if(q.blighted && q.blighted !== "any") {
+    str += ` and json_extract(runinfo, '$.blightedMap') is ${q.blighted === "yes" ? "not null" : "null"} `;
+  }
   
   if(q.mapname) {
     str += " and name like ? ";
