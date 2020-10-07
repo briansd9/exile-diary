@@ -492,6 +492,7 @@ function addMessage(text, sendToOverlay = false) {
     (async () => {
       var win = await activeWin();
       if(win.title === "Path of Exile" && win.owner.name.startsWith("PathOfExile")) {
+        overlayWindow.webContents.send("position", { x: win.bounds.x + 10, y: win.bounds.y + 100 });
         overlayWindow.webContents.send("message", msg);
         overlayWindow.setAlwaysOnTop(true, "pop-up-menu");
         overlayWindow.showInactive();        
