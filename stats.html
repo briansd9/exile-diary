@@ -329,10 +329,11 @@
       
     }
     
-    async function loadAreaDetails(area, id) {
+    async function loadAreaDetails(area, areaType) {
       
-      if(!$(`#${id}DetailTable`).data("loaded")) {
-        let rows = await StatsGetter.getAreaByName(area, id.includes("blighted"));
+      if(!$(`#${areaType}DetailTable`).data("loaded")) {
+        
+        let rows = await StatsGetter.getAreaByName(area, areaType);
         for(let i = 0; i < rows.length; i++) {          
           let map = rows[i];
           let row = $(`
@@ -345,10 +346,10 @@
               <td>${f.format(map.deaths)}</td>
             </tr>
           `);
-          $(`#${id}DetailTableRows`).append(row);
+          $(`#${areaType}DetailTableRows`).append(row);
         }
-        $(`#${id}DetailTable`).data("loaded", true);
-        $(`#${id}DetailTable`).tablesorter({
+        $(`#${areaType}DetailTable`).data("loaded", true);
+        $(`#${areaType}DetailTable`).tablesorter({
           headers: {
             1: { sortInitialOrder: "desc" },
             2: { sortInitialOrder: "desc" },
@@ -358,9 +359,9 @@
         });
       }
       
-      let t = $(`#${id}Detail`);
-      let btn = $(`#${id}Toggle`);
-      let parentRow = $(`#${id}Row`);
+      let t = $(`#${areaType}Detail`);
+      let btn = $(`#${areaType}Toggle`);
+      let parentRow = $(`#${areaType}Row`);
       t.toggle();
       if(t.is(":visible")) {
         btn.html("-");

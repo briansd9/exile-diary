@@ -62,7 +62,7 @@ async function getUnrighteousTurnedToAsh() {
   });  
 }
 
-async function getAreaByName(area, blighted = false) {
+async function getAreaByName(area, areaType) {
   
   let maps = [];
   let q = await new Promise((resolve, reject) => {
@@ -71,7 +71,9 @@ async function getAreaByName(area, blighted = false) {
       from areainfo, mapruns 
       where mapruns.id = areainfo.id
       and areainfo.name = ?
-      and json_extract(runinfo, '$.blightedMap') is ${blighted ? 'not null' : 'null'}
+      ${areaType.startsWith("blightedMaps") ? "and json_extract(runinfo, '$.blightedMap') is not null" : ""}
+      ${areaType.startsWith("heist") ? "and json_extract(runinfo, '$.heistRogues') is not null" : ""}
+      ${areaType.startsWith("grandHeist") ? "and json_array_length(json_extract(runinfo, '$.heistRogues')) > 1" : ""}
       and ifnull(kills, 0) > -1 and ifnull(gained, 0) > -1
       order by mapruns.id
     `, [area], (err, rows) => {
