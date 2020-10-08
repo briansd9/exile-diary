@@ -36,11 +36,6 @@
       }
       
       $(document).ready(function () {
-
-        renderer.on("position", (event, pos) => {
-          window.moveTo(pos.x, pos.y);
-        });
-    
         renderer.on("message", (event, msg) => {
           
           timestamp = msg.timestamp;
