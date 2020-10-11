@@ -1,4 +1,3 @@
-// Modules to control application life and create native browser window
 const { app, Menu, Tray, BrowserWindow, dialog, ipcMain } = require('electron');
 const logger = require("./modules/Log").getLogger(__filename);
 const ClientTxtWatcher = require("./modules/ClientTxtWatcher");
@@ -179,18 +178,31 @@ function initWindow(window) {
     addMessage(`<span class='eventText'>Unable to get stash information. Please check your POESESSID</span>`, true);
   });
   StashGetter.emitter.on("netWorthUpdated", (data) => {
+    let changeMessage;
+    switch(data.change) {
+      case 0:
+        // don't notify if no change
+        return;
+      case "new":
+        changeMessage = "";
+        break;
+      default:
+        changeMessage = `(${Utils.formatSignedNumber(data.change)})`;
+        break;
+    }
     addMessage(
       `
         <span style='cursor:pointer;' onclick='window.location.href="stash.html";'>
         Net worth update: 
         <span class='eventText'>${data.value}</span>
         <img src='res/img/c.png' class='currencyText'>
-        ${data.change === 0 ? "" : `(${Utils.formatSignedNumber(data.change)})`}
+        ${changeMessage}
         </span>
       `,
       true
     );
   });
+  StashGetter.tryGet();
   
   InventoryGetter.emitter.removeAllListeners();
   InventoryGetter.emitter.on("invalidSessionID", () => {
@@ -491,10 +503,10 @@ function addMessage(text, sendToOverlay = false) {
   if(sendToOverlay && settings.overlayEnabled) { 
     (async () => {
       var win = await activeWin();
-      if(win.title === "Path of Exile" && win.owner.name.startsWith("PathOfExile")) {
+      if(win && win.title === "Path of Exile" && win.owner.name.startsWith("PathOfExile")) {
         overlayWindow.setBounds({
           x: win.bounds.x + 10,
-          y: win.bounds.y + 10,
+          y: win.bounds.y + 100,
           width: 200,
           height: 40
         });
