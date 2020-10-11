@@ -24,11 +24,11 @@ function getCategory(item, subcategory = false) {
   var t = item.typeLine;
   if(!t) return null;
   
-  if(t.includes("Contract:")) {
+  if(t.includes("Contract")) {
     return data.heistQuestItems.includes(t) ? "Quest Items" : "Contract";
   }
   
-  if(t.includes("Blueprint:")) {
+  if(t.includes("Blueprint")) {
     return "Blueprint";
   }
   
@@ -42,7 +42,7 @@ function getCategory(item, subcategory = false) {
   
   switch(item.frameType) {
     case 4:
-      var n = t.replace(/(Superior|Anomalous|Divergent) /g, "");
+      var n = t.replace(/(Superior|Anomalous|Divergent|Phantasmal) /g, "");
       if(gemBaseTypes[n]) {
         return gemBaseTypes[n];
       } else {
