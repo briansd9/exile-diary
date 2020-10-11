@@ -8,6 +8,7 @@ const ItemPricer = require('./ItemPricer');
 
 var DB;
 var settings;
+var nextStashGetTimer;
 var emitter = new EventEmitter();
 
 async function tryGet() {
@@ -24,41 +25,57 @@ async function tryGet() {
     units = "hours";
   }
 
-  var shouldGet;
   switch(units) {
     case "hours":
-      shouldGet = await reachedTimeLimit(interval);
+      tryGetByTime();
       break;
     case "maps":
-      shouldGet = await reachedMapLimit(interval);
+      tryGetByMapRuns();
       break;
     default:
       logger.info(`Invalid stash check interval: [${interval}] [${units}]`);
       return;
   }
-
-  if(shouldGet) {
-    get();
+  
+  async function tryGetByMapRuns() {
+    let shouldGet = await reachedMapLimit(interval);
+    if(shouldGet) {
+      get();
+    }
   }
-    
+
+  async function tryGetByTime() {
+    clearTimeout(nextStashGetTimer);
+    let lastStashAge = await getLastStashAge();
+    if(lastStashAge >= interval) {
+      get();
+      nextStashGetTimer = setTimeout(() => { tryGet(); }, interval * 60 * 60 * 1000);
+      logger.info(`Set new timer for getting stash in ${Number(interval * 60 * 60).toFixed(2)} sec`);
+    }
+    else {
+      nextStashGetTimer = setTimeout(() => { tryGet(); }, (interval - lastStashAge) * 60 * 60 * 1000);
+      logger.info(`Set new timer for getting stash in ${Number((interval - lastStashAge) * 60 * 60).toFixed(2)} sec`);
+    }    
+  }
+  
 }
 
-function reachedTimeLimit(interval) {
+function getLastStashAge() {
   return new Promise((resolve, reject) => {
     DB.get("select ifnull(max(timestamp), -1) as timestamp from stashes", (err, row) => {
       if(err) {      
         logger.info(`Error getting latest stash: ${err}`);
         resolve(false);
       }
-      if(row.timestamp == -1) {
+      if(row.timestamp === -1) {
         logger.info("No stashes found in db - will retrieve now");
         resolve(true);
       } else {
         var now = moment();
         var then  = moment(row.timestamp, 'YYYYMMDDHHmmss');
         var diff = moment.duration(now.diff(then)).asHours();
-        logger.info(`Last retrieved stash ${row.timestamp} is ${diff} hours old (min interval ${interval})`);
-        resolve(diff > interval);
+        logger.info(`Last retrieved stash ${row.timestamp} is ${Number(diff).toFixed(2)} hours old`);
+        resolve(diff);
       }
     });
   });
@@ -140,31 +157,48 @@ async function get() {
   };
   
   if(tabs.items.length > 0) {
+    
     var rawdata = await Utils.compress(tabs.items);
-    DB.run(" insert into stashes(timestamp, items, value) values(?, ?, ?) ", [timestamp, rawdata, tabs.value], (err) => {
-      if(err) {      
-        logger.info(`Error inserting stash ${timestamp} with value ${tabs.value}: ${err}`);
+    
+    DB.get("select value, length(items) as len from stashes order by timestamp desc limit 1", (err, row) => {
+      if(err) {
+        logger.info(`Error getting previous stash before ${timestamp}: ${err}`);
       } else {
-        logger.info(`Inserted stash ${timestamp} with value ${tabs.value}`);
-        DB.get(" select value from stashes where timestamp < ? order by timestamp desc limit 1 ", [timestamp], (err, row) => {
-          if(err) {
-            logger.info(`Error getting previous stash before ${timestamp}: ${err}`);
-          } else {
-            if(row && row.value) {
-              emitter.emit("netWorthUpdated", {
-                value: Number(tabs.value).toFixed(2),
-                change: Number(tabs.value - row.value).toFixed(2)
-              });
+        if(row && Number(tabs.value).toFixed(2) === row.value && rawdata.length === row.len) {
+          logger.info(`No change in stash since last update`);
+          emitter.emit("netWorthUpdated", {
+            value: Number(tabs.value).toFixed(2),
+            change: 0
+          });
+        } else {          
+          DB.run(" insert into stashes(timestamp, items, value) values(?, ?, ?) ", [timestamp, rawdata, tabs.value], (err) => {
+            if(err) {      
+              logger.info(`Error inserting stash ${timestamp} with value ${tabs.value}: ${err}`);
             } else {
-              emitter.emit("netWorthUpdated", {
-                value: Number(tabs.value).toFixed(2),
-                change: 0
+              logger.info(`Inserted stash ${timestamp} with value ${tabs.value}`);
+              DB.get(" select value from stashes where timestamp < ? order by timestamp desc limit 1 ", [timestamp], (err, row) => {
+                if(err) {
+                  logger.info(`Error getting previous stash before ${timestamp}: ${err}`);
+                } else {
+                  if(row && row.value) {
+                    emitter.emit("netWorthUpdated", {
+                      value: Number(tabs.value).toFixed(2),
+                      change: Number(tabs.value - row.value).toFixed(2)
+                    });
+                  } else {
+                    emitter.emit("netWorthUpdated", {
+                      value: Number(tabs.value).toFixed(2),
+                      change: "new"
+                    });
+                  }
+                }
               });
             }
-          }
-        });
+          });
+        }
       }
     });
+    
   } else {
     logger.info("No items found, returning");
   }
@@ -174,8 +208,6 @@ async function get() {
 function timer(ms) {
   return new Promise(res => setTimeout(res, ms));
 }
-
-
 
 function getTabList(s) {
   
@@ -306,3 +338,4 @@ function parseItem(rawdata, timestamp) {
 module.exports.tryGet = tryGet;
 module.exports.get = get;
 module.exports.emitter = emitter;
+module.exports.nextStashGetTimer = nextStashGetTimer;
