@@ -629,9 +629,24 @@
         d += statLineCompleted("Heists", s.heist.heists, s.heist.heistsCompleted, "res/img/encountericons/heist.png");
         d += statLine("Grand Heists", s.heist.grandHeists, "res/img/encountericons/grandheist.png");
         
-        let t = "<div style='max-height:14em;overflow-y:auto;'><table class='extraInfo' style='margin:0;'><thead><tr><th>Rogue Missions</th><th></th></tr></thead><tbody>";
+        let t = `
+          <div style='max-height:14em;overflow-y:auto;'>
+            <table class='extraInfo' style='margin:0;'><thead><tr>
+              <th>Rogue</th>
+              <th>Heists</th>
+              <th>Completed</th>
+              <th>Grand Heists</th>
+            </tr></thead><tbody>
+        `;
         for(var r in s.heist.rogues) {
-          t += `<tr><td>${r}</td><td>${s.heist.rogues[r]}</td></tr>`;
+          t += `
+            <tr>
+              <td>${r}</td>
+              <td>${s.heist.rogues[r].heists}</td>
+              <td>${s.heist.rogues[r].heistsCompleted}</td>
+              <td>${s.heist.rogues[r].grandHeists}</td>
+            </tr>
+          `;
         }
         t += "</tbody></table></div>";
         d += t;

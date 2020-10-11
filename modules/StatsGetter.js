@@ -319,18 +319,29 @@ function mergeRunInfo(totalStats, map) {
   }
   
   if(info.heistRogues && Object.keys(info.heistRogues).length > 0) {
+    let isNormalHeist;
     totalStats.heist = totalStats.heist || { heists: 0, heistsCompleted: 0, grandHeists: 0, rogues: {} };
     if(Object.keys(info.heistRogues).length === 1) {
+      isNormalHeist = true;
       totalStats.heist.heists++;
       if(info.heistCompleted) {
         totalStats.heist.heistsCompleted++;
       }
     } else if(Object.keys(info.heistRogues).length > 1) {
+      isNormalHeist = false;
       totalStats.heist.grandHeists++;
     }
     let rogues = Array.isArray(info.heistRogues) ? info.heistRogues : Object.keys(info.heistRogues);
     rogues.forEach(r => {
-      totalStats.heist.rogues[r] = (totalStats.heist.rogues[r] || 0) + 1;
+      totalStats.heist.rogues[r] = totalStats.heist.rogues[r] || { heists: 0, heistsCompleted: 0, grandHeists: 0 };
+      if(isNormalHeist) {
+        totalStats.heist.rogues[r].heists++;
+        if(info.heistCompleted) {
+          totalStats.heist.rogues[r].heistsCompleted++;
+        }
+      } else {
+        totalStats.heist.rogues[r].grandHeists++;
+      }
     });
   }
 
@@ -342,7 +353,7 @@ async function getBigDrops() {
     DB.all(`
       select mapruns.id as map_id, areainfo.name as area, items.*
       from items, mapruns, areainfo
-      where items.value > 100 
+      where items.value > 20 
       and items.event_id between mapruns.firstevent and mapruns.lastevent
       and mapruns.id = areainfo.id
     `, (err, rows) => {
