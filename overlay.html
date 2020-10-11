@@ -46,7 +46,7 @@
           msgDiv.fadeIn(500);
           
           var messageWidth = document.getElementById("messages").scrollWidth + (msgDiv.has("img").length ? 40 : 0);
-          window.resizeTo(messageWidth, 40);
+          setTimeout(() => { window.resizeTo(messageWidth, 40); }, 10);
           logger.info(`Resizing to ${messageWidth}`);
           
           setTimeout(() => { msgDiv.fadeOut(500, () => {hideOverlay(msg.timestamp);} ); }, 4000);
