@@ -365,6 +365,24 @@ function getSQL(q) {
   if(q.blighted && q.blighted !== "any") {
     str += ` and json_extract(runinfo, '$.blightedMap') is ${q.blighted === "yes" ? "not null" : "null"} `;
   }
+
+  if(q.heist && q.heist !== "any") {
+    switch(q.heist) {
+      case "anyHeist":
+        str += ` and json_extract(runinfo, '$.heistRogues') is not null `;
+        break;
+      case "contract":
+        str += ` and json_array_length(json_Extract(runinfo, '$.heistRogues')) = 1 `;
+        break;
+      case "grandHeist":
+        str += ` and json_array_length(json_Extract(runinfo, '$.heistRogues')) > 1 `;
+        break;
+      case "no":
+        str += ` and json_extract(runinfo, '$.heistRogues') is null `;
+        break;
+    }
+    str += ` and json_extract(runinfo, '$.blightedMap') is ${q.blighted === "yes" ? "not null" : "null"} `;
+  }
   
   if(q.mapname) {
     str += " and name like ? ";
