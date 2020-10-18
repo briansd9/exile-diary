@@ -988,7 +988,7 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
     run.heistRogues = Object.keys(heistRogues);
   }
   
-  if(items.importantDrops) {
+  if(items && items.importantDrops) {
     for(var key in items.importantDrops) {
       switch(key) {
         case "brain":
