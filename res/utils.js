@@ -177,7 +177,6 @@ var DomUtils = {
 	},
 
 	setText: function (elem, text) {
-//		text = StrUtils.replaceAll( text, '\n', '<br>' );
 		var lines = StrUtils.replaceAll( text, '  ', '&nbsp; ' ).split( '\n' );
 
 		DomUtils.removeAllChildren( elem );
@@ -321,63 +320,6 @@ var MiscUtils = {
         time1.substring(13, 15)
       );
 		}
-  },
-  
-  applyDefaultStyle : function(item) {
-    
-    var Rarity = {
-      Normal: 0,
-      Magic: 1,
-      Rare: 2,
-      Unique: 3
-    };
-    
-    var BLACK_75 = {r:0, g:0, b:0, a:190};
-    var WHITE = {r:200, g:200, b:200};
-    var BLUE = {r:136, g:136, b:255};
-    var YELLOW = {r:255, g:255, b:119};
-    var ORANGE = {r:175, g:96, b:37};
-    var GOLD = {r:170, g:158, b:130};
-    var CYAN = {r:27, g:162, b:155};
-    var GREEN = {r:74, g:230, b:58};
-    var LIGHT_CYAN = {r:170, g:230, b:230};
-
-    var color = WHITE;
-
-    if (item.rarity === Rarity.Magic) {
-      color = BLUE;
-    }
-    else if (item.rarity === Rarity.Rare) {
-      color = YELLOW;
-    }
-    else if (item.rarity === Rarity.Unique) {
-      color = ORANGE;
-    }
-    else if (item.itemClass === 'Currency') {
-      color = GOLD;
-    }
-    else if (StrUtils.contains( 'Gem', item.itemClass )) {
-      color = CYAN;
-    }
-    else if (item.itemClass === 'Quest Items') {
-      color = GREEN;
-    }
-    else if (item.itemClass === 'Divination Card') {
-      color = LIGHT_CYAN;
-    }
-    else if (item.itemClass === 'Labyrinth Item' || item.itemClass === 'Labyrinth Trinket') {
-      color = GOLD;
-    }
-
-    item.setVisibility( true );
-    item.removeBorder();
-    item.setBackgroundColor( BLACK_75 );
-    item.setTextColor( color );
-    item.setFontSize( 32 );
-
-    if (item.itemClass === 'Maps' || item.itemClass === 'Map Fragments') {
-      item.setBorderColor( color );
-    }
   },
   
   formatDate : function(e) {

@@ -31,6 +31,43 @@ var Rarity = {
 	}
 };
 
+var Colors = {
+  BLACK_75 : {r:0, g:0, b:0, a:190},
+  WHITE : {r:200, g:200, b:200},
+  BLUE : {r:136, g:136, b:255},
+  YELLOW : {r:255, g:255, b:119},
+  ORANGE : {r:175, g:96, b:37},
+  GOLD : {r:170, g:158, b:130},
+  CYAN : {r:27, g:162, b:155},
+  GREEN : {r:74, g:230, b:58},
+  LIGHT_CYAN : {r:170, g:230, b:230},
+  getDefaultColor : function(item) {
+    switch(item.rarity) {
+      case Rarity.Magic:
+        return this.BLUE;
+      case Rarity.Rare:
+        return this.YELLOW;
+      case Rarity.Unique:
+        return this.ORANGE;
+    }
+    switch(item.itemClass) {
+      case "Currency":
+        return this.GOLD;
+      case "Quest Items":
+        return this.GREEN;
+      case "Divination Card":
+        return this.LIGHT_CYAN;
+      case "Labyrinth Item":
+      case "Labyrinth Trinket":
+        return this.GOLD;
+    }
+    if(item.itemClass.includes("Gem")) {
+      return this.CYAN;
+    }
+    return this.WHITE;
+  }  
+};
+
 class ItemData {
 
 static countSockets(sockets) {
@@ -172,6 +209,8 @@ static createItem(itemdata)
   var obj = {};
   
 	obj.rawData = itemdata;
+  obj.styleModifiers = itemdata.styleModifiers || {};
+  
 	obj.name = itemdata.name.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "");
   obj.id = itemdata.id;
 
@@ -216,7 +255,6 @@ static createItem(itemdata)
 
 	obj.outerElement = null;
 	obj.domElement = null;
-	obj.matchingRule = null;
 
 	obj.getDisplayName = function() {
 		if (!this.identified && this.quality > 0) {
@@ -293,14 +331,42 @@ static createItem(itemdata)
 		}
 
 		outerDiv.appendChild( itemDiv );
-
                 
 		this.outerElement = outerDiv;
-		this.domElement = itemDiv;
+		this.domElement = itemDiv;    
+    this.applyStyles();
                 
 		return outerDiv;
 
 	}
+  
+  obj.applyStyles = function(s = this.styleModifiers) {
+    this.setFontSize( s.fontSize || 32 );
+    this.setBackgroundColor( s.backgroundColor || Colors.BLACK_75 );
+    this.setTextColor( s.textColor || Colors.getDefaultColor(this) );
+    this.setBorderColor( s.borderColor || Colors.getDefaultColor(this) );
+  }
+  
+  obj.getStyleFromFilter = function(filter) {
+    
+    if(!filter) return;
+
+    var lastMatchedRule = null;
+    for (var j = 0; j < filter.ruleSet.length; j++) {
+      var rule = filter.ruleSet[j];
+      if(rule.match(this)) {
+        lastMatchedRule = rule;
+        if(!rule.continue) {
+          break;
+        }
+      }
+    }
+
+    if(lastMatchedRule) {
+      lastMatchedRule.applyTo(this);
+    }
+    
+  }
   
   obj.getItemIcon = function() {
     var influenceIcons = [];
@@ -326,15 +392,8 @@ static createItem(itemdata)
     }    
   }
 
-	obj.setVisibility = function (visibility) {
-	}
-
 	obj.setTextColor = function (color) {
 		getLabel( this ).style.color = buildCssColor( color );
-	}
-
-	obj.removeBorder = function() {
-		this.domElement.style.border = '';
 	}
 
 	obj.setBorderColor = function (color) {
@@ -371,15 +430,6 @@ static createItem(itemdata)
 			}
 		}
 		return null;
-	}
-
-	function getSocketsDiv (self) {
-		for (var i=0; i < self.domElement.children.length; i++) {
-			var child = self.domElement.children[i];
-			if (child.className === 'sockets') {
-				return child;
-			}
-		}
 	}
 
 	function computeSocketPadding (numSockets) {

@@ -545,23 +545,8 @@
       function drawItem(itemData) {
 
         var item = ItemData.createItem(itemData);
+        item.getStyleFromFilter(parser);
         var itemDiv = item.draw();
-        MiscUtils.applyDefaultStyle(item);
-
-        var lastMatchedRule = null;
-        for (var j = 0; j < parser.ruleSet.length; j++) {
-          var rule = parser.ruleSet[j];
-          if(rule.match(item)) {
-            lastMatchedRule = rule;
-            if(!rule.continue) {
-              break;
-            }
-          }
-        }
-
-        if(lastMatchedRule) {
-          lastMatchedRule.applyTo(item);
-        }
 
         return itemDiv;
 

@@ -111,8 +111,6 @@
           }
         })
         
-        //console.log(JSON.stringify(stats.totalStats));
-        
         if( Object.keys(stats.totalStats).length > 0) {
           displayTotalStats(stats.totalStats);
         } else {
@@ -203,7 +201,7 @@
           tabOptions.disabled.push(1);
         }
         
-        if(stats.bigDrops.length > 0) {          
+        if(stats.bigDrops && stats.bigDrops.length > 0) {          
           for(let i = 0; i < stats.bigDrops.length; i++) {
             let item = stats.bigDrops[i];
             item.parsedItem = JSON.parse(item.rawdata);          
@@ -374,28 +372,16 @@
     }
         
     function drawItem(itemData) {
-      
       var item = ItemData.createItem(JSON.parse(itemData.rawdata));
+      if(itemData.parser) {
+        item.getStyleFromFilter(itemData.parser);
+        delete(itemData.parser);
+        itemData.styleModifiers = item.styleModifiers;
+      } else if(itemData.styleModifiers) {
+        item.applyStyles(itemData.styleModifiers);
+      }
       var itemDiv = item.draw();
-      MiscUtils.applyDefaultStyle(item);
-
-      var lastMatchedRule = null;
-      for (var j = 0; j < itemData.parser.ruleSet.length; j++) {
-        var rule = itemData.parser.ruleSet[j];
-        if(rule.match(item)) {
-          lastMatchedRule = rule;
-          if(!rule.continue) {
-            break;
-          }
-        }
-      }
-
-      if(lastMatchedRule) {
-        lastMatchedRule.applyTo(item);
-      }
-
       return itemDiv;
-
     }
 
     function getItemDiv(item) {

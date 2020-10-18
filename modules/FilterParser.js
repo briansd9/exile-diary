@@ -185,7 +185,7 @@ function Parser() {
 		}
 
 		self.lineTypes[self.currentLineNr] = 'Visibility';
-		self.currentRule = new Rule( token === 'Show' );
+		self.currentRule = new Rule();
 	}
 
 	function parseEndOfRule (self) {
@@ -819,8 +819,7 @@ function Parser() {
 /* rule.js from poedit begins here */
 
 
-function Rule (visibility) {
-	this.show = visibility;
+function Rule () {
   this.continue = false;
 	this.filters = [];
 	this.modifiers = [];
@@ -831,7 +830,6 @@ function Rule (visibility) {
 	}
 
 	this.applyTo = function (item) {
-		item.setVisibility( this.show );
 		this.modifiers.forEach( function (modifier) { modifier.applyTo( item ); } );
 	}
 }
@@ -866,13 +864,13 @@ function RarityFilter (comparer, rarity) {
 
 function ClassFilter (itemClasses) {
 	this.match = function (item) {
-		return itemClasses.some( function (cls) { return StrUtils.contains( cls, item.itemClass ); } );
+		return itemClasses.some( function (cls) { return item.itemClass.includes( cls ); } );
 	};
 }
 
 function BaseTypeFilter (baseTypes) {
 	this.match = function (item) {
-		return baseTypes.some( function (bt) { return StrUtils.contains( bt, item.baseType ); } );
+		return baseTypes.some( function (bt) { return item.baseType.includes( bt ); } );
 	};
 }
 
@@ -1074,7 +1072,7 @@ function StackSizeFilter (comparer, size) {
 
 function ProphecyFilter (prophecyTypes) {
 	this.match = function (item) {
-		return item.baseType === "Prophecy" && prophecyTypes.some( function (p) { return StrUtils.contains( p, item.name ); } );
+		return item.baseType === "Prophecy" && prophecyTypes.some( function (p) { return item.name.includes( p ); } );
 	};
 }
 
@@ -1162,19 +1160,25 @@ function GemQualityTypeFilter (value) {
 
 function SetBackgroundColorModifier (color) {
 	this.applyTo = function (item) {
-		item.setBackgroundColor( color );
+    item.styleModifiers.backgroundColor = color;
 	}
 }
 
 function SetBorderColorModifier (color) {
 	this.applyTo = function (item) {
-		item.setBorderColor( color );
+    item.styleModifiers.borderColor = color;
 	}
 }
 
 function SetTextColorModifier (color) {
 	this.applyTo = function (item) {
-		item.setTextColor( color );
+    item.styleModifiers.textColor = color;
+	}
+}
+
+function SetFontSizeModifier (fontSize) {
+	this.applyTo = function (item) {
+    item.styleModifiers.fontSize = MathUtils.remap(fontSize, 18, 45, 25, 50);
 	}
 }
 
@@ -1187,12 +1191,6 @@ function PlayAlertSoundModifier (soundId, volume) {
 function PlayAlertSoundPositionalModifier (soundId, volume) {
 	this.applyTo = function (item) {
 		// not implemented
-	}
-}
-
-function SetFontSizeModifier (fontSize) {
-	this.applyTo = function (item) {
-		item.setFontSize( MathUtils.remap(fontSize, 18, 45, 25, 50) );
 	}
 }
 
@@ -1209,37 +1207,15 @@ function CustomAlertSoundModifier (path) {
 }
 
 function MinimapIconModifier (size, color, shape) {
-/*  
-    var colors = {
-        'Red': {r:250, g:120, b: 100},
-        'Green': {r:140, g:250, b:120},
-        'Blue': {r:130, g:170, b:250},
-        'Brown': {r:200, g:130, b:80},
-        'White': {r:250, g:250, b:250},
-        'Yellow': {r:220, g:220, b:100}
-    };
-
     this.applyTo = function (item) {
-       item.setMapIcon( shape, colors[color], size );
+        // not implemented
     }
-*/    
 }
 
 function PlayEffectModifier (color) {
-/*  
-    var colors = {
-        'Red': {r:250, g:120, b: 100},
-        'Green': {r:140, g:250, b:120},
-        'Blue': {r:130, g:170, b:250},
-        'Brown': {r:200, g:130, b:80},
-        'White': {r:250, g:250, b:250},
-        'Yellow': {r:220, g:220, b:100}
-    };
-
-    this.applyTo = function (item, temp) {
-        item.setBeam( colors[color], temp );
+    this.applyTo = function (item) {
+        // not implemented
     }
-*/    
 }
 
 /* rule.js from poedit ends here */
