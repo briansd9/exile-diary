@@ -283,6 +283,9 @@ async function createWindow() {
   
   ipcMain.on("reinitialize", async (event) => {
     await init();
+    if(mainWindow) {
+      await initWindow(mainWindow);
+    }
     event.sender.send("done-initializing");
   });
   ipcMain.on("searchMaps", (event, data) => {

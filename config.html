@@ -412,8 +412,10 @@
           if (err) throw err;
           if(requiresRestart) {
             logger.info("Requires restart");
-            app.relaunch({args: []});
-            setTimeout( () => {app.quit()}, 1000);
+            ipcRenderer.once("done-initializing", () => {
+              window.location = "index.html";
+            });        
+            ipcRenderer.send("reinitialize");            
           } else {
             if(filterData) {
               var DB = require('./modules/DB').getDB();
@@ -425,10 +427,7 @@
                   if(err) {                
                     logger.info("Error inserting filter: " + err.message);
                   }
-                  ipcRenderer.once("done-initializing", () => {
-                    window.location.reload();
-                  });        
-                  ipcRenderer.send("reinitialize");
+
                 }
               );
             } else {
