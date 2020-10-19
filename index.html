@@ -54,6 +54,7 @@
     
         $("#sidenav").load("sidenav.html");
         $("#messages").load("messages.html");
+        $("#lastMapsTable").tablesorter();
 
         DB.serialize(() => {
           //getLastAreaInfo();
@@ -87,20 +88,21 @@
           await Utils.sleep(1000);
           
           DB.get(`
-            select mapruns.id, name, level, depth, iiq, iir, packsize, firstevent, lastevent, 
-            (mapruns.xp - (select xp from mapruns m where m.id < mapruns.id and xp is not null order by m.id desc limit 1)) xpgained,
-            gained, kills,
-            (select count(1) from events where event_type='slain' and events.id between firstevent and lastevent) deaths
-            from areainfo, mapruns
-            where mapruns.id = ? 
-            and ifnull(mapruns.gained, 0) != -1 and ifnull(mapruns.kills, 0) != -1
-            and areainfo.id = mapruns.id;
-          `, [runInfo.id], (err, row) => {
-            if(row) {
-              
-              
-              if($("#lastMapsRows tr").length >= 10) {
-                $("#lastMapsRows tr:last").remove();
+              select mapruns.id, name, level, depth, iiq, iir, packsize, firstevent, lastevent,
+              (mapruns.xp - (select xp from mapruns m where m.id < mapruns.id and xp is not null order by m.id desc limit 1)) xpgained,
+              gained, kills,
+              (select count(1) from events where event_type='slain' and events.id between firstevent and lastevent) deaths
+              from areainfo, mapruns
+              where mapruns.id = ?
+              and ifnull(mapruns.gained, 0) != -1 and ifnull(mapruns.kills, 0) != -1
+              and areainfo.id = mapruns.id;
+            `, [runInfo.id], (err, row) => {
+            if (row) {
+              var numberOfShownMaps = $("#numberOfShownMaps").val() || 10;
+              if (numberOfShownMaps > 0) {
+                if ($("#lastMapsRows tr").length >= numberOfShownMaps) {
+                  $("#lastMapsRows tr:last").remove();
+                }
               }
               
               Utils.addMapRow({
@@ -111,7 +113,7 @@
                 hardcore: hardcore,
                 modal: false
               });
-              
+              $("#lastMapsTable").trigger("update");
             } else {
               //console.log(`No row found for ${runInfo.id}, not updating`);
             }
@@ -147,19 +149,27 @@
       }
       
       function getLastMaps() {
-        DB.all(`
-          select mapruns.id, name, level, depth, iiq, iir, packsize, firstevent, lastevent, 
-          (mapruns.xp - (select xp from mapruns m where m.id < mapruns.id and xp is not null order by m.id desc limit 1)) xpgained,    
-          gained, kills,
-          (select count(1) from events where event_type='slain' and events.id between firstevent and lastevent) deaths
-          from areainfo, mapruns
-          where areainfo.id = mapruns.id
-          and ifnull(mapruns.gained, 0) != -1 and ifnull(mapruns.kills, 0) != -1
-          order by mapruns.id desc
-          limit 10;
-        `, (err, rows) => {
-          if(rows) {
-            rows.forEach( row => {
+        $("#lastMapsRows").empty();
+
+        var lastMapsQuery = `
+            select mapruns.id, name, level, depth, iiq, iir, packsize, firstevent, lastevent,
+            (mapruns.xp - (select xp from mapruns m where m.id < mapruns.id and xp is not null order by m.id desc limit 1)) xpgained,
+            gained, kills,
+            (select count(1) from events where event_type='slain' and events.id between firstevent and lastevent) deaths
+            from areainfo, mapruns
+            where areainfo.id = mapruns.id
+            and ifnull(mapruns.gained, 0) != -1 and ifnull(mapruns.kills, 0) != -1
+            order by mapruns.id desc
+          `;
+
+        var numberOfShownMaps = $("#numberOfShownMaps").val() || 10;
+        if (numberOfShownMaps > 0) {
+          lastMapsQuery = lastMapsQuery.concat("limit ", numberOfShownMaps);
+        }
+
+        DB.all(lastMapsQuery, (err, rows) => {
+          if (rows) {
+            rows.forEach(row => {
               Utils.addMapRow({
                 table: $("#lastMapsRows"),
                 data: row,
@@ -169,7 +179,7 @@
                 modal: false
               });
             });
-            $("#lastMapsTable").tablesorter();              
+            $("#lastMapsTable").trigger("update");
           }
         });
       }
@@ -227,6 +237,13 @@
     <div style="padding:4px;">
       <div class='sectionHeader'>
         Most Recent Maps
+        <select id="numberOfShownMaps" onchange="getLastMaps()">
+          <option value="10">10</option>
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="0">All</option>
+        </select>
       </div>
       <table class='searchResults' id='lastMapsTable' style='width:100%;border-spacing:0px 6px;'>
         <thead>
