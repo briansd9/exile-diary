@@ -177,9 +177,6 @@ async function getItemsFromEvent(mapID, eventID) {
         
         if(rows[i].value) {
           item.chaosValue = rows[i].value;
-        } else {
-          // backward compatibility - value not stored with item in old versions
-          item.chaosValue = await getItemValue(eventID, item);
         }
         
         // check if vendor recipe
@@ -274,55 +271,6 @@ async function getCurrencyValue(timestamp, item) {
       } else {
         var currValue = await ItemPricer.getCurrencyByName(timestamp, currency);
         resolve(currValue * stackSize);
-      }
-    })
-  });
-  
-}
-
-async function getItemValue(timestamp, item) {
-  
-  var baseName = Utils.getBaseName(item);
-  
-  // item names requiring special handling
-  switch(baseName) {
-    case "Chaos Orb":
-      return item.stackSize;
-      break;
-    case "The Beachhead":
-      for(var i = 0; i < item.properties.length; i++) {
-        var prop = item.properties[i];
-        if(prop.name === "Map Tier") {
-          baseName = `${baseName} (T${prop.values[0][0]})`;
-          break;
-        }
-      }
-      break;
-    case "A Master Seeks Help":
-      var masters = ["Alva", "Niko", "Einhar", "Jun", "Zana"];
-      for(var i = 0; i < masters.length; i++) {
-        if(item.prophecyText && item.prophecyText.includes(masters[i])) {
-          baseName = `${baseName} (${masters[i]})`;
-          break;
-        }
-      }
-      break;
-    case "Rebirth":
-    case "The Twins":
-      baseName = `${baseName} (${item.prophecyText ? "Prophecy" : "Divination Card"})`;
-      break;
-    default:
-      break;
-  }
-          
-  var stackSize = item.stackSize || 1;
-  
-  return new Promise( (resolve, reject) => {
-    DB.get("select value from rates where date <= ? and item = ? order by date desc limit 1", [timestamp, baseName], (err, row) => {
-      if(row) {
-        resolve(row.value * stackSize);
-      } else {
-        resolve(null);
       }
     })
   });
