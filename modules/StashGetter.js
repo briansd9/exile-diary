@@ -7,6 +7,7 @@ const ItemParser = require('./ItemParser');
 const ItemPricer = require('./ItemPricer');
 
 var DB;
+var leagueDB;
 var settings;
 var nextStashGetTimer;
 var emitter = new EventEmitter();
@@ -15,6 +16,7 @@ async function tryGet() {
 
   settings = require('./settings').get();
   DB = require('./DB').getDB();
+  leagueDB = require('./DB').getLeagueDB();
 
   var interval, units;
   try {
@@ -62,12 +64,11 @@ async function tryGet() {
 
 function getLastStashAge() {
   return new Promise((resolve, reject) => {
-    DB.get("select ifnull(max(timestamp), -1) as timestamp from stashes", (err, row) => {
+    leagueDB.get("select ifnull(max(timestamp), -1) as timestamp from stashes", (err, row) => {
       if(err) {      
         logger.info(`Error getting latest stash: ${err}`);
         resolve(false);
-      }
-      if(row.timestamp === -1) {
+      } else if(row.timestamp === -1) {
         logger.info("No stashes found in db - will retrieve now");
         resolve(true);
       } else {
@@ -83,7 +84,7 @@ function getLastStashAge() {
 
 function reachedMapLimit(limit) {
   return new Promise((resolve, reject) => {
-    DB.get("select ifnull(max(timestamp), -1) as timestamp from stashes", (err, row) => {
+    leagueDB.get("select ifnull(max(timestamp), -1) as timestamp from stashes", (err, row) => {
       if(err) {      
         logger.info(`Error getting latest stash: ${err}`);
         resolve(false);
@@ -108,7 +109,7 @@ function reachedMapLimit(limit) {
 async function get() {
 
   settings = require('./settings').get();
-  DB = require('./DB').getDB();
+  leagueDB = require('./DB').getLeagueDB();
   
   var timestamp = moment().format("YYYYMMDDHHmmss");  
   
@@ -160,23 +161,19 @@ async function get() {
     
     var rawdata = await Utils.compress(tabs.items);
     
-    DB.get("select value, length(items) as len from stashes order by timestamp desc limit 1", (err, row) => {
+    leagueDB.get("select value, length(items) as len from stashes order by timestamp desc limit 1", (err, row) => {
       if(err) {
         logger.info(`Error getting previous stash before ${timestamp}: ${err}`);
       } else {
-        if(row && Number(tabs.value).toFixed(2) === row.value && rawdata.length === row.len) {
-          logger.info(`No change in stash since last update`);
-          emitter.emit("netWorthUpdated", {
-            value: Number(tabs.value).toFixed(2),
-            change: 0
-          });
+        if(row && (Number(tabs.value).toFixed(2) === Number(row.value).toFixed(2)) ) {
+          logger.info(`No change in stash value (${Number(tabs.value).toFixed(2)}) since last update`);
         } else {          
-          DB.run(" insert into stashes(timestamp, items, value) values(?, ?, ?) ", [timestamp, rawdata, tabs.value], (err) => {
+          leagueDB.run(" insert into stashes(timestamp, items, value) values(?, ?, ?) ", [timestamp, rawdata, tabs.value], (err) => {
             if(err) {      
               logger.info(`Error inserting stash ${timestamp} with value ${tabs.value}: ${err}`);
             } else {
               logger.info(`Inserted stash ${timestamp} with value ${tabs.value}`);
-              DB.get(" select value from stashes where timestamp < ? order by timestamp desc limit 1 ", [timestamp], (err, row) => {
+              leagueDB.get(" select value from stashes where timestamp < ? order by timestamp desc limit 1 ", [timestamp], (err, row) => {
                 if(err) {
                   logger.info(`Error getting previous stash before ${timestamp}: ${err}`);
                 } else {
@@ -303,7 +300,7 @@ async function parseTab(items, timestamp) {
   for(var i = 0; i < items.length; i++) {
     var item = items[i];
     var parsedItem = parseItem(item, timestamp);
-    var val = await ItemPricer.price(parsedItem, false);
+    var val = await ItemPricer.price(parsedItem);
     
     // vendor recipes handled manually
     totalValue += (val.isVendor ? 0 : val);

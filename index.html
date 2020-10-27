@@ -42,8 +42,193 @@
 
       var hasAreaInfo = false;
       var hasMapMods = false;
+      
+      async function migrateLeagueDBData() {
+        
+        let db = require('./modules/DB').getDB();
+        
+        return new Promise( async (resolve, reject) => {
+          
+          db.serialize(async () => {
+            
+            let ver = await getUserVersion();
+            if(!ver) {
+              logger.info("Error getting DB version");
+              resolve(false);
+            } else if(ver >= 6) {
+              logger.info("DB version >= 6, already migrated");
+              resolve(false);
+            } else {
+              
+              $("#loadingText").html("Updating database to new version, please wait...")
+              $("#loading").show();
+              $("#mainContent").hide();
+            
+              logger.info("User version < 6, will migrate league info to separate db");
+              let leagues = await getLeagues();
+              if(!leagues) {
+                logger.info("Error getting league list");
+                resolve(false);
+              }
 
-      $(document).ready(function () {
+              for(let i = 0; i < leagues.length; i++) {
+
+                let leagueDB = await require('./modules/DB').initLeagueDB(leagues[i].league);
+
+                let stashes = await getStashes(leagues[i].timestamp, (i < leagues.length - 1) ? leagues[i+1].timestamp : null);
+                if(!stashes) {
+                  logger.info(`Failed to get stashes for ${leagues[i].league}`);
+                } else {
+                  let stashStmt = leagueDB.prepare(" insert into stashes(timestamp, items, value) values(?, ?, ?) ");
+                  logger.info(`Inserting ${leagues[i].league} stashes`);
+                  for(let j = 0; j < stashes.length; j++) {
+                    let s = stashes[j];
+                    let d = await insertData(stashStmt, [s.timestamp, s.items, s.value]);
+                    if(d) {
+                      logger.info(`Inserted stash ${s.timestamp} with value ${s.value}`);
+                    } else {
+                      logger.info(`Error inserting stash ${s.timestamp} with value ${s.value}`);
+                    }
+                  }
+                }
+
+                let rates = await getRates(leagues[i].timestamp.substring(0, 8), (i < leagues.length - 1 ? leagues[i+1].timestamp.substring(0, 8) : null));
+                if(!rates) {
+                  logger.info(`Failed to get rates for ${leagues[i].league}`);
+                } else {
+                  let ratesStmt = leagueDB.prepare(" insert into fullrates(date, data) values(?, ?) ");
+                  logger.info(`Inserting ${leagues[i].league} rates`);
+                  for(let j = 0; j < rates.length; j++) {
+                    let s = rates[j];
+                    let d = await insertData(ratesStmt, [s.date, s.data]);
+                    if(d) {
+                      logger.info(`Inserted rates for ${s.date}`);
+                    } else {
+                      logger.info(`Error inserting rates for ${s.date}`);
+                    }
+                  }
+                }
+                
+                let charStmt = leagueDB.prepare(" insert into characters values(?)");
+                let d = await insertData(charStmt, [ settings.activeProfile.characterName ]);
+                if(d) {
+                  logger.info(`Inserted charName ${settings.activeProfile.characterName}`);
+                } else {
+                  logger.info(`Error inserting charName ${settings.activeProfile.characterName}`);
+                }
+
+              }
+
+              await setUserVersion(6);
+
+              logger.info("Ended migration");
+              
+              $("#loadingImg").attr("src", "res/img/loadingcomplete.png");
+              $("#loadingText").html("Update complete!");        
+              await Utils.sleep(750);
+              
+            }
+            resolve(1);                
+                
+          });
+        });
+        
+        async function getUserVersion() {
+          return new Promise( (resolve, reject) => {
+            db.get(" pragma user_version ", (err, row) => {
+              if(err) {
+                logger.info("Error getting user_version: " + err);
+                resolve(false);
+              } else {
+                resolve(row.user_version);
+              }
+            });
+          });       
+        }
+        
+        async function setUserVersion(ver) {
+          return new Promise( (resolve, reject) => {
+            db.run(` pragma user_version = ${ver} `, (err, row) => {
+              if(err) {
+                logger.info("Error setting user_version: " + err);
+                resolve(false);
+              } else {
+                resolve(true);
+              }
+            });
+          });       
+        }        
+
+        async function getLeagues() {
+          return new Promise( (resolve, reject) => {
+            db.all(" select * from leagues order by timestamp ", async (err, leagues) => {
+              if(err) {
+                logger.info("Error getting league list: " + err);
+                resolve(false);
+              } else {
+                resolve(leagues);
+              }
+            });
+          });       
+        }
+        
+        async function getStashes(t1, t2) {
+          let sql = ` select timestamp, items, value from stashes where timestamp > ${t1} `;
+          if(t2) {
+            sql += ` and timestamp < ${t2} `;
+          }
+          return new Promise( (resolve, reject) => {
+            db.all(sql, async (err, stashes) => {
+              if(err) {
+                logger.info("Error getting stashes: " + err);
+                resolve(false);
+              } else {
+                resolve(stashes);
+              }
+            });
+          });       
+        }
+        
+        async function getRates(t1, t2) {
+          let sql = ` select date, data from fullrates where date >= ${t1} `;
+          if(t2) {
+            sql += ` and date < ${t2} `;
+          }
+          return new Promise( (resolve, reject) => {
+            db.all(sql, async (err, rates) => {
+              if(err) {
+                logger.info("Error getting rates: " + err);
+                resolve(false);
+              } else {
+                resolve(rates);
+              }
+            });
+          });       
+        }
+        
+        async function insertData(stmt, data) {
+          return new Promise( (resolve, reject) => {
+            stmt.run(data, async (err) => {
+              if(err) {
+                logger.info(`Error inserting data: ${err}`);
+                resolve(false);
+              } else {
+                resolve(true);
+              }
+            });
+          });       
+        }
+    
+      }
+      
+
+      $(document).ready(async () => {
+        
+        await migrateLeagueDBData();
+        //return;
+        $("#loading").hide();
+        $("#mainContent").show();
+
 
         if(ssf) {
           $("#totalProfitCell").remove();
@@ -57,30 +242,9 @@
         $("#lastMapsTable").tablesorter();
 
         DB.serialize(() => {
-          //getLastAreaInfo();
           getLastMaps();
         });
 
-        ipcRenderer.on("areaInfo", (event, areaInfo) => {
-          logger.info("Got area info in renderer");
-          addAreaInfo(areaInfo);
-          hasAreaInfo = true;
-          if(hasAreaInfo && hasMapMods) {
-            logger.info("Showing");
-            $("#lastArea").show();
-          }
-        });
-
-        ipcRenderer.on("mapMods", (event, mods) => {
-          logger.info("Got map mods in renderer");
-          addMapMods(mods);
-          hasMapMods = true;
-          if(hasAreaInfo && hasMapMods) {
-            logger.info("Showing");
-            $("#lastArea").show();
-          }
-        });
-        
         ipcRenderer.on("runProcessed", async (event, runInfo) => {
           
           $("#lastArea").hide();
@@ -207,64 +371,48 @@
 
   <body>
     <div class='sidenav' id='sidenav'></div>
-    <div id="lastArea" style="display:none">
-      <table style="width:100%;">
-        <tr>
-          <td colspan="2">
-            <div class='sectionHeader'>
-              Last Entered Area
-            </div>
-          </td>
-        </tr>
-        <tr>
-          <td style="vertical-align:top;">
-            <div id='mapDiv' class='mapInfo'>
-              <div id='name'></div>
-              <div id='level'></div>
-              <div id='depth'></div>
-              <div id='league'></div>
-            </div>
-          </td>
-          <td style="vertical-align:top;">
-            <div id='mods' class='mapMod'></div>
-          </td>
-        </tr>        
-      </table>
+    
+    <div id="loading" style="text-align:center;margin-top:15%;display:none;">
+      <img id="loadingImg" src="res/img/loading.gif"/>
+      <br/>
+      <br/>
+      <div id="loadingText" style="font-size: smaller"></div>
     </div>
     
-    <div style="height:30px;">&nbsp;</div>
-    
-    <div style="padding:4px;">
-      <div class='sectionHeader'>
-        Most Recent Maps
-        <select id="numberOfShownMaps" onchange="getLastMaps()">
-          <option value="10">10</option>
-          <option value="25">25</option>
-          <option value="50">50</option>
-          <option value="100">100</option>
-          <option value="0">All</option>
-        </select>
+    <div id="mainContent">
+      <div style="padding:4px;">
+        <div class='sectionHeader'>
+          Most Recent Maps
+          <select id="numberOfShownMaps" onchange="getLastMaps()">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="0">All</option>
+          </select>
+        </div>
+        <table class='searchResults' id='lastMapsTable' style='width:100%;border-spacing:0px 6px;margin-bottom: 80px;'>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Name</th>
+              <th>Level</th>
+              <th>IIQ</th>
+              <th>IIR</th>
+              <th>Pack Size</th>
+              <th>Time</th>
+              <th>XP/hr</th>
+              <th id='totalProfitCell'><img src='res/img/c.png'></th>
+              <th id='deathCount'>Deaths</th>
+              <th>Kills</th>
+            </tr>
+          </thead>
+          <tbody id='lastMapsRows'>
+          </tbody>
+        </table>      
       </div>
-      <table class='searchResults' id='lastMapsTable' style='width:100%;border-spacing:0px 6px;'>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Name</th>
-            <th>Level</th>
-            <th>IIQ</th>
-            <th>IIR</th>
-            <th>Pack Size</th>
-            <th>Time</th>
-            <th>XP/hr</th>
-            <th id='totalProfitCell'><img src='res/img/c.png'></th>
-            <th id='deathCount'>Deaths</th>
-            <th>Kills</th>
-          </tr>
-        </thead>
-        <tbody id='lastMapsRows'>
-        </tbody>
-      </table>      
     </div>
+      
     <div id="messages" class="messageSection">
     </div>
   </body>

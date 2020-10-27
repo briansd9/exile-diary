@@ -38,16 +38,12 @@
       const settings = require('./modules/settings').get();
       const logger = require('./modules/Log').getLogger(__filename);
       const MapRun = require('./modules/MapRun');
-      const Parser = require('./modules/FilterParser');
-      const RunParser = require('./modules/RunParser');
       const ItemCategoryParser = require('./modules/ItemCategoryParser');
-      const DB = require('./modules/DB').getDB();
-      const Constants = require('./modules/Constants');
       const {ipcRenderer, remote} = require('electron');
       const ItemData = require('./modules/ItemData');
       const ItemPricer = require('./modules/ItemPricer');
 
-      var maprun, mapID, modal, parser, rates, itemsByType, itemsById, currScroll;
+      var maprun, mapID, modal, parser, itemsByType, itemsById, currScroll, DB, char;
       
 
       ipcRenderer.on("done-capturing", () => {
@@ -183,10 +179,12 @@
 
       (async () => {
         
+        char = Utils.getParams(window.location.toString()).char || settings.activeProfile.characterName;
+        DB = require('./modules/DB').getDB(char);
         mapID = await getMapID();
         modal = (Utils.getParams(window.location.toString())).modal;
         
-        var m = new MapRun(mapID);
+        var m = new MapRun(mapID, char);
         m.on("MapRunReady", () => { loadMap(m); });
         
         $(document).tooltip({
@@ -298,7 +296,6 @@
       function loadMap(mapRun) {
         clearCurrentMap();
         parser = mapRun.parser;
-        rates = mapRun.rates || null;
         showNavigation(mapRun);
         showInfo(mapRun);
         showEvents(mapRun);
@@ -847,11 +844,7 @@
       }
 
       async function getCurrencyByName(curr) {
-        if(rates) {
-          return rates[curr];
-        } else {
-          return (await ItemPricer.getCurrencyByName(mapID, curr));
-        }
+        return (await ItemPricer.getCurrencyByName(mapID, curr));
       }
 
 
@@ -863,8 +856,6 @@
           tempValue = item.value;
         } else if(item.chaosValue) {
           tempValue = item.chaosValue;
-        } else {
-          tempValue = Utils.getItemValue(item, rates);
         }
 
         item.chaosValue = tempValue;

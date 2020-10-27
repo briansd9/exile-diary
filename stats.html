@@ -48,7 +48,7 @@
       const f = new Intl.NumberFormat();
       const curr = new Intl.NumberFormat(navigator.language || 'en', { minimumFractionDigits: 2 });
       
-      var currScroll;      
+      var currScroll;
       ipcRenderer.on("done-capturing", () => {
         $("#sidenav").show();
         $("#messages").show();
@@ -58,7 +58,7 @@
         $(".footer").hide();
         $(document).scrollTop(currScroll);
         logger.info("Done capturing");
-      });      
+      });
       
       $(document).ready(async () => {
         
@@ -68,6 +68,31 @@
         $("#messages").load("messages.html");
         
         $("#loading").show();
+        
+        await new Promise( (resolve, reject) => {
+          DB.all(`select league from leagues order by timestamp desc`, (err, rows) => {
+            if(rows) {
+              if(rows.length > 1) {
+                rows.forEach(r => {
+                  $("#leagueSelect").append(`
+                    <option value='${r.league}' ${r.league === settings.activeProfile.league ? "selected" : ""}>${r.league}</option>
+                  `);
+                })
+                $("#leagueSelect").append(`
+                  <option id='allLeagues' value='all'>All leagues combined</option>
+                `);
+                $("#leagueSelect").show();
+                $("#leagueSpan").hide();
+              } else {
+                $("#leagueSpan").html(rows[0].league).show();
+                $("#leagueSelect").hide();
+              }
+              $("#charSelect").append(`<option value='${settings.activeProfile.characterName}' selected>${settings.activeProfile.characterName}</option>`);
+              $("#charSelect").append(`<option value='all'>All Characters</option>`);
+            }
+          });
+          resolve();
+        });        
         
         await new Promise( (resolve, reject) => {
           DB.all(`
@@ -92,17 +117,32 @@
           });
         });
         
-//        $("#loading").hide();
+        loadStats();
         
+    });
+    
+    async function loadStats() {
+          
+        $("#mainContent").hide();
+        $("#loading").show();
+        $("#loadingImg").attr("src", "res/img/loading.gif");
         loadMsg(`Loading stats from database...`);
+          
+        let tabOptions = { disabled: [] };
+        $("#totalStatsTable").empty();
+        $("#bigDropsTable").empty();
+        $("#areaStatsRows").remove();
+        $("#areaStatsTotalRow").remove();
+        $("#areaStatsTable").append("<tbody id='areaStatsRows'></tbody>");
+        $("#bigDropValueFilter").val(1);
         
-        let tabOptions = {
-          disabled: []
-        };
+        // don't allow "all characters" and "all leagues combined" to be selected simultaneously
+        $("#allLeagues").prop("disabled", ($("#charSelect").val() === "all"));
+        $("#allLeagues").css("display", ($("#charSelect").val() === "all" ? "none" : ""));
         
-//        let stats = {areaStats: {}, bigDrops: {}}; 
-//        stats.totalStats = tmpstats;
-        let stats = await StatsGetter.get();
+        let char = $("#charSelect").val() || settings.activeProfile.characterName;
+        let league = $("#leagueSelect").val() || settings.activeProfile.league;
+        let stats = await StatsGetter.get(char, league);
         
         stats.totalStats.rawEx = 0;
         stats.bigDrops.forEach( item => {
@@ -151,13 +191,13 @@
             `);
             $("#areaStatsRows").append(subRow);
             
-            let subTable = getSubTable(areaType, stats.areaStats[areaType].areas);
+            let subTable = getSubTable(areaType, stats.areaStats[areaType].areas, league);
             $(`#${areaType}DetailTable`).append(subTable);
             
           }
           
           let totalRow = $(`
-            <tbody class='no-sort'>
+            <tbody id='areaStatsTotalRow' class='no-sort'>
               <tr class='mapRow statsTableFooter'>
                 <td>&nbsp;</td>
                 <td>Total</td>
@@ -201,7 +241,8 @@
           tabOptions.disabled.push(1);
         }
         
-        if(stats.bigDrops && stats.bigDrops.length > 0) {          
+        if(stats.bigDrops && stats.bigDrops.length > 0) {
+          $("#popupContainer").empty();
           for(let i = 0; i < stats.bigDrops.length; i++) {
             let item = stats.bigDrops[i];
             item.parsedItem = JSON.parse(item.rawdata);          
@@ -245,19 +286,18 @@
         $('*'). removeClass('ui-widget');
         
         $("#loadingImg").attr("src", "res/img/loadingcomplete.png");
-        $("#loadingImg").css("filter", "brightness(150%)");
         $("#loadingText").html("Loading complete!");        
         setTimeout(() => { $("#loading").hide(); $("#mainContent").show(); }, 750);
         
-        
-    });
+    }
+    
     
     function loadMsg(msg) {
       $("#loadingText").html(msg);
     }
         
-    function getSubTable(id, data) {
-      
+    function getSubTable(id, data, league) {
+
       let table = $(`
         <table class='searchResults statsTable' id="${id}StatsTable" style='background-color:#222;'>
           <thead>
@@ -294,7 +334,7 @@
           </tr>
         `);
         $(row).click(function() {
-          loadAreaDetails(key, `${id}${i}`);
+          loadAreaDetails(key, `${id}${i}`, league);
         });
         body.append(row);
         
@@ -327,15 +367,19 @@
       
     }
     
-    async function loadAreaDetails(area, areaType) {
+    async function loadAreaDetails(area, areaType, league) {
       
-      if(!$(`#${areaType}DetailTable`).data("loaded")) {
+      console.log(`loading ${area} ${areaType} ${league}`);
+      
+      let areaLoaded = $(`#${areaType}DetailTable`).data("loaded");
+      
+      if(!areaLoaded || areaLoaded !== league) {
         
-        let rows = await StatsGetter.getAreaByName(area, areaType);
+        let rows = await StatsGetter.getAreaByName(area, areaType, $("#charSelect").val(), league);
         for(let i = 0; i < rows.length; i++) {          
           let map = rows[i];
           let row = $(`
-            <tr style='text-align:center;' class='areaRunRow' onclick='window.open("map.html?id=${map.id}&modal=true");'>
+            <tr style='text-align:center;' class='areaRunRow' onclick='window.open("map.html?id=${map.id}&char=${map.char}&modal=true");'>
               <td>${moment(map.id, "YYYYMMDDHHmmss").format("YYYY-MM-DD HH:mm:ss")}</td>
               <td>${moment.duration(map.time, "seconds").format("HH:mm:ss", { trim: false })}</td>
               <td>${curr.format(Number(map.gained).toFixed(2))}</td>
@@ -346,7 +390,7 @@
           `);
           $(`#${areaType}DetailTableRows`).append(row);
         }
-        $(`#${areaType}DetailTable`).data("loaded", true);
+        $(`#${areaType}DetailTable`).data("loaded", league);
         $(`#${areaType}DetailTable`).tablesorter({
           headers: {
             1: { sortInitialOrder: "desc" },
@@ -485,8 +529,8 @@
         div += statLine("Monsters slain", f.format(s.kills), "res/img/encountericons/kills.png");
       }
       div += statLine("Deaths", f.format(s.deaths || 0), "res/img/encountericons/deaths.png");
-      if(s.kills) {
-        let ratio = (s.deaths === 0 ? "∞" : f.format(Number(s.kills/s.deaths).toFixed(2)));
+      if(s.kills && s.deaths > 0) {
+        let ratio = f.format(Number(s.kills/s.deaths).toFixed(2));
         div += statLine("k/d Ratio", ratio, "res/img/encountericons/kd.png");
       }
       div += "</div>";
@@ -645,8 +689,6 @@
       div += "</div></div></div>";
       $("#totalStatsTable").append(div);
     }
-    
-
     
     function displayMasters(s) {
       if(!s.masters) return;
@@ -856,6 +898,13 @@
       </div>
       
       <div id="mainContent" style="display:none;">
+
+        <div id="selector" style="position: absolute; right: 5; top: 5;">
+          Displaying stats for 
+          <select id="charSelect" onchange="loadStats();"></select>
+          in 
+          <span id="leagueSpan"></span><select id="leagueSelect" onchange="loadStats();"></select>
+        </div>
         
         <ul>
           <li><a onclick="this.blur();" id="totalStatsContainerLink" href="#totalStatsContainer">Total Stats</a></li>
@@ -863,7 +912,6 @@
           <li><a onclick="this.blur();" id="bigDropsContainerLink" href="#bigDropsContainer"><img src="res/img/ex.png" style="height:30px;width:30px;"></a></li>
         </ul>
         
-      
         <div id="totalStatsContainer" style='display:none;'>
           <div id="totalStatsTable">
           </div>
@@ -884,7 +932,6 @@
                 <th>Deaths</th>
               </tr>
             </thead>
-            <tbody id="areaStatsRows"></tbody>
           </table>
         </div>
 

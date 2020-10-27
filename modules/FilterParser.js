@@ -1,4 +1,3 @@
-const DB = require('./DB').getDB();
 const logger = require("./Log").getLogger(__filename);
 const ItemData = require("./ItemData");
 const fs = require('fs');
@@ -11,14 +10,14 @@ function test(filterText) {
   return parseFilter(filterText);
 }
 
-async function get(forID) {
+async function get(forID, char) {
   
-  var filterID = await getFilterID(forID);
+  var filterID = await getFilterID(forID, char);
   if(cachedParser[filterID]) {
     return cachedParser[filterID];
   }
   
-  var parser = parseFilter(await getFilterText(forID));  
+  var parser = parseFilter(await getFilterText(forID, char));  
   cachedParser[filterID] = parser;  
   
   return parser;
@@ -36,7 +35,8 @@ function parseFilter(filterText) {
   return parser;
 }
 
-function getFilterID(forID) {
+function getFilterID(forID, char) {
+  const DB = require('./DB').getDB(char);
   return new Promise( (resolve, reject) => {
     DB.get("select timestamp from filters where timestamp < ? order by timestamp desc limit 1", [forID], (err, row) => {
       if (err) {
@@ -52,7 +52,8 @@ function getFilterID(forID) {
   });
 }
 
-function getFilterText(forID) {
+function getFilterText(forID, char) {
+  const DB = require('./DB').getDB(char);
   return new Promise( (resolve, reject) => {
     DB.get("select text from filters where timestamp < ? order by timestamp desc limit 1", [forID], (err, row) => {
       if (err) {

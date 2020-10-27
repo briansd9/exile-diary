@@ -9,10 +9,11 @@
   const settings = require('./settings').get();  
 
   const baseTypeRarities = ["Normal", "Magic", "Rare"];
+  const log = false;
   
   var ratesCache = {};
 
-  function getRatesFor(timestamp) {
+  function getRatesFor(timestamp, league) {
 
     var activeProfile = settings.activeProfile;
     if (activeProfile.league.includes("SSF") && !activeProfile.overrideSSF) {
@@ -23,8 +24,10 @@
     if(ratesCache[date]) {
       return ratesCache[date];
     }
+    
+    
 
-    var DB = require('./DB').getDB();
+    var DB = require('./DB').getLeagueDB(league);
     return new Promise((resolve, reject) => {
       DB.get("select date, data from fullrates where date <= ? or date = (select min(date) from fullrates) order by date desc", [date], async (err, row) => {
         if(err) {
@@ -50,7 +53,7 @@
     });
   }
 
-  async function price(item, log = true) {
+  async function price(item, league) {
     
     if(item.rarity === "Quest Item") {
       // can't be traded
@@ -62,7 +65,7 @@
       return 0;
     }
     
-    let rates = await getRatesFor(item.event_id);
+    let rates = await getRatesFor(item.event_id, league);
     if(!rates) {
       return 0;
     }
@@ -612,8 +615,8 @@
 
   }
 
-  async function getCurrencyByName(timestamp, type) {
-    var rates = await getRatesFor(timestamp);
+  async function getCurrencyByName(timestamp, type, league) {
+    var rates = await getRatesFor(timestamp, league);
     var value = rates["Currency"][type];
     if(!value) {
       //logger.info(`Could not find value for ${item.typeline}`);

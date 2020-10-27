@@ -41,7 +41,7 @@
       const fs = require('fs');
       const logger = require('./modules/Log').getLogger(__filename);
       const Utils = require('./modules/Utils');
-      const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled", "minimizeToTray"];
+      const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled", "minimizeToTray", "autoSwitch"];
       
       var settings = {};
       var disabledTabsArray = [ 1 ];
@@ -231,7 +231,7 @@
       function loadSettings() {
 
         configKeys.forEach((key) => {
-          if(key === "overlayEnabled" || key === "minimizeToTray") {
+          if(key === "overlayEnabled" || key === "minimizeToTray" || key === "autoSwitch") {
             $("#" + key).prop("checked", settings[key]);
           } else {
             $("#" + key).val(settings[key]);
@@ -328,7 +328,7 @@
         
         configKeys.forEach((key) => {
           var inputField = $("#" + key);
-          if(key === 'overlayEnabled' || key === 'minimizeToTray') {
+          if(key === 'overlayEnabled' || key === 'minimizeToTray' || key === 'autoSwitch') {
             settings[key] = inputField.is(':checked');
           } else if(inputField.val()) {
             settings[key] = inputField.val();
@@ -368,10 +368,14 @@
         var stashCheckInterval;
         switch(stashCheckUnits) {
           case "hours":
-            stashCheckInterval = $("#stashCheckHours").val();
+            stashCheckInterval = $("#stashCheckHours").val() || 1;
             break;
           case "maps":
-            stashCheckInterval = $("#stashCheckMaps").val();
+            stashCheckInterval = $("#stashCheckMaps").val() || 20;
+            break;
+          default:
+            stashCheckInterval = 1;
+            stashCheckUnits = "hours";
             break;
         }
         settings.stashCheck = {
@@ -697,7 +701,7 @@
             <td colspan="2">
               <div class='configLabel ui-text'>
                 <input style='margin:0 16px;' name='minimizeToTray' id='minimizeToTray' type='checkbox'/>
-                Minimize to Tray
+                <label for='minimizeToTray'>Minimize to Tray</label>
               </div>
             </td>
           </tr>
@@ -705,7 +709,7 @@
             <td colspan="2">
               <div class='configLabel ui-text'>
                 <input style='margin:0 16px;' name='overlayEnabled' id='overlayEnabled' type='checkbox' title="Displays notifications about completed maps and net worth updates as an overlay in your PoE window. Warning: may cause FPS drops"/>
-                Enable overlay popup messages (experimental)
+                <label for='overlayEnabled'>Enable overlay popup messages</label>
               </div>
             </td>
           </tr>
@@ -713,7 +717,15 @@
             <td colspan="2">
               <div class='configLabel ui-text'>
                 <input style='margin:0 16px;' name='overrideSSF' id='overrideSSF' type='checkbox'/>
-                Get item prices even in SSF mode (experimental)
+                <label for='overrideSSF'>Get item prices even in SSF mode</label>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <div class='configLabel ui-text'  title="If checked, whenever you switch characters in-game, Exile Diary will automatically track stats for that character">
+                <input style='margin:0 16px;' name='autoSwitch' id='autoSwitch' type='checkbox'/>
+                <label for='autoSwitch'>Enable automatic character switching <span class='eventText'>(experimental)</span></label>
               </div>
             </td>
           </tr>

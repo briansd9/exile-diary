@@ -47,12 +47,14 @@ var emitter = new EventEmitter();
 async function update() {
   
   settings = require('./settings').get();
-  DB = require('./DB').getDB();
   league = settings.activeProfile.league;
   
   if(!league) {
     return;
   }
+  
+  DB = require('./DB').getLeagueDB();
+  
   // no need for exchange rates in SSF
   if (league.includes("SSF")) {
     if(!settings.activeProfile.overrideSSF) {
@@ -139,7 +141,7 @@ async function getRates(date) {
   
   var data = await Utils.compress(rates);
   DB.run("insert into fullrates(date, data) values(?, ?)", [date, data], (err) => {
-    if(err) {
+    if(err && !err.message.includes("UNIQUE constraint failed")) {
       emitter.emit("gettingPricesFailed");
       logger.info(`Error inserting rates for ${date}: [${err}]`);
     } else {

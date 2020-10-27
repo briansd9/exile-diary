@@ -42,16 +42,15 @@ if(!lock) {
 
 var characterCheckStatus;
 
-function checkCurrentCharacterLeague() {
+
+async function checkCurrentActiveCharacter() {
   
   return new Promise( async (resolve, reject) => {
     
-    DB.getDB(true);
     var settings = Settings.get();
-    characterCheckStatus = null;
     
-    logger.info("Checking current character league...");
-    if(!settings || !settings.accountName || !settings.poesessid || !settings.activeProfile || !settings.activeProfile.characterName) {
+    logger.info("Getting current active league...");
+    if(!settings || !settings.accountName || !settings.poesessid) {
       
       logger.info("Can't check, info missing from settings");
       characterCheckStatus = "error";
@@ -68,7 +67,7 @@ function checkCurrentCharacterLeague() {
         response.on('data', (chunk) => {
           body += chunk;
         });
-        response.on('end', () => {
+        response.on('end', async () => {
           try {
             var foundChar = false;
             var data = JSON.parse(body);
@@ -77,10 +76,19 @@ function checkCurrentCharacterLeague() {
               resolve();
             } else {
               for(var i = 0; i < data.length; i++) {
-                if(data[i].name === settings.activeProfile.characterName) {
+                if(data[i].lastActive) {
                   foundChar = true;
+                  logger.info("Last active character:");
                   logger.info(JSON.stringify(data[i]));
+                  Settings.set("activeProfile", {
+                    characterName : data[i].name,
+                    league: data[i].league,
+                    overrideSSF : settings.activeProfile.overrideSSF
+                  });
+                  await DB.initDB();
+                  await DB.initLeagueDB();
                   checkLeague(settings, data[i].league);
+                  showActiveCharacterMessage(data[i]);
                   characterCheckStatus = "valid";
                   break;
                 }
@@ -113,6 +121,86 @@ function checkCurrentCharacterLeague() {
     }
     
   });
+  
+}
+
+async function checkCurrentCharacterLeague() {
+  
+  var settings = Settings.get();
+  if(settings.autoSwitch) {
+    return await checkCurrentActiveCharacter();
+  } else {
+    
+    return new Promise( async (resolve, reject) => {
+
+      await DB.initDB();
+      await DB.initLeagueDB();
+      characterCheckStatus = null;
+      logger.info("Checking current character league...");
+      if(!settings || !settings.accountName || !settings.poesessid || !settings.activeProfile || !settings.activeProfile.characterName) {
+
+        logger.info("Can't check, info missing from settings");
+        characterCheckStatus = "error";
+        resolve();
+
+      } else {
+
+        var path = `/character-window/get-characters?accountName=${encodeURIComponent(settings.accountName)}`;
+        var requestParams = Utils.getRequestParams(path, settings.poesessid);
+
+        var request = require('https').request(requestParams, (response) => {
+          var body = '';
+          response.setEncoding('utf8');
+          response.on('data', (chunk) => {
+            body += chunk;
+          });
+          response.on('end', () => {
+            try {
+              var foundChar = false;
+              var data = JSON.parse(body);
+              if(data.error && data.error.message === "Forbidden") {
+                characterCheckStatus = "error";
+                resolve();
+              } else {
+                for(var i = 0; i < data.length; i++) {
+                  if(data[i].name === settings.activeProfile.characterName) {
+                    foundChar = true;
+                    logger.info(JSON.stringify(data[i]));
+                    checkLeague(settings, data[i].league);
+                    showActiveCharacterMessage(data[i]);
+                    characterCheckStatus = "valid";
+                    break;
+                  }
+                }
+                if(!foundChar) {
+                  characterCheckStatus = "notFound";
+                }
+                resolve();
+              }
+            } catch (err) {
+              logger.info(`Error checking character status: ${err}`);
+              characterCheckStatus = "error";
+              resolve();
+            }
+          });
+          response.on('error', (err) => {
+            logger.info(`Error checking character status: ${err}`);
+            characterCheckStatus = "error";
+            resolve();
+          });
+        });
+
+        request.on('error', (err) => {
+          logger.info(`Error checking character status: ${err}`);
+          characterCheckStatus = "error";
+          resolve();
+        });
+        request.end();
+
+      }
+
+    });
+  }
 }
 
 function checkLeague(settings, foundLeague) {
@@ -124,41 +212,47 @@ function checkLeague(settings, foundLeague) {
   }
   var db = DB.getDB();
   db.run(
-    "insert into leagues(timestamp, league) values(?, ?)", 
+    "insert or ignore into leagues(timestamp, league) values(?, ?)", 
     [moment().format('YYYYMMDDHHmmss'), foundLeague], 
     (err) => {
-      if(err && err.code !== "SQLITE_CONSTRAINT") {
+      if(err) {
         logger.info(`Error inserting new league: ${JSON.stringify(err)}`);
       }
     }      
   );
 }
 
-function init() {
+async function init() {
   
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
   
     logger.info("Initializing components");
-
-    global.messages = [];
+    
+    if(!global.messages) {
+      global.messages = [
+        {
+          timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),          
+          text: `Exile Diary v${app.getVersion()} started`
+        }        
+      ];
+    }
 
     // remove settings file from cache, then restart all components 
     // to make sure they're using the current settings file
     var settingsPath = path.join(app.getPath("userData"), "settings.json");
     if(fs.existsSync(settingsPath)) {
       delete require.cache[require.resolve(settingsPath)];
-      checkCurrentCharacterLeague().then(() => {
-        logger.info("Done checking, character status is " + characterCheckStatus);
-        if(characterCheckStatus === "valid") {
-          logger.info("Starting components");
-          RateGetterV2.update();
-          ClientTxtWatcher.start();
-          ScreenshotWatcher.start();
-          OCRWatcher.start();
-          ItemFilter.load();
-        }
-        resolve(true);
-      });
+      await checkCurrentCharacterLeague();
+      logger.info("Done checking, character status is " + characterCheckStatus);
+      if(characterCheckStatus === "valid") {
+        logger.info("Starting components");
+        RateGetterV2.update();
+        ClientTxtWatcher.start();
+        ScreenshotWatcher.start();
+        OCRWatcher.start();
+        ItemFilter.load();
+      }
+      resolve(true);
     } else {
       resolve(false);
     }
@@ -167,7 +261,6 @@ function init() {
 
 
 }
-
 
 function initWindow(window) {
   
@@ -178,25 +271,13 @@ function initWindow(window) {
     addMessage(`<span class='eventText'>Unable to get stash information. Please check your POESESSID</span>`, true);
   });
   StashGetter.emitter.on("netWorthUpdated", (data) => {
-    let changeMessage;
-    switch(data.change) {
-      case 0:
-        // don't notify if no change
-        return;
-      case "new":
-        changeMessage = "";
-        break;
-      default:
-        changeMessage = `(${Utils.formatSignedNumber(data.change)})`;
-        break;
-    }
     addMessage(
       `
         <span style='cursor:pointer;' onclick='window.location.href="stash.html";'>
         Net worth update: 
         <span class='eventText'>${data.value}</span>
         <img src='res/img/c.png' class='currencyText'>
-        ${changeMessage}
+        ${data.change === "new" ? "" : `(${Utils.formatSignedNumber(data.change)})`}
         </span>
       `,
       true
@@ -271,6 +352,18 @@ function initWindow(window) {
     addMessage("<span class='eventText removeRow' onclick='rateGetterRetry(this);'>Error getting item prices from poe.ninja, <span class='retry'>click on this message to try again</span></span>")
   });
   
+  ClientTxtWatcher.emitter.removeAllListeners();
+  ClientTxtWatcher.emitter.on("switchedCharacter", async (c) => {
+    // clear message section to remove now-invalid links to previous character's map runs
+    global.messages = [];
+    await init();
+    if(mainWindow) {
+      await initWindow(mainWindow);
+      mainWindow.loadFile('index.html');
+    }
+  });
+  
+  
 }
 
 async function createWindow() {
@@ -278,7 +371,7 @@ async function createWindow() {
   logger.info(`Starting Exile Diary v${app.getVersion()}`);
   
   await init();
-  
+    
   var downloadingUpdate = false;
   
   ipcMain.on("reinitialize", async (event) => {
@@ -385,8 +478,6 @@ async function createWindow() {
   });
   overlayWindow.loadFile("overlay.html");
 
-  addMessage(`Exile Diary v${app.getVersion()} started`);
-  
   autoUpdater.logger = logger;
   autoUpdater.autoDownload = false;
   autoUpdater.on('update-available', (info) => {
@@ -492,6 +583,10 @@ async function createWindow() {
     
 }
 
+function showActiveCharacterMessage(char) {
+  addMessage(`Now tracking: <span class='eventText'>${char.name}</span> (level ${char.level} ${char.class} in ${char.league} league)`, true);
+}
+
 function addMessage(text, sendToOverlay = false) {
     
   var msg = {
@@ -500,10 +595,12 @@ function addMessage(text, sendToOverlay = false) {
   };
   global.messages.push(msg);
   global.messages = global.messages.slice(-10);
-  mainWindow.webContents.send("message", msg);
+  if(mainWindow && mainWindow.webContents) {
+    mainWindow.webContents.send("message", msg);
+  }
   
   var settings = Settings.get();
-  if(sendToOverlay && settings.overlayEnabled) { 
+  if(overlayWindow && overlayWindow.webContents && sendToOverlay && settings.overlayEnabled) { 
     (async () => {
       var win = await activeWin();
       if(win && win.title === "Path of Exile" && win.owner.name.startsWith("PathOfExile")) {

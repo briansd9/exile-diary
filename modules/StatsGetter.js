@@ -1,59 +1,93 @@
 const ItemPricer = require('./ItemPricer');
 const FilterParser = require('./FilterParser');
 const logger = require('./Log').getLogger(__filename);
-const DB = require('./DB').getDB();
 const Constants = require('./Constants');
 const Utils = require('./Utils');
 
-async function get() {
+async function get(char, league) {
   
-  let totalStats = {};
+  let charList = (char === "all" ? await getCharList(league) : [ char ]);
+  if(league === "all") {
+    league = null;
+  }
+  
+  let totalStats = { unrighteousTurnedToAsh: 0 };
   let areaStats = {};
   let bigDrops = [];
   
-  let allMaps = await new Promise((resolve, reject) => {
-    DB.all(`
-      select areainfo.name, mapruns.* 
-      from areainfo, mapruns 
-      where mapruns.id = areainfo.id
-      and ifnull(kills, 0) > -1 and ifnull(gained, 0) > -1            
-      order by mapruns.id desc
-    `, (err, rows) => {
-      resolve(rows);
-    });
-  });
+  for(let j = 0; j < charList.length; j++) {
+
+    let DB = require('./DB').getDB(charList[j]);
+    logger.info(`Getting stats for [${charList[j]}] in [${league}]`);
   
-  for(let i = 0; i < allMaps.length; i++) {
-    
-    let m = allMaps[i];
-    
-    m.runinfo = JSON.parse(m.runinfo);
-    m.areaType = (m.runinfo.blightedMap ? "blightedMaps" : Utils.getAreaType(m.name));
-    
-    // Laboratory area name no longer unique :-(
-    if(m.name === "Laboratory" && m.runinfo.heistRogues && Object.keys(m.runinfo.heistRogues).length > 0) {
-      m.areaType = "heist";
+    let allMaps = await new Promise((resolve, reject) => {
+      DB.all(`
+        select areainfo.name, mapruns.* 
+        from areainfo, mapruns ${league ? ", leaguedates" : ""}
+        where mapruns.id = areainfo.id
+        and ifnull(kills, 0) > -1 and ifnull(gained, 0) > -1
+        ${league ? ` and leaguedates.league = '${league}' ` : ""}
+        ${league ? " and mapruns.id between leaguedates.start and leaguedates.end " : ""}
+        order by mapruns.id desc
+      `, (err, rows) => {
+        resolve(rows);
+      });
+    });
+
+    for(let i = 0; i < allMaps.length; i++) {
+
+      let m = allMaps[i];
+
+      m.runinfo = JSON.parse(m.runinfo);
+      m.areaType = (m.runinfo.blightedMap ? "blightedMaps" : Utils.getAreaType(m.name));
+
+      // Laboratory area name no longer unique :-(
+      if(m.name === "Laboratory" && m.runinfo.heistRogues && Object.keys(m.runinfo.heistRogues).length > 0) {
+        m.areaType = "heist";
+      }
+
+      if(m.areaType === "heist" && m.runinfo.heistRogues && Object.keys(m.runinfo.heistRogues).length > 1) {
+        m.areaType = "grandHeist";
+      }
+
+      mergeRunInfo(totalStats, m);
+      mergeAreaStats(areaStats, m);
+
     }
-    
-    if(m.areaType === "heist" && m.runinfo.heistRogues && Object.keys(m.runinfo.heistRogues).length > 1) {
-      m.areaType = "grandHeist";
-    }
-    
-    mergeRunInfo(totalStats, m);
-    mergeAreaStats(areaStats, m);
+
+    totalStats.unrighteousTurnedToAsh += await getUnrighteousTurnedToAsh(charList[j], league);  
+    bigDrops = bigDrops.concat(await getBigDrops(charList[j], league));
     
   }
   
-  totalStats.unrighteousTurnedToAsh = await getUnrighteousTurnedToAsh();  
-  bigDrops = await getBigDrops();
   
   return({ totalStats : totalStats, areaStats : areaStats, bigDrops: bigDrops });
 
 }
 
-async function getUnrighteousTurnedToAsh() {
+async function getCharList(league) {
+  let leagueDB = require('./DB').getLeagueDB(league);
   return new Promise((resolve, reject) => {
-    DB.get(`select count(1) as count from events where event_text like 'Sister Cassia: And the unrighteous were turned to ash!%'`, (err, row)  => {
+     leagueDB.all(" select name from characters ", (err, rows) => {
+       if(err) {
+         logger.info("Error getting character list!");
+         resolve([]);
+       } else {
+         resolve(rows.map( row => row.name));
+       }
+     })
+  });
+}
+
+async function getUnrighteousTurnedToAsh(char, league) {
+  let DB = require('./DB').getDB(char);
+  return new Promise((resolve, reject) => {
+    DB.get(`
+      select count(1) as count 
+      from events ${league ? ", leaguedates" : ""}
+      where event_text like 'Sister Cassia: And the unrighteous were turned to ash!%'
+      ${league ? ` and leaguedates.league = '${league}' and events.id between leaguedates.start and leaguedates.end ` : ""}
+    `, (err, row)  => {
       if(err) {
         resolve(0);
       }
@@ -62,35 +96,56 @@ async function getUnrighteousTurnedToAsh() {
   });  
 }
 
-async function getAreaByName(area, areaType) {
+async function getAreaByName(area, areaType, char, league) {
+  
+  let charList = (char === "all" ? await getCharList(league) : [ char ]);
+  if(league === "all") {
+    league = null;
+  }
   
   let maps = [];
-  let q = await new Promise((resolve, reject) => {
-    DB.all(`
-      select mapruns.* 
-      from areainfo, mapruns 
-      where mapruns.id = areainfo.id
-      and areainfo.name = ?
-      ${areaType.startsWith("blightedMaps") ? "and json_extract(runinfo, '$.blightedMap') is not null" : ""}
-      ${areaType.startsWith("heist") ? "and json_extract(runinfo, '$.heistRogues') is not null" : ""}
-      ${areaType.startsWith("grandHeist") ? "and json_array_length(json_extract(runinfo, '$.heistRogues')) > 1" : ""}
-      and ifnull(kills, 0) > -1 and ifnull(gained, 0) > -1
-      order by mapruns.id
-    `, [area], (err, rows) => {
-      resolve(rows);
-    });
-  });
   
-  q.forEach(map => {
-    let info = JSON.parse(map.runinfo);
-    maps.push({
-      id: map.id,
-      time: Number(Utils.getRunningTime(map.firstevent, map.lastevent, "s", { useGrouping : false })),
-      gained: map.gained || 0,
-      kills: map.kills || 0,
-      deaths: info.deaths || 0
+  for(let j = 0; j < charList.length; j++) {
+    
+    let DB = require('./DB').getDB(charList[j]);
+    console.log(`${area} ${areaType} ${charList[j]} ${league}`);
+
+    let q = await new Promise((resolve, reject) => {
+      DB.all(`
+        select mapruns.* 
+        from areainfo, mapruns ${league ? ", leaguedates" : ""}
+        where mapruns.id = areainfo.id
+        and areainfo.name = ?
+        and json_extract(runinfo, '$.blightedMap') is ${areaType.startsWith("blightedMaps") ? " not null " : " null "}
+        ${areaType.startsWith("heist") ? "and json_extract(runinfo, '$.heistRogues') is not null" : ""}
+        ${areaType.startsWith("grandHeist") ? "and json_array_length(json_extract(runinfo, '$.heistRogues')) > 1" : ""}
+        and ifnull(kills, 0) > -1 and ifnull(gained, 0) > -1
+        ${league ? ` and leaguedates.league = '${league}' ` : ""}
+        ${league ? " and mapruns.id between leaguedates.start and leaguedates.end " : ""}
+        order by mapruns.id
+      `, [area], (err, rows) => {
+        if(err) {
+          logger.info("Error getting area stats: " + err);
+          resolve(null);        
+        } else {
+          resolve(rows);
+        }
+      });
     });
-  });
+
+    q.forEach(map => {
+      let info = JSON.parse(map.runinfo);
+      maps.push({
+        char: charList[j],
+        id: map.id,
+        time: Number(Utils.getRunningTime(map.firstevent, map.lastevent, "s", { useGrouping : false })),
+        gained: map.gained || 0,
+        kills: map.kills || 0,
+        deaths: info.deaths || 0
+      });
+    });
+    
+  }
   
   return maps;
   
@@ -214,8 +269,9 @@ function mergeRunInfo(totalStats, map) {
         totalStats.masters[m].completed++;
       }
       ["beasts", "incursions", "sulphite", "favourGained"].forEach( elem => {
+        totalStats.masters[m][elem] = (totalStats.masters[m][elem] || 0);
         if(minfo[elem]) {
-          totalStats.masters[m][elem] = (totalStats.masters[m][elem] || 0) + minfo[elem];
+          totalStats.masters[m][elem] += (minfo[elem] || 0);
         }
       });
       if(minfo.tier3Rooms) {
@@ -347,15 +403,18 @@ function mergeRunInfo(totalStats, map) {
 
 }
 
-async function getBigDrops() {
+async function getBigDrops(char, league) {
   
+  let DB = require('./DB').getDB(char);
   let drops = await new Promise((resolve, reject) => {
     DB.all(`
-      select mapruns.id as map_id, areainfo.name as area, items.*
-      from items, mapruns, areainfo
-      where items.value > 20 
+      select leaguedates.league, mapruns.id as map_id, areainfo.name as area, items.*
+      from items, mapruns, areainfo, leaguedates
+      where items.value > 10 
       and items.event_id between mapruns.firstevent and mapruns.lastevent
       and mapruns.id = areainfo.id
+      ${league ? ` and leaguedates.league = '${league}' ` : ""}
+      and map_id between leaguedates.start and leaguedates.end
     `, (err, rows) => {
       if(err) {
         logger.info("Error getting big drops: " + err.message);
@@ -372,12 +431,12 @@ async function getBigDrops() {
     let item = drops[i];
     let date = item.event_id.substring(0, 8);
     if(!exaltPrices[date]) {
-      exaltPrices[date] = await ItemPricer.getCurrencyByName(date, "Exalted Orb");
+      exaltPrices[date] = await ItemPricer.getCurrencyByName(date, "Exalted Orb", item.league);
     }
     if(item.value < exaltPrices[date]) {
       drops.splice(i, 1);
     } else {
-      item.parser = await FilterParser.get(item.event_id);
+      item.parser = await FilterParser.get(item.event_id, char);
       item.exaltValue = item.value / exaltPrices[date];
     }
   }

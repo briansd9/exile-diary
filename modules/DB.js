@@ -1,72 +1,131 @@
 const sqlite3 = require('sqlite3');
 const path = require('path');
 const logger = require("./Log").getLogger(__filename);
+const Utils = require("./Utils");
 
 class DB {
   
-  static getDB(startup = false) {
-
-    var settings = require('./settings').get();
-    if(!settings) {
-      logger.info("No settings file found, can't initialize DB");
-      return null;
+  static getDB(char) {
+    if(!char) {
+      var settings = require('./settings').get();
+      if(!settings) {
+        logger.info("No settings file found, can't get DB");
+        return null;
+      }
+      if (!settings.activeProfile || !settings.activeProfile.characterName) {
+        logger.info("No active profile selected, can't get DB");
+        return null;
+      }
+      char = settings.activeProfile.characterName;
     }
-    if (!settings.activeProfile || !settings.activeProfile.characterName) {
-      logger.info("No active profile selected, can't initialize DB");
-      return null;
-    }
-
     var app = require('electron').app || require('electron').remote.app;
-    
-    var db = new sqlite3.cached.Database(path.join(app.getPath("userData"), settings.activeProfile.characterName + ".db"));
-    
-    if(startup) {
-      logger.info(`Initializing database for ${settings.activeProfile.characterName}`);
-      this.init(db);
-    }
-
+    var db = new sqlite3.cached.Database(path.join(app.getPath("userData"), `${char}.db`));
     return db;
-
   }
-
-  static init(db) {
-    db.get("pragma user_version", (err, row) => {
-      if(err) {
-        logger.info("Error reading database version: " + err);
+  
+  static getLeagueDB(league) {
+    if(!league) {
+      var settings = require('./settings').get();
+      if(!settings || !settings.activeProfile || !settings.activeProfile.league) {
+        logger.info("Unable to get league DB");
+        return null;
       } else {
-        let ver = row.user_version;
-        logger.info(`Database version is ${ver}`);
-        db.serialize(() => {
-          for(let i = 0; i < initSQL.length; i++) {
-            if(ver === 0 || i > ver) {
-              logger.info(`Running initialization SQL for version ${i}`);
-              for(let j = 0; j < initSQL[i].length; j++) {
-                let sql = initSQL[i][j];
-                logger.info(sql);
-                db.run(sql, (err) => {
-                  if(err) {
-                    if(!err.toString().includes("duplicate column name")) {
-                      logger.info(`Error initializing DB: ${err}`);
+        league = settings.activeProfile.league;
+      }
+    }
+    var app = require('electron').app || require('electron').remote.app;    
+    var db = new sqlite3.cached.Database(path.join(app.getPath("userData"), `${league}.leaguedb`));
+    return db;
+  }
+  
+  static async initDB(char) {
+    if(!char) {
+      var settings = require('./settings').get();
+      if(!settings) {
+        logger.info("No settings file found, can't initialize DB");
+        return null;
+      }
+      if (!settings.activeProfile || !settings.activeProfile.characterName) {
+        logger.info("No active profile selected, can't initialize DB");
+        return null;
+      }
+      char = settings.activeProfile.characterName;
+    }
+    var app = require('electron').app || require('electron').remote.app;    
+    var db = new sqlite3.cached.Database(path.join(app.getPath("userData"), `${char}.db`));    
+    await this.init(db, initSQL, maintSQL);
+    logger.info(`Completed initializing db for ${char}`);
+    // allow time for DB file changes to be written
+    await Utils.sleep(500);
+    return db;
+  }
+  
+  static async initLeagueDB(league) {    
+    if(!league) {
+      var settings = require('./settings').get();
+      if(!settings || !settings.activeProfile || !settings.activeProfile.league) {
+        logger.info("Unable to get league DB");
+        return null;
+      } else {
+        league = settings.activeProfile.league;
+      }
+    }
+    var app = require('electron').app || require('electron').remote.app;    
+    var db = new sqlite3.cached.Database(path.join(app.getPath("userData"), `${league}.leaguedb`));
+    await this.init(db, leagueInitSQL);
+    await Utils.sleep(500);
+    return db;
+  }
+  
+
+  static async init(db, sqlList, maintSqlList) {
+    logger.info("Initializing " + path.basename(db.filename));
+    return new Promise((resolve, reject) => {
+      db.get("pragma user_version", (err, row) => {
+        if(err) {
+          logger.info("Error reading database version: " + err);
+          reject(err);
+        } else {
+          let ver = row.user_version;
+          logger.info(`Database version is ${ver}`);
+          db.serialize(() => {
+            for(let i = 0; i < sqlList.length; i++) {
+              if(ver === 0 || i > ver) {
+                logger.info(`Running initialization SQL for version ${i}`);
+                for(let j = 0; j < sqlList[i].length; j++) {
+                  let sql = sqlList[i][j];
+                  logger.info(sql);
+                  db.run(sql, (err) => {
+                    if(err) {
+                      if(!err.toString().includes("duplicate column name")) {
+                        logger.info(`Error initializing DB: ${err}`);
+                        reject(err);
+                      }
                     }
+                  });
+                }
+              }
+            }
+            if(maintSqlList) {
+              for(let i = 0; i < maintSqlList.length; i++) {
+                db.run(maintSqlList[i], (err) => {
+                  if(err) {
+                    logger.info(`Error running DB maintenance: ${err}`);
+                    reject(err);
                   }
                 });
               }
+              logger.info("DB maintenance complete");
             }
-          }
-          for(let i = 0; i < maintSQL.length; i++) {
-            db.run(maintSQL[i], (err) => {
-              if(err) {
-                logger.info(`Error running DB maintenance: ${err}`);
-              }
-            });
-          }
-          
-        });
-      }
+            resolve();
+          });
+        }
+      });
     });
   }
-}
   
+}
+
 const initSQL = [
   
   // version 0 - db initialize
@@ -93,7 +152,7 @@ const initSQL = [
         event_type text not null,
         event_text text,
         server text,
-        primary key (id, event_type)
+        primary key (id, event_type, event_text)
       )
     `,
     `
@@ -116,14 +175,6 @@ const initSQL = [
       create table if not exists lastinv (
         timestamp text not null,
         inventory text not null
-      )
-    `,
-    `
-      create table if not exists rates (
-        date text not null,
-        item text not null,
-        value number not null,
-        primary key (date, item)
       )
     `,
     `
@@ -151,13 +202,6 @@ const initSQL = [
       )
     `,
     `
-      create table if not exists stashes (
-        timestamp text primary key not null,
-        items text not null,
-        value text not null
-      )
-    `,
-    `
       create table if not exists leagues (
         timestamp text not null,
         league text primary key not null
@@ -166,12 +210,6 @@ const initSQL = [
     `
       create table if not exists incubators ( 
         timestamp text primary key not null,
-        data text not null
-      )
-    `,
-    `
-      create table if not exists fullrates (
-        date text primary key not null,
         data text not null
       )
     `,
@@ -184,21 +222,9 @@ const initSQL = [
     `pragma user_version = 1`
   ],
   
-  // version 2 - change primary key of events table to prevent collisions
+  // version 2 - add runinfo
   [
     `pragma user_version = 2`,
-    `
-      create table if not exists events_copy (
-        id text not null,
-        event_type text not null,
-        event_text text,
-        server text,
-        primary key (id, event_type, event_text)
-      )
-    `,
-    `insert into events_copy(id, event_type, event_text, server) select id, event_type, event_text, server from events`,
-    `drop table events`,
-    `alter table events_copy rename to events`,
     `alter table mapruns add runinfo text`
   ],
   
@@ -221,14 +247,52 @@ const initSQL = [
     `pragma user_version = 4`,
     `alter table mapruns add kills number`,
     `insert or ignore into mapruns(id, firstevent, lastevent, gained, kills) values(-1, -1, -1, -1, -1)`
+  ],
+  
+  // version 5 - league start and end dates
+  [
+    'pragma user_version = 5',
+    `
+      create view if not exists leaguedates as
+        select league, timestamp as start, 
+        (select ifnull(min(timestamp), 99999999999999) from leagues l2 where l2.timestamp > leagues.timestamp) as end
+        from leagues
+        order by start
+    `
   ]
   
+  // version 6 - migration of fullrates and stashes to separate league DB
+  // not incremented here, requires extra processing (see debug.js)
   
 ];
 
 // db maintenance - execute on every app start
 const maintSQL = [
    `delete from incubators where timestamp < (select min(timestamp) from (select timestamp from incubators order by timestamp desc limit 25))`
+];
+
+const leagueInitSQL = [
+  [ 
+    `pragma user_version = 1`,
+    `
+      create table if not exists characters (
+        name text primary key not null
+      )
+    `,
+    `
+      create table if not exists fullrates (
+        date text primary key not null,
+        data text not null
+      )
+    `,
+    `
+      create table if not exists stashes (
+        timestamp text primary key not null,
+        items text not null,
+        value text not null
+      )
+    `
+  ]
 ];
 
 module.exports = DB;

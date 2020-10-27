@@ -1,5 +1,6 @@
 const Tail = require('nodejs-tail');
 const logger = require("./Log").getLogger(__filename);
+const EventEmitter = require('events');
 const InventoryGetter = require('./InventoryGetter');
 const ItemParser = require('./ItemParser');
 const RunParser = require('./RunParser');
@@ -10,6 +11,8 @@ var DB;
 var settings;
 var tail;
 var inv;
+var login;
+var emitter = new EventEmitter();
 
 var lastInstanceServer = null;
 const instanceServerRegex = /[0-9:\.]+$/;
@@ -51,6 +54,12 @@ function start() {
       } else if(line.includes("Connecting to instance server at")) {
         lastInstanceServer = (instanceServerRegex.exec(line))[0];
         logger.info("Instance server found: " + lastInstanceServer);
+      } else if (settings.autoSwitch && line.includes("Async connecting to") && line.includes("login.pathofexile.com")) {
+        logger.info("Login found, monitoring possible character change");
+        login = true;
+      } else if(settings.autoSwitch && login && line.includes("entered")) {
+        logger.info("Connecting to instance server after login, checking last active character");
+        checkLastActiveCharacter();
       } else {
         var timestamp = line.substring(0, 19).replace(/[^0-9]/g, '');
         var event = getEvent(line);
@@ -77,6 +86,56 @@ function start() {
   }
   
 }
+
+async function checkLastActiveCharacter() {
+  
+  if(!login) {
+    return;
+  } else {
+    login = false;
+  }
+  
+  var settings = require('./settings').get();  
+  var path = `/character-window/get-characters?accountName=${encodeURIComponent(settings.accountName)}`;
+  var requestParams = Utils.getRequestParams(path, settings.poesessid);
+  
+  return new Promise((resolve, reject) => {
+    var request = require('https').request(requestParams, (response) => {
+      var body = '';
+      response.setEncoding('utf8');
+      response.on('data', (chunk) => {
+        body += chunk;
+      });
+      response.on('end', () => {
+        try {
+          var data = JSON.parse(body);
+          data.forEach(char => {
+            if(char.lastActive) {
+              if(char.name !== settings.activeProfile.characterName || char.league !== settings.activeProfile.league) {
+                logger.info(`Changed active character ${settings.activeProfile.characterName} => ${char.name} `);
+                emitter.emit("switchedCharacter", char);
+              }
+              resolve(null);
+            }
+          });
+        } catch(err) {
+          logger.info(`Failed to check last active character: ${err}`);
+          resolve(null);
+        }
+      });
+      response.on('error', (err) => {
+        logger.info(`Failed to check last active character: ${err}`);
+        resolve(null);
+      });
+    });
+    request.on('error', (err) => {
+      logger.info(`Failed to check last active character: ${err}`);
+      resolve(null);
+    });
+    request.end();
+  });
+}
+
 
 function insertEvent(event, timestamp) {
   DB.run(
@@ -324,3 +383,4 @@ async function getOldNPCEvents() {
 
 module.exports.start = start;
 module.exports.getOldNPCEvents = getOldNPCEvents;
+module.exports.emitter = emitter;
