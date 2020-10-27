@@ -1,61 +1,62 @@
+<script>
+
+  const renderer = require('electron').ipcRenderer;
+  const openLink = require('opn');
+
+  renderer.on("incubatorsUpdated", (event, incubators) => {
+    //console.log(incubators);
+  });            
+
+  $(document).ready(() => {
+
+    let version = require('electron').remote.app.getVersion();
+    $("#appVersion").html(version);
+    $("#myModal").click(hideModal);
+    $("#myModal").appendTo($("body"));
+
+    let settings = require("./modules/settings").get();
+    if(!settings || !settings.version || settings.version !== version) {
+      $(".newVersion").show();
+    }
+
+  });
+
+  $(document).keydown(e => {
+      switch (e.key) {
+        case "Escape":
+        case "Esc":
+          $("#myModal").hide();
+          break;
+        case "!":
+          if(e.ctrlKey && e.shiftKey) {
+            require('electron').remote.getCurrentWindow().toggleDevTools();
+          }
+      }
+    });
+
+
+  function about() {
+    $("#modalContent").load("about.html", () => {
+      $("#myModal").show();
+      $(".newVersion").hide();        
+      var settings = require("./modules/settings").get();
+      var version = require('electron').remote.app.getVersion();
+      if(!settings.version || settings.version !== version) {
+        require("./modules/settings").set("version", version);
+      }
+
+    });
+  }
+
+  function hideModal(e) {
+    if(e.target.id === "myModal") $("#myModal").hide();
+  }
+
+</script>
+  
 <div style='text-align:center;font-size:16px'>
   <img src="res/img/icons/png/128x128.png"/>
   Exile Diary v<span id='appVersion'></span>
-  <script>
-    
-    const renderer = require('electron').ipcRenderer;
-    const openLink = require('opn');
-    
-    renderer.on("incubatorsUpdated", (event, incubators) => {
-      //console.log(incubators);
-    });            
-    
-    $(document).ready(() => {
-      
-      let version = require('electron').remote.app.getVersion();
-      $("#appVersion").html(version);
-      $("#myModal").click(hideModal);
-      $("#myModal").appendTo($("body"));
-      
-      let settings = require("./modules/settings").get();
-      if(!settings || !settings.version || settings.version !== version) {
-        $(".newVersion").show();
-      }
-      
-    });
-    
-    $(document).keydown(e => {
-        switch (e.key) {
-          case "Escape":
-          case "Esc":
-            $("#myModal").hide();
-            break;
-          case "!":
-            if(e.ctrlKey && e.shiftKey) {
-              require('electron').remote.getCurrentWindow().toggleDevTools();
-            }
-        }
-      });
-    
-    
-    function about() {
-      $("#modalContent").load("about.html", () => {
-        $("#myModal").show();
-        $(".newVersion").hide();        
-        var settings = require("./modules/settings").get();
-        var version = require('electron').remote.app.getVersion();
-        if(!settings.version || settings.version !== version) {
-          require("./modules/settings").set("version", version);
-        }
-        
-      });
-    }
-    
-    function hideModal(e) {
-      if(e.target.id === "myModal") $("#myModal").hide();
-    }
-    
-  </script>
 </div>
 
 <div id='sidenav-items'>
