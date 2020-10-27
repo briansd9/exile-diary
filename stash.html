@@ -26,10 +26,10 @@
     <script>
     
       const Constants = require('./modules/Constants');
-      const DB = require('./modules/DB').getDB();
+      const charDB = require('./modules/DB').getDB();
+      const leagueDB = require('./modules/DB').getLeagueDB();
       const logger = require('./modules/Log').getLogger(__filename);
       const Utils = require('./modules/Utils');
-      const RateGetter = require('./modules/RateGetter');
       const ItemData = require('./modules/ItemData');
       const ItemPricer = require('./modules/ItemPricer');
       const ItemParser = require('./modules/ItemParser');
@@ -37,10 +37,14 @@
       const zlib = require('zlib');      
       const {ipcRenderer, remote} = require('electron');
       
+      var stashList;
+      var htmlCache = {};
+      
       class Stash {
         
-        constructor(id) {
+        constructor(id, league) {
           this.id = id;
+          this.DB = require('./modules/DB').getLeagueDB(league);
           this.value = 0;
           this.itemsByType = [];
           this.itemsById = [];
@@ -49,7 +53,7 @@
         
         getStashItems() {
           return new Promise( (resolve, reject) => {
-            DB.get(`select items, value from stashes where timestamp = ?`, [this.id], async (err, row) => {
+            this.DB.get(`select items, value from stashes where timestamp = ?`, [this.id], async (err, row) => {
               if(!row) {
                 resolve(false);                
               } else {
@@ -79,13 +83,12 @@
         }
         
         processItem(item) {
-          // need to identify by both type and rarity, otherwise unique and normal maps of the same basetype will be grouped together
           
           if(item.typeLine === "Horticrafting Station") {
             this.processCrafts(item.craftedMods);
           }
 
-          
+          // need to identify by both type and rarity, otherwise unique and normal maps of the same basetype will be grouped together
           var typeIdentifier  = item.typeLine.replace("Superior ", "");
           var uniqueName = Utils.getItemName(item.icon);
           if(uniqueName) {
@@ -161,11 +164,6 @@
               curr.itemsById[curr.itemsByType[key]].change = curr.itemsById[curr.itemsByType[key]].stackSize;
             } else if(!currKeys.includes(key)) {
               // todo: how to handle items that disappeared completely from current stash?
-//              var lostItem = Object.assign({}, prev.itemsById[prev.itemsByType[key]]);
-//              lostItem.change = -lostItem.stackSize;
-//              lostItem.stackSize = 0;
-//              curr.itemsByType[key] = lostItem.id;
-//              curr.itemsById[curr.itemsByType[key]] = lostItem;
             } else {
               var diff = getDifference(prev.itemsById[prev.itemsByType[key]], curr.itemsById[curr.itemsByType[key]]);
               if (diff) {
@@ -177,9 +175,6 @@
           function getDifference(prevItem, currItem) {
             if (prevItem.stackSize && currItem.stackSize && prevItem.stackSize !== currItem.stackSize) {
               return currItem.stackSize - prevItem.stackSize;
-              //var obj = Object.assign({}, currItem);
-              //obj.stackSize -= prevItem.stackSize;
-              //return obj;
             }
             return 0;
           }        
@@ -267,13 +262,16 @@
           $(this).hide();
         })
         
-        
         $("#horticraftsTable").tablesorter();
         
-        var stashID = await getStashID();
-        loadStash(stashID);
+        init();        
         
       });
+      
+      async function init() {
+        var stashID = await getStashID();
+        loadStash(stashID);
+      }
       
       var currScroll;
       ipcRenderer.on("done-capturing", () => { 
@@ -323,27 +321,24 @@
         }
       }
       
-      async function loadStash(id) {
+      async function loadStash(id, league) {
         
         ["itemsTable", "prevCell", "nextCell", "craftsTable"].forEach( str => {
           $(`#${str}`).empty();
         });
         $("#itemsByValue").hide();
         
-        loadStashList(id);
+        await loadStashList(id);
         loadNavLinks(id);
         
         var currStash, prevStash;
         
-        currStash = new Stash(id);
+        currStash = new Stash(id, stashList[id].league);
         var hasStash = await currStash.getStashItems();
         if(hasStash) {
-          var prevStashID = await getPrevStashID(id);
-          if(prevStashID) {
-            prevStash = new Stash(prevStashID);
-            await prevStash.getStashItems();
-          }
+          prevStash = new Stash(stashList[id].prev, stashList[stashList[id].prev].league);
           if(prevStash) {
+            await prevStash.getStashItems();
             currStash.compareTo(prevStash);
           }
           displayItems(currStash);
@@ -391,27 +386,19 @@
       }
       
       async function displayItems(s) {
-        
-        var rates = await RateGetter.getFor(s.id);
+
         var exaltRate = await getExaltRate();
-        
+    
         var keys = Object.keys(s.itemsById);
-        
+
         for(var i = 0; i < keys.length; i++) {
 
           var item = s.itemsById[keys[i]];
           item.displayName = Utils.getDisplayName(item);
-          
-          if(rates) {
-            item.chaosValue = Utils.getItemValue(item, rates);
-          } else {
-            var parsedItem = parseItem(item);
-            var value = await ItemPricer.price(parsedItem, false);
-//            if(value.isVendor) {
-//              console.log(value);
-//            }
-            item.chaosValue = value.isVendor ? value.val : value;
-          }
+
+          var parsedItem = parseItem(item);
+          var value = await ItemPricer.price(parsedItem);
+          item.chaosValue = value.isVendor ? value.val : value;
 
           if(item.chaosValue) {
             item.chaosValue = Number(item.chaosValue).toFixed(2);
@@ -427,11 +414,8 @@
           $("#itemsTable").append(itemToString(i));
         }
 
-
         var chaosString, exaltString;
         chaosString = `${Number(s.value).toFixed(2)} <img class='currencyText' src='res/img/c.png'/>`;
-        
-        
         
         if(s.value > exaltRate) {
           var exaltValue = s.value / exaltRate;
@@ -460,11 +444,7 @@
         }        
         
         async function getExaltRate() {
-          if(rates) {
-            return rates["Exalted Orb"];
-          } else {
-            return (await ItemPricer.getCurrencyByName(s.id, "Exalted Orb"));
-          }
+          return (await ItemPricer.getCurrencyByName(s.id, "Exalted Orb"));
         }
       
       }
@@ -492,35 +472,79 @@
         return str;
         
       }
-
       
-      function loadStashList(id) {
-        $("#stashes").empty();        
-        DB.all(`select timestamp, value from stashes order by timestamp`, (err, rows) => {
-          rows.forEach(row => {
-            $("#stashes").append(
+      async function loadStashList(id) {
+        
+        if(stashList) {
+          $("#stashes").val(id);
+          return;
+        }
+        
+        $("#stashes").empty();
+        $("#stashes").hide();
+        stashList = {};
+        
+        let leagues = await getCharLeagues();
+        
+        for(let i = 0; i < leagues.length; i++) {
+          let league = leagues[i].league;
+          let optgroup = null;
+          let stashes = await(getLeagueStashes(league));
+          for(let j = 0; j < stashes.length; j++) {
+            if(!optgroup) {
+              optgroup = $(`<optgroup label='${league}'>`);
+            }
+            let stash = stashes[j];
+            stashList[stash.timestamp] = {
+              league: league,
+              value: stash.value
+            };
+            optgroup.append(
               $("<option>")
-                .html(`${row.timestamp} - ${row.value}C`)
-                .val(row.timestamp)
-                .attr("selected", row.timestamp === id)
+                .html(`${stash.timestamp} - ${stash.value}c`)
+                .val(stash.timestamp)
+                .attr("selected", stash.timestamp === id)
             );
+          }
+          if(optgroup) {
+            $("#stashes").append(optgroup);
+          }
+        }
+        $("#stashes").show();
+        
+        let keys = Object.keys(stashList);
+        for(let i = 0; i < keys.length; i++) {
+          stashList[keys[i]].prev = (i > 0 ? keys[i-1] : null);
+          stashList[keys[i]].next = (i < keys.length - 1 ? keys[i+1] : null);
+        }
+        
+        function getCharLeagues() {
+          return new Promise((resolve, reject) => {
+            charDB.all(" select timestamp, league from leagues order by timestamp ", (err, rows) => {
+              resolve(rows);
+            })
           });
-        })
+        }
+        
+        function getLeagueStashes(league) {
+          let tempDB = require('./modules/DB').getLeagueDB(league);
+          return new Promise((resolve, reject) => {
+            tempDB.all(" select timestamp, value from stashes order by timestamp ", (err, rows) => {
+              resolve(rows);
+            })
+          });
+        }
+        
       }
       
       function loadNavLinks(id) {
-        DB.get(` 
-          select 
-          (select max(timestamp) from stashes where timestamp < ?) as prev,
-          (select min(timestamp) from stashes where timestamp > ?) as next
-        `, [id, id], (err, row) => {
-            if(row.prev) {
-              $("#prevCell").html(`<a class='ui-text' id='prevStash' onclick='goToStash("${row.prev}")'><< ${row.prev}</a>`);
-            }
-            if(row.next) {
-              $("#nextCell").html(`<a class='ui-text' id='nextStash' onclick='goToStash("${row.next}")'>${row.next} >></a>`);
-            }      
-        });
+        let s = stashList[id];
+        if(s.prev) {
+          $("#prevCell").html(`<a class='ui-text' id='prevStash' onclick='goToStash("${s.prev}")'><< ${s.prev}</a>`);
+        }
+        if(s.next) {
+          $("#nextCell").html(`<a class='ui-text' id='nextStash' onclick='goToStash("${s.next}")'>${s.next} >></a>`);
+        }      
       }
       
       function goToStash(id) {
@@ -535,7 +559,7 @@
           return id;
         } else {
           return new Promise( (resolve, reject) => {
-            DB.get(" select max(timestamp) as id from stashes ", (err, row) => {
+            leagueDB.get(" select max(timestamp) as id from stashes ", (err, row) => {
               if(err) {
                 logger.info(`Unable to get latest stash: ${err}`);
               } else if(row) {
@@ -543,27 +567,6 @@
               }
             });
           });
-        }
-      }
-      
-      function getPrevStashID(id) {
-        return new Promise( (resolve, reject) => {
-          DB.get(" select max(timestamp) as id from stashes where timestamp < ?", [id], (err, row) => {
-            if(err) {
-              logger.info(`Unable to get previous stash before ${id}: ${err}`);
-            } else if(row) {
-              resolve(row.id);
-            }
-          });
-        });
-      }
-      
-      function showNavigation(stash) {
-        if(stash.nav.prev && stash.nav.prev != -1) {
-          $("#prevCell").html(`<a class='ui-text' id='prevStash' onclick='goToStash("${stash.nav.prev}")'><< ${stash.nav.prev}</a>`);
-        }
-        if(run.nav.next) {
-          $("#nextCell").html(`<a class='ui-text' id='nextStash' onclick='goToStash("${stash.nav.next}")'>${stash.nav.next} >></a>`);
         }
       }
       
