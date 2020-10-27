@@ -13,8 +13,9 @@ class Log {
       transports: [
         new winston.transports.File({ 
           filename: path.join(app.getPath("userData"), "log.txt"),
-          maxsize: 5242880,
-          maxFiles: 2
+          maxsize: 8388608,
+          maxFiles: 1,
+          tailable: true
         }),
         new winston.transports.Console()
       ],
