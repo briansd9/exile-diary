@@ -1,6 +1,5 @@
 const logger = require("./Log").getLogger(__filename);
 const Utils = require("./Utils");
-const ItemPricer = require("./ItemPricer");
 const ItemCategoryParser = require("./ItemCategoryParser");
 const rarities = ['Normal', 'Magic', 'Rare', 'Unique', 'Gem', 'Currency', 'Divination Card', 'Quest Item', 'Prophecy', 'Relic'];
 
