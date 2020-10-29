@@ -61,8 +61,8 @@ class DB {
   }
   
   static async initLeagueDB(league) {    
+    var settings = require('./settings').get();
     if(!league) {
-      var settings = require('./settings').get();
       if(!settings || !settings.activeProfile || !settings.activeProfile.league) {
         logger.info("Unable to get league DB");
         return null;
@@ -73,8 +73,25 @@ class DB {
     var app = require('electron').app || require('electron').remote.app;    
     var db = new sqlite3.cached.Database(path.join(app.getPath("userData"), `${league}.leaguedb`));
     await this.init(db, leagueInitSQL);
-    await Utils.sleep(500);
+    await Utils.sleep(250);
+    await this.addCharacter(db, settings.activeProfile.characterName);
+    await Utils.sleep(250);
     return db;
+  }
+  
+  static async addCharacter(db, char) {
+    return new Promise( (resolve, reject) => {
+      db.run(" insert into characters values (?) ", [char], (err) => {
+        if(err) {
+          if(!err.message.includes("UNIQUE constraint failed")) {
+            logger.info(`Error adding character ${char} to league db: ${err.message}`);
+          }
+        } else {
+          logger.info(`Character ${char} added to league db`);
+        }
+        resolve(1);
+      });
+    });
   }
   
 
