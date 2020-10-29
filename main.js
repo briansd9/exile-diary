@@ -246,7 +246,7 @@ async function init() {
       logger.info("Done checking, character status is " + characterCheckStatus);
       if(characterCheckStatus === "valid") {
         logger.info("Starting components");
-        RateGetterV2.update();
+        setTimeout(RateGetterV2.update, 5000);
         ClientTxtWatcher.start();
         ScreenshotWatcher.start();
         OCRWatcher.start();
@@ -283,7 +283,7 @@ function initWindow(window) {
       true
     );
   });
-  StashGetter.tryGet();
+  setTimeout(StashGetter.tryGet, 60000);
   
   InventoryGetter.emitter.removeAllListeners();
   InventoryGetter.emitter.on("invalidSessionID", () => {
