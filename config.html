@@ -298,6 +298,8 @@
             }
           };
         }
+        
+        updateManualSwitch();
 
       }
       
@@ -625,6 +627,11 @@
         });        
         ipcRenderer.send("reinitialize");
       }
+      
+      function updateManualSwitch() {
+        $("#characterList").prop("disabled", $("#autoSwitch").is(":checked"));
+        $("#characterList").css("display", $("#autoSwitch").is(":checked") ? "none" : "");
+      }
 
     </script>
 
@@ -724,7 +731,7 @@
           <tr>
             <td colspan="2">
               <div class='configLabel ui-text'  title="If checked, whenever you switch characters in-game, Exile Diary will automatically track stats for that character">
-                <input style='margin:0 16px;' name='autoSwitch' id='autoSwitch' type='checkbox'/>
+                <input style='margin:0 16px;' name='autoSwitch' id='autoSwitch' type='checkbox' onchange='updateManualSwitch();'/>
                 <label for='autoSwitch'>Enable automatic character switching <span class='eventText'>(experimental)</span></label>
               </div>
             </td>
