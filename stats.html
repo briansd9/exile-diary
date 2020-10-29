@@ -140,6 +140,8 @@
         $("#allLeagues").prop("disabled", ($("#charSelect").val() === "all"));
         $("#allLeagues").css("display", ($("#charSelect").val() === "all" ? "none" : ""));
         
+        $("#charSelect").prop("disabled", ($("#leagueSelect").val() === "all"));
+        
         let char = $("#charSelect").val() || settings.activeProfile.characterName;
         let league = $("#leagueSelect").val() || settings.activeProfile.league;
         let stats = await StatsGetter.get(char, league);
