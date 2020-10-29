@@ -51,6 +51,8 @@
           
           db.serialize(async () => {
             
+            await Utils.sleep(500);
+            
             let ver = await getUserVersion();
             if(!ver) {
               logger.info("Error getting DB version");
@@ -125,7 +127,7 @@
               
               $("#loadingImg").attr("src", "res/img/loadingcomplete.png");
               $("#loadingText").html("Update complete!");        
-              await Utils.sleep(750);
+              await Utils.sleep(500);
               
             }
             resolve(1);                
