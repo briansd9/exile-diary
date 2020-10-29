@@ -65,19 +65,19 @@
               $("#mainContent").hide();
             
               logger.info("User version < 6, will migrate league info to separate db");
+              
               let leagues = await getLeagues();
               if(!leagues) {
                 logger.info("Error getting league list");
                 resolve(false);
               }
-
               for(let i = 0; i < leagues.length; i++) {
 
                 let leagueDB = await require('./modules/DB').initLeagueDB(leagues[i].league);
 
                 let stashes = await getStashes(leagues[i].timestamp, (i < leagues.length - 1) ? leagues[i+1].timestamp : null);
                 if(!stashes) {
-                  logger.info(`Failed to get stashes for ${leagues[i].league}`);
+                  logger.info(`Failed to get stashes from char db for ${leagues[i].league}`);
                 } else {
                   let stashStmt = leagueDB.prepare(" insert into stashes(timestamp, items, value) values(?, ?, ?) ");
                   logger.info(`Inserting ${leagues[i].league} stashes`);
@@ -94,7 +94,7 @@
 
                 let rates = await getRates(leagues[i].timestamp.substring(0, 8), (i < leagues.length - 1 ? leagues[i+1].timestamp.substring(0, 8) : null));
                 if(!rates) {
-                  logger.info(`Failed to get rates for ${leagues[i].league}`);
+                  logger.info(`Failed to get rates from char db for ${leagues[i].league}`);
                 } else {
                   let ratesStmt = leagueDB.prepare(" insert into fullrates(date, data) values(?, ?) ");
                   logger.info(`Inserting ${leagues[i].league} rates`);
