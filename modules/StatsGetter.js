@@ -32,7 +32,8 @@ async function get(char, league) {
       `, (err, rows) => {
         resolve(rows);
       });
-    });
+    });    
+    if(!allMaps) continue;
 
     for(let i = 0; i < allMaps.length; i++) {
 
