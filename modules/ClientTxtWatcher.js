@@ -112,7 +112,7 @@ async function checkLastActiveCharacter() {
           data.forEach(char => {
             if(char.lastActive) {
               if(char.name !== settings.activeProfile.characterName || char.league !== settings.activeProfile.league) {
-                logger.info(`Changed active character ${settings.activeProfile.characterName} => ${char.name} `);
+                logger.info(`Changed active character ${settings.activeProfile.characterName} in ${settings.activeProfile.league} => ${char.name} in ${char.league} `);
                 emitter.emit("switchedCharacter", char);
               }
               resolve(null);
