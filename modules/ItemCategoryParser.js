@@ -65,7 +65,7 @@ function getCategory(item, subcategory = false) {
   }
   
   if(t.endsWith("Scarab")) {
-    return "Map Fragments";
+    return (subcategory ? ["Map Fragments", "Scarab"] : "Map Fragments");
   }
   
   // Maligaro's Map quest item has frameType 7, already detected above as a quest item
