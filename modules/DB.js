@@ -60,7 +60,7 @@ class DB {
     return db;
   }
   
-  static async initLeagueDB(league) {    
+  static async initLeagueDB(league, char) {    
     var settings = require('./settings').get();
     if(!league) {
       if(!settings || !settings.activeProfile || !settings.activeProfile.league) {
@@ -74,8 +74,12 @@ class DB {
     var db = new sqlite3.cached.Database(path.join(app.getPath("userData"), `${league}.leaguedb`));
     await this.init(db, leagueInitSQL);
     await Utils.sleep(250);
-    await this.addCharacter(db, settings.activeProfile.characterName);
-    await Utils.sleep(250);
+    
+    if(!char) {
+      await this.addCharacter(db, settings.activeProfile.characterName);
+      await Utils.sleep(250);
+    }
+    
     return db;
   }
   
