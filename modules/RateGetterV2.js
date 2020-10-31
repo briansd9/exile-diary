@@ -35,159 +35,182 @@ const rateTypes = {
 };
 
 const specialGems = ["Empower Support", "Enlighten Support", "Enhance Support"];
-  
-var DB;
-var settings;
-var league;
+var ratesReady;
 var emitter = new EventEmitter();
+
+class RateGetterV2 {
+  
+  constructor() {
+    RateGetterV2.ratesReady = false;
+    this.settings = require('./settings').get();
+    this.league = this.settings.activeProfile.league;
+    this.DB = require('./DB').getLeagueDB(this.league);
+  }
 
 /*
  * get today's rates from POE.ninja 
  */
-async function update() {
-  
-  settings = require('./settings').get();
-  league = settings.activeProfile.league;
-  
-  if(!league) {
-    return;
-  }
-  
-  DB = require('./DB').getLeagueDB();
-  
-  // no need for exchange rates in SSF
-  if (league.includes("SSF")) {
-    if(!settings.activeProfile.overrideSSF) {
+  async update() {
+    
+    if(!this.league) {
+      logger.info("No league set, will not attempt to get prices");
       return;
-    } else {
-      // override ssf and get item prices from corresponding trade league
-      league = league.replace("SSF ", "");
-    }    
+    }
+
+    // no need for exchange rates in SSF
+    if (this.league.includes("SSF")) {
+      if(!this.settings.activeProfile.overrideSSF) {
+        return;
+      } else {
+        // override ssf and get item prices from corresponding trade league
+        this.league = this.league.replace("SSF ", "");
+      }    
+    }
+
+    var today = moment().format("YMMDD");  
+    var hasExisting = await this.hasExistingRates(today);
+
+    if (hasExisting) {
+      logger.info(`Found existing ${this.league} rates for ${today}`);
+      RateGetterV2.ratesReady = true;
+      return;
+    }
+
+    emitter.emit("gettingPrices");
+    logger.info(`Getting new ${this.league} rates for ${today}`);
+    this.getRates(today);
+
   }
 
-  var today = moment().format("YMMDD");  
-  var hasExisting = await hasExistingRates(today);
+  async getRates(date) {
 
-  if (hasExisting) {
-    logger.info(`Found existing rates for ${today}`);
-    return;
-  }
-  
-  emitter.emit("gettingPrices");
-  logger.info(`Getting new rates in ${league} for ${today}`);
-  getRates(today);
+    var tempRates = {};
 
-}
+    let useGzip = this.settings.hasOwnProperty("useGzip") ? this.settings.useGzip : true;
 
-async function getRates(date) {
-  
-  var tempRates = {};
-  
-  let useGzip = settings.hasOwnProperty("useGzip") ? settings.useGzip : true;
-  
-  try {
-    for(var key in rateTypes) {
-      var data;
-      for(let i = 1; i <= 10; i++) {
-        logger.info(`Getting prices for item type ${key}, attempt ${i} of 10`);
-        try {
-          data = await getNinjaData(getNinjaURL(key), useGzip);
-          break;
-        } catch(err) {
-          if(i === 10) throw err;
+    try {
+      for(var key in rateTypes) {
+        var data;
+        for(let i = 1; i <= 10; i++) {
+          logger.info(`Getting prices for item type ${key}, attempt ${i} of 10`);
+          try {
+            data = await getNinjaData(this.getNinjaURL(key), useGzip);
+            break;
+          } catch(err) {
+            if(i === 10) throw err;
+          }
         }
+        var process = rateTypes[key];
+        tempRates[key] = process(data);
       }
-      var process = rateTypes[key];
-      tempRates[key] = process(data);
-    }
-    logger.info("Finished getting prices from poe.ninja, processing now");
-  } catch(e) {
-    emitter.emit("gettingPricesFailed");
-    logger.info("Error getting rates: " + e);
-    return;
-  }
-  
-  var rates = {};
-  rates["UniqueItem"] = Object.assign(
-    tempRates["UniqueJewel"],
-    tempRates["UniqueFlask"],
-    tempRates["UniqueWeapon"],
-    tempRates["UniqueArmour"],
-    tempRates["UniqueAccessory"]
-  );
-  rates["Currency"] = Object.assign(
-    tempRates["Currency"], 
-    tempRates["Oil"],
-    tempRates["DeliriumOrb"],
-    tempRates["Incubator"],
-    tempRates["Fossil"],
-    tempRates["Resonator"],
-    tempRates["Essence"],
-    tempRates["Vial"]
-  );
-  rates["Fragment"] = Object.assign(
-      tempRates["Fragment"], 
-      tempRates["Scarab"]
-  );
-  rates["DivinationCard"] = tempRates["DivinationCard"];
-  rates["Prophecy"] = tempRates["Prophecy"];
-  rates["SkillGem"] = tempRates["SkillGem"];
-  rates["BaseType"] = tempRates["BaseType"];
-  rates["HelmetEnchant"] = tempRates["HelmetEnchant"];
-  rates["UniqueMap"] = tempRates["UniqueMap"];
-  rates["Map"] = tempRates["Map"];
-  rates["Watchstone"] = tempRates["Watchstone"];
-  rates["Seed"] = tempRates["Seed"];
-  
-  var data = await Utils.compress(rates);
-  DB.run("insert into fullrates(date, data) values(?, ?)", [date, data], (err) => {
-    if(err && !err.message.includes("UNIQUE constraint failed")) {
+      logger.info("Finished getting prices from poe.ninja, processing now");
+    } catch(e) {
       emitter.emit("gettingPricesFailed");
-      logger.info(`Error inserting rates for ${date}: [${err}]`);
-    } else {
-      emitter.emit("doneGettingPrices");
-      logger.info(`Successfully inserted rates for ${date}`);
+      logger.info("Error getting rates: " + e);
+      return;
     }
-  });
-  
-}
 
-function getNinjaURL(category) {
-  var url = "";
-  switch(category) {
-    case "Currency":
-    case "Fragment":
-      url = `/api/data/currencyoverview?type=${category}`;
-      break;
-    case "Oil":
-    case "Incubator":
-    case "Scarab":
-    case "Fossil":
-    case "Resonator":
-    case "Essence":
-    case "DivinationCard":
-    case "Prophecy":
-    case "SkillGem":
-    case "BaseType":
-    case "HelmetEnchant":
-    case "UniqueMap":
-    case "Map":
-    case "UniqueJewel":
-    case "UniqueFlask":
-    case "UniqueWeapon":
-    case "UniqueArmour":
-    case "UniqueAccessory":
-    case "Watchstone":
-    case "Vial":
-    case "DeliriumOrb":
-    case "Seed":
-      url = `/api/data/itemoverview?type=${category}`;
-      break;
-    default:
-      throw new Error(`Invalid poe.ninja category [${category}]`);
-      break;
+    var rates = {};
+    rates["UniqueItem"] = Object.assign(
+      tempRates["UniqueJewel"],
+      tempRates["UniqueFlask"],
+      tempRates["UniqueWeapon"],
+      tempRates["UniqueArmour"],
+      tempRates["UniqueAccessory"]
+    );
+    rates["Currency"] = Object.assign(
+      tempRates["Currency"], 
+      tempRates["Oil"],
+      tempRates["DeliriumOrb"],
+      tempRates["Incubator"],
+      tempRates["Fossil"],
+      tempRates["Resonator"],
+      tempRates["Essence"],
+      tempRates["Vial"]
+    );
+    rates["Fragment"] = Object.assign(
+        tempRates["Fragment"], 
+        tempRates["Scarab"]
+    );
+    rates["DivinationCard"] = tempRates["DivinationCard"];
+    rates["Prophecy"] = tempRates["Prophecy"];
+    rates["SkillGem"] = tempRates["SkillGem"];
+    rates["BaseType"] = tempRates["BaseType"];
+    rates["HelmetEnchant"] = tempRates["HelmetEnchant"];
+    rates["UniqueMap"] = tempRates["UniqueMap"];
+    rates["Map"] = tempRates["Map"];
+    rates["Watchstone"] = tempRates["Watchstone"];
+    rates["Seed"] = tempRates["Seed"];
+
+    var data = await Utils.compress(rates);
+    this.DB.run("insert into fullrates(date, data) values(?, ?)", [date, data], (err) => {
+      if(err && !err.message.includes("UNIQUE constraint failed")) {
+        emitter.emit("gettingPricesFailed");
+        logger.info(`Error inserting rates for ${date}: [${err}]`);
+      } else {
+        emitter.emit("doneGettingPrices");
+        RateGetterV2.ratesReady = true;
+        logger.info(`Successfully inserted rates for ${date}`);
+      }
+    });
+
   }
-  return `${url}&league=${encodeURIComponent(league)}`;
+  
+  getNinjaURL(category) {
+    var url = "";
+    switch(category) {
+      case "Currency":
+      case "Fragment":
+        url = `/api/data/currencyoverview?type=${category}`;
+        break;
+      case "Oil":
+      case "Incubator":
+      case "Scarab":
+      case "Fossil":
+      case "Resonator":
+      case "Essence":
+      case "DivinationCard":
+      case "Prophecy":
+      case "SkillGem":
+      case "BaseType":
+      case "HelmetEnchant":
+      case "UniqueMap":
+      case "Map":
+      case "UniqueJewel":
+      case "UniqueFlask":
+      case "UniqueWeapon":
+      case "UniqueArmour":
+      case "UniqueAccessory":
+      case "Watchstone":
+      case "Vial":
+      case "DeliriumOrb":
+      case "Seed":
+        url = `/api/data/itemoverview?type=${category}`;
+        break;
+      default:
+        throw new Error(`Invalid poe.ninja category [${category}]`);
+        break;
+    }
+    return `${url}&league=${encodeURIComponent(this.league)}`;
+  }
+  
+
+  hasExistingRates(date) {
+    return new Promise((resolve, reject) => {
+      this.DB.all("select 1 from fullrates where date = ? limit 1", [date], (err, row) => {
+        if (err) {
+          logger.info(`Error getting rates for ${date}: ${err}`);
+          resolve(false);
+        }
+        if (row && row.length > 0) {
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      });
+    });
+  }
+
 }
 
 function getNinjaData(path, useGzip) {
@@ -241,22 +264,6 @@ function getNinjaData(path, useGzip) {
     });
     request.setTimeout(timeout);
     request.end();
-  });
-}
-
-function hasExistingRates(date) {
-  return new Promise((resolve, reject) => {
-    DB.all("select 1 from fullrates where date = ? limit 1", [date], (err, row) => {
-      if (err) {
-        logger.info(`Error getting rates for ${date}: ${err}`);
-        resolve(false);
-      }
-      if (row && row.length > 0) {
-        resolve(true);
-      } else {
-        resolve(false);
-      }
-    });
   });
 }
 
@@ -376,6 +383,6 @@ function cleanSeeds(arr) {
 }
 
 
-      
-module.exports.update = update;
+module.exports = RateGetterV2;
 module.exports.emitter = emitter;
+module.exports.ratesReady = ratesReady;

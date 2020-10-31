@@ -246,7 +246,10 @@ async function init() {
       logger.info("Done checking, character status is " + characterCheckStatus);
       if(characterCheckStatus === "valid") {
         logger.info("Starting components");
-        setTimeout(RateGetterV2.update, 5000);
+        setTimeout( () => {
+          let r = new RateGetterV2();
+          r.update();
+        }, 1000);
         ClientTxtWatcher.start();
         ScreenshotWatcher.start();
         OCRWatcher.start();
@@ -274,7 +277,7 @@ function initWindow(window) {
     addMessage(
       `
         <span style='cursor:pointer;' onclick='window.location.href="stash.html";'>
-        Net worth update: 
+        Net worth update for <span class='eventText'>${data.league}</span> league:
         <span class='eventText'>${data.value}</span>
         <img src='res/img/c.png' class='currencyText'>
         ${data.change === "new" ? "" : `(${Utils.formatSignedNumber(data.change)})`}
@@ -283,7 +286,7 @@ function initWindow(window) {
       true
     );
   });
-  setTimeout(StashGetter.tryGet, 60000);
+  setTimeout( () => { let s = new StashGetter(); s.tryGet(); }, 1000);
   
   InventoryGetter.emitter.removeAllListeners();
   InventoryGetter.emitter.on("invalidSessionID", () => {
@@ -311,7 +314,8 @@ function initWindow(window) {
   RunParser.emitter.removeAllListeners();
   RunParser.emitter.on("runProcessed", (run) => {
     
-    StashGetter.tryGet();
+    let s = new StashGetter();
+    s.tryGet();
 
     var f = new Intl.NumberFormat();
     addMessage(
@@ -412,7 +416,8 @@ async function createWindow() {
     addMessage(`Error uploading map list, please try again`);
   });
   ipcMain.on('rateGetterRetry', function(event) {
-    RateGetterV2.update();
+    let r = new RateGetterV2();
+    r.update();
   });
 
   require('./modules/electron-capture/src/main');
