@@ -790,12 +790,16 @@
         </div>
         <hr style='clear:left;'>
         <div style="display: flex; flex-direction: row;">
-          <button id="recheckGainedButton" style="width:320px;margin:0 16px;" onclick="recheckGained();">Recheck Map Profit</button>
+          <button class='debugButton' id="recheckGainedButton" style="width:320px;margin:0 16px;" onclick="recheckGained();">Recheck Map Profit</button>
           <div style='line-height: 200%;vertical-align: middle;'>Recalculates the value of items picked up for all map runs.</div>
         </div>
         <div style="display: flex; flex-direction: row; padding-top:10px;">
-          <button id="recheckGearButton" style="width:320px;margin:0 16px;" onclick="checkGearDuplicates();">Recheck Gear Changes</button>
+          <button class='debugButton' id="recheckGearButton" style="width:320px;margin:0 16px;" onclick="checkGearDuplicates();">Recheck Gear Changes</button>
           <div style='line-height: 200%;vertical-align: middle;'>Removes gear changes for which the item was not actually changed.</div>
+        </div>
+        <div style="display: flex; flex-direction: row; padding-top:10px;">
+          <button class='debugButton' id="exportAllData" style="width:320px;margin:0 16px;" onclick="migrateAll();">Update All Character Data</button>
+          <div style='line-height: 200%;vertical-align: middle;'>Updates all character data to the new format that will be used starting in v0.2.78.</div>
         </div>
         <hr style='clear:left;'>
         <textarea id="debugOutput" style="resize:none;background-color:#333;color:#ccc;width:100%;height:40%;font-family:monospace;font-size:medium" readonly>Debug output will be displayed here.</textarea>
