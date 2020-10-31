@@ -14,18 +14,23 @@
   var ratesCache = {};
 
   function getRatesFor(timestamp, league) {
+    
+    if(!league) {
+      league = settings.activeProfile.league;
+    }    
 
-    var activeProfile = settings.activeProfile;
-    if (activeProfile.league.includes("SSF") && !activeProfile.overrideSSF) {
+    if (league.includes("SSF") && !settings.activeProfile.overrideSSF) {
       return null;
     }
-
-    var date = timestamp.substring(0, 8);
-    if(ratesCache[date]) {
-      return ratesCache[date];
+    
+    if(!ratesCache[league]) {
+      ratesCache[league] = {};
     }
     
-    
+    var date = timestamp.substring(0, 8);
+    if(ratesCache[league][date]) {
+      return ratesCache[league][date];
+    }
 
     var DB = require('./DB').getLeagueDB(league);
     return new Promise((resolve, reject) => {
@@ -41,11 +46,11 @@
             zlib.inflate(row.data, (err, buffer) => {
               if(err) {
                 // old data - compression not implemented yet, just parse directly
-                ratesCache[row.date] = JSON.parse(row.data);
+                ratesCache[league][row.date] = JSON.parse(row.data);
               } else {
-                ratesCache[row.date] = JSON.parse(buffer);
+                ratesCache[league][row.date] = JSON.parse(buffer);
               }
-              resolve(ratesCache[row.date]);
+              resolve(ratesCache[league][row.date]);
             });
           }
         }
