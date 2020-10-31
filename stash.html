@@ -388,6 +388,7 @@
       async function displayItems(s) {
 
         var exaltRate = await getExaltRate();
+        var mirrorRate = await getMirrorRate();
     
         var keys = Object.keys(s.itemsById);
 
@@ -413,16 +414,21 @@
         for (var i of items) {
           $("#itemsTable").append(itemToString(i));
         }
-
-        var chaosString, exaltString;
-        chaosString = `${Number(s.value).toFixed(2)} <img class='currencyText' src='res/img/c.png'/>`;
+        
+        var netWorthString = `${Number(s.value).toFixed(2)} <img class='currencyText' src='res/img/c.png'/>`;
         
         if(s.value > exaltRate) {
-          var exaltValue = s.value / exaltRate;
-          exaltString = `${Number(exaltValue).toFixed(2)} <img class='currencyText' src='res/img/ex.png'/>`;
+          let exaltValue = s.value / exaltRate;
+          netWorthString += ` / ${Number(exaltValue).toFixed(2)} <img class='currencyText' src='res/img/ex.png'/>`;
+        }
+        
+        if(s.value > mirrorRate) {
+          let mirrorValue = s.value / mirrorRate;
+          netWorthString += ` / ${Number(mirrorValue).toFixed(2)} <img class='currencyText' src='res/img/mirror.png'/>`;
         }        
+        
 
-        $("#netWorth").html(`Net Worth: ${chaosString} ${exaltString ? `(${exaltString})` : ""}`);
+        $("#netWorth").html(`Net Worth: ${netWorthString}`);
         $("#itemsByValue").show();          
         
         
@@ -446,7 +452,11 @@
         async function getExaltRate() {
           return (await ItemPricer.getCurrencyByName(s.id, "Exalted Orb"));
         }
-      
+
+        async function getMirrorRate() {
+          return (await ItemPricer.getCurrencyByName(s.id, "Mirror of Kalandra"));
+        }
+    
       }
       
       function itemToString(i) {
