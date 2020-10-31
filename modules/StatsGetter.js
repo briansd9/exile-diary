@@ -40,6 +40,8 @@ async function get(char, league) {
       let m = allMaps[i];
 
       m.runinfo = JSON.parse(m.runinfo);
+      if(!m.runinfo) continue;
+      
       m.areaType = (m.runinfo.blightedMap ? "blightedMaps" : Utils.getAreaType(m.name));
 
       // Laboratory area name no longer unique :-(
