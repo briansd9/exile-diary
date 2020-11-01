@@ -166,15 +166,14 @@ class StashGetter {
 
     if(tabs.items.length > 0) {
 
-      var rawdata = await Utils.compress(tabs.items);
-
-      this.leagueDB.get("select value, length(items) as len from stashes order by timestamp desc limit 1", (err, row) => {
+      this.leagueDB.get("select value, length(items) as len from stashes order by timestamp desc limit 1", async (err, row) => {
         if(err) {
           logger.info(`Error getting previous ${this.league} stash before ${timestamp}: ${err}`);
         } else {
           if(row && (Number(tabs.value).toFixed(2) === Number(row.value).toFixed(2)) ) {
             logger.info(`No change in ${this.league} stash value (${Number(tabs.value).toFixed(2)}) since last update`);
           } else {          
+            let rawdata = await Utils.compress(tabs.items);
             this.leagueDB.run(" insert into stashes(timestamp, items, value) values(?, ?, ?) ", [timestamp, rawdata, tabs.value], (err) => {
               if(err) {      
                 logger.info(`Error inserting ${this.league} stash ${timestamp} with value ${tabs.value}: ${err}`);
