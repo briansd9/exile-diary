@@ -117,7 +117,7 @@
       }
     }
     
-    if(item.category === "Map Fragments" || item.typeline === "Offering to the Goddess" || item.typeline === "Simulacrum Splinter" || (item.typeline.includes("Timeless") && item.typeline.includes("Splinter"))) {
+    if(item.category === "Map Fragments" || (item.category === "Labyrinth Items" && item.typeline.endsWith("to the Goddess")) || item.typeline === "Simulacrum Splinter" || (item.typeline.includes("Timeless") && item.typeline.includes("Splinter"))) {
       return getValueFromTable("Fragment");
     }
     if(item.category === "Harvest Seed") {
@@ -164,6 +164,9 @@
     /* sub-functions for getting value per item type*/    
 
     function getValueFromTable(table, identifier = null) {
+      
+      // RIP harvest :-(
+      if(table === "Seed") return 0;
       
       if(!rates[table]) {
         logger.info(`No price list found for category ${table}, returning 0`);
