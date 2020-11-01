@@ -115,6 +115,7 @@ async function migrateAll() {
     debugLog(`Updating database for character ${char}`);
     await migrateLeagueDBData(char);
     debugLog(`Done updating database for character ${char}`);
+    $("#debugOutput").append(`\r\n`);
   }
   
   $(".debugButton").prop("disabled", false);
@@ -208,7 +209,7 @@ async function migrateLeagueDBData(char) {
 
         $("#loadingImg").attr("src", "res/img/loadingcomplete.png");
         $("#loadingText").html("Update complete!");        
-        await Utils.sleep(500);
+        await Utils.sleep(250);
 
       }
       resolve(1);                
