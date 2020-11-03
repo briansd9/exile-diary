@@ -58,7 +58,7 @@ class RateGetterV2 {
     }
 
     // no need for exchange rates in SSF
-    if (this.league.includes("SSF")) {
+    if(this.league.includes("SSF")) {
       if(!this.settings.activeProfile.overrideSSF) {
         return;
       } else {
@@ -66,7 +66,17 @@ class RateGetterV2 {
         this.league = this.league.replace("SSF ", "");
       }    
     }
-
+    
+    if(Utils.isPrivateLeague(this.league)) {
+      if(this.settings.privateLeaguePriceMaps && this.settings.privateLeaguePriceMaps[this.league]) {
+        logger.info(`Private league ${this.league} will use prices from ${this.settings.privateLeaguePriceMaps[this.league]}`);
+        this.league = this.settings.privateLeaguePriceMaps[this.league];
+      } else {
+        logger.info(`No price map set for private league ${this.league}, will not attempt to get prices`);
+        return;
+      }
+    }
+    
     var today = moment().format("YMMDD");  
     var hasExisting = await this.hasExistingRates(today);
 

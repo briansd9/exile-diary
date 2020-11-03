@@ -71,7 +71,7 @@
         { id: "currency", desc: "Currency", hint: "Includes all other currency items not specifically listed above" }
       ]; 
 
-      $(document).ready(function () {
+      $(document).ready(async function () {
         
         $(document).tooltip({
           position: {
@@ -138,8 +138,8 @@
           
         }
         
-        loadSettings();
-
+        await loadSettings();
+        
         $("#clientTxt").click(() => {
           
           let win = require('electron').remote.getCurrentWindow();
@@ -228,7 +228,7 @@
         
       });
       
-      function loadSettings() {
+      async function loadSettings() {
 
         configKeys.forEach((key) => {
           if(key === "overlayEnabled" || key === "minimizeToTray" || key === "autoSwitch") {
@@ -250,6 +250,24 @@
           $("#selectedLeague").val(settings.activeProfile.league);
           $("#uploadFilter").attr('placeholder', `Click to upload new item filter for ${settings.activeProfile.characterName}`);
           $("#overrideSSF").prop("checked", settings.activeProfile.overrideSSF);
+          
+          // private league handling
+          if(Utils.isPrivateLeague(settings.activeProfile.league)) {
+            let leagueList = await getLeagueList();
+            let selectedLeague = null;
+            if(settings.privateLeaguePriceMaps && settings.privateLeaguePriceMaps[settings.activeProfile.league]) {
+              selectedLeague = settings.privateLeaguePriceMaps[settings.activeProfile.league];
+            } else {
+              $("#privateLeaguePriceList").append($(`<option hidden disabled selected></option>`));
+            }
+            leagueList.forEach(league => {
+              $("#privateLeaguePriceList").append($(`<option value="${league}" ${league === selectedLeague ? "selected" : ""}>${league}</option>`));
+            })
+            $("#privateLeagueRow").show();
+          } else {
+            $("#privateLeagueRow").empty();
+          }
+          
           getTabList();
         } else {
           $("#activeProfile").html(`None`);
@@ -303,6 +321,59 @@
 
       }
       
+      function getLeagueList() {
+        
+        return new Promise((resolve, reject) => {
+
+          let params = {
+            hostname: 'api.pathofexile.com',
+            path: '/leagues',
+            method: 'GET',
+            headers: {
+              "User-Agent": `exile-diary/${app.getVersion()}`,
+              "Referer": 'http://www.pathofexile.com/'
+            }
+          };            
+
+          var request = require('https').request(params, (response) => {
+            var body = '';
+            response.setEncoding('utf8');
+            response.on('data', (chunk) => {
+              body += chunk;
+            });
+            response.on('end', async () => {
+              try {
+                let list = [];
+                var data = JSON.parse(body);
+                data.forEach(d => {
+                  if(!d.id.includes("SSF")) {
+                    list.push(d.id);
+                  }
+                });
+                // list temp leagues first
+                list = list.slice(2).concat(list.slice(0, 2));
+                resolve(list);
+              } catch (err) {
+                logger.info(`Error getting public league list: ${err}`);
+                resolve(null);
+              }
+            });
+            response.on('error', (err) => {
+              logger.info(`Error getting public league list: ${err}`);
+              resolve(null);
+            });
+          });
+
+          request.on('error', (err) => {
+            logger.info(`Error getting public league list: ${err}`);
+            resolve(null);
+          });
+          request.end();
+
+        });
+        
+      }
+      
       function processFilter(path) {
         logger.info("Getting filter file " + path);
         
@@ -346,6 +417,17 @@
           valid = false;
         } else {
           $("#characterList").removeClass("invalid");
+        }
+        
+        if($("#privateLeaguePriceList").length > 0) {
+          if(!$("#privateLeaguePriceList").val()) {
+            $("#privateLeaguePriceList").addClass("invalid");
+            valid = false;
+          } else {
+            settings.privateLeaguePriceMaps = settings.privateLeaguePriceMaps || {};
+            settings.privateLeaguePriceMaps[settings.activeProfile.league] = $("#privateLeaguePriceList").val();
+            $("#privateLeaguePriceList").removeClass("invalid");
+          }
         }
         
         if(!valid) {
@@ -411,7 +493,7 @@
             settings.tabs = {};
           }
           settings.tabs[settings.activeProfile.league] = tabs;
-        }          
+        }
         
         var filename = path.join(app.getPath("userData"), "settings.json");
         fs.writeFile(filename, JSON.stringify(settings), (err) => {
@@ -668,7 +750,13 @@
           </tr>
           <tr>
             <td colspan="2">
-              Currently active character: <span id='activeProfile'/>
+              Currently active character: <span class='eventText' id='activeProfile'/>
+            </td>
+          </tr>
+          <tr>
+            <td id='privateLeagueRow' colspan="2" style="white-space:nowrap">
+              <img src='res/img/!.png' style='height:1em;width:1em;vertical-align:middle;'/> Private leagues are not listed on Poe.ninja -
+              item prices for <select class='ui-text' style='margin:0px;font-family:FontinSmallCaps;' id="privateLeaguePriceList"></select> league will be used instead
             </td>
           </tr>
           <tr>

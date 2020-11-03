@@ -300,7 +300,7 @@ input {
   color: #FFF8E1;
 }
 
-input.invalid {
+input.invalid, select.invalid {
   outline: 1px dashed #cc0000;
   background-color: #330000;
 }

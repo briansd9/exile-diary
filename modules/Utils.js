@@ -475,6 +475,15 @@ class Utils {
     logger.info(`No area type found for "${area}"`);
     return null;
   }
+  
+  // private league IDs end with (PL#####)
+  static isPrivateLeague(league) {
+    if(!league) {
+      return false;
+    } else {
+      return league.match(/\(PL[0-9]+\)$/);
+    }
+  }
 
 }
 

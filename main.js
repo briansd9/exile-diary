@@ -87,8 +87,8 @@ async function checkCurrentActiveCharacter() {
                   });
                   await DB.initDB();
                   await DB.initLeagueDB();
-                  checkLeague(settings, data[i].league);
                   showActiveCharacterMessage(data[i]);
+                  checkLeague(settings, data[i].league);
                   characterCheckStatus = "valid";
                   break;
                 }
@@ -220,6 +220,11 @@ function checkLeague(settings, foundLeague) {
       }
     }      
   );
+  if(Utils.isPrivateLeague(foundLeague)) {
+    if(!settings.privateLeaguePriceMaps || !settings.privateLeaguePriceMaps[foundLeague]) {
+      addMessage(`<span onclick='window.location="config.html";' style='cursor:pointer;' class='eventText'>${foundLeague} is a private league, please click here to change item pricing settings</span>`, true);
+    }
+  }
 }
 
 async function init() {
