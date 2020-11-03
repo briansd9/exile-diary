@@ -500,6 +500,7 @@
           let league = leagues[i].league;
           let optgroup = null;
           let stashes = await(getLeagueStashes(league));
+          if(!stashes) continue;
           for(let j = 0; j < stashes.length; j++) {
             if(!optgroup) {
               optgroup = $(`<optgroup label='${league}'>`);
@@ -540,7 +541,12 @@
           let tempDB = require('./modules/DB').getLeagueDB(league);
           return new Promise((resolve, reject) => {
             tempDB.all(" select timestamp, value from stashes order by timestamp ", (err, rows) => {
-              resolve(rows);
+              if(err) {
+                logger.info(`Error getting stashes for ${league} : ${err}`);
+                resolve(null);
+              } else {
+                resolve(rows);
+              }
             })
           });
         }
