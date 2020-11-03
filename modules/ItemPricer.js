@@ -625,6 +625,9 @@
 
   async function getCurrencyByName(timestamp, type, league) {
     var rates = await getRatesFor(timestamp, league);
+    if(!rates) {
+      return 0;
+    }
     var value = rates["Currency"][type];
     if(!value) {
       //logger.info(`Could not find value for ${item.typeline}`);
