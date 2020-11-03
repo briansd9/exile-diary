@@ -110,14 +110,19 @@ class StashGetter {
     });
   }  
 
-  async get() {
-    
+  async get(interval = 10) {
+
     if(!RateGetterV2.ratesReady) {
-      logger.info("Price list not yet ready, waiting 10 seconds");
-      setTimeout(() => { this.get(); }, 10000);
+      if(interval > 60) {
+        logger.info("Maximum retries exceeded, deferring to next stash getting interval");
+      } else {
+        logger.info(`Price list not yet ready, retrying in ${interval} seconds`);
+        setTimeout(() => { this.get(interval + 10); }, interval * 1000);
+      }
       return;
     }
 
+    
     var timestamp = moment().format("YYYYMMDDHHmmss");  
 
     var watchedTabs = null;
