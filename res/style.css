@@ -943,3 +943,22 @@ thead > tr > th > * {
     margin: 3px 0;
     vertical-align:middle;
   }
+  
+  div.deleteRun {
+    color: #AA0000;
+    width: 150px;
+    text-align: center;
+    background-color: #440000;
+    border-radius: 1em;
+    float: right;
+    padding: 4px 8px;
+    font-weight: bold;
+    font-size: 0.66em;
+    opacity: 66%;
+    cursor: pointer;
+  }
+  
+  div.deleteRun:hover {
+    filter: brightness(125%);
+    opacity: 100%;
+  }  

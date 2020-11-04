@@ -97,7 +97,7 @@ class StashGetter {
           logger.info("No stashes found in db - will retrieve now");
           resolve(true);
         } else {
-          this.DB.get("select count(1) as count from mapruns where id > ? and ifnull(gained, 0) != -1 and ifnull(kills, 0) != -1", [row.timestamp], (err, maps) => {
+          this.DB.get("select count(1) as count from mapruns where id > ? and json_extract(runinfo, '$.ignored') is null", [row.timestamp], (err, maps) => {
             if(err) {      
               logger.info(`Error getting map count: ${err}`);
               resolve(false);

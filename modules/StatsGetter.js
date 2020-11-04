@@ -25,7 +25,7 @@ async function get(char, league) {
         select areainfo.name, mapruns.* 
         from areainfo, mapruns ${league ? ", leaguedates" : ""}
         where mapruns.id = areainfo.id
-        and ifnull(kills, 0) > -1 and ifnull(gained, 0) > -1
+        and json_extract(runinfo, '$.ignored') is null
         ${league ? ` and leaguedates.league = '${league}' ` : ""}
         ${league ? " and mapruns.id between leaguedates.start and leaguedates.end " : ""}
         order by mapruns.id desc
@@ -122,7 +122,7 @@ async function getAreaByName(area, areaType, char, league) {
         and json_extract(runinfo, '$.blightedMap') is ${areaType.startsWith("blightedMaps") ? " not null " : " null "}
         ${areaType.startsWith("heist") ? "and json_extract(runinfo, '$.heistRogues') is not null" : ""}
         ${areaType.startsWith("grandHeist") ? "and json_array_length(json_extract(runinfo, '$.heistRogues')) > 1" : ""}
-        and ifnull(kills, 0) > -1 and ifnull(gained, 0) > -1
+        and json_extract(runinfo, '$.ignored') is null
         ${league ? ` and leaguedates.league = '${league}' ` : ""}
         ${league ? " and mapruns.id between leaguedates.start and leaguedates.end " : ""}
         order by mapruns.id

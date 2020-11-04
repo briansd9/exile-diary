@@ -35,7 +35,7 @@ class MapRun extends EventEmitter {
 
   async getPrevMap(mapID) {
     return new Promise((resolve, reject) => {
-      this.DB.get("select id from mapruns where id < ? and ifnull(gained, 0) != -1 and ifnull(kills, 0) != -1 order by id desc limit 1", [mapID], (err, row) => {
+      this.DB.get("select id from mapruns where id < ? and json_extract(runinfo, '$.ignored') is null order by id desc limit 1", [mapID], (err, row) => {
         if (err) {
           logger.error(`Unable to get previous map: ${err}`);
           resolve(null);
@@ -48,7 +48,7 @@ class MapRun extends EventEmitter {
 
   async getNextMap(mapID) {
     return new Promise((resolve, reject) => {
-      this.DB.get("select id from mapruns where id > ? and ifnull(gained, 0) != -1 and ifnull(kills, 0) != -1 order by id limit 1", [mapID], (err, row) => {
+      this.DB.get("select id from mapruns where id > ? and json_extract(runinfo, '$.ignored') is null order by id limit 1", [mapID], (err, row) => {
         if (err) {
           logger.error(`Unable to get next map: ${err}`);
           resolve(null);

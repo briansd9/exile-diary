@@ -267,7 +267,7 @@ const initSQL = [
   [
     `pragma user_version = 4`,
     `alter table mapruns add kills number`,
-    `insert or ignore into mapruns(id, firstevent, lastevent, gained, kills) values(-1, -1, -1, -1, -1)`
+    `insert or ignore into mapruns(id, firstevent, lastevent, gained, kills, runinfo) values(-1, -1, -1, -1, -1, '{"ignored":true}')`
   ],
   
   // version 5 - league start and end dates
@@ -280,10 +280,18 @@ const initSQL = [
         from leagues
         order by start
     `
-  ]
+  ],
   
   // version 6 - migration of fullrates and stashes to separate league DB
-  // not incremented here, requires extra processing (see debug.js)
+  [
+    // not incremented here, requires extra processing (see debug.js)
+  ],
+  
+  // version 7 - properly set ignored tag in runinfo, instead of relying on magic numbers
+  [
+    'pragma user_version = 7',
+    `update mapruns set runinfo = json_set(ifnull(runinfo, "{}"), '$.ignored', true) where kills = -1 and gained = -1`
+  ]
   
 ];
 

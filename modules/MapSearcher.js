@@ -308,7 +308,7 @@ function getSQL(q) {
     str += " (select * from mapruns where gained > -1) mapruns ";
   }
     
-  str += " where areainfo.id = mapruns.id and ifnull(mapruns.gained, 0) != -1 and ifnull(mapruns.kills, 0) != -1 ";
+  str += " where areainfo.id = mapruns.id and json_extract(runinfo, '$.ignored') is null ";
   
   if(q.blighted && q.blighted !== "any") {
     str += ` and json_extract(runinfo, '$.blightedMap') is ${q.blighted === "yes" ? "not null" : "null"} `;

@@ -93,6 +93,7 @@ async function tryProcess(obj) {
   if(!items.count && !xpDiff && !killCount) {
     items.value = -1;
     killCount = -1;
+    extraInfo.ignored = true;
     ignoreMapRun = true;
     logger.info("No items or xp gained, map run will be logged as invisible");
   }
@@ -101,7 +102,7 @@ async function tryProcess(obj) {
     areaInfo.id, 
     firstEvent.timestamp, lastEvent.timestamp, 
     mapStats.iiq || null, mapStats.iir || null, mapStats.packsize || null, 
-    items.value, xp, killCount, extraInfo
+    items.value, xp, killCount, JSON.stringify(extraInfo)
   ];
   insertMapRun(runArr).then(() => {
     if(!ignoreMapRun) {
@@ -288,6 +289,7 @@ async function process() {
     items.value = -1;
     killCount = -1;
     ignoreMapRun = true;
+    extraInfo.ignored = true;
     logger.info("No items or xp gained, map run will be logged as invisible");
   }
   
@@ -295,7 +297,7 @@ async function process() {
     currArea.id, 
     firstEvent, lastEvent, 
     mapStats.iiq, mapStats.iir, mapStats.packsize, 
-    items.value, xp, killCount, extraInfo
+    items.value, xp, killCount, JSON.stringify(extraInfo)
   ];
   insertMapRun(runArr).then(() => {
     if(!ignoreMapRun) {
@@ -1034,7 +1036,7 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
     }
   }
   
-  return JSON.stringify(run); 
+  return run; 
   
   function getZanaMissionMap(events) {
     let start = events[0];
