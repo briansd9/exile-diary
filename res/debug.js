@@ -113,7 +113,7 @@ async function migrateAll() {
   for(let i = 0; i < dataDir.length; i++) {
     let char = dataDir[i].slice(0, -3);
     debugLog(`Updating database for character ${char}`);
-    await migrateLeagueDBData(char);
+    await migrateLeagueDBData(char, true);
     debugLog(`Done updating database for character ${char}`);
     $("#debugOutput").append(`\r\n`);
   }
@@ -124,7 +124,7 @@ async function migrateAll() {
 }
 
 
-async function migrateLeagueDBData(char) {
+async function migrateLeagueDBData(char, force = false) {
 
   let db = await require('./modules/DB').initDB(char);
   let Utils = require('./modules/Utils');
@@ -139,7 +139,7 @@ async function migrateLeagueDBData(char) {
       if(!ver && ver !== 0) {
         debugLog("Error getting DB version");
         resolve(false);
-      } else if(ver >= 6) {
+      } else if(ver >= 6 && !force) {
         debugLog("DB version >= 6, already updated");
         resolve(false);
       } else {
@@ -147,8 +147,12 @@ async function migrateLeagueDBData(char) {
         $("#loadingText").html("Updating database to new version, please wait...")
         $("#loading").show();
         $("#mainContent").hide();
-
-        debugLog("User version < 6, will migrate league info to separate db");
+        
+        if(force) {
+          debugLog("Manually migrating league info to separate db");
+        } else {
+          debugLog("User version < 6, will migrate league info to separate db");
+        }
 
         let leagues = await getLeagues();
         if(!leagues) {
@@ -202,8 +206,10 @@ async function migrateLeagueDBData(char) {
           }
 
         }
-
-        await setUserVersion(6);
+        
+        if(ver < 6) {
+          await setUserVersion(6);
+        }
 
         debugLog("Ended migration");
 
