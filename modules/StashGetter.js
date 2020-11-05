@@ -15,12 +15,19 @@ class StashGetter {
   constructor() {
     clearTimeout(nextStashGetTimer);
     this.settings = require('./settings').get();
-    this.league = this.settings.activeProfile.league;
-    this.DB = require('./DB').getDB(this.settings.activeProfile.characterName);
-    this.leagueDB = require('./DB').getLeagueDB(this.league);
+    if(this.settings) {
+      this.league = this.settings.activeProfile.league;
+      this.DB = require('./DB').getDB(this.settings.activeProfile.characterName);
+      this.leagueDB = require('./DB').getLeagueDB(this.league);
+    }
   }
   
   async tryGet() {
+    
+    if(!this.league) {
+      logger.info("No league set (first run?) - returning");
+      return;
+    }
 
     var interval, units;
     try {

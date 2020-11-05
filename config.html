@@ -272,6 +272,8 @@
         } else {
           $("#activeProfile").html(`None`);
           $("#uploadFilter").hide();
+          $("#privateLeagueRow").empty();
+          $("#autoSwitchRow").hide();
         }
         
         if(settings.stashCheck) {
@@ -406,7 +408,14 @@
           } else if(inputField.val()) {
             settings[key] = inputField.val();
             inputField.removeClass("invalid");
-          } else if(key !== 'screenshotDir' || (key === 'screenshotDir' && !$("#screenshotDirDisable").prop("checked"))) {
+          } else if(key === 'screenshotDir') {
+            if($("#screenshotDirDisable").prop("checked")) {
+              inputField.removeClass("invalid");
+            } else {
+              inputField.addClass("invalid");
+              valid = false;
+            }
+          } else {
             inputField.addClass("invalid");
             valid = false;
           }          
@@ -816,7 +825,7 @@
               </div>
             </td>
           </tr>
-          <tr>
+          <tr id='autoSwitchRow'>
             <td colspan="2">
               <div class='configLabel ui-text'  title="If checked, whenever you switch characters in-game, Exile Diary will automatically track stats for that character">
                 <input style='margin:0 16px;' name='autoSwitch' id='autoSwitch' type='checkbox' onchange='updateManualSwitch();'/>
