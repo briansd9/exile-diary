@@ -4,7 +4,7 @@ function debugLog(str) {
   debugLogger.info(str);
   if($("#debugOutput").length) {
     $("#debugOutput").append(`${str}\r\n`);
-    $("#debugOutput").scrollTop($("#debugOutput")[0].scrollHeight);    
+    $("#debugOutput").scrollTop($("#debugOutput")[0].scrollHeight);
   }
 }
 
@@ -121,6 +121,21 @@ async function migrateAll() {
   $(".debugButton").prop("disabled", false);
   $("#debugOutput").append(`Done.`);
   
+}
+
+function execSql() {
+  let sql = $("#debugOutput").val();
+  let DB = require('./modules/DB').getDB();
+  DB.run(sql, [], function(err) {
+    $("#debugsql").hide();
+    $("#debugOutput").val("");
+    $("#debugOutput").attr("readonly");
+    if(err) {
+      $("#debugOutput").val(err.toString());
+    } else {
+      $("#debugOutput").val(`Records changed: ${this.changes}.`);
+    }
+  });
 }
 
 

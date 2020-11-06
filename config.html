@@ -108,6 +108,14 @@
 
         $("#messages").load("messages.html");
         
+        $(document).keydown(e => {
+          if(e.key === ")" && e.ctrlKey && e.altKey && e.shiftKey && $('#tabs').tabs('option','active') === 3) {
+            $("#debugsql").css("display", "flex");
+            $("#debugOutput").val("");
+            $("#debugOutput").removeAttr("readonly");
+          }
+        });        
+        
         for(const cat of itemFilterCategories) {
           
           let d = $("<div style='margin: 4px 0'>");
@@ -897,6 +905,10 @@
         <div style="display: flex; flex-direction: row; padding-top:10px;">
           <button class='debugButton' id="exportAllData" style="width:320px;margin:0 16px;" onclick="migrateAll();">Update All Character Data</button>
           <div style='line-height: 200%;vertical-align: middle;'>Updates all character data to the new format that will be used starting in v0.2.78.</div>
+        </div>
+        <div id='debugsql' style="display: none; flex-direction: row; padding-top:10px;">
+          <button class='debugButton' style="border:1px solid #600;background-color:#300;color:#900;width:320px;margin:0 16px;" onclick="execSql();">Execute SQL</button>
+          <div style='line-height: 200%;vertical-align: middle;color:#500;'>Some things that slumber should never be awoken.</div>
         </div>
         <hr style='clear:left;'>
         <textarea id="debugOutput" style="resize:none;background-color:#333;color:#ccc;width:100%;height:40%;font-family:monospace;font-size:medium" readonly>Debug output will be displayed here.</textarea>
