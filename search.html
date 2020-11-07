@@ -321,6 +321,8 @@
           });
           $("#mapnamerow").show();
           $("#mapcountrow").show();
+          $("#blightedrow").show();
+          $("#heistrow").show();
 
           $(".footer").hide();
           $("body").removeClass('bodyScreenshot');
@@ -371,6 +373,12 @@
         }
         if(!$("#mapcount").val()) {
           $("#mapcountrow").hide();
+        }
+        if($("#blighted").val() === "any") {
+          $("#blightedrow").hide();
+        }
+        if($("#heist").val() === "any") {
+          $("#heistrow").hide();
         }
         
         $(".footer").show();
@@ -527,16 +535,16 @@
                 <input name='mapcount' id='mapcount' class='number' type='number' min='0' max='99999' size='5' />
                 <span style='padding-left:8px;' class='searchLabel'>maps</span>
               </div>
-              <div id='mapcountrow'>
-                <div class='searchLabel'>Blighted</div>
+              <div id='blightedrow'>
+                <div id='blightedlabel' class='searchLabel'>Blighted</div>
                 <select name='blighted' id='blighted' style='font-size:22px;'>
                   <option value='any' selected>Any</option>
                   <option value='yes'>Yes</option>
                   <option value='no'>No</option>
                 </select>
               </div>
-              <div id='mapcountrow'>
-                <div class='searchLabel'>Heist</div>
+              <div id='heistrow'>
+                <div id='heistlabel' class='searchLabel'>Heist</div>
                 <select name='heist' id='heist' style='font-size:22px;'>
                   <option value='any' selected>Any</option>
                   <option value='anyHeist'>Any Heist</option>
