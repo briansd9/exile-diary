@@ -336,10 +336,12 @@
         currStash = new Stash(id, stashList[id].league);
         var hasStash = await currStash.getStashItems();
         if(hasStash) {
-          prevStash = new Stash(stashList[id].prev, stashList[stashList[id].prev].league);
-          if(prevStash) {
-            await prevStash.getStashItems();
-            currStash.compareTo(prevStash);
+          if(stashList[id].prev) {
+            prevStash = new Stash(stashList[id].prev, stashList[stashList[id].prev].league);
+            if(prevStash) {
+              await prevStash.getStashItems();
+              currStash.compareTo(prevStash);
+            }
           }
           displayItems(currStash);
           displayHorticrafts(currStash);
