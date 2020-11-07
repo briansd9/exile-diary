@@ -83,6 +83,7 @@ class RateGetterV2 {
     if (hasExisting) {
       logger.info(`Found existing ${this.league} rates for ${today}`);
       RateGetterV2.ratesReady = true;
+      this.scheduleNextUpdate();
       return;
     }
 
@@ -90,6 +91,22 @@ class RateGetterV2 {
     logger.info(`Getting new ${this.league} rates for ${today}`);
     this.getRates(today);
 
+  }
+  
+  scheduleNextUpdate() {
+    
+    // schedule next rate update at 10 seconds after midnight
+    let d = new Date();
+    d.setDate(d.getDate() + 1);
+    d.setHours(0, 0, 10);
+    let interval = d - Date.now();
+    logger.info(`Set new timer for updating prices in ${Number(interval / 1000).toFixed(2)} sec`);
+    
+    setTimeout(() => {
+      logger.info("Executing scheduled rate update");
+      this.update();
+    }, interval);
+    
   }
 
   async getRates(date) {
@@ -161,6 +178,7 @@ class RateGetterV2 {
         emitter.emit("doneGettingPrices");
         RateGetterV2.ratesReady = true;
         logger.info(`Successfully inserted rates for ${date}`);
+        this.scheduleNextUpdate();
       }
     });
 
