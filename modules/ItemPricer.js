@@ -9,6 +9,20 @@
   const settings = require('./settings').get();  
 
   const baseTypeRarities = ["Normal", "Magic", "Rare"];
+  const nonPricedCategories = [
+    // captured beasts are not acquired as map loot
+    // might be relevant for calculating net worth though?
+    "Captured Beast",
+      // value not tracked for heist items
+    "Contract",
+    "Blueprint",
+    "Trinket",
+    "Heist Brooch",
+    "Heist Cloak",
+    "Heist Gear",
+    "Heist Tool"      
+  ];
+
   const log = false;
   
   var ratesCache = {};
@@ -64,9 +78,7 @@
       // can't be traded
       return 0;
     }
-    if(item.category === "Captured Beast") {
-      // not handling for now - captured beasts are not acquired as map loot
-      // might be relevant for calculating net worth though?
+    if(nonPricedCategories.includes(item.category)) {
       return 0;
     }
     
@@ -137,10 +149,6 @@
     }
     if(item.category && item.category.includes("Skill Gems")) {
       return getGemValue();
-    }
-    if(item.category === "Trinket" || item.category === "Heist Brooch" || item.category === "Heist Cloak" || item.category === "Heist Gear" || item.category === "Heist Tool") {
-      // value not tracked for heist equipment
-      return 0;
     }
 
     if(baseTypeRarities.includes(item.rarity) && Constants.baseTypeCategories.includes(item.category)) {
