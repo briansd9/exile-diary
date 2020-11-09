@@ -48,12 +48,6 @@
 
       $(document).ready(async () => {
         
-        await migrateLeagueDBData(settings.activeProfile.characterName);
-        //return;
-        $("#loading").hide();
-        $("#mainContent").show();
-
-
         if(ssf) {
           $("#totalProfitCell").remove();
         }
@@ -64,6 +58,10 @@
         $("#sidenav").load("sidenav.html");
         $("#messages").load("messages.html");
         $("#lastMapsTable").tablesorter();
+
+        await migrateLeagueDBData(settings.activeProfile.characterName);
+        $("#loading").hide();
+        $("#mainContent").show();
 
         DB.serialize(() => {
           getLastMaps();

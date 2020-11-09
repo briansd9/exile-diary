@@ -148,7 +148,7 @@ async function migrateLeagueDBData(char, force = false) {
 
     db.serialize(async () => {
 
-      await Utils.sleep(500);
+      await Utils.sleep(200);
 
       let ver = await getUserVersion();
       if(!ver && ver !== 0) {
@@ -230,7 +230,7 @@ async function migrateLeagueDBData(char, force = false) {
 
         $("#loadingImg").attr("src", "res/img/loadingcomplete.png");
         $("#loadingText").html("Update complete!");        
-        await Utils.sleep(250);
+        await Utils.sleep(200);
 
       }
       resolve(1);                

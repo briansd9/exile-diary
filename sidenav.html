@@ -3,6 +3,20 @@
   const renderer = require('electron').ipcRenderer;
   const openLink = require('opn');
 
+  window.onunhandledrejection = (e) => {
+    const l = require("./modules/Log").getLogger(__filename);
+    try {
+      l.info(e.reason.stack);
+    } catch(err) {}
+  }
+  
+  window.onerror = (err) => {
+    const l = require("./modules/Log").getLogger(__filename);
+    try {
+      l.info(err.stack);
+    } catch(e) {}
+  }
+  
   renderer.on("incubatorsUpdated", (event, incubators) => {
     //console.log(incubators);
   });            
