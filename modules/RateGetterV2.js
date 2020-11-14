@@ -36,11 +36,13 @@ const rateTypes = {
 
 const specialGems = ["Empower Support", "Enlighten Support", "Enhance Support"];
 var ratesReady;
+var nextRateGetTimer;
 var emitter = new EventEmitter();
 
 class RateGetterV2 {
   
   constructor() {
+    clearTimeout(nextRateGetTimer);
     RateGetterV2.ratesReady = false;
     this.settings = require('./settings').get();
     this.league = this.settings.activeProfile.league;
@@ -102,7 +104,8 @@ class RateGetterV2 {
     let interval = d - Date.now();
     logger.info(`Set new timer for updating prices in ${Number(interval / 1000).toFixed(2)} sec`);
     
-    setTimeout(() => {
+    clearTimeout(nextRateGetTimer);
+    nextRateGetTimer = setTimeout(() => {
       logger.info("Executing scheduled rate update");
       this.update();
     }, interval);
