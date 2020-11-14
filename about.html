@@ -22,7 +22,10 @@
          <span style='font-size:smaller;'>made with love by <a style="font-size:100%;" class='aboutlink' href="https://www.reddit.com/message/compose/?to=briansd9">/u/briansd9</a></span>
        </div>
        <div class='aboutInfo'>
-         <span style='font-family:FontinSmallCaps;'>GitHub:</span> <a style="font-size:100%;" class='aboutlink' href="https://github.com/briansd9/exile-diary/">https://github.com/briansd9/exile-diary/</a>
+         <img src='res/img/github.png' style='height:1.2em;vertical-align:middle;margin:8px;'/><a style="font-size:85%;" class='aboutlink' href="https://github.com/briansd9/exile-diary/">https://github.com/briansd9/exile-diary/</a>
+       </div>
+       <div class='aboutInfo'>
+         <img src='res/img/discord.png' style='width:1.2em;vertical-align:middle;margin:8px;'/><a style="font-size:85%;" class='aboutlink' href="https://discord.gg/h4SXQGY">https://discord.gg/h4SXQGY</a>
        </div>
       </td>
       <td style='text-align:right;'>
@@ -31,25 +34,19 @@
     </tr>
   </table>
   
-  <div id='alert'>
+  <div id='alert' style='display:none;'>
     <hr style='border:1px solid #333'/>
-    <span class='eventText' style='font-size:smaller'>
-      If you play multiple characters in a league, Exile Diary can now automatically track stats for the character you're currently playing without having to restart. 
-      This is a new experimental option that you can enable using Settings -> Account -> Enable Automatic Character Switching
-      
-      <br/><br/>
-      
-      It's also now possible to view combined stats for all characters you've played in a league. If you are interested in this, please update your character databases first, using Settings -> Debug -> Update All Character Data
-      
-      <br/><br/>
-      
-      There are many major changes in this version, so if something is broken, technical support is available at the Discord server: <a style='font-size:1em;' onclick='openLink("https://discord.gg/h4SXQGY");'>https://discord.gg/h4SXQGY</a>
-    </span>
   </div>
   
   <hr style='border:1px solid #333'/>
   Change log:
   <textarea class='changelog' readonly>
+v0.2.82 (2020-11-14)
+  • fixed: net worth now properly displayed if there is exactly one data point
+  • fixed: hide blighted/heist selectors when screenshotting search results
+  • fixed: item prices now update automatically once a day without requiring restart
+  • fixed: heist items now properly ignored
+
 v0.2.81 (2020-11-07)
   • added: extra debugging options
 
