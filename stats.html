@@ -754,7 +754,7 @@
             <div class="totalStatInfoText">
               ${statLine("Map Encounters", c.encounters)}
               ${statLineCompleted("Citadel Battles", c.battles, c.kills)}
-              ${statLine(`${n}'s Exalted Orbs`, getOrbs(n, c.orbs || 0))}
+              ${c.orbs > 0 ? (statLine(`${n}'s Exalted Orbs`, getOrbs(n, c.orbs))) : ""}
             </div>
           </div>
         `;
@@ -772,7 +772,7 @@
               ${statLineCompleted("Citadel Battles", c.started, c.completed)}
               <span>Die Beams:</span> <span class='statValue'>${c.dieBeamsFired}</span> fired, <span class='statValue'>${c.dieBeamKills}</span> kills<br/>
               ${statLine("Average Time in Last Phase", moment.duration(c.lastPhaseTime/c.completed, "seconds").format("m:ss"))}
-              ${statLine(`Awakener's Orbs`, getOrbs("Awakener", c.orbs || 0))}
+              ${c.orbs > 0 ? (statLine(`Awakener's Orbs`, getOrbs("Awakener", c.orbs))) : ""}
             </div>
           </div>
         `;

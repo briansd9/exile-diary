@@ -379,8 +379,10 @@
             `);
             $("#craftsTable").append(row);
           });
+          $("#horticraftsHeader").show();
+          $("#horticraftsTable").show();          
           $("#horticraftsTable").trigger("update");
-          $("your-table").trigger("sorton",[[[0, 0]]]);
+          $("#horticraftsTable").trigger("sorton",[[[0, 0]]]);
         }
         
         
