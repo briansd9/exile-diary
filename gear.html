@@ -289,6 +289,7 @@
       }
       
       function displayInSlot(item, gearSlot) {
+        checkSkin(item);
         let icon = getPopupIcon(item);
         let style = (gearSlot === 'Flask' || gearSlot === 'TreeJewels') ? 'gearMultiItem' : 'gearDefaultItem';        
         let div = $(`<div class='${style} gearItem' id='${item.id}'></div>`)
@@ -302,6 +303,22 @@
           });
         }
         
+      }
+      
+      function checkSkin(item) {
+        if(item.cosmeticMods) {
+          for(let i = 0; i < item.cosmeticMods.length; i++) {
+            let mod = item.cosmeticMods[i];
+            if(mod.endsWith("You can reclaim this by shift-clicking this item.")) {
+              let skinName = mod.substring(4, mod.indexOf(" Skin."));
+              let uniqueIcons = require('./modules/Constants').uniqueIcons;
+              let idx = Object.values(uniqueIcons).indexOf(skinName);
+              if(idx > -1) {
+                item.icon = `${Object.keys(uniqueIcons)[idx]}?w=${item.w}&h=${item.h}&scale=1`;
+              }
+            }
+          }
+        }
       }
       
       function displayEquipmentChanges(diff) {
@@ -445,6 +462,7 @@
               continue;
             } else {
               itemCache[item.id] = item;
+              checkSkin(item);
               let p = createPopup(item, {showSocketedItems: false});
               $("#gearByItemTypeContainer").append(p);
             }
