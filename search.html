@@ -322,7 +322,6 @@
           $("#mapnamerow").show();
           $("#mapcountrow").show();
           $("#blightedrow").show();
-          $("#heistrow").show();
 
           $(".footer").hide();
           $("body").removeClass('bodyScreenshot');
@@ -376,9 +375,6 @@
         }
         if($("#blighted").val() === "any") {
           $("#blightedrow").hide();
-        }
-        if($("#heist").val() === "any") {
-          $("#heistrow").hide();
         }
         
         $(".footer").show();
@@ -540,16 +536,6 @@
                 <select name='blighted' id='blighted' style='font-size:22px;'>
                   <option value='any' selected>Any</option>
                   <option value='yes'>Yes</option>
-                  <option value='no'>No</option>
-                </select>
-              </div>
-              <div id='heistrow'>
-                <div id='heistlabel' class='searchLabel'>Heist</div>
-                <select name='heist' id='heist' style='font-size:22px;'>
-                  <option value='any' selected>Any</option>
-                  <option value='anyHeist'>Any Heist</option>
-                  <option value='contract'>Contract</option>
-                  <option value='grandHeist'>Grand Heist</option>
                   <option value='no'>No</option>
                 </select>
               </div>

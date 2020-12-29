@@ -532,8 +532,6 @@ function getItemsFor(evt) {
             if(item.category === "Metamorph Sample") {
               let organ = (item.typeline.substr(item.typeline.lastIndexOf(" ") + 1)).toLowerCase();
               importantDrops[organ] = (importantDrops[organ] || 0) + 1;
-            } else if(item.category === "Heist Target") {
-              importantDrops["heistTarget"] = 1;
             } else if(item.typeline.endsWith("'s Exalted Orb") || item.typeline === "Awakener's Orb") {
               importantDrops[item.typeline] = (importantDrops[item.typeline] || 0) + 1;
             }
@@ -759,7 +757,6 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
   let blightCount = 0;
   let conqCount = 0;    
   let conqueror;
-  let heistRogues;
   
   run.areaTimes = getRunAreaTimes(events);
 
@@ -806,11 +803,6 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
         break;
       case "leagueNPC":
         line = getLine(evt.event_text);
-        break;
-      case "heistRogue":
-        line = getLine(evt.event_text);
-        heistRogues = heistRogues || {};
-        heistRogues[line.npc] = true;
         break;
       default:
         // ignore other event types
@@ -986,10 +978,6 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
     run.conqueror = conqueror;
   }
   
-  if(heistRogues) {
-    run.heistRogues = Object.keys(heistRogues);
-  }
-  
   if(items && items.importantDrops) {
     for(var key in items.importantDrops) {
       switch(key) {
@@ -1000,12 +988,6 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
         case "liver":
           run.metamorph = run.metamorph || {};
           run.metamorph[key] = (run.metamorph[key] || 0) + items.importantDrops[key];
-          break;
-        case "heistTarget":
-          if(run.heistRogues && run.heistRogues.length === 1) {
-            // only normal heists are completed by finding a heist target - can't track grand heist completion
-            run.heistCompleted = true;
-          }
           break;
         case "Hunter's Exalted Orb":
           if(run.conqueror && run.conqueror["Al-Hezmin, the Hunter"] && run.conqueror["Al-Hezmin, the Hunter"].defeated) {
