@@ -4,6 +4,27 @@ const logger = require('./Log').getLogger(__filename);
 const Constants = require('./Constants');
 const Utils = require('./Utils');
 
+const boolStats = [
+  "abyssalDepths", 
+  "vaalSideAreas", 
+  "blightedMap", 
+  "blightEncounter", 
+  "strangeVoiceEncountered", 
+  "elderDefeated"
+];
+
+const shaperBattlePhases = [
+  {name: "start"},
+  {name: "boss1", endpoint: true},
+  {name: "boss2", endpoint: true},
+  {name: "boss3", endpoint: true},
+  {name: "boss4", endpoint: true},
+  {name: "phase1start"},
+  {name: "phase2start", endpoint: true},
+  {name: "phase3start", endpoint: true},
+  {name: "completed", endpoint: true}
+];
+
 async function get(char, league) {
   
   let charList = (char === "all" ? await getCharList(league) : [ char ]);
@@ -62,7 +83,6 @@ async function get(char, league) {
     bigDrops = bigDrops.concat(await getBigDrops(charList[j], league));
     
   }
-  
   
   return({ totalStats : totalStats, areaStats : areaStats, bigDrops: bigDrops });
 
@@ -189,15 +209,6 @@ function mergeRunInfo(totalStats, map) {
   totalStats.kills = (totalStats.kills || 0) + Number(map.kills);
   totalStats.gained = (totalStats.gained || 0) + Number(map.gained);
   
-  const boolStats = [
-    "abyssalDepths", 
-    "vaalSideAreas", 
-    "blightedMap", 
-    "blightEncounter", 
-    "strangeVoiceEncountered", 
-    "elderDefeated"
-  ];
-
   boolStats.forEach( stat => {
     if(info[stat]) {
       totalStats[stat] = ++totalStats[stat] || 1;
@@ -228,11 +239,31 @@ function mergeRunInfo(totalStats, map) {
   }
 
   if(info.shaperBattle) {
+    
     totalStats.shaper = totalStats.shaper || { started: 0, completed: 0 };
+    totalStats.shaperPhases = totalStats.shaperPhases || {};
+    
     totalStats.shaper.started++;
     if(info.shaperBattle.completed) {
       totalStats.shaper.completed++;
     }
+    
+    console.log(info.shaperBattle);
+    for(let i = 0; i < shaperBattlePhases.length; i++) {
+      if(shaperBattlePhases[i].endpoint) {
+        let curr = shaperBattlePhases[i].name;
+        let prev = shaperBattlePhases[i-1].name;
+        if(!info.shaperBattle[prev] || !info.shaperBattle[curr]) {
+          continue;
+        }
+        let runningTime = Number(Utils.getRunningTime(info.shaperBattle[prev], info.shaperBattle[curr], "s", { useGrouping : false }));
+        console.log(`phase ${curr}: ${info.shaperBattle[prev]} => ${info.shaperBattle[curr]} => ${runningTime}`);
+        totalStats.shaperPhases[curr] = totalStats.shaperPhases[curr] || { count: 0, totalTime: 0 };
+        totalStats.shaperPhases[curr].count++;
+        totalStats.shaperPhases[curr].totalTime += runningTime;
+      }
+    }
+    
   }
 
   if(info.mastermindBattle) {
@@ -405,6 +436,8 @@ function mergeRunInfo(totalStats, map) {
   }
 
 }
+
+
 
 async function getBigDrops(char, league) {
   
