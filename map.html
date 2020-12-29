@@ -33,6 +33,7 @@
     <script>
 
       const Utils = require('./modules/Utils');
+      const Constants = require('./modules/Constants');
       const moment = require('moment');
       const momentDurationFormatSetup = require("moment-duration-format");
       const settings = require('./modules/settings').get();
@@ -43,7 +44,7 @@
       const ItemData = require('./modules/ItemData');
       const ItemPricer = require('./modules/ItemPricer');
 
-      var mapID, modal, parser, itemsByType, itemsById, currScroll, DB, char, deleting;
+      var mapID,  modal, parser, itemsByType, itemsById, currScroll, DB, char, deleting;
 
       ipcRenderer.on("done-capturing", () => {
         if(!modal) {
@@ -500,7 +501,7 @@
         $("#areaTimes").addClass('mapMod');
       }
 
-      function getEventString(e) {
+      function getEventString(r, e) {
 
         var eventType = e.event_type;
         var eventText = e.event_text;
@@ -509,19 +510,50 @@
           if(eventText.startsWith("Alva")) {
             var templeRoom = Utils.getTempleRoom(eventText.substring(eventText.indexOf(":") + 1).trim());
             if(templeRoom) {
-              return(`<span class='eventType'>Found T3 temple room</span> <span class='eventText'>${templeRoom}</span></div>`);
+              return(`<span class='eventType'>Found T3 temple room</span> <span class='eventText'>${templeRoom}</span>`);
             } else {
               return null;
             }
           } else {
             return null;
           }
+        } else if(eventType === "leagueNPC") {
+          if(eventText.startsWith("The Shaper")) {
+            let line = eventText.substring(eventText.indexOf(":") + 1).trim();
+            let evt = Constants.shaperBattleQuotes[line];
+            let eventString = "";
+            switch(evt) {
+              case "boss1":
+                eventString = "First miniboss defeated";
+                break;
+              case "boss2":
+                eventString = "Second miniboss defeated";
+                break;
+              case "boss3":
+                eventString = "Third miniboss defeated";
+                break;
+              case "boss4":
+                eventString = "Last miniboss defeated";
+                break;
+              case "completed":
+                // bad kludge for inconsistent Shaper lines - "Irrelevant!" not exclusively said at encounter completion
+                if(r.info && r.info.shaperBattle && r.info.shaperBattle.completed === e.id) {
+                  eventString = "<span class='eventText'>Shaper defeated</span>";
+                  break;
+                }
+              default:
+                return null;
+            }
+            return(`<span class='eventType'>${eventString}</span>`);
+          } else {
+            return null;
+          }
+          
         }
 
         switch (eventType) {
           case "favourGained":
           case "conqueror":
-          case "leagueNPC":
           case "shrine":
           case "heistRogue":
             return null;
@@ -593,7 +625,7 @@
             }
           }
 
-          var eventString = getEventString(currEvent);
+          var eventString = getEventString(mapRun, currEvent);
           if(eventString && eventString.length > 0) {
             $("#eventsDiv").append(
               "<div class='eventInfo'>"
