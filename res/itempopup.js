@@ -183,6 +183,7 @@ function createItemPopup(data, opts) {
     getSecDescrText,
     getExplicitMods,
     getAdditionalProperties,
+    getCosmeticMods,
     getFlavourText,
     getFlavourTextParsed,
     getProphecyText,
@@ -651,6 +652,14 @@ function getDescrText(data) {
   div.append($(`<div class='descrText'>${data.descrText}</div>`));
   return div;
 }
+
+function getCosmeticMods(data) {
+  if(!data.cosmeticMods || !data.cosmeticMods[0]) return null;
+  let div = $("<div/>");
+  div.append($(`<div class='cosmeticMod'>${data.cosmeticMods[0]}</div>`));
+  return div;
+}
+
 
 function getFlavourTextParsed(data) {
   

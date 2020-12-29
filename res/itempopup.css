@@ -224,6 +224,10 @@
 .textUnique, .flavourText, .uniqueitem {
   color: #af6025; }
 
+.cosmeticMod {
+  color: #aa9e82;  
+}
+
 .descrText, .flavourText {
   font-style: italic; 
 }
