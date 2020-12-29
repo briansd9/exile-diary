@@ -617,12 +617,22 @@
     "Your recklessness will not go unpunished." : "boss3",
     "This is your final warning: Leave, or perish." : "boss4",
     "You force my hand again, little mouse... So be it. You've chosen to side with Chaos. This is my world, and you shall obey my Order!" : "phase1start",
-    "Imperfect!" : "phase1end",
     "Behold the face of your unmaking!" : "phase2start",
-    "Inconsequential!" : "phase2end",
     "These memories are mine! I cannot lose them!" : "phase3start",
     "Irrelevant!" : "completed"
   },
+  
+  "shaperBattlePhases" : [
+    {"name": "start"},
+    {"name": "boss1", "endpoint": true},
+    {"name": "boss2", "endpoint": true},
+    {"name": "boss3", "endpoint": true},
+    {"name": "boss4", "endpoint": true},
+    {"name": "phase1start"},
+    {"name": "phase2start", "endpoint": true},
+    {"name": "phase3start", "endpoint": true},
+    {"name": "completed", "endpoint": true}
+  ],
   
   "mastermindBattleQuotes" : {
     "You found me at last... Very resourceful, Jun. I too am resourceful. Witness." : "battle1start",
