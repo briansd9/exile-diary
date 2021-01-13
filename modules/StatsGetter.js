@@ -84,6 +84,10 @@ async function get(char, league) {
     
   }
   
+  if(charList.length === 1) {
+    totalStats.trials = await getTrials(charList[0]);
+  }
+  
   return({ totalStats : totalStats, areaStats : areaStats, bigDrops: bigDrops });
 
 }
@@ -119,6 +123,38 @@ async function getUnrighteousTurnedToAsh(char, league) {
   });  
 }
 
+async function getTrials(char) {
+  let DB = require('./DB').getDB(char);
+  return new Promise((resolve, reject) => {
+    DB.all(`
+      select trial, sum(runtime) as totaltime, count(1) as totalmaps 
+      from
+        (select id,
+        firstevent, lastevent, 
+        strftime('%s', substr(lastevent, 1, 4) || '-' || substr(lastevent, 5, 2) || '-' || substr(lastevent, 7, 2) || ' ' || substr(lastevent, 9, 2) || ':' || substr(lastevent, 11, 2) || ':' || substr(lastevent, 13, 2)) -
+        strftime('%s', substr(firstevent, 1, 4) || '-' || substr(firstevent, 5, 2) || '-' || substr(firstevent, 7, 2) || ' ' || substr(firstevent, 9, 2) || ':' || substr(firstevent, 11, 2) || ':' || substr(firstevent, 13, 2))
+        as runtime from mapruns where id > 0) 
+          as times,
+        (select min(id) as id, event_text as trial from events where event_text='Trial of Swirling Fear'
+        union select min(id) as id, event_text as trial from events where event_text='Trial of Lingering Pain'
+        union select min(id) as id, event_text as trial from events where event_text='Trial of Piercing Truth'
+        union select min(id) as id, event_text as trial from events where event_text='Trial of Stinging Doubt'
+        union select min(id) as id, event_text as trial from events where event_text='Trial of Crippling Grief'
+        union select min(id) as id, event_text as trial from events where event_text='Trial of Burning Rage') 
+          as trials
+      where times.firstevent < trials.id
+      group by trial
+      order by 2
+    `, (err, rows)  => {
+      if(err) {
+        resolve(null);
+      } else {
+        resolve(rows);
+      }
+    });
+  });  
+}
+
 async function getAreaByName(area, areaType, char, league) {
   
   let charList = (char === "all" ? await getCharList(league) : [ char ]);
@@ -131,7 +167,6 @@ async function getAreaByName(area, areaType, char, league) {
   for(let j = 0; j < charList.length; j++) {
     
     let DB = require('./DB').getDB(charList[j]);
-    console.log(`${area} ${areaType} ${charList[j]} ${league}`);
 
     let q = await new Promise((resolve, reject) => {
       DB.all(`
@@ -248,7 +283,6 @@ function mergeRunInfo(totalStats, map) {
       totalStats.shaper.completed++;
     }
     
-    console.log(info.shaperBattle);
     for(let i = 0; i < shaperBattlePhases.length; i++) {
       if(shaperBattlePhases[i].endpoint) {
         let curr = shaperBattlePhases[i].name;
@@ -257,7 +291,6 @@ function mergeRunInfo(totalStats, map) {
           continue;
         }
         let runningTime = Number(Utils.getRunningTime(info.shaperBattle[prev], info.shaperBattle[curr], "s", { useGrouping : false }));
-        console.log(`phase ${curr}: ${info.shaperBattle[prev]} => ${info.shaperBattle[curr]} => ${runningTime}`);
         totalStats.shaperPhases[curr] = totalStats.shaperPhases[curr] || { count: 0, totalTime: 0 };
         totalStats.shaperPhases[curr].count++;
         totalStats.shaperPhases[curr].totalTime += runningTime;
