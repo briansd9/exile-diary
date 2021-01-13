@@ -2,9 +2,22 @@ const logger = require("./Log").getLogger(__filename);
 const ItemData = require("./ItemData");
 const fs = require('fs');
 
+const Rarity = ItemData.Rarity;
+
+// note: order important - longer tokens first
+const COMPARERS = {
+  '<=': function(a,b) { return a <= b; },
+  '>=': function(a,b) { return a >= b; },
+  '==': function(a,b) { return a == b; },
+  '>': function(a,b) { return a > b; },
+  '<': function(a,b) { return a < b; },
+  '=': function(a,b) { return a == b; },
+};
+const OPERATOR_TOKENS = ["<=", ">=", "==", ">", "<", "="];
+
 var cachedParser = {};
 var currentAreaLevel = null;
-var Rarity = ItemData.Rarity;
+
 
 function test(filterText) {
   return parseFilter(filterText);
@@ -87,12 +100,12 @@ function Parser() {
     'BlightedMap', 'HasInfluence',
     'Mirrored', 'CorruptedMods', 'AreaLevel',
     'EnchantmentPassiveNode',
-    'AlternateQuality', 'Replica', 'GemQualityType'
+    'AlternateQuality', 'Replica', 'GemQualityType',
+    'EnchantmentPassiveNum',
   ];
 	var MODIFIER_TOKENS = [
 	    'SetBackgroundColor', 'SetBorderColor', 'SetTextColor', 'PlayAlertSound', 'PlayAlertSoundPositional',
 	    'SetFontSize', 'DisableDropSound', 'CustomAlertSound', 'MinimapIcon', 'PlayEffect' ];
-	var OPERATOR_TOKENS = [ '=', '<', '>', '<=', '>=' ];
 	var RARITY_TOKENS = [ 'Normal', 'Magic', 'Rare', 'Unique' ];
   var INFLUENCE_TOKENS = [ 'shaper', 'elder', 'crusader', 'redeemer', 'hunter', 'warlord' ];
 	var SOUND_TOKENS = [ 'ShAlchemy', 'ShBlessed', 'ShChaos', 'ShDivine', 'ShExalted', 'ShFusing', 'ShGeneral', 'ShMirror', 'ShRegal', 'ShVaal' ];
@@ -279,6 +292,7 @@ function Parser() {
       'AlternateQuality' : AlternateQualityFilter,
       'Replica' : ReplicaFilter,
       'GemQualityType' : GemQualityTypeFilter,
+      'EnchantmentPassiveNum' : EnchantmentPassiveNumFilter
 		};
 
 		switch (token) {
@@ -293,6 +307,7 @@ function Parser() {
 			case 'StackSize':
       case 'CorruptedMods':
       case 'AreaLevel':
+			case 'EnchantmentPassiveNum':
 				parseNumericFilter( self, filters[token], arguments );
 				return;
 
@@ -457,7 +472,7 @@ function Parser() {
       
       var operator = null;
       
-			if (["<", "<=", ">", ">=", "=", "=="].includes(tokens[0])) {
+			if (OPERATOR_TOKENS.includes(tokens[0])) {
         operator = tokens.shift();
         // single equals: no operator needed, match any of the arguments
         if(operator === "=") {
@@ -728,15 +743,8 @@ function Parser() {
 			return null;
 		}
 
-		var comparers = {
-			'=': function(a,b) { return a == b; },
-			'<': function(a,b) { return a < b; },
-			'>': function(a,b) { return a > b; },
-			'<=': function(a,b) { return a <= b; },
-			'>=': function(a,b) { return a >= b; }
-		};
-
-		return { comparer:comparers[operator], value:value };
+		return { comparer : COMPARERS[operator], value : value };
+    
 	}
 
 	function parseNumbers (self, arguments) {
@@ -895,16 +903,7 @@ function LinkedSocketsFilter (comparer, numLinkedSockets) {
 function SocketGroupFilter (operator, groups, mode ) {
   
   if(!operator) operator = "=";
-  
-  var countComparers = {
-    '=': function(a,b) { return a == b; },
-    '==': function(a,b) { return a == b; },
-    '<': function(a,b) { return a < b; },
-    '>': function(a,b) { return a > b; },
-    '<=': function(a,b) { return a <= b; },
-    '>=': function(a,b) { return a >= b; }
-  };
-  var countComparer = countComparers[operator];
+  var countComparer = COMPARERS[operator];
   
   function buildSocketGroups(str) {
     var groups = {};
@@ -1048,9 +1047,23 @@ function ElderMapFilter (value) {
 }
 
 function HasExplicitModFilter (mods) {
-    this.match = function (item) {
-        return mods.some( function(mod) { return item.hasExplicitMod( mod ); } );
+  
+    let operator = ">";
+    let value = 0;
+    for(let i = 0; i < OPERATOR_TOKENS.length; i++) {
+      if(mods[0].startsWith(OPERATOR_TOKENS[i])) {
+        operator = OPERATOR_TOKENS[i];
+        value = mods[0].replace(operator, "");
+        mods.shift();
+        break;
+      }
     }
+    let comparer = COMPARERS[operator];
+    
+    this.match = function (item) {
+      return comparer(mods.filter(mod => item.hasExplicitMod(mod)).length, value);
+    }
+    
 }
 
 function MapTierFilter (comparer, tier) {
@@ -1154,6 +1167,18 @@ function GemQualityTypeFilter (value) {
 	this.match = function (item) {
 		return item.baseType.startsWith(value);
 	};
+}
+
+function EnchantmentPassiveNumFilter (comparer, value) {
+    // check only "Adds __ Passive Skills" cluster jewel enchant mods
+    this.match = function (item) {
+      return (
+        item.enchantMods && 
+        item.enchantMods.some(mod => { 
+          return mod.startsWith("Adds ") && mod.endsWith(" Passive Skills") && comparer(Number(mod.substr(5, 2)), value)
+        })
+      );
+    };
 }
 
 
