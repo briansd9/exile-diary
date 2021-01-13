@@ -504,6 +504,7 @@
       displayConquerors(s);
       displayMasters(s);
       $(".extraInfo").tablesorter().trigger("update").trigger("sorton", [[[1, "d"]]]);
+      $(".asc").tablesorter().trigger("update").trigger("sorton", [[[1, "a"]]]);
     }
     
     function displayMiscStats(s) {
@@ -572,6 +573,31 @@
         div += d;
       }
       
+      if(s.trials) {
+        let trialStatus = (s.trials.length !== 6 ? "Not complete" : `completed in ${moment.duration(s.trials[s.trials.length-1].totaltime, "seconds").format("HH:mm:ss", { trim: false })}`);
+        let t = `
+          <div class='totalStatSection'>
+            ${statLine("Labyrinth trials", trialStatus, "res/img/encountericons/labtrial.png")}
+            <div style='max-height:15em;overflow-y:auto;'>
+              <table class='extraInfo asc' style='margin:0;'><thead><tr>
+                <th>&nbsp;</th>
+                <th>Time</th>
+                <th>Maps</th>
+              </tr></thead><tbody>
+        `;
+        for(var r of s.trials) {
+          t += `
+            <tr>
+              <td>${r.trial.replace("Trial of", "")}</td>
+              <td>${moment.duration(r.totaltime, "seconds").format("HH:mm:ss", { trim: false })}</td>
+              <td>${r.totalmaps}</td>
+            </tr>
+          `;
+        }
+        t += "</tbody></table></div></div>";
+        div += t;          
+      }
+
       if(s.shrines) {
         let arr = [];
         let totalShrines = 0;       
@@ -870,7 +896,8 @@
     function statLine(label, value, img = null) {
       return `
         ${img ? `<img class='statIcon' src='${img}'/>` : ""}
-        <span>${label}:</span> <span class='statValue'>${value}</span><br/>
+        <span>${label}${value? ":" : ""}</span> 
+        <span class='statValue'>${value || ""}</span><br/>
       `;
     }
     
