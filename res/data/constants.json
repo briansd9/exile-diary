@@ -1040,7 +1040,18 @@
     "Glacier Map",
     "Crater Map",
     "Primordial Blocks Map",
-    "Acid Caverns Map"
+    "Acid Caverns Map",
+    "Frozen Cabins Map",
+    "Forking River Map",
+    "Silo Map",
+    "Dry Sea Map",
+    "Stagnation Map",
+    "Forbidden Woods Map",
+    "Grave Trough Map",
+    "Cold River Map",
+    "Crimson Township Map",
+    "Bramble Valley Map",
+    "Foundry Map"    
   ],
 
   "areas" : {
@@ -1429,7 +1440,18 @@
       "Waste Pool",
       "Wasteland",
       "Waterways",
-      "Wharf"
+      "Wharf",
+      "Frozen Cabins",
+      "Forking River",
+      "Silo",
+      "Dry Sea",
+      "Stagnation",
+      "Forbidden Woods",
+      "Grave Trough",
+      "Cold River",
+      "Crimson Township",
+      "Bramble Valley",
+      "Foundry"      
     ],
     "uniqueMaps" : [
       "Acton's Nightmare",
