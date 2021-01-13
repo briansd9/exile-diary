@@ -117,6 +117,7 @@ class RateGetterV2 {
     var tempRates = {};
 
     let useGzip = this.settings.hasOwnProperty("useGzip") ? this.settings.useGzip : true;
+    let getLowConfidence = this.settings.hasOwnProperty("getLowConfidence") ? this.settings.getLowConfidence : false;
 
     try {
       for(var key in rateTypes) {
@@ -131,7 +132,7 @@ class RateGetterV2 {
           }
         }
         var process = rateTypes[key];
-        tempRates[key] = process(data);
+        tempRates[key] = process(data, getLowConfidence);
       }
       logger.info("Finished getting prices from poe.ninja, processing now");
     } catch(e) {
@@ -298,10 +299,10 @@ function getNinjaData(path, useGzip) {
   });
 }
 
-function cleanBaseTypes(arr) {
+function cleanBaseTypes(arr, getLowConfidence = false) {
   var a = {};
   arr.lines.forEach(item => {
-    if(item.count && item.count < 10) return; // ignore low confidence listings
+    if(item.count && item.count < 10 && !getLowConfidence) return; // ignore low confidence listings
     var identifier = item.name;
     if(item.levelRequired) identifier += ` L${item.levelRequired}`;
     if(item.variant) identifier += ` ${item.variant}`;
@@ -310,10 +311,10 @@ function cleanBaseTypes(arr) {
   return a;
 }
 
-function cleanUniqueItems(arr) {
+function cleanUniqueItems(arr, getLowConfidence = false) {
   var a = {};
   arr.lines.forEach(item => {
-    if(item.count && item.count < 10) return; // ignore low confidence listings
+    if(item.count && item.count < 10 && !getLowConfidence) return; // ignore low confidence listings
     var identifier = item.name;
     if(item.name === "Grand Spectrum" || item.name === "Combat Focus") identifier += ` ${item.baseType}`;
     if(item.links) identifier += ` ${item.links}L`;
@@ -324,10 +325,10 @@ function cleanUniqueItems(arr) {
   return a;
 }
 
-function cleanGems(arr) {
+function cleanGems(arr, getLowConfidence = false) {
   var a = {};
   arr.lines.forEach(item => {
-    if(item.count && item.count < 10) return; // ignore low confidence listings
+    if(item.count && item.count < 10 && !getLowConfidence) return; // ignore low confidence listings
     var identifier = item.name;
     if(item.gemLevel !== 1) identifier += ` L${item.gemLevel}`;
     if(item.gemQuality >= 20) {
@@ -343,28 +344,28 @@ function cleanGems(arr) {
   return a;
 }
 
-function cleanCurrency(arr) {
+function cleanCurrency(arr, getLowConfidence = false) {
   var a = {};
   arr.lines.forEach(item => {
-    if(item.count && item.count < 10) return; // ignore low confidence listings
+    if(item.count && item.count < 10 && !getLowConfidence) return; // ignore low confidence listings
     a[item.currencyTypeName] = item.chaosEquivalent;
   });
   return a;
 }
 
-function cleanNameValuePairs(arr) {
+function cleanNameValuePairs(arr, getLowConfidence = false) {
   var a = {};
   arr.lines.forEach(item => {
-    if(item.count && item.count < 10) return; // ignore low confidence listings
+    if(item.count && item.count < 10 && !getLowConfidence) return; // ignore low confidence listings
     a[item.name] = item.chaosValue;
   });
   return a;
 }
 
-function cleanEnchants(arr) {
+function cleanEnchants(arr, getLowConfidence = false) {
   var a = {};
   arr.lines.forEach(item => {
-    if(item.count && item.count < 10) return; // ignore low confidence listings
+    if(item.count && item.count < 10 && !getLowConfidence) return; // ignore low confidence listings
     if(item.icon) {
       a[item.name] = item.chaosValue;
     }
@@ -372,40 +373,40 @@ function cleanEnchants(arr) {
   return a;
 }
 
-function cleanUniqueMaps(arr) {
+function cleanUniqueMaps(arr, getLowConfidence = false) {
   var a = {};
   arr.lines.forEach(item => {
-    if(item.count && item.count < 10) return; // ignore low confidence listings
+    if(item.count && item.count < 10 && !getLowConfidence) return; // ignore low confidence listings
     var identifier = `${item.name} T${item.mapTier} ${item.baseType}`;
     a[identifier] = item.chaosValue;
   });
   return a;
 }
 
-function cleanMaps(arr) {
+function cleanMaps(arr, getLowConfidence = false) {
   var a = {};
   arr.lines.forEach(item => {
-    if(item.count && item.count < 10) return; // ignore low confidence listings
+    if(item.count && item.count < 10 && !getLowConfidence) return; // ignore low confidence listings
     var identifier = `${item.baseType} T${item.mapTier} ${item.variant}`;
     a[identifier] = item.chaosValue;
   });
   return a;
 }
 
-function cleanWatchstones(arr) {
+function cleanWatchstones(arr, getLowConfidence = false) {
   var a = {};
   arr.lines.forEach(item => {
-    if(item.count && item.count < 10) return; // ignore low confidence listings
+    if(item.count && item.count < 10 && !getLowConfidence) return; // ignore low confidence listings
     var identifier = `${item.name}, ${item.variant} uses remaining`;
     a[identifier] = item.chaosValue;
   });
   return a;
 }
 
-function cleanSeeds(arr) {
+function cleanSeeds(arr, getLowConfidence = false) {
   var a = {};
   arr.lines.forEach(item => {
-    if(item.count && item.count < 10) return; // ignore low confidence listings
+    if(item.count && item.count < 10 && !getLowConfidence) return; // ignore low confidence listings
     var identifier = item.name;
     if(item.levelRequired >= 76) identifier += ` L76+`;
     a[identifier] = item.chaosValue;
