@@ -41,7 +41,7 @@
       const fs = require('fs');
       const logger = require('./modules/Log').getLogger(__filename);
       const Utils = require('./modules/Utils');
-      const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled", "minimizeToTray", "autoSwitch"];
+      const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled", "minimizeToTray", "autoSwitch", "getLowConfidence"];
       
       var settings = {};
       var disabledTabsArray = [ 1 ];
@@ -239,7 +239,7 @@
       async function loadSettings() {
 
         configKeys.forEach((key) => {
-          if(key === "overlayEnabled" || key === "minimizeToTray" || key === "autoSwitch") {
+          if(["overlayEnabled", "minimizeToTray", "autoSwitch", "getLowConfidence"].includes(key)) {
             $("#" + key).prop("checked", settings[key]);
           } else {
             $("#" + key).val(settings[key]);
@@ -411,7 +411,7 @@
         
         configKeys.forEach((key) => {
           var inputField = $("#" + key);
-          if(key === 'overlayEnabled' || key === 'minimizeToTray' || key === 'autoSwitch') {
+          if(["overlayEnabled", "minimizeToTray", "autoSwitch", "getLowConfidence"].includes(key)) {
             settings[key] = inputField.is(':checked');
           } else if(inputField.val()) {
             settings[key] = inputField.val();
@@ -819,8 +819,8 @@
           </tr>
           <tr>
             <td colspan="2">
-              <div class='configLabel ui-text'>
-                <input style='margin:0 16px;' name='overlayEnabled' id='overlayEnabled' type='checkbox' title="Displays notifications about completed maps and net worth updates as an overlay in your PoE window. Warning: may cause FPS drops"/>
+              <div class='configLabel ui-text' title="Displays notifications about completed maps and net worth updates as an overlay in your PoE window. WARNING: may cause FPS drops">
+                <input style='margin:0 16px;' name='overlayEnabled' id='overlayEnabled' type='checkbox'/>
                 <label for='overlayEnabled'>Enable overlay popup messages</label>
               </div>
             </td>
@@ -833,11 +833,19 @@
               </div>
             </td>
           </tr>
+          <tr>
+            <td colspan="2">
+              <div class='configLabel ui-text' title="Retrieve prices for items with very few listings from poe.ninja. WARNING: use at your own risk, may result in very skewed item values">
+                <input style='margin:0 16px;' name='getLowConfidence' id='getLowConfidence' type='checkbox'/>
+                <label for='getLowConfidence'>Get low-confidence pricing data from poe.ninja</label>
+              </div>
+            </td>
+          </tr>
           <tr id='autoSwitchRow'>
             <td colspan="2">
-              <div class='configLabel ui-text'  title="If checked, whenever you switch characters in-game, Exile Diary will automatically track stats for that character">
+              <div class='configLabel ui-text' title="If checked, whenever you switch characters in-game, Exile Diary will automatically track stats for that character">
                 <input style='margin:0 16px;' name='autoSwitch' id='autoSwitch' type='checkbox' onchange='updateManualSwitch();'/>
-                <label for='autoSwitch'>Enable automatic character switching <span class='eventText'>(experimental)</span></label>
+                <label for='autoSwitch'>Enable automatic character switching</label>
               </div>
             </td>
           </tr>
