@@ -291,6 +291,12 @@ const initSQL = [
   [
     'pragma user_version = 7',
     `update mapruns set runinfo = json_set(ifnull(runinfo, "{}"), '$.ignored', true) where kills = -1 and gained = -1`
+  ],
+  
+  // version 8 - passive tree history
+  [
+    'pragma user_version = 8',
+    `create table if not exists passives ( timestamp text primary key not null, data text not null )`
   ]
   
 ];

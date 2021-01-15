@@ -13,6 +13,7 @@ const ScreenshotWatcher = require("./modules/ScreenshotWatcher");
 const Settings = require("./modules/settings");
 const { autoUpdater } = require("electron-updater");
 const StashGetter = require("./modules/StashGetter");
+const SkillTreeWatcher = require("./modules/SkillTreeWatcher");
 const Utils = require("./modules/Utils");
 const moment = require('moment');
 const fs = require('fs');
@@ -297,6 +298,11 @@ function initWindow(window) {
   InventoryGetter.emitter.on("invalidSessionID", () => {
     addMessage(`<span class='eventText'>Unable to get inventory information. Please check your POESESSID</span>`);
   });
+  
+  SkillTreeWatcher.emitter.removeAllListeners();
+  SkillTreeWatcher.emitter.on("invalidSessionID", () => {
+    addMessage(`<span class='eventText'>Unable to get character information. Please check your POESESSID</span>`);
+  });  
   
   OCRWatcher.emitter.removeAllListeners();
   OCRWatcher.emitter.on("OCRError", () => {

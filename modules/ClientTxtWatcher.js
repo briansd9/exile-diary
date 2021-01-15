@@ -4,6 +4,7 @@ const EventEmitter = require('events');
 const InventoryGetter = require('./InventoryGetter');
 const ItemParser = require('./ItemParser');
 const RunParser = require('./RunParser');
+const SkillTreeWatcher = require('./SkillTreeWatcher');
 const Utils  = require('./Utils');
 const Constants = require('./Constants');
 
@@ -11,6 +12,7 @@ var DB;
 var settings;
 var tail;
 var inv;
+var tree;
 var login;
 var emitter = new EventEmitter();
 
@@ -36,6 +38,7 @@ function start() {
 
     tail = new Tail(`${settings.clientTxt}`, {usePolling: true, disableGlobbing: true});
     inv = new InventoryGetter();
+    tree = new SkillTreeWatcher();
 
     tail.on("line", (line) => {
       if (process.platform === 'linux') {
@@ -73,6 +76,7 @@ function start() {
                 mode: "automatic"
               });
             }
+            tree.checkPassiveTree(timestamp);
             inv.getInventoryDiffs(timestamp).then(async (diff) => {
               if (diff && Object.keys(diff).length > 0) {
                 await ItemParser.insertItems(diff, timestamp);
@@ -170,8 +174,7 @@ function getEvent(arg) {
   if(conquerorString) {
     return {
       type: "conqueror",
-      text: conquerorString.trim(),
-      instanceServer: ""
+      text: conquerorString.trim()
     };
   }
   
@@ -179,8 +182,20 @@ function getEvent(arg) {
   if(npcString) {
     return {
       type: "leagueNPC",
-      text: npcString.trim(),
-      instanceServer: ""
+      text: npcString.trim()
+    };
+  }
+  
+  if(str.startsWith("Successfully allocated")) {
+    return {
+      type: "allocated",
+      text: `${str.substring(str.indexOf("id:") + 4, str.indexOf("name:") - 2)} (${str.substring(str.indexOf("name:") + 6)})`
+    };
+  }
+  if(str.startsWith("Successfully unallocated")) {
+    return {
+      type: "unallocated",
+      text: `${str.substring(str.indexOf("id:") + 4, str.indexOf("name:") - 2)} (${str.substring(str.indexOf("name:") + 6)})`
     };
   }
   
@@ -194,29 +209,24 @@ function getEvent(arg) {
       };
     } else if(str.includes(`${settings.activeProfile.characterName} has been slain`) || str.includes(`${settings.activeProfile.characterName} has committed suicide`)) {
       return {
-        type: "slain",
-        text: "",
-        instanceServer: ""
+        type: "slain"
       };
     } else if(str.includes("is now level")) {
       return {
         type: "level",
-        text: Number.parseInt(str.substring(str.indexOf("is now level") + 12)),
-        instanceServer: ""
+        text: Number.parseInt(str.substring(str.indexOf("is now level") + 12))
       };
     } else if(str.includes("Mission Complete")) {
       return {
         type: "favourGained",
-        text: str.replace(/[^0-9]/g, ''),
-        instanceServer: ""
+        text: str.replace(/[^0-9]/g, '')
       };
     } else {
       let text = (str.substring(2)).trim();
       if(Constants.shrineQuotes[text] || Constants.darkshrineQuotes.includes(text)) {
         return {
           type: "shrine",
-          text: text,
-          instanceServer: ""
+          text: text
         };
       }      
     }
@@ -238,8 +248,7 @@ function getEvent(arg) {
     }
     return {  
       type: "chat",
-      text: str.substring(str.indexOf("@")).trim(),
-      instanceServer: ""
+      text: str.substring(str.indexOf("@")).trim()
     };
   }
 }
