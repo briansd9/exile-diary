@@ -2507,6 +2507,7 @@
     
     "https://web.poecdn.com/image/Art/2DItems/Effects/Hats/ChuhutlusSkull.png" : "Ancient Skull",
     "https://web.poecdn.com/image/Art/2DItems/Belts/AltChargeStr.png" : "Arn's Anguish",
+    "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/LexEjorasWatchstone4.png" : "Atop the Atlas",
     "https://web.poecdn.com/image/Art/2DItems/Armours/BodyArmours/CollectorsGarbDiff.png" : "Doppelgänger Guise",
     "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Daggers/GoblinEdge.png" : "Goblinedge",
     "https://web.poecdn.com/image/Art/2DItems/Belts/AltChargeInt.png" : "Graven's Secret",
@@ -2514,9 +2515,16 @@
     "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/LegacyofFury.png" : "Legacy of Fury",
     "https://web.poecdn.com/image/Art/2DItems/Belts/AltChargeDex.png" : "Olesya's Delight",
     "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/QotrasRegulator.png" : "Qotra's Regulator",
+    "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/ValdosRestWatchstone4.png" : "Restless Cycles",
     "https://web.poecdn.com/image/Art/2DItems/Rings/CursedEye.png" : "Rotblood Promise",
     "https://web.poecdn.com/image/Art/2DItems/Belts/ImbalancedCord.png" : "Survivor's Guilt",
-    "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/ConstrictingCrown.png" : "Viridi's Veil"
+    "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/GlennachCairnsWatchstone4.png" : "The Builder",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/ConstrictingCrown.png" : "Viridi's Veil",
+    "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/TirnsEndWatchstone4.png" : "The Claim",
+    "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/LexProximaWatchstone4.png" : "The Closest Peak",
+    "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/LiraArthainWatchstone4.png" : "The False Hope",
+    "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/NewVastirWatchstone4.png" : "The Vast Horizon",
+    "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/HaewarkHamletWatchstone4.png" : "The Walls"
     
   },
   
