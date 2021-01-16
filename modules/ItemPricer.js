@@ -316,6 +316,7 @@
           if(icon.includes("mn=7")) return "Delirium";
           if(icon.includes("mn=8")) return "Harvest";
           if(icon.includes("mn=9")) return "Heist";
+          if(icon.includes("mn=10")) return "Ritual";
         } else {
           if(icon.includes("2DItems/Maps/AtlasMaps")) return "Atlas";
           if(icon.includes("2DItems/Maps/Map")) return "Pre 2.4";
