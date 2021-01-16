@@ -740,7 +740,7 @@ function getMapStats(arr) {
       mapStats['iir'] = mod.match(/[0-9]+/)[0];
     } else if(mod.endsWith("% increased Quantity of Items found in this Area")) {
       mapStats['iiq'] = mod.match(/[0-9]+/)[0];
-    } else if(mod.endsWith("% Monster pack size")) {
+    } else if(mod.endsWith("% increased Pack size")) {
       mapStats['packsize'] = mod.match(/[0-9]+/)[0];
     }
   });
