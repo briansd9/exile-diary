@@ -65,7 +65,12 @@ class RateGetterV2 {
         return;
       } else {
         // override ssf and get item prices from corresponding trade league
-        this.league = this.league.replace("SSF ", "");
+        // TODO undocumented league naming convention change in 3.13... must check this every league from now on
+        let l = this.league.replace("SSF", "").trim();
+        if(l.includes("HC")) {
+          let l = "Hardcore " + l.replace("HC", "").trim();
+        }
+        this.league = l;
       }    
     }
     
@@ -347,6 +352,10 @@ function cleanGems(arr, getLowConfidence = false) {
 function cleanCurrency(arr, getLowConfidence = false) {
   var a = {};
   arr.lines.forEach(item => {
+    if(item.currencyTypeName === "Rogue's Marker") {
+      logger.info("Ignoring Rogue's Marker currency listing - not stable");
+      return;
+    }
     if(item.count && item.count < 10 && !getLowConfidence) return; // ignore low confidence listings
     a[item.currencyTypeName] = item.chaosEquivalent;
   });
