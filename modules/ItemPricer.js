@@ -343,6 +343,7 @@
           case 7: return "Delirium";
           case 8: return "Harvest";
           case 9: return "Heist";
+          case 10: return "Ritual";
         }
       } else {
         if(data.f.includes("2DItems/Maps/AtlasMaps")) return "Atlas";
