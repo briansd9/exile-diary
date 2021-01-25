@@ -480,7 +480,7 @@ function Parser() {
         }
       }
       
-      var groups = tokens.map( tok => { return tok.toUpperCase(); } );
+      var groups = tokens.map( tok => { return StrUtils.replaceAll(tok.toUpperCase(), '"', ""); } );
       
       var isInvalid = groups.some( function(socketGroup) {
         if (!StrUtils.consistsOf( socketGroup, '0123456RGBWDA' )) {
