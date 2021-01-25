@@ -1,3 +1,6 @@
-const data = require('../res/data/constants.json');
-
-module.exports = data;
+module.exports = {
+  ...require('../res/data/constants.json'),
+  ...require('../res/data/dialogue.json'),
+  ...require('../res/data/mapMods.json'),
+  ...require('../res/data/uniqueIcons.json')
+};
