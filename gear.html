@@ -180,7 +180,13 @@
               
               if(rows.length > 0) {
                 $("#loading").show();
+                if(settings.activeProfile.noGearCheck) {        
+                  $("#noGearCheck").show();
+                }
               } else {
+                if(settings.activeProfile.noGearCheck) {        
+                  $("#noDataFoundText").html("Gear checking disabled in settings. No data found.");
+                }
                 $("#noDataFound").show();
                 resolve(false);
               }
@@ -554,7 +560,7 @@
       </div>
       <div id='noDataFound' style='display:none;padding:80px;'>
         <img src='res/img/stash.png' style='display:inline-block;vertical-align:middle;'/>
-        No gear changes found yet. Items you equip will be tracked automatically as you progress through the game.<br/>        
+        <span id='noDataFoundText'>No gear changes found yet. Items you equip will be tracked automatically as you progress through the game.</span>
       </div>
       
       
@@ -562,6 +568,10 @@
         <ul>
           <li><a id="gearByDateLink" onclick="this.blur();" href="#gearByDate">By Date</a></li>
           <li><a id="gearByItemTypeLink" onclick="this.blur();" href="#gearByItemType">By Item Type</a></li>
+          <div id='noGearCheck' style='display:none;text-align:right;margin-top:25px;font-size:smaller;'>
+            <img class='newVersion' src="res/img/!.png" style="position:relative;top:0;left:0;display:none;height:20px;width:20px;vertical-align:middle;"/>
+            Equipment history is no longer being tracked.
+          </div>
         </ul>
         
         <div id="gearByDate">
