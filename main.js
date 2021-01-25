@@ -84,7 +84,8 @@ async function checkCurrentActiveCharacter() {
                   Settings.set("activeProfile", {
                     characterName : data[i].name,
                     league: data[i].league,
-                    overrideSSF : settings.activeProfile.overrideSSF
+                    overrideSSF : settings.activeProfile.overrideSSF,
+                    noGearCheck : settings.activeProfile.noGearCheck
                   });
                   await DB.initDB();
                   await DB.initLeagueDB();
@@ -538,35 +539,7 @@ async function createWindow() {
     mainWindow = null;
   });
   
-  mainWindow.on('minimize', function (event) {
-    try {
-      let s = Settings.get();
-      if(s.minimizeToTray) {
-        if(!trayIcon) {
-          trayIcon = new Tray(path.join(__dirname, "res/img/icons/win/ExileDiary.ico"));
-          trayIcon.setToolTip(`Exile Diary v${app.getVersion()}\n${s.activeProfile.characterName} (${s.activeProfile.league} league)`);
-          trayIcon.setContextMenu(
-            Menu.buildFromTemplate([
-              { label: 'Quit', role: 'quit' } 
-            ])
-          );
-          trayIcon.on('double-click', () => {
-            if(mainWindow) {
-              mainWindow.show();
-            }
-          });
-        }
-        event.preventDefault();
-        mainWindow.hide();
-      } else {
-        if(trayIcon) {
-          trayIcon.destroy();
-        }
-      }
-    } catch(e) {
-      // just swallow error and minimize normally
-    }
-  });
+  mainWindow.on('minimize', customMinimize);
 
   mainWindow.webContents.on('new-window', function(event, urlToOpen) {
     event.preventDefault();
@@ -595,8 +568,43 @@ async function createWindow() {
     mainWindow.maximize();
   }
   
-  mainWindow.show();
+  if(process.argv.includes("--start-minimized")) {
+    mainWindow.minimize();
+  } else {
+    mainWindow.show();
+  }
     
+}
+
+function customMinimize(event) {
+  try {
+    let s = Settings.get();
+    if(s.minimizeToTray) {
+      if(!trayIcon) {
+        trayIcon = new Tray(path.join(__dirname, "res/img/icons/win/ExileDiary.ico"));
+        trayIcon.setToolTip(`Exile Diary v${app.getVersion()}\n${s.activeProfile.characterName} (${s.activeProfile.league} league)`);
+        trayIcon.setContextMenu(
+          Menu.buildFromTemplate([
+            { label: 'Quit', role: 'quit' } 
+          ])
+        );
+        trayIcon.on('double-click', () => {
+          if(mainWindow) {
+            mainWindow.show();
+          }
+        });
+      }
+      event.preventDefault();
+      mainWindow.hide();
+    } else {
+      if(trayIcon) {
+        trayIcon.destroy();
+      }
+    }
+  } catch(e) {
+    // just swallow error and minimize normally
+    mainWindow.minimize();
+  }
 }
 
 function showActiveCharacterMessage(char) {
