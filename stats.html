@@ -134,6 +134,8 @@
         $("#areaStatsRows").remove();
         $("#areaStatsTotalRow").remove();
         $("#areaStatsTable").append("<tbody id='areaStatsRows'></tbody>");
+        $("#bossKillsRows").remove();
+        $("#bossKillsTable").append("<tbody id='bossKillsRows'></tbody>");
         $("#bigDropValueFilter").val(1);
         
         // don't allow "all characters" and "all leagues combined" to be selected simultaneously
@@ -243,6 +245,29 @@
           tabOptions.disabled.push(1);
         }
         
+        if(stats.bossKills && Object.keys(stats.bossKills).length > 0) {
+          Object.keys(stats.bossKills).forEach( area => {
+            
+            let s = stats.bossKills[area];
+            let t = moment.duration(s.totalTime / s.count, "seconds").format("mm:ss.SS", { trim: false });
+            t = `${t.substr(0, t.indexOf("."))}<span style='font-size:70%;'>.${t.substr(t.indexOf(".")+1)}</span>`;
+            
+            let row = $(`
+              <tr class='mapRow'>
+                <td style='width:1.5em;'>${getBossIcon(area)}</td>
+                <td style='text-align:left;'>${area}</td>
+                <td>${s.count}</td>
+                <td>${t}</td>
+                <td>${s.deaths}</td>
+              </tr>
+            `);
+            $("#bossKillsRows").append(row);
+          });
+          $("#bossKillsTable").tablesorter().trigger("update").trigger("sorton", [[[3, "d"]]]);
+        } else {
+          tabOptions.disabled.push(2);
+        }
+        
         if(stats.bigDrops && stats.bigDrops.length > 0) {
           $("#popupContainer").empty();
           for(let i = 0; i < stats.bigDrops.length; i++) {
@@ -279,7 +304,7 @@
           });
 
         } else {
-          tabOptions.disabled.push(2);
+          tabOptions.disabled.push(3);
         }
         
     
@@ -292,8 +317,65 @@
         setTimeout(() => { $("#loading").hide(); $("#mainContent").show(); }, 750);
         
     }
-    
-    
+
+    function getBossIcon(str) {
+      let imgStr, group;
+      switch(str) {
+        case "The Maven":
+          imgStr = "mavenarena";
+          group = 0;
+          break;
+        case "Sirus, Awakener of Worlds":
+          imgStr = "sirus";
+          group = 1;
+          break;
+        case "Al-Hezmin, the Hunter":
+        case "Baran, the Crusader":
+        case "Drox, the Warlord":
+        case "Veritania, the Redeemer":
+          imgStr = str.substring(str.indexOf("the") + 4).toLowerCase();
+          group = 2;
+          break;
+        case "The Shaper":
+          imgStr = "shaper";
+          group = 3;
+          break;
+        case "Forge of the Phoenix":
+        case "Lair of the Hydra":
+        case "Maze of the Minotaur":
+        case "Pit of the Chimera":
+          imgStr = str.substring(str.indexOf("the") + 4).toLowerCase();
+          group = 4;
+          break;
+        case "The Constrictor":
+        case "The Enslaver":
+        case "The Eradicator":
+        case "The Purifier":
+          imgStr = str.substring(4).toLowerCase();
+          group = 5;
+          break;
+        case "Catarina, Master of Undeath":
+          imgStr = "mastermind";
+          group = 6;
+          break;
+        case "The Alluring Abyss":
+          imgStr = "alluringabyss";
+          group = 7;
+          break;
+        default:
+          break;
+      }
+      if(imgStr) {
+        return `
+          <img class='currencyText' src='res/img/encountericons/${imgStr}.png' />
+          <span style='display:none;'>${group}</span>
+        `;
+      } else {
+        // group normal maps last
+        return `<span style='display:none;'>zzzzz</span>`;
+      }
+    }
+  
     function loadMsg(msg) {
       $("#loadingText").html(msg);
     }
@@ -370,8 +452,6 @@
     }
     
     async function loadAreaDetails(area, areaType, league) {
-      
-      console.log(`loading ${area} ${areaType} ${league}`);
       
       let areaLoaded = $(`#${areaType}DetailTable`).data("loaded");
       
@@ -544,6 +624,15 @@
       }
       if(s.elderDefeated) {
         div += statLine("Elder Kills", s.elderDefeated, "res/img/elder.png");
+      }
+      div += "</div>";
+
+      div += "<div class='totalStatSection'>";
+      if(s.mavenBattle && s.mavenBattle.completed) {
+        div += statLine("Maven Kills", s.mavenBattle.completed, "res/img/encountericons/mavenarena.png");
+      }
+      if(s.mavenCrucible) {
+        div += statLineCompleted("Maven Crucibles", s.mavenCrucible.started, s.mavenCrucible.completed, "res/img/encountericons/mavencrucible.png");
       }
       div += "</div>";
 
@@ -936,9 +1025,20 @@
         </div>
         
         <ul>
-          <li><a onclick="this.blur();" id="totalStatsContainerLink" href="#totalStatsContainer">Total Stats</a></li>
-          <li><a onclick="this.blur();" id="areaStatsContainerLink" href="#areaStatsContainer">Stats by Area</a></li>
-          <li><a onclick="this.blur();" id="bigDropsContainerLink" href="#bigDropsContainer"><img src="res/img/ex.png" style="height:30px;width:30px;"></a></li>
+          <li>
+            <a onclick="this.blur();" id="totalStatsContainerLink" href="#totalStatsContainer">Total Stats</a>
+          </li>
+          <li>
+            <a onclick="this.blur();" id="areaStatsContainerLink" href="#areaStatsContainer">Stats by Area</a>
+          </li>
+          <li>
+            <a style='padding-left:0.65em !important;' onclick="this.blur();" id="bossKillsContainerLink" href="#bossKillsContainer">
+              <img src="res/img/encountericons/maven.png" style="vertical-align:middle;height:30px;width:30px;"> Boss Kills
+            </a>
+          </li>
+          <li>
+            <a onclick="this.blur();" id="bigDropsContainerLink" href="#bigDropsContainer"><img src="res/img/ex.png" style="height:30px;width:30px;"></a>
+          </li>
         </ul>
         
         <div id="totalStatsContainer" style='display:none;'>
@@ -964,6 +1064,26 @@
           </table>
         </div>
 
+        
+        <div id="bossKillsContainer" style='display:none;'>
+          <img src="res/img/encountericons/maven.png" style="height:1em;width:1em;vertical-align:middle;"/>
+          List may be incomplete - most boss battles can only be recorded if witnessed by the Maven.<br/>
+          <hr>
+          <table class='searchResults statsTable' style='width:100%;border-spacing:0;padding:10px;' id="bossKillsTable">
+            <thead>
+              <tr>
+                <th>&nbsp;</th>
+                <th>Area / Boss</th>
+                <th>Boss Kills</th>
+                <th>Average Kill Time</th>
+                <th>Deaths</th>
+              </tr>
+            </thead>
+          </table>
+          
+          <br/>
+        </div>
+        
 
         <div id="bigDropsContainer" style='display:none;'>
           <div class='tableLink' style='padding:16px 20px;position:relative;'>
