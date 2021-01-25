@@ -258,6 +258,7 @@
           $("#selectedLeague").val(settings.activeProfile.league);
           $("#uploadFilter").attr('placeholder', `Click to upload new item filter for ${settings.activeProfile.characterName}`);
           $("#overrideSSF").prop("checked", settings.activeProfile.overrideSSF);
+          $("#noGearCheck").prop("checked", settings.activeProfile.noGearCheck);
           
           // private league handling
           if(Utils.isPrivateLeague(settings.activeProfile.league)) {
@@ -464,6 +465,10 @@
         if($("#overrideSSF").is(":checked")) {
           settings.activeProfile.overrideSSF = true;
         }
+        if($("#noGearCheck").is(":checked")) {
+          settings.activeProfile.noGearCheck = true;
+        }
+        console.log(settings.activeProfile);
         
         var stashCheckUnits = $("#stashCheckUnits").val();
         var stashCheckInterval;
@@ -511,6 +516,7 @@
           }
           settings.tabs[settings.activeProfile.league] = tabs;
         }
+        
         
         var filename = path.join(app.getPath("userData"), "settings.json");
         fs.writeFile(filename, JSON.stringify(settings), (err) => {
@@ -849,6 +855,14 @@
               </div>
             </td>
           </tr>
+          <tr id='noGearCheckRow'>
+            <td colspan="2">
+              <div class='configLabel ui-text' title="If checked, equipment history will no longer be tracked. For fully-geared characters that swap gems or equipment frequently">
+                <input style='margin:0 16px;' name='noGearCheck' id='noGearCheck' type='checkbox'/>
+                <label for='noGearCheck'>Disable gear tracking</label>
+              </div>
+            </td>
+          </tr>
         </table>    
       </div>
       <div id="stash">
@@ -904,19 +918,27 @@
         <hr style='clear:left;'>
         <div style="display: flex; flex-direction: row;">
           <button class='debugButton' id="recheckGainedButton" style="width:320px;margin:0 16px;" onclick="recheckGained();">Recheck Map Profit</button>
-          <div style='line-height: 200%;vertical-align: middle;'>Recalculates the value of items picked up for all map runs.</div>
+          <div style='line-height: 200%;vertical-align: middle;'>
+            Recalculates the value of items picked up for all map runs since 
+            <input id="recheckGainedStartValue" type="number" style="width:10ch;" value="20210115" title='Default value is the start of the current league. Enter a date, or leave blank to recheck all map runs in the database (warning: slow)'/>
+          </div>
         </div>
         <div style="display: flex; flex-direction: row; padding-top:10px;">
           <button class='debugButton' id="recheckGearButton" style="width:320px;margin:0 16px;" onclick="checkGearDuplicates();">Recheck Gear Changes</button>
           <div style='line-height: 200%;vertical-align: middle;'>Removes gear changes for which the item was not actually changed.</div>
         </div>
         <div style="display: flex; flex-direction: row; padding-top:10px;">
-          <button class='debugButton' id="exportAllData" style="width:320px;margin:0 16px;" onclick="migrateAll();">Update All Character Data</button>
-          <div style='line-height: 200%;vertical-align: middle;'>Updates all character data to the new format that will be used starting in v0.2.78.</div>
+          <button class='debugButton' id="v0286fixButton" style="width:320px;margin:0 16px;" onclick="v0286fix();">v0.2.86 bug fixes</button>
+          <div style='line-height: 125%;vertical-align: middle;'>
+            Performs the following changes:<br/>
+            - Sets value of all Rogue's Marker to zero.<br/>
+            - Fixes incorrect conqueror battle stats.<br/>
+            - Calculates boss kill time for Maven-witnessed maps.<br/>
+          </div>
         </div>
         <div id='debugsql' style="display: none; flex-direction: row; padding-top:10px;">
           <button class='debugButton' style="border:1px solid #600;background-color:#300;color:#900;width:320px;margin:0 16px;" onclick="execSql();">Execute SQL</button>
-          <div style='line-height: 200%;vertical-align: middle;color:#500;'>Some things that slumber should never be awoken.</div>
+          <div style='line-height: 200%;vertical-align: middle;color:#900;'>Some things that slumber should never be awoken.</div>
         </div>
         <hr style='clear:left;'>
         <textarea id="debugOutput" style="resize:none;background-color:#333;color:#ccc;width:100%;height:40%;font-family:monospace;font-size:medium" readonly>Debug output will be displayed here.</textarea>
