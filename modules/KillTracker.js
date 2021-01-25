@@ -39,7 +39,7 @@ async function logKillCount(timestamp, eqp) {
   var currIncubators = JSON.stringify(incubators);
   var prevIncubators = await getPrevIncubators(DB);
   if(prevIncubators === currIncubators) {
-    logger.info("Incubators are the same, returning");
+    return;
   } else {
     DB.run("insert into incubators(timestamp, data) values(?, ?)", [timestamp, currIncubators], (err) => {
       if(err) {
