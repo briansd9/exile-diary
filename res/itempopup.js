@@ -85,6 +85,7 @@ function getDivCardMods(data) {
   let str = "<div class='explicitModsWrapper'><div class='explicitModsContainer'>";
   
   let mods = data.explicitMods[0].split("\r\n");
+  
   for(let i = 0; i < mods.length; i++) {
     str += `
       <div class='explicitMod'>
@@ -104,13 +105,15 @@ function getDivCardMods(data) {
     let parsedStr = '';
     let fontSize = null;
     
-    let sizeMatch = str.match(/<size:[0-9]+>/g);    
+    let sizeMatch = str.match(/<size:[0-9]+>/g);
     if(sizeMatch) {
       fontSize = sizeMatch[0].replace(/[a-z<>:]/g, "");
       str = str.replace(/<size:[0-9]+>/, "");
     }
     
     let markup = str.match(/<([^{}<>]+)>/g);
+    if(!markup) return; // The Void has no item text
+    
     let text = str.match(/{([^{}<>]+)}/g);
     for(let i = 0; i < markup.length; i++) {
       parsedStr += `<span style='${fontSize ? `font-size:${fontSize/2}px` : ""}' class='${markup[i].replace(/[<>]/g, "")}'>${text[i].replace(/[{}]/g, "")}</span> `;
