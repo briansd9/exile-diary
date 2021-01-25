@@ -59,9 +59,11 @@ async function tryProcess(obj) {
   logger.info(JSON.stringify(lastEvent));
   
   var mapStats;
+  var mapMods;
   var areaInfo = await getAreaInfo(firstEvent, lastEvent);
   if(areaInfo) {
-    mapStats = getMapStats(await getMapMods(areaInfo.id));
+    mapMods = await getMapMods(areaInfo.id);
+    mapStats = getMapStats(mapMods);
   } else {
     areaInfo = { 
       id: firstEvent.timestamp,
@@ -79,7 +81,7 @@ async function tryProcess(obj) {
   var xpDiff = await getXPDiff(xp);
   var items = await checkItems(areaInfo, firstEvent.timestamp, lastEvent.timestamp);
   var killCount  = await getKillCount(firstEvent.timestamp, lastEvent.timestamp);
-  var extraInfo = await getMapExtraInfo(areaInfo.name, firstEvent.timestamp, lastEvent.timestamp, items);
+  var extraInfo = await getMapExtraInfo(areaInfo.name, firstEvent.timestamp, lastEvent.timestamp, items, mapMods);
   
   var ignoreMapRun = false;
   
@@ -281,7 +283,7 @@ async function process() {
   var xpDiff = await getXPDiff(xp);
   var items = await checkItems(currArea, firstEvent, lastEvent);
   var killCount  = await getKillCount(firstEvent, lastEvent);
-  var extraInfo = await getMapExtraInfo(currArea.name, firstEvent, lastEvent, items);
+  var extraInfo = await getMapExtraInfo(currArea.name, firstEvent, lastEvent, items, mods);
   var ignoreMapRun = false;
   
   // if no items picked up, no kills, and no xp gained, log map run but ignore it (profit = -1, kills = -1)
@@ -747,7 +749,7 @@ function getMapStats(arr) {
   return mapStats;
 }
 
-async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
+async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods) {
   
   logger.info(`Getting map extra info for ${areaName} between ${firstevent} and ${lastevent}`);
   
@@ -755,8 +757,6 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
 
   let run = {};
   let blightCount = 0;
-  let conqCount = 0;    
-  let conqueror;
   
   run.areaTimes = getRunAreaTimes(events);
 
@@ -795,12 +795,7 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
         }
         continue;
       case "master":
-        line = getLine(evt.event_text);
-        break;
       case "conqueror":
-        conqueror = conqueror || {};
-        line = getLine(evt.event_text);
-        break;
       case "leagueNPC":
         line = getLine(evt.event_text);
         break;
@@ -810,6 +805,16 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
     }
 
     switch(line.npc) {
+      case "The Maven":
+        if(!run.maven) {
+          run.maven = { "firstLine" : evt.id };
+        } else {
+          let eventType = Constants.mavenQuotes[line.text];
+          if(eventType) {
+            run.maven[eventType] = evt.id;
+          }          
+        }
+        continue;
       case "Sister Cassia":
         if(Constants.blightBranchQuotes.includes(line.text)) {
           blightCount++;            
@@ -922,16 +927,23 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
       case "Baran, the Crusader":
       case "Drox, the Warlord":
       case "Veritania, the Redeemer":
-        conqueror = conqueror || {};
-        conqueror[line.npc] = conqueror[line.npc] || {};
-        if(++conqCount > 1) {
-          conqueror[line.npc].battle = true;
-        }
-        let deathQuotes = Constants.conquerorDeathQuotes[line.npc];
-        for(let j = 0; j < deathQuotes.length; j++) {
-          if(line.text.includes(deathQuotes[j])) {
-            conqueror[line.npc].defeated = true;
+        run.conqueror = run.conqueror || {};
+        run.conqueror[line.npc] = run.conqueror[line.npc] || {};
+        let battleQuotes = Constants.conquerorBattleStartQuotes[line.npc];
+        for(let j = 0; j < battleQuotes.length; j++) {
+          if(line.text.includes(battleQuotes[j])) {
+            run.conqueror[line.npc].battle = true;
           }
+        }
+        if(run.conqueror[line.npc].battle) {
+          let deathQuotes = Constants.conquerorDeathQuotes[line.npc];
+          for(let j = 0; j < deathQuotes.length; j++) {
+            if(line.text.includes(deathQuotes[j])) {
+              run.conqueror[line.npc].defeated = true;
+            }
+          }
+        } else {
+          run.conqueror[line.npc].encounter = true;
         }
         continue;
       case "Sirus, Awakener of Worlds":
@@ -961,23 +973,40 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
     }      
   }
 
-  // max paths in normal blight encounter is 8
-  if(blightCount > 8) {
-    run.blightedMap = true;
-  } else if(blightCount > 0) {
-    run.blightEncounter = true;
-  }
-
-  if(conqCount) {
-    Object.keys(conqueror).forEach( key => {
-      let c = conqueror[key];
-      if(!Object.keys(c).length) {
-        c.encountered = true;
+  if(blightCount > 0) {
+    // 3.13 update: Zana can give blighted mission maps
+    if(blightCount > 8) {
+      if(run.masters && run.masters["Zana, Master Cartographer"]) {
+        run.masters["Zana, Master Cartographer"].blightedMissionMap = true;
+      } else {
+        run.blightedMap = true;
       }
-    })
-    run.conqueror = conqueror;
+    } else {
+      run.blightEncounter = true;
+    }
   }
   
+  if(run.maven && run.maven.firstLine && run.maven.bossKilled) {
+    run.bossBattle = {};
+    run.bossBattle.time = Utils.getRunningTime(run.maven.firstLine, run.maven.bossKilled, "s", {useGrouping: false});
+    let bossBattleDeaths = 0;
+    for(let i = 0; i < events.length; i++) {
+      if(events[i].event_type === "slain" && events[i].id > run.maven.firstLine && events[i].id < run.maven.bossKilled) {
+        bossBattleDeaths++;
+      }
+    }
+    if(bossBattleDeaths) {
+      run.bossBattle.deaths = bossBattleDeaths;
+    }
+  }
+  
+  if(areaMods) {
+    let elderGuardian = Constants.elderGuardians.find( guardian => areaMods.some(mod => mod.endsWith(guardian) ));
+    if(elderGuardian) {
+      run.elderGuardian = elderGuardian;
+    }
+  }
+
   if(items && items.importantDrops) {
     for(var key in items.importantDrops) {
       switch(key) {
@@ -1018,7 +1047,7 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
     }
   }
   
-  return run; 
+  return run;
   
   function getZanaMissionMap(events) {
     let start = events[0];
@@ -1104,10 +1133,16 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items) {
   
 }
 
-async function recheckGained() {
+async function recheckGained(startDate = null) {
   DB = require('./DB').getDB();
+  let sql = " select areainfo.name, mapruns.id, firstevent, lastevent, gained  from mapruns, areainfo where mapruns.gained > -1 and areainfo.id = mapruns.id ";
+  if(startDate) {
+    sql += ` and mapruns.id > ${startDate} `;
+  };
+  logger.info("Executing recheck SQL: " + sql);
+  
   return new Promise( (resolve, reject) => {
-    DB.all(`select areainfo.name, mapruns.id, firstevent, lastevent, gained from mapruns, areainfo where mapruns.gained > -1 and areainfo.id = mapruns.id`, async (err, rows) => {
+    DB.all(sql, async (err, rows) => {
       if(err) {
         logAndEmit(err.message);
       } else {

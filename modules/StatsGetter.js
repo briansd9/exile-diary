@@ -34,6 +34,7 @@ async function get(char, league) {
   
   let totalStats = { unrighteousTurnedToAsh: 0 };
   let areaStats = {};
+  let bossKills = {};
   let bigDrops = [];
   
   for(let j = 0; j < charList.length; j++) {
@@ -76,6 +77,7 @@ async function get(char, league) {
 
       mergeRunInfo(totalStats, m);
       mergeAreaStats(areaStats, m);
+      await mergeBossKills(charList[j], bossKills, m);
 
     }
 
@@ -88,7 +90,7 @@ async function get(char, league) {
     totalStats.trials = await getTrials(charList[0]);
   }
   
-  return({ totalStats : totalStats, areaStats : areaStats, bigDrops: bigDrops });
+  return({ totalStats: totalStats, areaStats: areaStats, bossKills: bossKills, bigDrops: bigDrops });
 
 }
 
@@ -234,7 +236,118 @@ function mergeAreaStats(areaStats, map) {
   if(map.runinfo.deaths) {
     asam.deaths += Number(map.runinfo.deaths);
   }
+
+}
+
+async function mergeBossKills(char, bossKills, map) {
   
+  let r = map.runinfo;
+  
+  if(r.bossBattle) {
+    // special handling for elder guardian bosses
+    let name = r.elderGuardian || map.name;
+    bossKills[name] = bossKills[name] || { count: 0, totalTime: 0, deaths: 0 };
+    bossKills[name].count++;
+    bossKills[name].totalTime += Number(r.bossBattle.time);
+    if(map.runinfo.bossBattle.deaths) {
+      bossKills[name].deaths += Number(r.bossBattle.deaths);    
+    }
+  }
+  
+  if(r.conqueror) {
+    for(let i = 0; i < Constants.conquerors.length; i++) {
+      let conq = Constants.conquerors[i];
+      if(r.conqueror[conq] && r.conqueror[conq].defeated) {
+        let killinfo = await getConquerorKillInfo(char, map.id);
+        if(killinfo) {
+          bossKills[conq] = bossKills[conq] || { count: 0, totalTime: 0, deaths: 0 };
+          bossKills[conq].count++;
+          bossKills[conq].totalTime += Number(killinfo.time);
+          bossKills[conq].deaths += Number(killinfo.deaths);
+        }
+      }
+    }
+  }
+  
+  if(r.mastermindBattle && r.mastermindBattle.battle2start && r.mastermindBattle.completed) {
+    let boss = 'Catarina, Master of Undeath';
+    let killInfo = await getKillInfo(char, r.mastermindBattle.battle2start, r.mastermindBattle.completed);
+    if(killInfo) {
+      bossKills[boss] = bossKills[boss] || { count: 0, totalTime: 0, deaths: 0 };
+      bossKills[boss].count++;
+      bossKills[boss].totalTime += Number(killInfo.time);
+      bossKills[boss].deaths += Number(killInfo.deaths);
+    }
+  }
+
+  if(r.sirusBattle && r.sirusBattle.start && r.sirusBattle.completed) {
+    let boss = 'Sirus, Awakener of Worlds';
+    let killInfo = await getKillInfo(char, r.sirusBattle.start, r.sirusBattle.completed);
+    if(killInfo) {
+      bossKills[boss] = bossKills[boss] || { count: 0, totalTime: 0, deaths: 0 };
+      bossKills[boss].count++;
+      bossKills[boss].totalTime += Number(killInfo.time);
+      bossKills[boss].deaths += Number(killInfo.deaths);
+    }
+  }
+  
+  if(r.shaperBattle && r.shaperBattle.phase1start && r.shaperBattle.completed) {
+    let boss = 'The Shaper';
+    let killInfo = await getKillInfo(char, r.shaperBattle.phase1start, r.shaperBattle.completed);
+    if(killInfo) {
+      bossKills[boss] = bossKills[boss] || { count: 0, totalTime: 0, deaths: 0 };
+      bossKills[boss].count++;
+      bossKills[boss].totalTime += Number(killInfo.time);
+      bossKills[boss].deaths += Number(killInfo.deaths);
+    }
+  }
+  
+  if(r.maven && r.maven.mavenDefeated && r.maven.firstLine) {
+    let boss = 'The Maven';
+    let killInfo = await getKillInfo(char, r.maven.firstLine, r.maven.mavenDefeated);
+    if(killInfo) {
+      bossKills[boss] = bossKills[boss] || { count: 0, totalTime: 0, deaths: 0 };
+      bossKills[boss].count++;
+      bossKills[boss].totalTime += Number(killInfo.time);
+      bossKills[boss].deaths += Number(killInfo.deaths);
+    }
+  }
+  
+}
+
+function getConquerorKillInfo(char, id) {
+  let DB = require('./DB').getDB(char);
+  return new Promise( resolve => {
+    DB.get( `
+      select min(events.id) as start, max(events.id) as end 
+      from mapruns, events  
+      where mapruns.id = ? and events.id between mapruns.firstevent and mapruns.lastevent and events.event_type = 'conqueror'
+    `, [id], async (rowErr, row) => {
+      if(rowErr) {
+        resolve(null);
+      } else {
+        let killInfo = getKillInfo(char, row.start, row.end);
+        resolve(killInfo);
+      }
+    });
+  });
+}
+
+function getKillInfo(char, start, end) {
+  if(!start || !end) {
+    return null;
+  }
+  return new Promise( resolve => {
+    let DB = require('./DB').getDB(char);
+    DB.get(` select count(1) as count from events where id between ? and ? and event_type = 'slain' `, [start, end], (err, deaths) => {
+      if(err) {
+        resolve(null);
+      } else {
+        let time = Utils.getRunningTime(start, end, "s", { useGrouping : false });
+        resolve({ time: time, deaths: deaths.count });
+      }
+    });
+  });
 }
 
 function mergeRunInfo(totalStats, map) {
@@ -255,7 +368,26 @@ function mergeRunInfo(totalStats, map) {
       totalStats[countStat] = (totalStats[countStat] || 0) + info[countStat];
     }
   });
-
+  
+  switch(map.name) {
+    case "The Maven's Crucible":
+      totalStats.mavenCrucible = totalStats.mavenCrucible || { started: 0, completed: 0 };
+      totalStats.mavenCrucible.started++;
+      if(info.maven && info.maven.crucibleCompleted) {
+        totalStats.mavenCrucible.completed++;      
+      }
+      break;
+    case "Absence of Mercy and Empathy":
+      totalStats.mavenBattle = totalStats.mavenBattle || { started: 0, completed: 0 };
+      totalStats.mavenBattle.started++;
+      if(info.maven && info.maven.mavenDefeated) {
+        totalStats.mavenBattle.completed++;      
+      }
+      break;
+    default:
+      break;
+  }
+  
 
   if(info.shrines) {
     totalStats.shrines = totalStats.shrines || {};
@@ -506,7 +638,7 @@ async function getBigDrops(char, league) {
       drops.splice(i, 1);
     } else {
       item.parser = await FilterParser.get(item.event_id, char);
-      item.exaltValue = item.value / exaltPrices[date];
+      item.exaltValue = (item.typeline === "Exalted Orb" ? 1 : item.value / exaltPrices[date]);
     }
   }
   

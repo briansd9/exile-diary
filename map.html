@@ -415,6 +415,14 @@
           $("#masterDiv").show();
           $("#MetamorphIcon").show();
         }
+        if(info.maven && info.name !== "The Maven's Crucible" && info.name !== "Absence of Mercy and Empathy") {
+          $("#masterDiv").show();
+          $("#MavenIcon").show();
+        }
+        if(info.elderGuardian) {
+          $("#masterDiv").show();
+          $(`#${info.elderGuardian.replace("The ", "")}Icon`).show();
+        }
         
         if(info.masters) {
           $("#masterDiv").show();
@@ -556,6 +564,8 @@
           case "conqueror":
           case "shrine":
           case "heistRogue":
+          case "allocated":
+          case "unallocated":
             return null;
           case "note":
             eventType = "";
@@ -624,7 +634,22 @@
               continue;
             }
           }
-
+          
+          if(currEvent.event_text && currEvent.event_text.startsWith("The Maven")) {
+            let t = currEvent.event_text;
+            let mavenLine = t.substring(t.indexOf(":") + 2);
+            if(Constants.mavenQuotes[mavenLine] === "bossKilled" && mapRun.info.bossBattle) {
+              console.log(mapRun.info.bossBattle.time);
+              let runningTime = moment.duration(Number(mapRun.info.bossBattle.time), "seconds").format("m:ss", {trim:false});
+              $("#eventsDiv").append(
+                "<div class='eventInfo'>"
+                + "<span class='eventTime'>" + eventTime + "</span> "
+                + `Maven witnessed boss kill in <span class='eventText'>${runningTime}</span>`
+                + "</div>"
+              );
+            }
+          }
+          
           var eventString = getEventString(mapRun, currEvent);
           if(eventString && eventString.length > 0) {
             $("#eventsDiv").append(
@@ -998,6 +1023,26 @@
         </div>
         <hr id='xpKillCountHR' style='border:1px solid #999;' />
         <div id="masterDiv" style="display:none;">
+          <div class='encounterIcon' id='ConstrictorIcon'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/constrictor.png'/>
+            </div>
+          </div>
+          <div class='encounterIcon' id='EnslaverIcon'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/enslaver.png'/>
+            </div>
+          </div>
+          <div class='encounterIcon' id='EradicatorIcon'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/eradicator.png'/>
+            </div>
+          </div>
+          <div class='encounterIcon' id='PurifierIcon'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/purifier.png'/>
+            </div>
+          </div>
           <div class='encounterIcon' id='ZanaIcon'>
             <div style='position:relative;display:inline;'>
               <img src='res/img/encountericons/zana.png'/>
@@ -1064,6 +1109,31 @@
           <div class='encounterIcon' id='MetamorphIcon'>
             <div style='position:relative;display:inline;'>
               <img src='res/img/encountericons/metamorph.png'/>
+            </div>
+          </div>
+          <div class='encounterIcon' id='ConstrictorIcon'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/constrictor.png'/>
+            </div>
+          </div>
+          <div class='encounterIcon' id='EnslaverIcon'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/enslaver.png'/>
+            </div>
+          </div>
+          <div class='encounterIcon' id='EradicatorIcon'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/eradicator.png'/>
+            </div>
+          </div>
+          <div class='encounterIcon' id='PurifierIcon'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/purifier.png'/>
+            </div>
+          </div>
+          <div class='encounterIcon' id='MavenIcon'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/maven.png'/>
             </div>
           </div>
           <hr style='border:1px solid #999;' />
