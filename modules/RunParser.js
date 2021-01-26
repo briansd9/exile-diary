@@ -1140,6 +1140,7 @@ async function recheckGained(startDate = null) {
     sql += ` and mapruns.id > ${startDate} `;
   };
   logger.info("Executing recheck SQL: " + sql);
+  logAndEmit("Checking profit of all maps" + (startDate ? ` starting from ${startDate}` : ""));
   
   return new Promise( (resolve, reject) => {
     DB.all(sql, async (err, rows) => {

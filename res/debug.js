@@ -8,16 +8,21 @@ function debugLog(str) {
   }
 }
 
-function recheckGained() {
+function debugClear() {
+  $("#debugOutput").html("");
+}
+
+function recheckGained(startDate) {
   
   let RunParser = require('./modules/RunParser');
   RunParser.emitter.removeAllListeners("logMessage");
   RunParser.emitter.on("logMessage", (str) => { debugLog(str); });
   
   $(".debugButton").prop("disabled", true);
-  $("#debugOutput").html("");
   
-  let startDate = $("#recheckGainedStartValue").val().substring(0, 8) + "000000";
+  if(!startDate) { 
+    startDate = $("#recheckGainedStartValue").val().substring(0, 8) + "000000"; 
+  }
   
   RunParser.recheckGained(startDate).then(() => {
     $(".debugButton").prop("disabled", false);
@@ -105,7 +110,6 @@ function checkGearDuplicates() {
 async function migrateAll() {
   
   $(".debugButton").prop("disabled", true);
-  $("#debugOutput").html("");
   
   let fs = require("fs");
   let app = require('electron').app || require('electron').remote.app;
@@ -130,7 +134,6 @@ function execSql(sql) {
   let DB = require('./modules/DB').getDB();
   DB.run(sql, [], function(err) {
     $("#debugsql").hide();
-    $("#debugOutput").val("");
     $("#debugOutput").attr("readonly");
     if(err) {
       $("#debugOutput").val(err.toString());
@@ -142,7 +145,6 @@ function execSql(sql) {
 
 async function v0286fix() {
   
-  $("#debugOutput").html("");
   $(".debugButton").prop("disabled", true);
   
   let DB = require('./modules/DB').getDB();  
@@ -152,9 +154,7 @@ async function v0286fix() {
   await fixConquerorBattleCounts();
   await fixZanaBlightedMaps();
   await getMavenEvents();
-  
-  $(".debugButton").prop("disabled", false);
-  debugLog("Done.");
+  await recheckGained("20210115000000");
   
   async function devalueRogueMarkers() {
     debugLog("Setting value of Rogue's Marker drops to zero...");
