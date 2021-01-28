@@ -74,6 +74,11 @@
 
   async function price(item, league) {
     
+    // Absolutely unreasonable amounts of pricing trouble. Enough of this!
+    if(item.typeline === "Rogue's Marker") {
+      return 0;
+    }
+    
     if(item.rarity === "Quest Item") {
       // can't be traded
       return 0;
