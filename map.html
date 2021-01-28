@@ -941,12 +941,12 @@
           logger.info(`Deleting ${mapID}`);
           let d = await doDelete();
           if(d) {
-            if(document.getElementById("prevMap")) {
-              let prevMapID = $("#prevMap").html().substr(-14);
-              window.location = `map.html?id=${prevMapID}`;
+            if(modal) {
+              window.close();
             } else {
-              if(modal) {
-                window.close();
+              if(document.getElementById("prevMap")) {
+                let prevMapID = $("#prevMap").html().substr(-14);
+                window.location = `map.html?id=${prevMapID}`;
               } else {
                 window.location = "index.html";
               }
