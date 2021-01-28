@@ -395,6 +395,7 @@
         var mirrorRate = await getMirrorRate();
     
         var keys = Object.keys(s.itemsById);
+        var totalChaosValue = 0;
 
         for(var i = 0; i < keys.length; i++) {
 
@@ -407,6 +408,7 @@
 
           if(item.chaosValue) {
             item.chaosValue = Number(item.chaosValue).toFixed(2);
+            totalChaosValue += Number(item.chaosValue);
             if(item.chaosValue > exaltRate) {
               item.exaltValue = Number(item.chaosValue / exaltRate).toFixed(2);
             }
@@ -419,18 +421,19 @@
           $("#itemsTable").append(itemToString(i));
         }
         
-        var netWorthString = `${Number(s.value).toFixed(2)} <img class='currencyText' src='res/img/c.png'/>`;
+        var netWorthString = `${Number(totalChaosValue).toFixed(2)} <img class='currencyText' src='res/img/c.png'/>`;
         
-        if(s.value > exaltRate) {
-          let exaltValue = s.value / exaltRate;
+        if(totalChaosValue > exaltRate) {
+          let exaltValue = totalChaosValue / exaltRate;
           netWorthString += ` / ${Number(exaltValue).toFixed(2)} <img class='currencyText' src='res/img/ex.png'/>`;
         }
         
-        if(s.value > mirrorRate) {
-          let mirrorValue = s.value / mirrorRate;
+        if(totalChaosValue > mirrorRate) {
+          let mirrorValue = totalChaosValue / mirrorRate;
           netWorthString += ` / ${Number(mirrorValue).toFixed(2)} <img class='currencyText' src='res/img/mirror.png'/>`;
         }        
         
+        $(`#stash_${s.id}`).html(`${s.id} - ${Number(totalChaosValue).toFixed(2)}c`);
 
         $("#netWorth").html(`Net Worth: ${netWorthString}`);
         $("#itemsByValue").show();          
@@ -515,7 +518,7 @@
               value: stash.value
             };
             optgroup.append(
-              $("<option>")
+              $(`<option id='stash_${stash.timestamp}'>`)
                 .html(`${stash.timestamp} - ${stash.value}c`)
                 .val(stash.timestamp)
                 .attr("selected", stash.timestamp === id)
