@@ -253,7 +253,7 @@
             t = `${t.substr(0, t.indexOf("."))}<span style='font-size:70%;'>.${t.substr(t.indexOf(".")+1)}</span>`;
             
             let row = $(`
-              <tr class='mapRow'>
+              <tr class='mapRow bossKillRow' data-boss-area='${area.toLowerCase()}'>
                 <td style='width:1.5em;'>${getBossIcon(area)}</td>
                 <td style='text-align:left;'>${area}</td>
                 <td>${s.count}</td>
@@ -264,6 +264,43 @@
             $("#bossKillsRows").append(row);
           });
           $("#bossKillsTable").tablesorter().trigger("update").trigger("sorton", [[[3, "d"]]]);
+          
+          $("#bossKillsFilter").on("input", function() {
+
+            // double quotes = exact word match only
+            let text = $(this).val().trim().toLowerCase();
+            if(text.length > 3 && text.startsWith('"') && text.endsWith('"')) {
+              text = text.replace(/"/g, "\\b");
+            }
+
+            if(!text) {
+              $(".bossKillRow").show();
+              $("#clearBossKillsFilter").hide();
+            } else {
+              let r = new RegExp(text);
+              $(".bossKillRow").each(function() {
+                if($(this).data("bossArea").match(r)) {
+                  $(this).show();
+                } else {
+                  $(this).hide();
+                }
+              });
+              $("#clearBossKillsFilter").css("display", "flex");
+            }
+
+          });          
+          
+          $("#clearBossKillsFilter").on("click", function() {
+            $(".bossKillRow").show();
+            $("#bossKillsFilter").val("");
+            $(this).hide();
+          });
+          $("#clearBossKillsFilter").on("mouseup", function(event) {
+            // tablesorter listens to mouseup event - stop it
+            event.stopPropagation();
+          });
+          
+          
         } else {
           tabOptions.disabled.push(2);
         }
@@ -1073,7 +1110,13 @@
             <thead>
               <tr>
                 <th>&nbsp;</th>
-                <th>Area / Boss</th>
+                <th>
+                  Area / Boss
+                  <div style='position:relative;display:inline-block;'>
+                    <input type='text' id='bossKillsFilter' maxlength='20' size='20' style='margin-left:16px;border-radius:8px;background-color:#111;' placeholder="Filter . . ." />
+                    <div id='clearBossKillsFilter' style='z-index:5000;display:none;align-items:center;justify-content:center;position:absolute;right:8px;top:16px;width:1em;height:1em;background-color:#444'>×</div>
+                  </div>
+                </th>
                 <th>Boss Kills</th>
                 <th>Average Kill Time</th>
                 <th>Deaths</th>
