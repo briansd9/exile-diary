@@ -42,11 +42,25 @@ var emitter = new EventEmitter();
 class RateGetterV2 {
   
   constructor() {
+    
     clearTimeout(nextRateGetTimer);
     RateGetterV2.ratesReady = false;
     this.settings = require('./settings').get();
     this.league = this.settings.activeProfile.league;
+    this.priceCheckLeague = null;
     this.DB = require('./DB').getLeagueDB(this.league);
+    
+    if(this.league.includes("SSF") && this.settings.activeProfile.overrideSSF) {
+      // override ssf and get item prices from corresponding trade league
+      // TODO undocumented league naming convention change in 3.13... must check this every league from now on
+      // as of 3.13 "SSF Ritual HC" <--> "Hardcore Ritual"
+      let l = this.league.replace("SSF", "").trim();
+      if(l.includes("HC")) {
+        l = "Hardcore " + l.replace("HC", "").trim();
+      }
+      this.priceCheckLeague = l;
+    }    
+    
   }
 
 /*
@@ -60,18 +74,8 @@ class RateGetterV2 {
     }
 
     // no need for exchange rates in SSF
-    if(this.league.includes("SSF")) {
-      if(!this.settings.activeProfile.overrideSSF) {
-        return;
-      } else {
-        // override ssf and get item prices from corresponding trade league
-        // TODO undocumented league naming convention change in 3.13... must check this every league from now on
-        let l = this.league.replace("SSF", "").trim();
-        if(l.includes("HC")) {
-          let l = "Hardcore " + l.replace("HC", "").trim();
-        }
-        this.league = l;
-      }    
+    if(this.league.includes("SSF") && !this.settings.activeProfile.overrideSSF) {
+      return;
     }
     
     if(Utils.isPrivateLeague(this.league)) {
@@ -228,7 +232,9 @@ class RateGetterV2 {
         throw new Error(`Invalid poe.ninja category [${category}]`);
         break;
     }
-    return `${url}&league=${encodeURIComponent(this.league)}`;
+    
+    return `${url}&league=${encodeURIComponent(this.priceCheckLeague || this.league)}`;
+    
   }
   
 
