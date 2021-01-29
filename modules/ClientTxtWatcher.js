@@ -69,6 +69,8 @@ function start() {
         logger.info("Login found, monitoring possible character change");
         login = true;
       } else if(settings.autoSwitch && login && line.includes("entered")) {
+        // corresponding "you have entered" line found for instance server; clear flag
+        instanceServerFound = false;
         logger.info("Connecting to instance server after login, checking last active character");
         checkLastActiveCharacter();
       } else {
