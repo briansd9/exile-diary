@@ -135,6 +135,10 @@ class StashGetter {
     var watchedTabs = null;
     if(this.settings.tabs && this.settings.tabs[this.settings.activeProfile.league]) {
       watchedTabs = this.settings.tabs[this.settings.activeProfile.league];
+      if(watchedTabs.length === 0) {
+        emitter.emit("noStashTabsSelected");
+        return;
+      }
     } else {
       logger.info("Tabs to monitor not yet set, will retrieve all");
     }

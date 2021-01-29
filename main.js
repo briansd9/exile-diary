@@ -280,6 +280,14 @@ function initWindow(window) {
   StashGetter.emitter.on("invalidSessionID", () => {
     addMessage(`<span class='eventText'>Unable to get stash information. Please check your POESESSID</span>`, true);
   });
+  StashGetter.emitter.on("noStashTabsSelected", () => {
+    addMessage(`<span class='eventText'>No stash tabs are selected for monitoring.</span>`, true);
+    addMessage(`
+      <span class='eventText' style='cursor:pointer;' onclick='window.location.href="config.html?loadStash=true";'>
+        Please click on this message to select some.
+      </span>
+    `);
+  });
   StashGetter.emitter.on("netWorthUpdated", (data) => {
     addMessage(
       `
@@ -369,6 +377,9 @@ function initWindow(window) {
   });
   
   ClientTxtWatcher.emitter.removeAllListeners();
+  ClientTxtWatcher.emitter.on("localChatDisabled", () => {
+    addMessage("<span class='eventText'>Unable to track area changes. Please enable local chat in-game.</span>", true);
+  });
   ClientTxtWatcher.emitter.on("switchedCharacter", async (c) => {
     // clear message section to remove now-invalid links to previous character's map runs
     global.messages = [];

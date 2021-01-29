@@ -17,6 +17,7 @@ var login;
 var emitter = new EventEmitter();
 
 var lastInstanceServer = null;
+var instanceServerFound = false;
 const instanceServerRegex = /[0-9:\.]+$/;
 
 function start() {
@@ -57,6 +58,13 @@ function start() {
       } else if(line.includes("Connecting to instance server at")) {
         lastInstanceServer = (instanceServerRegex.exec(line))[0];
         logger.info("Instance server found: " + lastInstanceServer);
+        // if two consecutive instance server lines occur without a "you have entered" line,
+        // prompt to turn on local chat
+        if(instanceServerFound) {
+          emitter.emit("localChatDisabled");
+        } else {
+          instanceServerFound = true;
+        }
       } else if (settings.autoSwitch && line.includes("Async connecting to") && line.includes("login.pathofexile.com")) {
         logger.info("Login found, monitoring possible character change");
         login = true;
@@ -69,6 +77,8 @@ function start() {
         if (event) {
           insertEvent(event, timestamp);
           if (event.type === "entered") {
+            // corresponding "you have entered" line found for instance server; clear flag
+            instanceServerFound = false;
             if(!Utils.isTown(event.text)) {
               logger.info(`Entered map area ${event.text}, will try processing previous area`);
               RunParser.tryProcess({
