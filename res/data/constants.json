@@ -20,6 +20,7 @@
     "Cardinal Sanctus Vox",
     "Aukuna, the Black Sekhema",
     "Oshabi",
+    "Venarius",
     "The Maven"
   ],
   
@@ -127,6 +128,14 @@
     "Park Map" : "Twisted Distant Memory",
     "Courthouse Map" : "Augmented Distant Memory"  
   },
+  
+  "synthesisUniqueMaps" : [
+    "Cortex",
+    "Altered Distant Memory",
+    "Rewritten Distant Memory",
+    "Twisted Distant Memory",
+    "Augmented Distant Memory"  
+  ],
 
   "uniqueFlasks" : {
     "AtzirisPromise" : "Atziri's Promise",
@@ -1016,6 +1025,22 @@
     "Transmutation Shard" : "Orb of Transmutation",
     "Alchemy Shard" : "Orb of Alchemy",
     "Binding Shard" : "Orb of Binding"    
+  },
+  
+  "fragmentTypes" : {
+    "Timeless Eternal Empire Splinter" : { "item" : "Timeless Eternal Emblem", "stackSize" : 100 },
+    "Timeless Karui Splinter" : { "item" : "Timeless Karui Emblem", "stackSize" : 100 },
+    "Timeless Vaal Splinter" : { "item" : "Timeless Vaal Emblem", "stackSize" : 100 },
+    "Timeless Templar Splinter" : { "item" : "Timeless Templar Emblem", "stackSize" : 100 },
+    "Timeless Maraketh Splinter" : { "item" : "Timeless Maraketh Emblem", "stackSize" : 100 },
+    "Splinter of Chayula" :  { "item" : "Chayula's Breachstone", "stackSize" : 100 },
+    "Splinter of Tul" :  { "item" : "Tul's Breachstone", "stackSize" : 100 },
+    "Splinter of Xoph" :  { "item" : "Xoph's Breachstone", "stackSize" : 100 },
+    "Splinter of Esh" :  { "item" : "Esh's Breachstone", "stackSize" : 100 },
+    "Splinter of Uul-Netol" :  { "item" : "Uul-Netol's Breachstone", "stackSize" : 100 },
+    "Simulacrum Splinter" :  { "item" : "Simulacrum", "stackSize" : 300 },
+    "Crescent Splinter" :  { "item" : "The Maven's Writ", "stackSize" : 10 },
+    "Ritual Splinter" :  { "item" : "Ritual Vessel", "itemType": "currency", "stackSize" : 100 }
   },
   
   "horticrafts" : {

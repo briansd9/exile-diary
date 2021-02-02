@@ -203,6 +203,18 @@
           }
         }
         return(shardValue >= minItemValue ? stackValue : 0);
+      }
+      
+      if(settings.alternateSplinterPricing && Constants.fragmentTypes[identifier]) {
+        let f = Constants.fragmentTypes[identifier];
+        let splinterValue = rates[f.itemType || "Fragment"][f.item] / f.stackSize;
+        let stackValue = splinterValue * item.stacksize;
+        if(splinterValue >= minItemValue) {
+          logger.info(`Using alternate splinter pricing : ${identifier} => ${splinterValue} x ${item.stacksize} = ${stackValue}`);
+        } else {
+          logger.info(`Using alternate splinter pricing : ${identifier} => ${splinterValue} < ${minItemValue}, ignoring`);
+        }
+        return(splinterValue >= minItemValue ? stackValue : 0);
       }      
       
       // handle items that stack - minItemValue is for exactly 1 of the item
