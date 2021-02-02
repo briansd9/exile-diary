@@ -313,6 +313,44 @@ async function mergeBossKills(char, bossKills, map) {
     }
   }
   
+  if(r.oshabiBattle && r.oshabiBattle.start && r.oshabiBattle.completed) {
+    let boss = 'Oshabi, Avatar of the Grove';
+    let killInfo = await getKillInfo(char, r.oshabiBattle.start, r.oshabiBattle.completed);
+    if(killInfo) {
+      bossKills[boss] = bossKills[boss] || { count: 0, totalTime: 0, deaths: 0 };
+      bossKills[boss].count++;
+      bossKills[boss].totalTime += Number(killInfo.time);
+      bossKills[boss].deaths += Number(killInfo.deaths);
+    }
+  }
+  
+  // special handling for Synthesis unique maps
+  if(r.venariusBattle && r.venariusBattle.start && r.venariusBattle.completed) {
+    
+    let area = map.name;
+    // if it's a Zana mission map, get the sub-area name
+    if(r.masters && r.masters["Zana, Master Cartographer"]) {
+      area = r.masters["Zana, Master Cartographer"].missionMap;
+      if(!Constants.synthesisUniqueMaps.includes(area)) {
+        // the Zana mission map isn't a Synthesis map, ???
+        // this should never happen, but if it does, just return
+        return;
+      }
+    } else if(r.maven && r.maven.firstLine && r.maven.bossKilled) {
+      // if it's an actual Synthesis map but already witnessed by the Maven, don't double count
+      return;
+    }
+    
+    let killInfo = await getKillInfo(char, r.venariusBattle.start, r.venariusBattle.completed);
+    if(killInfo) {
+      bossKills[area] = bossKills[area] || { count: 0, totalTime: 0, deaths: 0 };
+      bossKills[area].count++;
+      bossKills[area].totalTime += Number(killInfo.time);
+      bossKills[area].deaths += Number(killInfo.deaths);
+    }
+    
+  }
+  
 }
 
 function getConquerorKillInfo(char, id) {

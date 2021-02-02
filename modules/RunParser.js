@@ -970,6 +970,24 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
           }
         }
         continue;
+      case "Oshabi":
+        if(Constants.oshabiBattleQuotes[line.text]) {
+          run.oshabiBattle = run.oshabiBattle || {};
+          // don't log duplicate events
+          if(!run.oshabiBattle[Constants.oshabiBattleQuotes[line.text]]) {
+            run.oshabiBattle[Constants.oshabiBattleQuotes[line.text]] = evt.id;
+          }
+        }
+        continue;
+      case "Venarius":
+        if(Constants.venariusBattleQuotes[line.text]) {
+          run.venariusBattle = run.venariusBattle || {};
+          // don't log duplicate events
+          if(!run.venariusBattle[Constants.venariusBattleQuotes[line.text]]) {
+            run.venariusBattle[Constants.venariusBattleQuotes[line.text]] = evt.id;
+          }
+        }
+        continue;
     }      
   }
 

@@ -391,13 +391,28 @@
           imgStr = str.substring(4).toLowerCase();
           group = 5;
           break;
+        case "Rewritten Distant Memory":
+        case "Twisted Distant Memory":
+        case "Altered Distant Memory":
+        case "Augmented Distant Memory":
+          imgStr = str.substring(0, str.indexOf("Distant") - 1).toLowerCase();
+          group = 6;
+          break;
+        case "Cortex":
+          imgStr = "cortex";
+          group = 6;
+          break;
         case "Catarina, Master of Undeath":
           imgStr = "mastermind";
-          group = 6;
+          group = 7;
           break;
         case "The Alluring Abyss":
           imgStr = "alluringabyss";
-          group = 7;
+          group = 8;
+          break;
+        case "Oshabi, Avatar of the Grove":
+          imgStr = "oshabi";
+          group = 9;
           break;
         default:
           break;
