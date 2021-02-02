@@ -1040,7 +1040,7 @@
     "Splinter of Uul-Netol" :  { "item" : "Uul-Netol's Breachstone", "stackSize" : 100 },
     "Simulacrum Splinter" :  { "item" : "Simulacrum", "stackSize" : 300 },
     "Crescent Splinter" :  { "item" : "The Maven's Writ", "stackSize" : 10 },
-    "Ritual Splinter" :  { "item" : "Ritual Vessel", "itemType": "currency", "stackSize" : 100 }
+    "Ritual Splinter" :  { "item" : "Ritual Vessel", "itemType": "Currency", "stackSize" : 100 }
   },
   
   "horticrafts" : {
