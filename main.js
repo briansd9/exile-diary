@@ -378,7 +378,7 @@ function initWindow(window) {
   
   ClientTxtWatcher.emitter.removeAllListeners();
   ClientTxtWatcher.emitter.on("localChatDisabled", () => {
-    addMessage("<span class='eventText'>Unable to track area changes. Please enable local chat in-game.</span>", true);
+    addMessage("<span class='eventText'>Unable to track area changes. Please check if local chat is enabled.</span>", true);
   });
   ClientTxtWatcher.emitter.on("switchedCharacter", async (c) => {
     // clear message section to remove now-invalid links to previous character's map runs
