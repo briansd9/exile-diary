@@ -577,6 +577,27 @@
     "It's put out new mycelium! ... New roots!",
     "It's branching, exile!"
   ],
+  
+  "venariusBattleQuotes" : {
+    "What secrets are you hiding in that murderous mind of yours? Let's find out." : "start",
+    "Remember me? When we're through here, you won't." : "start",
+    "If I must destroy you before uniting mankind, I will." : "start",
+    "You and I were allies once, even friends. A pity." : "start",
+    "I owe you my renewed existence, but that debt only extends so far." : "start",
+    "I cannot allow you to impede the cause." : "start",
+    "With each new murder you make mankind more vulnerable!" : "completed",
+    "Every friendship becomes a betrayal, given enough time." : "completed",
+    "Keep pushing me, and I'll be forced to pursue those close to you." : "completed",
+    "I will sacrifice everything for the cause. Can you say the same?" : "completed",
+    "This isn't over. This will never be over! I will unify humanity! " : "completed"
+  },
+  
+  "oshabiBattleQuotes" : {
+    "I am born anew!" : "start",
+    "Behold, the first daughter of Wraeclast." : "start",
+    "I'm... undone..." : "completed",
+    "Un-... natural..." : "completed"
+  },
 
   "shaperBattleQuotes" : {
     "I see you, little mouse... you don't belong here. Run along!" : "start",
