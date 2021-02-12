@@ -116,7 +116,7 @@
     if(item.rarity === "Unique") {
       if(item.category === "Maps") {
         return getUniqueMapValue();
-      } else if(item.typeline === "Ivory Watchstone") {
+      } else if(item.typeline.endsWith("Watchstone")) {
         return getWatchstoneValue();      
       }    
       else {
@@ -269,33 +269,46 @@
     }
 
     function getGemValue() {
-      var identifier = item.typeline.replace("Superior ", "");
-      var level = ItemData.getGemLevel(item.parsedItem);
-      var quality = ItemData.getQuality(item.parsedItem);
-      switch(identifier) {
-        case "Empower Support":
-        case "Enlighten Support":
-        case "Enhance Support":
-          if(level >= 2) identifier += ` L${level}`;
-          break;
-        case "Brand Recall":
-          if(level >= 6) identifier += ` L${level}`;
-          if(quality >= 20) identifier += ` Q${quality}`;
-          break;
-        default:
-          if(level >= 20) identifier += ` L${level}`;
-          if(quality >= 20) {
-            identifier += ` Q${quality}`;
-          }
-          break;
+      
+      let typeline = item.typeline.replace("Superior ", "");
+      let level = ItemData.getGemLevel(item.parsedItem);
+      let quality = ItemData.getQuality(item.parsedItem);
+      let corrupted = item.parsedItem.corrupted;      
+      let identifier = getFullGemIdentifier(typeline, level, quality, corrupted);
+      
+      let value = getValueFromTable("SkillGem", identifier);      
+      if(!value && item.parsedItem.hybrid && item.parsedItem.hybrid.baseTypeName) {
+        let altIdentifier = getFullGemIdentifier(item.parsedItem.hybrid.baseTypeName, level, quality, corrupted);
+        value = value = getValueFromTable("SkillGem", altIdentifier);
       }
-      if(item.parsedItem.corrupted) {
-        identifier += " (Corrupted)";
-      }
-      let value = getValueFromTable("SkillGem", identifier);
+      
       let vendorValue = getVendorRecipeValue();
       return(vendorValue ? Math.max(value, vendorValue.val) : value);
       
+    }
+    
+    function getFullGemIdentifier(str, level, quality, corrupted) {
+      switch(str) {
+        case "Empower Support":
+        case "Enlighten Support":
+        case "Enhance Support":
+          if(level >= 2) str += ` L${level}`;
+          break;
+        case "Brand Recall":
+          if(level >= 6) str += ` L${level}`;
+          if(quality >= 20) str += ` Q${quality}`;
+          break;
+        default:
+          if(level >= 20) str += ` L${level}`;
+          if(quality >= 20) {
+            str += ` Q${quality}`;
+          }
+          break;
+      }
+      if(corrupted) {
+        str += " (Corrupted)";
+      }
+      return str;
     }
 
     function getMapValue() {
