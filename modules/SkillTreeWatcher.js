@@ -44,9 +44,9 @@ class SkillTreeWatcher {
               resolve({});
             } else {
               let currTree = JSON.stringify(data.hashes);
-              logger.info(`prevtree: ${prevTree}`);
-              logger.info(`currtree: ${currTree}`);
               if(currTree !== prevTree) {
+                logger.info(`prevtree: ${prevTree}`);
+                logger.info(`currtree: ${currTree}`);
                 this.insertPassiveTree(timestamp, currTree);
               }
             }
