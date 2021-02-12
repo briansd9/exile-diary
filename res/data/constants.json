@@ -24,6 +24,18 @@
     "The Maven"
   ],
   
+  "mapBosses" : [
+    "Ara, Sister of Light",
+    "Captain Clayborne, The Accursed",
+    "Ciergan, Shadow Alchemist",
+    "Lycius, Midnight's Howl",
+    "Kadaris, Crimson Mayor",
+    "Khor, Sister of Shadows",
+    "Ormud, Fiend of the Flood",
+    "Sin",
+    "The Cursed King"
+  ],
+  
   "elderGuardians" : [
     "The Constrictor",
     "The Enslaver",

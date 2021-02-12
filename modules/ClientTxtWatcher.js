@@ -198,6 +198,15 @@ function getEvent(arg) {
     };
   }
   
+  var mapBossString = hasMapBoss(str);
+  if(mapBossString) {
+    return {
+      type: "mapBoss",
+      text: mapBossString.trim()
+    };
+  }
+  
+  
   if(str.startsWith("Successfully allocated")) {
     return {
       type: "allocated",
@@ -285,6 +294,11 @@ function hasConqueror(str) {
 function hasNPC(str) {
   let npc = str.substr(0, str.indexOf(":")).trim();
   return (Constants.leagueNPCs.includes(npc) ? str : null);
+}
+
+function hasMapBoss(str) {
+  let npc = str.substr(0, str.indexOf(":")).trim();
+  return (Constants.mapBosses.includes(npc) ? str : null);
 }
 
 

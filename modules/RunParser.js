@@ -756,6 +756,7 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
   let events = await getEvents(firstevent, lastevent);
 
   let run = {};
+  let lastEnteredArea = "";
   let blightCount = 0;
   
   run.areaTimes = getRunAreaTimes(events);
@@ -768,6 +769,7 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
     switch(evt.event_type) {
       case "entered":
         let area = evt.event_text;
+        lastEnteredArea = area;
         if(area === "Abyssal Depths") {
           run.abyssalDepths = true;
         } else if(Constants.areas.vaalSideAreas.includes(area)) {
@@ -794,6 +796,24 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
           run.shrines.push(Constants.shrineQuotes[evt.event_text]);
         }
         continue;
+      case "mapBoss":
+        line = getLine(evt.event_text);
+        // use lastEnteredArea instead of areaName to handle Zana map missions
+        if(Constants.mapBossBattleStartQuotes[lastEnteredArea] && Constants.mapBossBattleStartQuotes[lastEnteredArea].includes(line.text)) {
+          run.mapBoss = run.mapBoss || {};
+          run.mapBoss[lastEnteredArea] = run.mapBoss[lastEnteredArea] || {};
+          // only take the earliest possible battle start
+          if(!run.mapBoss[lastEnteredArea].battleStart) {
+            run.mapBoss[lastEnteredArea].battleStart = evt.id;
+          }
+        }
+        if(Constants.mapBossKilledQuotes[lastEnteredArea] && Constants.mapBossKilledQuotes[lastEnteredArea].includes(line.text)) {
+          run.mapBoss = run.mapBoss || {};
+          run.mapBoss[lastEnteredArea] = run.mapBoss[lastEnteredArea] || {};
+          // cold river map has two bosses that both emit death lines - take the latest
+          run.mapBoss[lastEnteredArea].bossKilled = evt.id;
+        }
+        continue;              
       case "master":
       case "conqueror":
       case "leagueNPC":
@@ -834,6 +854,11 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
         if(areaName === "The Shaper's Realm" && Constants.shaperBattleQuotes[line.text]) {
           run.shaperBattle = run.shaperBattle || {};
           run.shaperBattle[Constants.shaperBattleQuotes[line.text]] = evt.id;
+        } else if(Constants.mapBossKilledQuotes[lastEnteredArea] && Constants.mapBossKilledQuotes[lastEnteredArea].includes(line.text)) {
+          // "This is the key to a crucible that stretches the sanity of the mind"
+          run.mapBoss = run.mapBoss || {};
+          run.mapBoss[lastEnteredArea] = run.mapBoss[lastEnteredArea] || {};
+          run.mapBoss[lastEnteredArea].bossKilled = evt.id;
         }
         continue;
       case "Catarina, Master of Undeath":
@@ -988,7 +1013,8 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
           }
         }
         continue;
-    }      
+    }
+    
   }
 
   if(blightCount > 0) {
@@ -1004,17 +1030,45 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
     }
   }
   
-  if(run.maven && run.maven.firstLine && run.maven.bossKilled) {
+  let bossBattleStart;
+  if(run.maven && run.maven.firstLine) {
+    bossBattleStart = run.maven.firstLine;
+  }
+  // take the earliest possible boss battle start
+  if(run.mapBoss && run.mapBoss[areaName] && run.mapBoss[areaName].battleStart) {
+    bossBattleStart = Math.min(bossBattleStart || Number.MAX_SAFE_INTEGER, run.mapBoss[areaName].battleStart);
+  }
+  
+  let bossBattleEnd;
+  if(run.maven && run.maven.bossKilled) {
+    bossBattleEnd = run.maven.bossKilled;
+  }
+  // take the latest possible boss kill time - to handle cold river multiboss
+  if(run.mapBoss && run.mapBoss[areaName] && run.mapBoss[areaName].bossKilled) {    
+    bossBattleEnd = Math.max(bossBattleEnd || 0, run.mapBoss[areaName].bossKilled);
+  }
+  
+  if(bossBattleStart && bossBattleEnd) {
     run.bossBattle = {};
-    run.bossBattle.time = Utils.getRunningTime(run.maven.firstLine, run.maven.bossKilled, "s", {useGrouping: false});
-    let bossBattleDeaths = 0;
-    for(let i = 0; i < events.length; i++) {
-      if(events[i].event_type === "slain" && events[i].id > run.maven.firstLine && events[i].id < run.maven.bossKilled) {
-        bossBattleDeaths++;
-      }
-    }
+    run.bossBattle.time = Utils.getRunningTime(bossBattleStart, bossBattleEnd, "s", {useGrouping: false});
+    let bossBattleDeaths = countDeaths(events, bossBattleStart, bossBattleEnd);
     if(bossBattleDeaths) {
       run.bossBattle.deaths = bossBattleDeaths;
+    }
+  }
+  
+  // handle map boss stats in sub-areas
+  if(run.mapBoss) {
+    let areas = Object.keys(run.mapBoss);
+    for(let i = 0; i < areas.length; i++) {
+      let a = areas[i];
+      if(a !== areaName && run.mapBoss[a].battleStart && run.mapBoss[a].bossKilled) {
+        run.mapBoss[a].time = Utils.getRunningTime(run.mapBoss[a].battleStart, run.mapBoss[a].bossKilled, "s", {useGrouping: false});
+        let deaths = countDeaths(events, run.mapBoss[a].battleStart, run.mapBoss[a].bossKilled);
+        if(deaths) {
+          run.mapBoss[a].deaths = deaths;
+        }
+      }
     }
   }
   
@@ -1066,6 +1120,16 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
   }
   
   return run;
+  
+  function countDeaths(events, start, end) {
+    let deaths = 0;
+    for(let i = 0; i < events.length; i++) {
+      if(events[i].event_type === "slain" && events[i].id > start && events[i].id < end) {
+        deaths++;
+      }
+    }
+    return deaths;
+  }
   
   function getZanaMissionMap(events) {
     let start = events[0];

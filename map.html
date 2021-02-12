@@ -566,6 +566,7 @@
           case "heistRogue":
           case "allocated":
           case "unallocated":
+          case "mapBoss":
             return null;
           case "note":
             eventType = "";
@@ -606,7 +607,7 @@
       function showEvents(mapRun) {
         
         var events = mapRun.events;
-
+        
         var runningTime = Utils.getRunningTime(events[0].id, events[events.length - 1].id);
         $("#runningTime").html(`Time<br/><span class='mapStatValue'>${runningTime}</span>`);
 
@@ -616,7 +617,7 @@
           var currEvent = events[i];
 
           if(i > 0 && !lastEnteredTown(events, i) && currEvent.event_type === "entered") {
-            var lootString = getInventoryDiffs(mapRun.items, events[i].id);
+            var lootString = getInventoryDiffs(mapRun.items, currEvent.id);
             if(lootString.length > 0) {
               $("#eventsDiv").append(
                 "<div class='eventInfo'>"
@@ -639,7 +640,6 @@
             let t = currEvent.event_text;
             let mavenLine = t.substring(t.indexOf(":") + 2);
             if(Constants.mavenQuotes[mavenLine] === "bossKilled" && mapRun.info.bossBattle) {
-              console.log(mapRun.info.bossBattle.time);
               let runningTime = moment.duration(Number(mapRun.info.bossBattle.time), "seconds").format("m:ss", {trim:false});
               $("#eventsDiv").append(
                 "<div class='eventInfo'>"
@@ -684,12 +684,20 @@
 
         if(!items[timestamp]) return "";
 
-        var inventoryDiv = document.createElement("div");
-        var itemPickedUp = false;
+        let inventoryDiv = document.createElement("div");
+        let itemPickedUp = false;
+        let loggedItems = {};
 
         for (let i = 0; i < items[timestamp].length; i++) {
-          var item = JSON.parse(items[timestamp][i]);
+          
+          let item = JSON.parse(items[timestamp][i]);
+          if(loggedItems[item.id]) {
+            logger.info(`Duplicate item ${item.id} at ${timestamp}, ignoring`)
+            continue;
+          }
+          
           if(item.inventoryId === "MainInventory") {
+            loggedItems[item.id] = 1;
             itemPickedUp = true;
             item.arrayIndex = i.toString();
             processItem(item);
@@ -700,6 +708,7 @@
               $("#popupContainer").append(popup);
             }
           }
+          
         }
 
         return (itemPickedUp ? `<span class='eventType'>Picked up:</span> <span class='eventText'>${inventoryDiv.outerHTML}</span></div>` : "");

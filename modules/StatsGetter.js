@@ -243,13 +243,27 @@ async function mergeBossKills(char, bossKills, map) {
   
   let r = map.runinfo;
   
+  if(r.mapBoss) {
+    // handle manually detected (non-maven) boss kills in Zana mission maps
+    for(let a in r.mapBoss) {
+      if(a !== map.name && r.mapBoss[a].time) {
+        bossKills[a] = bossKills[a] || { count: 0, totalTime: 0, deaths: 0 };
+        bossKills[a].count++;
+        bossKills[a].totalTime += Number(r.mapBoss[a].time);
+        if(r.mapBoss[a].deaths) {
+          bossKills[a].deaths += Number(r.mapBoss[a].deaths);    
+        }
+      }
+    }
+  }
+  
   if(r.bossBattle) {
     // special handling for elder guardian bosses
     let name = r.elderGuardian || map.name;
     bossKills[name] = bossKills[name] || { count: 0, totalTime: 0, deaths: 0 };
     bossKills[name].count++;
     bossKills[name].totalTime += Number(r.bossBattle.time);
-    if(map.runinfo.bossBattle.deaths) {
+    if(r.bossBattle.deaths) {
       bossKills[name].deaths += Number(r.bossBattle.deaths);    
     }
   }

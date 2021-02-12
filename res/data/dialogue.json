@@ -589,7 +589,7 @@
     "Every friendship becomes a betrayal, given enough time." : "completed",
     "Keep pushing me, and I'll be forced to pursue those close to you." : "completed",
     "I will sacrifice everything for the cause. Can you say the same?" : "completed",
-    "This isn't over. This will never be over! I will unify humanity! " : "completed"
+    "This isn't over. This will never be over! I will unify humanity!" : "completed"
   },
   
   "oshabiBattleQuotes" : {
@@ -834,6 +834,109 @@
     "I die for the Empire!" : "completed",
     "You are free!" : "completed",
     "Triumphant at last!" : "completed"
+  },
+  
+  "mapBossBattleStartQuotes" : {
+    "Lava Lake" : [ "I shall strike you down!" ],
+    "Cold River" : [
+      "Were we expecting visitors?",
+      "This will not stand.",
+      "Disappointment is the epitome of the pallid moon.",
+      "No, sister, we were not.",
+      "You desecrate our sanctum!",
+      "Pay no worship to the garish sun!"        
+    ],
+    "Crimson Township" : [
+      "Another lawbreaker in our midst!",
+      "Trespasser!",
+      "An untapped source.",
+      "Blasphemer!",
+      "Immoral deviant!"
+    ],
+    "Dark Forest" : [
+      "The smell of fear betrays you!",
+      "Tonight, I will feast!",
+      "The hunt begins!",
+      "I smell fresh meat!",
+      "The Greatwolf hungers!",
+      "My prey draws near!"
+    ],
+    "Forking River" : [
+      "The pools welcome your bloated corpse.",
+      "Drown in these sacred waters.",
+      "Suffocate and drown!"
+    ],
+    "Foundry" : [
+      "You'll make a fine new sample!",
+      "I won't go back! I won't go back!",
+      "Die, meddler!",
+      "No, you won't understand! You can't!"
+    ],
+    "Frozen Cabins" : [
+      "Hahaha... You dare challenge me?",
+      "Fear what you cannot see!",
+      "No pray, no pay!",
+      "Time to feed, boys!"
+    ],
+    "Lair" : [
+      "The smell of fear betrays you!",
+      "Tonight, I will feast!",
+      "The hunt begins!",
+      "I smell fresh meat!",
+      "The Greatwolf hungers!",
+      "My prey draws near!"
+    ]
+  },
+  
+  "mapBossKilledQuotes" : {
+    "Lava Lake" : [ "May a new dawn arise!" ],
+    "Forge of the Phoenix" : [ "This is the key to a crucible that stretches the sanity of the mind." ],
+    "Maze of the Minotaur" : [ "This is the key to a crucible that stretches the sanity of the mind." ],    
+    "Lair of the Hydra" : [ "This is the key to a crucible that stretches the sanity of the mind." ],
+    "Pit of the Chimera" : [ "This is the key to a crucible that stretches the sanity of the mind." ],    
+    "Cold River" : [
+      "Sister--... I-...",
+      "I shall avenge, you, sister.",
+      "I... am... eclipsed.",
+      "You fought well, sister.",
+      "I am... done...",
+      "Dawn comes... at last..."
+    ],
+    "Crimson Township" : [
+      "Unlawful...",
+      "Meeting adjourned...",
+      "One with the crimson..."
+    ],
+    "Dark Forest" : [
+      "...First Ones, remember me.",
+      "The Greatwolf has left me!",
+      "Forgive me, Ezomyr.",
+      "There is nothing to regret."
+    ],
+    "Forking River" : [
+      "Death... cannot stop... me.",
+      "You only delay...",
+      "I... will... return..."
+    ],
+    "Foundry" : [
+      "No... It's not... ready...",
+      "The work... must... (blehhhh)",
+      "So close... so...",
+      "M-... Madness..."        
+    ],
+    "Frozen Cabins" : [
+      "Curses...",
+      "Death... will... find you.",
+      "Impossible...",
+      "My last... voyage...",
+      "You too... will... perish."
+    ],
+   "Lair" : [
+      "...First Ones, remember me.",
+      "The Greatwolf has left me!",
+      "Forgive me, Ezomyr.",
+      "There is nothing to regret."
+    ]
   }
   
 }
