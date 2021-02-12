@@ -69,9 +69,16 @@ function createDivCardPopup(data, opts) {
       <span class="r"></span>
     </div>
     <div class="stackSize">${data.pickupStackSize || data.stackSize}/${data.maxStackSize}</div>
+    <div class="itemCardInfo">
+      <div class="itemCardInfoTop">
+        ${getDivCardMods(data)}
+      </div>
+      <div class="itemCardInfoDivider"></div>
+      <div class="itemCardInfoBottom">
+        ${getDivCardFlavourText(data)}
+      </div>
+    </div>
   `));
-  d.append(getDivCardMods(data));
-  d.append(getDivCardFlavourText(data));
   
   containerDiv.append(d);
   return containerDiv;
@@ -80,16 +87,21 @@ function createDivCardPopup(data, opts) {
 
 function getDivCardMods(data) {
   
-  if(!data.explicitMods) return null;
+  // no explicit mods for The Void
+  if(data.typeLine === "The Void") {
+    return "";
+  }
   
-  let str = "<div class='explicitModsWrapper'><div class='explicitModsContainer'>";
+  if(!data.explicitMods) return "";
+  
+  let str = "";
   
   let mods = data.explicitMods[0].split("\r\n");
   
   for(let i = 0; i < mods.length; i++) {
     str += `
       <div class='explicitMod'>
-        <span class='lc'>
+        <span class='lc' style='white-space:normal;'>
           ${parseMod(mods[i])}
           <br/>
         </span>
@@ -97,7 +109,6 @@ function getDivCardMods(data) {
     `;
   }
   
-  str += "</div></div>";
   return str;
   
   function parseMod(str) {
@@ -112,8 +123,6 @@ function getDivCardMods(data) {
     }
     
     let markup = str.match(/<([^{}<>]+)>/g);
-    if(!markup) return; // The Void has no item text
-    
     let text = str.match(/{([^{}<>]+)}/g);
     for(let i = 0; i < markup.length; i++) {
       parsedStr += `<span style='${fontSize ? `font-size:${fontSize/2}px` : ""}' class='${markup[i].replace(/[<>]/g, "")}'>${text[i].replace(/[{}]/g, "")}</span> `;
@@ -128,7 +137,7 @@ function getDivCardFlavourText(data) {
   
   if(!data.flavourText) return null;
   
-  let str = "<div class='flavourTextWrapper'><div class='flavourTextContainer'><div class='flavourText'>";
+  let str = "<div class='flavourText'>";
   let fontSize = null;
   let flavourTextStr = "";
   
@@ -144,7 +153,7 @@ function getDivCardFlavourText(data) {
   }
   
   str += `<span class='lc' style='${fontSize ? `font-size:${fontSize/2}px` : ""}'>${flavourTextStr}</span>`;
-  str += "</div></div></div>";
+  str += "</div>";
   
   return str;
 

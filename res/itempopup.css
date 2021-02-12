@@ -535,123 +535,118 @@
   height: 18px;
   display: inline-block; }
 
+.itemBoxContent {
+  position: relative;
+  background: top right repeat-y;
+  font-size: 110%; }
+
 .divinationCard {
-  width: 268px;
+  max-width: 268px;
   height: 401px;
   background: transparent;
   font-size: 14px; }
-
-.divinationCard span.lc {
-  padding: 0; 
-  top: 4px;
-}
-
-.divinationCard .flavourText span.lc {
-  white-space:  normal;
-}
-
-.divinationCard .cardFace {
-  position: absolute;
-  z-index: -1;
-  left: 4%;
-  top: 7%;
-  height: 42%;
-  width: 90%;
-  background: #1e1e1e;
-  overflow: hidden; }
-.divinationCard .cardFace img {
-  height: 100%;
-  width: 100%; }
-.divinationCard .itemBoxContent {
-  z-index: 3;
-  background: transparent url('img/itemicons/divination-card.png') no-repeat center;
-  background-size: cover;
-  width: 100%;
-  height: 100%; }
-.divinationCard .itemBoxContent .itemHeader {
-  padding-top: 3%; }
-.divinationCard .itemBoxContent .itemHeader .itemName {
-  font-size: 16px; }
-.divinationCard .itemBoxContent .explicitModsWrapper {
-  position: absolute;
-  top: 51.0%;
-  left: 3%;
-  width: 88%;
-  height: 16%;
-  margin: 0 3.5%;
-  font-size: 110%;
-  -webkit-transform-style: preserve-3d;
-  -moz-transform-style: preserve-3d;
-  transform-style: preserve-3d; }
-.divinationCard .itemBoxContent .explicitModsWrapper .explicitModsContainer {
-  position: relative;
-  top: 50%;
-  width: 100%;
-  transform: translateY(-50%); }
-.divinationCard .itemBoxContent .explicitModsWrapper .explicitModsContainer .explicitMod {
-  line-height: 16px; }
-.divinationCard .itemBoxContent .explicitModsWrapper .explicitModsContainer .explicitMod:nth-child(n+3) {
-  line-height: 14px; }
-.divinationCard .itemBoxContent .explicitModsWrapper .explicitModsContainer .explicitMod .corrupted {
-  font-size: 15px;
-  line-height: 15px; }
-.divinationCard .itemBoxContent .stackSize {
-  color: #c8c8c8;
-  font-size: 80%;
-  width: 15%;
-  height: 22px;
-  top: 46.5%;
-  left: 10%;
-  position: absolute; }
-.divinationCard .itemBoxContent .flavourTextWrapper {
-  position: absolute;
-  top: 67%;
-  left: 3%;
-  width: 88%;
-  height: 29%;
-  margin: 0 3.5%; 
-  padding: 6px;
-}
-.divinationCard .itemBoxContent .flavourTextWrapper .flavourTextContainer {
-  position: relative;
-  top: 50%;
-  transform: translateY(-50%); }
-.divinationCard .itemBoxContent .flavourTextWrapper .flavourTextContainer .flavourText {
-  line-height: 1; }
-.divinationCard .itemName, .divinationCard .secDescrText {
-  color: #111; }
-.divinationCard .default {
-  color: #7f7f7f; }
-.divinationCard .uniqueitem {
-  color: #af6025; }
-.divinationCard .rareitem {
-  color: #ffff77; }
-.divinationCard .magicitem {
-  color: #8888ff; }
-.divinationCard .whiteitem {
-  color: #c8c8c8; }
-.divinationCard .gemitem {
-  color: #1ba29b; }
-.divinationCard .currencyitem {
-  color: #aa9e82; }
-.divinationCard .questitem {
-  color: #4ae63a; }
-.divinationCard .crafted {
-  color: #b4b4ff; }
-.divinationCard .divination {
-  color: #aae6e6; }
-.divinationCard .corrupted {
-  color: #d20000; }
-.divinationCard .enchanted {
-  color: #b8daf2; }
-.divinationCard .bold {
-  font-weight: bold; }
-.divinationCard .italic {
-  font-style: italic; }
-.divinationCard .normal {
-  font-weight: normal;
-  font-style: normal;
-  color: #c8c8c8; }
+  .divinationCard span.lc {
+    padding: 0; }
+  .divinationCard .cardFace {
+    position: absolute;
+    left: 4%;
+    top: 8%;
+    height: 42%;
+    width: 90%;
+    background: #1e1e1e;
+    overflow: hidden; }
+    .divinationCard .cardFace img {
+      height: 100%;
+      width: 100%; }
+  .divinationCard .itemBoxContent {
+    width: 100%;
+    height: 100%;
+    background: transparent url('img/itemicons/divination-card.png') no-repeat center;
+    background-size: cover;
+    z-index: 3; }
+    .divinationCard .itemBoxContent .itemHeader {
+      padding-top: 3%; }
+      .divinationCard .itemBoxContent .itemHeader .itemName {
+        font-size: 16px; }
+    .divinationCard .itemBoxContent .stackSize {
+      color: #c8c8c8;
+      font-size: 100%;
+      width: 15%;
+      height: 22px;
+      top: 46.5%;
+      left: 10%;
+      position: absolute; }
+    .divinationCard .itemBoxContent .itemCardInfo {
+      position: absolute;
+      top: 52%;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      margin: 0 6% 6%;
+      font-size: 110%; }
+      .divinationCard .itemBoxContent .itemCardInfo .itemCardInfoTop, .divinationCard .itemBoxContent .itemCardInfo .itemCardInfoBottom {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-around;
+        padding: 0.5em; }
+        .divinationCard .itemBoxContent .itemCardInfo .itemCardInfoTop > div, .divinationCard .itemBoxContent .itemCardInfo .itemCardInfoBottom > div {
+          max-width: 100%; }
+      .divinationCard .itemBoxContent .itemCardInfo .itemCardInfoBottom {
+        padding: 0.3em 0.2em; }
+        .divinationCard .itemBoxContent .itemCardInfo .itemCardInfoBottom .flavourText [class*="size_"] {
+          display: inline-block;
+          line-height: 1.1;
+          letter-spacing: -0.2px; }
+      .divinationCard .itemBoxContent .itemCardInfo .itemCardInfoDivider {
+        flex: 0 0 3px;
+        display: block;
+        height: 3px;
+        width: 70%;
+        margin: 0 auto;
+        background: url('img/itemicons/divination-card-divider.png') no-repeat center;
+        background-size: contain; }
+      .divinationCard .itemBoxContent .itemCardInfo .explicitMod {
+        line-height: 16px; }
+      .divinationCard .itemBoxContent .itemCardInfo .flavourText {
+        line-height: 1; }
+  .divinationCard .itemName, .divinationCard .secDescrText {
+    color: #111; }
+  .divinationCard .default {
+    color: #7f7f7f; }
+  .divinationCard .uniqueitem {
+    color: #af6025; }
+  .divinationCard .rareitem {
+    color: #ffff77; }
+  .divinationCard .magicitem {
+    color: #8888ff; }
+  .divinationCard .whiteitem {
+    color: #c8c8c8; }
+  .divinationCard .gemitem {
+    color: #1ba29b; }
+  .divinationCard .currencyitem {
+    color: #aa9e82; }
+  .divinationCard .questitem {
+    color: #4ae63a; }
+  .divinationCard .crafted {
+    color: #b4b4ff; }
+  .divinationCard .divination {
+    color: #aae6e6; }
+  .divinationCard .corrupted {
+    color: #d20000; }
+  .divinationCard .enchanted {
+    color: #b8daf2; }
+  .divinationCard .bold {
+    font-weight: bold; }
+  .divinationCard .italic {
+    font-style: italic; }
+  .divinationCard .normal {
+    font-weight: normal;
+    font-style: normal;
+    color: #c8c8c8; }
 
 .explicitMod .lc {
   font-size: 16px;
@@ -822,7 +817,9 @@
     float: right; }
   
   .itemPopupContainer {
-    white-space: nowrap;
+    z-index: 10000;
+    min-width: 268px;
+    white-space: normal;
   }
   
   .popupIconContainer {
