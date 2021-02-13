@@ -68,6 +68,10 @@ function getCategory(item, subcategory = false) {
     return (subcategory ? ["Map Fragments", "Scarab"] : "Map Fragments");
   }
   
+  if(t.includes("Watchstone")) {
+    return "Atlas Region Upgrade Item";
+  }
+  
   // Maligaro's Map quest item has frameType 7, already detected above as a quest item
   if(t.includes(" Map")) {
     return "Maps";
