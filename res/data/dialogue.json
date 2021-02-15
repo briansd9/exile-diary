@@ -30,23 +30,27 @@
     "You better be filled with gold!" : "Apex of Atzoatl"
   },
   
-  "beastCaptureQuotes" : [
-    "Off you go, little beast! Away!",
-    "We will be best friends beast! Until we slaughter you!",
-    "The First Ones look upon this capture with pride, Exile. You hunt well.",
-    "Do not worry little beast! We are friends now!",
-    "This one is captured. Einhar will take it.",
-    "You have been captured, beast. You will be a survivor, or you will be food.",
-    "Haha! You are captured, stupid beast.",
-    "Survivor! You are well prepared for the end. This is a fine capture.",
-    "What? Do you not have nets, exile?",
-    "Great job, Exile! Einhar will take the captured beast to the Menagerie.",
-    "Ohhh... That was a juicy one, exile.",
-    "There are no more worthy beasts nearby, so Einhar will go feed the ones we caught.",
-    "That was a hunt you will not soon forget! You're welcome! Goodbye!",
-    "An exhilarating hunt, exile! Now it is time for Einhar to go do Einhar business.",
-    "That was a great hunt, exile! Einhar will write a mighty poem about it."
-  ],
+  "beastCaptureQuotes" : {
+    
+    "Haha! You are captured, stupid beast." : "yellow",
+    "You have been captured, beast. You will be a survivor, or you will be food." : "yellow",
+    "This one is captured. Einhar will take it." : "yellow",
+    "Ohhh... That was a juicy one, exile." : "yellow",
+    "Do not worry little beast! We are friends now!" : "yellow",
+    "Off you go, little beast! Away!" : "yellow",
+    "We will be best friends beast! Until we slaughter you!" : "yellow",    
+    
+    "Great job, Exile! Einhar will take the captured beast to the Menagerie." : "red",
+    "The First Ones look upon this capture with pride, Exile. You hunt well." : "red",
+    "Survivor! You are well prepared for the end. This is a fine capture." : "red",
+    "What? Do you not have nets, exile?" : "red",
+    
+    "That was a great hunt, exile! Einhar will write a mighty poem about it." : "unknown",
+    "There are no more worthy beasts nearby, so Einhar will go feed the ones we caught." : "unknown",
+    "An exhilarating hunt, exile! Now it is time for Einhar to go do Einhar business." : "unknown",
+    "That was a hunt you will not soon forget! You're welcome! Goodbye!" : "unknown"
+    
+  },
   
   "elderDefeatedQuotes" : [
     "So that was the Elder... what terrible, monstrous power! We must find a way to defeat it, exile. We seem to have driven it from this world. There must be a way to defeat it for good..."

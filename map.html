@@ -377,7 +377,11 @@
 
         if(info.kills) {
           $("#killCount").html(f.format(info.kills));
-          $("#killText").html(info.kills === 1 ? "monster" : "monsters");
+          $("#killText").html( `${info.kills === 1 ? "monster" : "monsters"} slain`);
+          $("#killCountDiv").css("display", "block");
+        } else if(info.beastRecipes) {
+          $("#killCount").html(f.format(info.beastRecipes * 4));
+          $("#killText").html(`beasts sacrificed`);
           $("#killCountDiv").css("display", "block");
         } else {
           $("#killCountDiv").css("display", "none");
@@ -397,7 +401,7 @@
           }
         }
 
-        if(info.kills || xpgained) {
+        if(info.kills || info.beastRecipes || xpgained) {
           $("#xpKillCountHR").show();
         } else {
           $("#xpKillCountHR").hide();
@@ -448,9 +452,20 @@
                 }
                 break;
               case "Einhar":
-                for(let i = 0; i < (enc.beasts || 0); i++) {
-                  $(`#beastCount`).append($('<img>', {src: 'res/img/beast.png'}));
-                }
+                run.events.forEach( evt => {
+                  if(evt.event_type === "master" && evt.event_text.startsWith("Einhar")) {
+                    let str = evt.event_text.replace("Einhar, Beastmaster: ", "");
+                    if(Constants.beastCaptureQuotes[str]) {
+                      let beastType = Constants.beastCaptureQuotes[str];
+                      if(beastType === "unknown" && enc.favourGained && enc.beasts && enc.yellowBeasts && enc.yellowBeasts === enc.beasts - 1) {
+                        // minor manual fixing - if Einhar mission was completed in an area, and all beasts except for the last are yellow,
+                        // the last remaining one must be a red beast
+                        beastType = "red";
+                      }
+                      $(`#beastCount`).append($('<img>', {src: `res/img/${beastType}Beast.png`}));
+                    }
+                  }
+                });
                 break;
               case "Jun":
                 // no special icons to display for jun
@@ -1028,7 +1043,7 @@
           <span id='xp'></span>
         </div>
         <div id='killCountDiv' style='font-size:smaller;display:none;'>
-          <span id='killCount' class='eventText'></span> <span id='killText'>monsters</span> slain
+          <span id='killCount' class='eventText'></span> <span id='killText'></span> 
         </div>
         <hr id='xpKillCountHR' style='border:1px solid #999;' />
         <div id="masterDiv" style="display:none;">

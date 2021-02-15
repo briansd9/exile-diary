@@ -881,8 +881,20 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
         } else {
           run.masters = run.masters || {};
           run.masters[line.npc] = run.masters[line.npc] || { encountered : true };
-          if(Constants.beastCaptureQuotes.includes(line.text)){
+          if(Constants.beastCaptureQuotes[line.text]){
             run.masters[line.npc].beasts = ++run.masters[line.npc].beasts || 1;
+            switch(Constants.beastCaptureQuotes[line.text]) {
+              case "yellow":
+                run.masters[line.npc].yellowBeasts = ++run.masters[line.npc].yellowBeasts || 1;
+                break;
+              case "red":
+                run.masters[line.npc].redBeasts = ++run.masters[line.npc].redBeasts || 1;
+                break;
+              default:
+                // no difference between yellow and red in Einhar's "mission complete" quote;
+                // this means that the last beast in an area can't be identified
+                break;
+            }
           }
         }
         continue;
@@ -1069,6 +1081,15 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
           run.mapBoss[a].deaths = deaths;
         }
       }
+    }
+  }
+  
+  // minor manual fixing - if Einhar mission was completed in an area, and all beasts except for the last are yellow,
+  // the last remaining one must be a red beast
+  if(run.masters && run.masters["Einhar, Beastmaster"]) {
+    let b = run.masters["Einhar, Beastmaster"];
+    if(b.favourGained && b.yellowBeasts === b.beasts - 1) {
+      b.redBeasts = 1;
     }
   }
   
