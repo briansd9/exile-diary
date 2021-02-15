@@ -1,6 +1,6 @@
 const logger = require('./Log').getLogger(__filename);
 const ItemCategoryParser = require("./ItemCategoryParser");
-const itemTypes = ["nonunique", "unique", "gem", "map", "divcard", "prophecy", "oil", "fragment", "delve", "catalyst", "essence", "currency"];
+const itemTypes = ["nonunique", "unique", "gem", "map", "divcard", "prophecy", "oil", "fragment", "delve", "catalyst", "essence", "incubator", "currency"];
 
 var settings;
 var itemFilters;
@@ -68,6 +68,8 @@ function filter(item) {
     case "Currency":
     case "Stackable Currency":
       return itemFilters.currency;
+    case "Incubator":
+      return itemFilters.incubator;
   }
     
   if(Array.isArray(cat)) {
