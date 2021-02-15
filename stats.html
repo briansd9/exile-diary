@@ -965,8 +965,13 @@
       let masterInfo = s.masters[m];
       switch(m) {
         case "Einhar, Beastmaster":
-          if(masterInfo.beasts) {
-            extraInfo.text += statLine("Beasts Captured", f.format(s.masters[m].beasts));
+          if(masterInfo.beasts) {            
+            let total = f.format(s.masters[m].beasts);
+            let yellow = `<img src='res/img/yellowBeast.png'/>×${f.format(masterInfo.yellowBeasts || 0)}`;
+            let red = `<img style='margin-left: 8px;' src='res/img/redBeast.png'/>×${f.format(masterInfo.redBeasts || 0)}`;
+            let unknown = `<img style='margin-left: 8px;' src='res/img/unknownBeast.png'/>×${f.format(masterInfo.beasts - (masterInfo.yellowBeasts || 0) - (masterInfo.redBeasts || 0))}`;
+            total += `<span class='beastCount'>(${yellow} ${red} ${unknown})</span>`
+            extraInfo.text += statLine("Beasts Captured", total);
           }
           if(s["beastRecipes"]) {
             extraInfo.text += statLine("Beasts Sacrificed", f.format(s["beastRecipes"] * 4));

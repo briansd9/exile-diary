@@ -297,6 +297,41 @@ const initSQL = [
   [
     'pragma user_version = 8',
     `create table if not exists passives ( timestamp text primary key not null, data text not null )`
+  ],
+  
+  // version 9 - Einhar red/yellow beast tracking update
+  [
+    `
+      update mapruns set runinfo = (
+        select json_insert(
+          runinfo, 
+          '$.masters."Einhar, Beastmaster".redBeasts', redbeasts, 
+          '$.masters."Einhar, Beastmaster".yellowBeasts', yellowbeasts
+        ) as newinfo
+        from (
+          select id, sum(case beast when "red" then 1 else 0 end) as redbeasts, sum(case beast when "yellow" then 1 else 0 end) as yellowbeasts from (
+            select case event_text
+              when "Einhar, Beastmaster: Haha! You are captured, stupid beast." then "yellow"
+              when "Einhar, Beastmaster: You have been captured, beast. You will be a survivor, or you will be food." then "yellow"
+              when "Einhar, Beastmaster: This one is captured. Einhar will take it." then "yellow"
+              when "Einhar, Beastmaster: Ohhh... That was a juicy one, exile." then "yellow"
+              when "Einhar, Beastmaster: Do not worry little beast! We are friends now!" then "yellow"
+              when "Einhar, Beastmaster: Off you go, little beast! Away!" then "yellow"
+              when "Einhar, Beastmaster: We will be best friends beast! Until we slaughter you!" then "yellow"
+              when "Einhar, Beastmaster: Great job, Exile! Einhar will take the captured beast to the Menagerie." then "red"
+              when "Einhar, Beastmaster: The First Ones look upon this capture with pride, Exile. You hunt well." then "red"
+              when "Einhar, Beastmaster: Survivor! You are well prepared for the end. This is a fine capture." then "red"
+              when "Einhar, Beastmaster: What? Do you not have nets, exile?" then "red"
+              end 
+            as beast from events
+            where events.event_text like 'Einhar%'
+            and events.id between mapruns.firstevent and mapruns.lastevent
+            and beast is not null
+          ) 
+        )
+      )
+      where runinfo like '%"Einhar, Beastmaster"%' and runinfo like '%"beasts"%'
+    `
   ]
   
 ];

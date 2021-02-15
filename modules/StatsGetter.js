@@ -519,7 +519,7 @@ function mergeRunInfo(totalStats, map) {
       if(minfo.favourGained) {
         totalStats.masters[m].completed++;
       }
-      ["beasts", "incursions", "sulphite", "favourGained"].forEach( elem => {
+      ["beasts", "redBeasts", "yellowBeasts", "incursions", "sulphite", "favourGained"].forEach( elem => {
         totalStats.masters[m][elem] = (totalStats.masters[m][elem] || 0);
         if(minfo[elem]) {
           totalStats.masters[m][elem] += (minfo[elem] || 0);

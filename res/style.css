@@ -961,4 +961,10 @@ thead > tr > th > * {
   div.deleteRun:hover {
     filter: brightness(125%);
     opacity: 100%;
-  }  
+  }
+  
+  span.beastCount {
+    display: inline-flex;
+    margin-left: 10px;
+    color: #AAA;
+  }
