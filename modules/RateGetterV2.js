@@ -29,7 +29,8 @@ const rateTypes = {
   "UniqueAccessory" : cleanUniqueItems,
   "Watchstone" : cleanWatchstones,
   "Vial" : cleanNameValuePairs,
-  "DeliriumOrb" : cleanNameValuePairs
+  "DeliriumOrb" : cleanNameValuePairs,
+  "Invitation" : cleanNameValuePairs
   // RIP harvest :-(
   // "Seed" : cleanSeeds 
 };
@@ -180,6 +181,7 @@ class RateGetterV2 {
     rates["UniqueMap"] = tempRates["UniqueMap"];
     rates["Map"] = tempRates["Map"];
     rates["Watchstone"] = tempRates["Watchstone"];
+    rates["Invitation"] = tempRates["Invitation"];
     rates["Seed"] = tempRates["Seed"];
 
     var data = await Utils.compress(rates);
@@ -226,6 +228,7 @@ class RateGetterV2 {
       case "Vial":
       case "DeliriumOrb":
       case "Seed":
+      case "Invitation":
         url = `/api/data/itemoverview?type=${category}`;
         break;
       default:
