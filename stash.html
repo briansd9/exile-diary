@@ -562,6 +562,7 @@
       
       function loadNavLinks(id) {
         let s = stashList[id];
+        if(!s) return;
         if(s.prev) {
           $("#prevCell").html(`<a class='ui-text' id='prevStash' onclick='goToStash("${s.prev}")'><< ${s.prev}</a>`);
         }
@@ -586,6 +587,7 @@
               if(err) {
                 logger.info(`Unable to get latest stash: ${err}`);
               } else if(row) {
+                logger.info(`Retrieving stash with id ${row.id}`);
                 resolve(row.id);
               }
             });
