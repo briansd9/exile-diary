@@ -64,7 +64,7 @@
         },
         { id: "prophecy", desc: "Prophecies" },
         { id: "oil", desc: "Oils" },
-        { id: "fragment", desc: "Fragments" },
+        { id: "fragment", desc: "Fragments", hint: "Also includes Offering to the Goddess and Maven's Invitation" },
         { id: "delve", desc: "Fossils and resonators" },
         { id: "catalyst", desc: "Catalysts" },
         { id: "essence", desc: "Essences" },
@@ -123,7 +123,7 @@
           let valueHint = cat.valueHint || 'If no value is specified, ALL items of the selected category will be ignored';
           let dropdown = cat.opts ? getDropdown() : "";
           
-          d.append($(`<input type='checkbox' id='${cat.id}Checkbox' class='itemtypecheckbox' style='width:25px;height:25px;vertical-align:middle' title='${cat.hint || ""}'/>`));
+          d.append($(`<input type='checkbox' id='${cat.id}Checkbox' class='itemtypecheckbox' style='width:25px;height:25px;vertical-align:middle' title="${cat.hint || ""}"/>`));
           d.append($(`<span class='itemtypeicon'><img src='res/img/itemtypeicons/${cat.id}.png' class='itemtypeicon' style='height:35px;padding:0 8px;vertical-align:middle;'/>${cat.desc}</span>`));
           d.append($(`
             <span class='itemvaluefilter'>

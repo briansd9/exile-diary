@@ -64,6 +64,7 @@ function filter(item) {
       return itemFilters.map;
     case "Map Fragments":
     case "Labyrinth Items": // offering to the goddess
+    case "Misc Map Items": // maven's invitation
       return itemFilters.fragment;
     case "Currency":
     case "Stackable Currency":

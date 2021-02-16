@@ -96,7 +96,7 @@
     
     var minItemValue = 0;
     var filter = ItemFilter.filter(item.parsedItem);
-    if(filter.ignore) {
+    if(filter && filter.ignore) {
       if(filter.minValue) {
         if(filter.option && filter.option === "fullStack" && item.parsedItem.maxStackSize) {
           // logger.info(`Minvalue is ${filter.minValue}, stacksize of ${item.parsedItem.typeLine} is ${item.parsedItem.maxStackSize}, minvalue per card is ${filter.minValue/item.parsedItem.maxStackSize}`);
