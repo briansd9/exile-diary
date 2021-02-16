@@ -21,6 +21,17 @@
     <script src="res/jquery.tablesorter.js"></script>
     <script src="res/jquery.tablesorter.widgets.js"></script>
     
+    <style>
+      .tooltipStyle {
+        background: rgba(0, 0, 0, 0.9) !important;
+      }
+      .ui-tooltip-content {
+        font-size: medium !important;
+        font-family: Fontin !important;
+      }
+    </style>		
+    
+    
     <!-- Insert this line after script imports -->
     <script>if (window.module)
         module = window.module;</script>
@@ -897,6 +908,11 @@
       
       $("#totalStatsTable").append(div);
       
+      $(".unknownBeast").tooltip({
+        classes: { "ui-tooltip": "tooltipStyle" }
+      });
+      
+      
     }
     
     function displayConquerors(s) {
@@ -969,7 +985,7 @@
             let total = f.format(s.masters[m].beasts);
             let yellow = `<img src='res/img/yellowBeast.png'/>×${f.format(masterInfo.yellowBeasts || 0)}`;
             let red = `<img style='margin-left: 8px;' src='res/img/redBeast.png'/>×${f.format(masterInfo.redBeasts || 0)}`;
-            let unknown = `<img style='margin-left: 8px;' src='res/img/unknownBeast.png'/>×${f.format(masterInfo.beasts - (masterInfo.yellowBeasts || 0) - (masterInfo.redBeasts || 0))}`;
+            let unknown = `<img class='unknownBeast' title="The last beast in an area can't be identified as yellow or red" style='margin-left: 8px;' src='res/img/unknownBeast.png'/>×${f.format(masterInfo.beasts - (masterInfo.yellowBeasts || 0) - (masterInfo.redBeasts || 0))}`;
             total += `<span class='beastCount'>(${yellow} ${red} ${unknown})</span>`
             extraInfo.text += statLine("Beasts Captured", total);
           }

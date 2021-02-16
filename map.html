@@ -29,6 +29,13 @@
         display: inline-block;
         width: 5em;
       }
+      .tooltipStyle {
+        background: rgba(0, 0, 0, 0.9) !important;
+      }
+      .ui-tooltip-content {
+        font-size: medium !important;
+        font-family: Fontin !important;
+      }
     </style>		
     <script>
 
@@ -189,7 +196,7 @@
         
         $(document).tooltip({
           classes: {
-            "ui-tooltip": "tooltipOverride",
+            "ui-tooltip": "tooltipOverride"
           },
           show: "true",
           hide: "false",
@@ -462,7 +469,12 @@
                         // the last remaining one must be a red beast
                         beastType = "red";
                       }
-                      $(`#beastCount`).append($('<img>', {src: `res/img/${beastType}Beast.png`}));
+                      if(beastType === "unknown") {
+                        $(`#beastCount`).append($('<img>', {src: `res/img/unknownBeast.png`, class: `unknownBeast`, title: `The last beast in an area can't be identified as yellow or red`}));
+                        $(".unknownBeast").tooltip({ classes: { "ui-tooltip": "tooltipStyle" } });
+                      } else {
+                        $(`#beastCount`).append($('<img>', {src: `res/img/${beastType}Beast.png`}));
+                      }
                     }
                   }
                 });
