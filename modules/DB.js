@@ -301,6 +301,7 @@ const initSQL = [
   
   // version 9 - Einhar red/yellow beast tracking update
   [
+    `pragma user_version = 9`,
     `
       update mapruns set runinfo = (
         select json_insert(
