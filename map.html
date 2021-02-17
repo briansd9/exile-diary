@@ -118,6 +118,8 @@
           },
         );
         
+        $(".encounterIcon").tooltip({ classes: { "ui-tooltip": "tooltipStyle" }, show: false, hide: false });
+        
       });
 
       $(document).keydown(e => {
@@ -323,6 +325,7 @@
         $("#masterDiv").hide();
         $("#xpDiv").hide();
         
+        $(".encounterIcon").trigger('mouseout');
         $(".encounterIcon").hide();
         $(".masterFavour").hide();
         $(".encounterIcon").removeData();
@@ -430,6 +433,10 @@
           $("#masterDiv").show();
           $("#MavenIcon").show();
         }
+        if(info.envoy) {
+          $("#masterDiv").show();
+          $("#EnvoyIcon").show();
+        }
         if(info.elderGuardian) {
           $("#masterDiv").show();
           $(`#${info.elderGuardian.replace("The ", "")}Icon`).show();
@@ -471,7 +478,7 @@
                       }
                       if(beastType === "unknown") {
                         $(`#beastCount`).append($('<img>', {src: `res/img/unknownBeast.png`, class: `unknownBeast`, title: `The last beast in an area can't be identified as yellow or red`}));
-                        $(".unknownBeast").tooltip({ classes: { "ui-tooltip": "tooltipStyle" } });
+                        $(".unknownBeast").tooltip({ classes: { "ui-tooltip": "tooltipStyle" }, show: false, hide: false });
                       } else {
                         $(`#beastCount`).append($('<img>', {src: `res/img/${beastType}Beast.png`}));
                       }
@@ -1150,6 +1157,11 @@
           <div class='encounterIcon' id='MavenIcon' title='Boss battle witnessed by the Maven'>
             <div style='position:relative;display:inline;'>
               <img src='res/img/encountericons/maven.png'/>
+            </div>
+          </div>
+          <div class='encounterIcon' id='EnvoyIcon' title='Envoy gave a speech'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/envoy.png'/>
             </div>
           </div>
           <hr style='border:1px solid #999;' />
