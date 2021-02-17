@@ -81,7 +81,7 @@ class StashGetter {
           resolve(false);
         } else if(row.timestamp === -1) {
           logger.info("No stashes found in db - will retrieve now");
-          resolve(true);
+          resolve(Number.MAX_SAFE_INTEGER);
         } else {
           var now = moment();
           var then  = moment(row.timestamp, 'YYYYMMDDHHmmss');
