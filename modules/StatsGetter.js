@@ -440,6 +440,11 @@ function mergeRunInfo(totalStats, map) {
       break;
   }
   
+  if(info.envoy) {
+    totalStats.envoy = totalStats.envoy || { encounters: 0, words: 0 };
+    totalStats.envoy.encounters++;
+    totalStats.envoy.words += info.envoy.words;
+  }
 
   if(info.shrines) {
     totalStats.shrines = totalStats.shrines || {};

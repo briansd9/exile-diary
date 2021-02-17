@@ -825,6 +825,10 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
     }
 
     switch(line.npc) {
+      case "The Envoy":
+        run.envoy = run.envoy || { words: 0 };
+        run.envoy.words += line.text.split(" ").length;
+        continue;
       case "The Maven":
         if(!run.maven) {
           run.maven = { "firstLine" : evt.id };

@@ -759,7 +759,7 @@
         }
         arr.sort( (a, b) => { return b[1] - a[1]; });
         let d = "<div class='totalStatSection'><div>";
-        d += statLine("Shrines activated", totalShrines, "res/img/encountericons/shrine.png");
+        d += statLine("Shrines activated", f.format(totalShrines), "res/img/encountericons/shrine.png");
         arr.forEach( s => {
           d += statLine(s[0], s[1], `res/img/shrineicons/${s[0]}.png`);
         });
@@ -768,6 +768,18 @@
       }
       
       div += "</div><div>";
+      
+      if(s.envoy) {
+        let d = `
+            <div class='totalStatSection'>
+              <div>
+                ${statLine("Envoy encounters", s.envoy.encounters || 0, "res/img/encountericons/envoy.png")}
+                ${statLine("Total words spoken", f.format(s.envoy.words) || 0, "res/img/encountericons/words.png")}
+              </div>
+            </div>
+        `;
+        div += d;
+      }
       
       if(s.blightEncounter) {
         let d = `
