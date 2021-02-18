@@ -22,7 +22,10 @@ const valueColourNames = {
   7 : "colourChaosDamage",
   12 : "colourHarvestRed",
   13 : "colourHarvestGreen",
-  14 : "colourHarvestBlue"
+  14 : "colourHarvestBlue",
+  // color 15 is used for maven invitations, varies depending on completed bosses
+  // we don't have access to this data, so just use default color
+  15 : "colourDefault"
 };
 
 var maxLength = -1;
@@ -733,7 +736,14 @@ function getPropertyString(prop) {
   } else {
     switch(prop.displayMode) {
       case 0:
-        return `<span>${prop.name ? prop.name + ": " : ""}${formatValue(prop.values[0])}</span>`;
+        let propValueString = formatValue(prop.values[0]);
+        if(prop.type === 49) {
+          // type 49: list of required bosses for maven invitations
+          for(let i = 1; i < prop.values.length; i++) {
+            propValueString += formatValue(prop.values[i]);
+          }
+        }
+        return `<span>${prop.name ? prop.name + ": " : ""}${propValueString}</span>`;
       case 1:
         return `<span>${formatValue(prop.values[0])} ${prop.name}</span>`;
       case 2:
