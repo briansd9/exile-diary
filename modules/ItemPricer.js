@@ -137,7 +137,13 @@
     if(item.typeline.includes("Maven's Invitation")) {
       return getValueFromTable("Invitation");
     }    
-    if(item.category === "Map Fragments" || (item.category === "Labyrinth Items" && item.typeline.endsWith("to the Goddess")) || item.typeline === "Simulacrum Splinter" || (item.typeline.includes("Timeless") && item.typeline.includes("Splinter"))) {
+    if(
+      item.category === "Map Fragments" 
+      || (item.category === "Labyrinth Items" && item.typeline.endsWith("to the Goddess")) 
+      || item.typeline === "Simulacrum Splinter" 
+      || item.typeline === "Crescent Splinter" 
+      || (item.typeline.includes("Timeless") && item.typeline.includes("Splinter"))
+    ) {
       return getValueFromTable("Fragment");
     }
     if(item.category === "Harvest Seed") {
