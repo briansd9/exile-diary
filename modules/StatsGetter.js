@@ -247,8 +247,9 @@ async function mergeBossKills(char, bossKills, map) {
     // handle manually detected (non-maven) boss kills in Zana mission maps
     for(let a in r.mapBoss) {
       if(a !== map.name && r.mapBoss[a].time) {
-        bossKills[a] = bossKills[a] || { count: 0, totalTime: 0, deaths: 0 };
+        bossKills[a] = bossKills[a] || { count: 0, totalTime: 0, fastest: Number.MAX_SAFE_INTEGER, deaths: 0 };
         bossKills[a].count++;
+        bossKills[a].fastest = Math.min(bossKills[a].fastest, r.mapBoss[a].time);
         bossKills[a].totalTime += Number(r.mapBoss[a].time);
         if(r.mapBoss[a].deaths) {
           bossKills[a].deaths += Number(r.mapBoss[a].deaths);    
@@ -260,8 +261,9 @@ async function mergeBossKills(char, bossKills, map) {
   if(r.bossBattle) {
     // special handling for elder guardian bosses
     let name = r.elderGuardian || map.name;
-    bossKills[name] = bossKills[name] || { count: 0, totalTime: 0, deaths: 0 };
+    bossKills[name] = bossKills[name] || { count: 0, totalTime: 0, fastest: Number.MAX_SAFE_INTEGER, deaths: 0 };
     bossKills[name].count++;
+    bossKills[name].fastest = Math.min(bossKills[name].fastest, r.bossBattle.time);
     bossKills[name].totalTime += Number(r.bossBattle.time);
     if(r.bossBattle.deaths) {
       bossKills[name].deaths += Number(r.bossBattle.deaths);    
@@ -272,12 +274,13 @@ async function mergeBossKills(char, bossKills, map) {
     for(let i = 0; i < Constants.conquerors.length; i++) {
       let conq = Constants.conquerors[i];
       if(r.conqueror[conq] && r.conqueror[conq].defeated) {
-        let killinfo = await getConquerorKillInfo(char, map.id);
-        if(killinfo) {
-          bossKills[conq] = bossKills[conq] || { count: 0, totalTime: 0, deaths: 0 };
+        let killInfo = await getConquerorKillInfo(char, map.id);
+        if(killInfo) {
+          bossKills[conq] = bossKills[conq] || { count: 0, totalTime: 0, fastest: Number.MAX_SAFE_INTEGER, deaths: 0 };
           bossKills[conq].count++;
-          bossKills[conq].totalTime += Number(killinfo.time);
-          bossKills[conq].deaths += Number(killinfo.deaths);
+          bossKills[conq].fastest = Math.min(bossKills[conq].fastest, killInfo.time);
+          bossKills[conq].totalTime += Number(killInfo.time);
+          bossKills[conq].deaths += Number(killInfo.deaths);
         }
       }
     }
@@ -287,8 +290,9 @@ async function mergeBossKills(char, bossKills, map) {
     let boss = 'Catarina, Master of Undeath';
     let killInfo = await getKillInfo(char, r.mastermindBattle.battle2start, r.mastermindBattle.completed);
     if(killInfo) {
-      bossKills[boss] = bossKills[boss] || { count: 0, totalTime: 0, deaths: 0 };
+      bossKills[boss] = bossKills[boss] || { count: 0, totalTime: 0, fastest: Number.MAX_SAFE_INTEGER, deaths: 0 };
       bossKills[boss].count++;
+      bossKills[boss].fastest = Math.min(bossKills[boss].fastest, killInfo.time);
       bossKills[boss].totalTime += Number(killInfo.time);
       bossKills[boss].deaths += Number(killInfo.deaths);
     }
@@ -298,8 +302,9 @@ async function mergeBossKills(char, bossKills, map) {
     let boss = 'Sirus, Awakener of Worlds';
     let killInfo = await getKillInfo(char, r.sirusBattle.start, r.sirusBattle.completed);
     if(killInfo) {
-      bossKills[boss] = bossKills[boss] || { count: 0, totalTime: 0, deaths: 0 };
+      bossKills[boss] = bossKills[boss] || { count: 0, totalTime: 0, fastest: Number.MAX_SAFE_INTEGER, deaths: 0 };
       bossKills[boss].count++;
+      bossKills[boss].fastest = Math.min(bossKills[boss].fastest, killInfo.time);
       bossKills[boss].totalTime += Number(killInfo.time);
       bossKills[boss].deaths += Number(killInfo.deaths);
     }
@@ -309,8 +314,9 @@ async function mergeBossKills(char, bossKills, map) {
     let boss = 'The Shaper';
     let killInfo = await getKillInfo(char, r.shaperBattle.phase1start, r.shaperBattle.completed);
     if(killInfo) {
-      bossKills[boss] = bossKills[boss] || { count: 0, totalTime: 0, deaths: 0 };
+      bossKills[boss] = bossKills[boss] || { count: 0, totalTime: 0, fastest: Number.MAX_SAFE_INTEGER, deaths: 0 };
       bossKills[boss].count++;
+      bossKills[boss].fastest = Math.min(bossKills[boss].fastest, killInfo.time);
       bossKills[boss].totalTime += Number(killInfo.time);
       bossKills[boss].deaths += Number(killInfo.deaths);
     }
@@ -320,8 +326,9 @@ async function mergeBossKills(char, bossKills, map) {
     let boss = 'The Maven';
     let killInfo = await getKillInfo(char, r.maven.firstLine, r.maven.mavenDefeated);
     if(killInfo) {
-      bossKills[boss] = bossKills[boss] || { count: 0, totalTime: 0, deaths: 0 };
+      bossKills[boss] = bossKills[boss] || { count: 0, totalTime: 0, fastest: Number.MAX_SAFE_INTEGER, deaths: 0 };
       bossKills[boss].count++;
+      bossKills[boss].fastest = Math.min(bossKills[boss].fastest, killInfo.time);
       bossKills[boss].totalTime += Number(killInfo.time);
       bossKills[boss].deaths += Number(killInfo.deaths);
     }
@@ -331,8 +338,9 @@ async function mergeBossKills(char, bossKills, map) {
     let boss = 'Oshabi, Avatar of the Grove';
     let killInfo = await getKillInfo(char, r.oshabiBattle.start, r.oshabiBattle.completed);
     if(killInfo) {
-      bossKills[boss] = bossKills[boss] || { count: 0, totalTime: 0, deaths: 0 };
+      bossKills[boss] = bossKills[boss] || { count: 0, totalTime: 0, fastest: Number.MAX_SAFE_INTEGER, deaths: 0 };
       bossKills[boss].count++;
+      bossKills[boss].fastest = Math.min(bossKills[boss].fastest, killInfo.time);
       bossKills[boss].totalTime += Number(killInfo.time);
       bossKills[boss].deaths += Number(killInfo.deaths);
     }
@@ -357,8 +365,9 @@ async function mergeBossKills(char, bossKills, map) {
     
     let killInfo = await getKillInfo(char, r.venariusBattle.start, r.venariusBattle.completed);
     if(killInfo) {
-      bossKills[area] = bossKills[area] || { count: 0, totalTime: 0, deaths: 0 };
+      bossKills[area] = bossKills[area] || { count: 0, totalTime: 0, fastest: Number.MAX_SAFE_INTEGER, deaths: 0 };
       bossKills[area].count++;
+      bossKills[area].fastest = Math.min(bossKills[area].fastest, killInfo.time);
       bossKills[area].totalTime += Number(killInfo.time);
       bossKills[area].deaths += Number(killInfo.deaths);
     }
