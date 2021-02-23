@@ -262,6 +262,7 @@
             let s = stats.bossKills[area];
             let t = moment.duration(s.totalTime / s.count, "seconds").format("mm:ss.SS", { trim: false });
             t = `${t.substr(0, t.indexOf("."))}<span style='font-size:70%;'>.${t.substr(t.indexOf(".")+1)}</span>`;
+            let f = moment.duration(s.fastest, "seconds").format("mm:ss", { trim: false });
             
             let row = $(`
               <tr class='mapRow bossKillRow' data-boss-area='${area.toLowerCase()}'>
@@ -269,6 +270,7 @@
                 <td style='text-align:left;'>${area}</td>
                 <td>${s.count}</td>
                 <td>${t}</td>
+                <td>${f}</td>
                 <td>${s.deaths}</td>
               </tr>
             `);
@@ -579,7 +581,9 @@
       itemDiv.setAttribute("arrayIndex", item.arrayIndex);
       $(itemDiv).css("display", "inline-block");
       
-      let tableRow = $(`<div class='bigDropRow' data-value="${Number(item.exaltValue)}">`);
+      let unitValue = Number(item.exaltValue / (item.stacksize || 1));
+      
+      let tableRow = $(`<div class='bigDropRow' data-value="${Number(item.exaltValue)}" data-unit-value="${Number(unitValue)}">`);
       tableRow.append($(`<span class='eventTime'>[${moment(item.event_id, "YYYYMMDDHHmmss").format("YYYY-MM-DD HH:mm:ss")}] </span>`));
       tableRow.append(itemDiv);
       tableRow.append($(`
@@ -623,9 +627,11 @@
 
     function filterBigDrops() {
       let v = Number($("#bigDropValueFilter").val());
+      let unit = $("#bigDropUnitFilter").val();
       if(v) {
         $(".bigDropRow").each( (index, elem) => {
-          if($(elem).data("value") < v) {
+          let checkVal = (unit === "each" ? $(elem).data("unitValue") : $(elem).data("value"));
+          if(checkVal < v) {
             $(elem).hide();
           } else {
             $(elem).show();
@@ -1167,6 +1173,7 @@
                 </th>
                 <th>Boss Kills</th>
                 <th>Average Kill Time</th>
+                <th>Fastest</th>
                 <th>Deaths</th>
               </tr>
             </thead>
@@ -1181,8 +1188,12 @@
             <div style='display:inline-block;'>
               <div class='tableLinkHeader'>
                 Items picked up worth at least 
-                <input id='bigDropValueFilter' style='margin-left:5px;' onblur='resetBigDropsValue()' oninput='filterBigDrops()' type='text' size='3' value='1'/> 
+                <input id='bigDropValueFilter' style='margin-left:5px;background-color:0;' onblur='resetBigDropsValue()' oninput='filterBigDrops()' type='text' size='3' value='1'/> 
                 <img src='res/img/ex.png' class='currencyText'/>
+                <select id='bigDropUnitFilter' onchange='filterBigDrops()' >
+                  <option id='each' value='each'>each</option>
+                  <option id='stacked' value='stacked'>stacked</option>
+                </select>
               </div>
             </div>
           </div>
