@@ -385,13 +385,13 @@
           addAreaTimes(info.areaTimes);
         }
 
-        if(info.kills) {
-          $("#killCount").html(f.format(info.kills));
-          $("#killText").html( `${info.kills === 1 ? "monster" : "monsters"} slain`);
-          $("#killCountDiv").css("display", "block");
-        } else if(info.beastRecipes) {
+        if(info.beastRecipes) {
           $("#killCount").html(f.format(info.beastRecipes * 4));
           $("#killText").html(`beasts sacrificed`);
+          $("#killCountDiv").css("display", "block");
+        } else if(info.kills) {
+          $("#killCount").html(f.format(info.kills));
+          $("#killText").html( `${info.kills === 1 ? "monster" : "monsters"} slain`);
           $("#killCountDiv").css("display", "block");
         } else {
           $("#killCountDiv").css("display", "none");
@@ -424,6 +424,9 @@
         if(info.blightEncounter) {
           $("#masterDiv").show();
           $("#BlightIcon").show();
+        } else if(info.blightedMap) {
+          $("#masterDiv").show();
+          $("#BlightedMapIcon").show();
         }
         if(info.metamorph) {
           $("#masterDiv").show();
@@ -436,6 +439,10 @@
         if(info.envoy) {
           $("#masterDiv").show();
           $("#EnvoyIcon").show();
+        }
+        if(info.oshabiBattle) {
+          $("#masterDiv").show();
+          $("#OshabiIcon").show();
         }
         if(info.elderGuardian) {
           $("#masterDiv").show();
@@ -1149,6 +1156,11 @@
               <img src='res/img/encountericons/blight.png'/>
             </div>
           </div>
+          <div class='encounterIcon' id='BlightedMapIcon' title='Blighted map'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/blightedmap.png'/>
+            </div>
+          </div>
           <div class='encounterIcon' id='MetamorphIcon' title='Harvested Metamorph organs'>
             <div style='position:relative;display:inline;'>
               <img src='res/img/encountericons/metamorph.png'/>
@@ -1162,6 +1174,11 @@
           <div class='encounterIcon' id='EnvoyIcon' title='Envoy gave a speech'>
             <div style='position:relative;display:inline;'>
               <img src='res/img/encountericons/envoy.png'/>
+            </div>
+          </div>
+          <div class='encounterIcon' id='OshabiIcon' title='Fought Oshabi, Avatar of the Grove'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/oshabi.png'/>
             </div>
           </div>
           <hr style='border:1px solid #999;' />
