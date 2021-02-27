@@ -779,6 +779,9 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
       case "slain":
         run.deaths = ++run.deaths || 1;
         continue;
+      case "abnormalDisconnect":
+        run.abnormalDisconnect = ++run.abnormalDisconnect || 1;
+        continue;
       case "favourGained":
         // no need for null checking adjacent events, map runs must always start and end with an "entered" event
         let master = getMasterFavour(events[i-1], events[i+1]);

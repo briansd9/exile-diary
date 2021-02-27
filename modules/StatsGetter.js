@@ -424,7 +424,7 @@ function mergeRunInfo(totalStats, map) {
     }
   });
   
-  ["beastRecipes", "deaths"].forEach(countStat => {
+  ["beastRecipes", "deaths", "abnormalDisconnect"].forEach(countStat => {
     if(info[countStat]) {
       totalStats[countStat] = (totalStats[countStat] || 0) + info[countStat];
     }
@@ -704,7 +704,7 @@ async function getBigDrops(char, league) {
       drops.splice(i, 1);
     } else {
       item.parser = await FilterParser.get(item.event_id, char);
-      item.exaltValue = (item.typeline === "Exalted Orb" ? 1 : item.value / exaltPrices[date]);
+      item.exaltValue = (item.typeline === "Exalted Orb" ? item.stacksize : item.value / exaltPrices[date]);
     }
   }
   

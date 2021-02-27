@@ -141,7 +141,7 @@
           
         let tabOptions = { disabled: [] };
         $("#totalStatsTable").empty();
-        $("#bigDropsTable").empty();
+        $("#bigDropsRows").empty();
         $("#areaStatsRows").remove();
         $("#areaStatsTotalRow").remove();
         $("#areaStatsTable").append("<tbody id='areaStatsRows'></tbody>");
@@ -324,7 +324,7 @@
             let item = stats.bigDrops[i];
             item.parsedItem = JSON.parse(item.rawdata);          
             item.arrayIndex = i.toString();
-            $("#bigDropsTable").append(getItemDiv(item));
+            $("#bigDropsRows").append(getItemDiv(item));
             item.parsedItem.arrayIndex = i.toString();
             item.parsedItem.secretName = Utils.getItemName(item.icon);
             var popup = createPopup(item.parsedItem);
@@ -352,7 +352,7 @@
               }
             }
           });
-
+          $("#bigDropsTable").tablesorter();
         } else {
           tabOptions.disabled.push(3);
         }
@@ -583,17 +583,16 @@
       
       let unitValue = Number(item.exaltValue / (item.stacksize || 1));
       
-      let tableRow = $(`<div class='bigDropRow' data-value="${Number(item.exaltValue)}" data-unit-value="${Number(unitValue)}">`);
-      tableRow.append($(`<span class='eventTime'>[${moment(item.event_id, "YYYYMMDDHHmmss").format("YYYY-MM-DD HH:mm:ss")}] </span>`));
-      tableRow.append(itemDiv);
-      tableRow.append($(`
-        <span>
-          ${item.typeline === 'Exalted Orb' ? "" : `(<span class='eventText'>${Number(item.exaltValue).toFixed(2)}</span> <img src='res/img/ex.png' style='height:20px;width:20px;'>)`}
-          found in <a onclick='window.open("map.html?id=${item.map_id}&modal=true");'>${item.area}</a>
-        </span>
-      `));
+      let tableRow = $(`<tr class='mapRow bigDropRow' data-value="${Number(item.exaltValue)}" data-unit-value="${Number(unitValue)}">`);
+      tableRow.append($(`<td>${moment(item.event_id, "YYYYMMDDHHmmss").format("YYYY-MM-DD HH:mm:ss")}</td>`));
+      tableRow.append($(`<td>`).append(itemDiv));
+      tableRow.append(
+        $(`<td><span class='eventText'>${Number(item.exaltValue).toFixed(2)}</span> <img src='res/img/ex.png' style='height:20px;width:20px;'></td>)`)
+      );
+      tableRow.append($(`<td><a onclick='window.open("map.html?id=${item.map_id}&modal=true");'>${item.area}</a></td>`));
       
       return tableRow;
+      
     }
     
     function toggleDetailRow(cat) {
@@ -774,6 +773,17 @@
       }
       
       div += "</div><div>";
+      
+      if(s.abnormalDisconnect) {
+        let d = `
+            <div class='totalStatSection'>
+              <div>
+                ${statLine("Abnormal disconnections", s.abnormalDisconnect || 0, "res/img/encountericons/abnormaldisconnect.png")}
+              </div>
+            </div>
+        `;
+        div += d;
+      }
       
       if(s.envoy) {
         let d = `
@@ -1161,7 +1171,7 @@
           List may be incomplete - most boss battles can only be recorded if witnessed by the Maven.<br/>
           <hr>
           <table class='searchResults statsTable' style='width:100%;border-spacing:0;padding:10px;' id="bossKillsTable">
-            <thead>
+            <thead class='sticky'>
               <tr>
                 <th>&nbsp;</th>
                 <th>
@@ -1192,12 +1202,24 @@
                 <img src='res/img/ex.png' class='currencyText'/>
                 <select id='bigDropUnitFilter' onchange='filterBigDrops()' >
                   <option id='each' value='each'>each</option>
-                  <option id='stacked' value='stacked'>stacked</option>
+                  <option id='stacked' value='stacked' selected>stacked</option>
                 </select>
               </div>
             </div>
           </div>
-          <div id='bigDropsTable' style='padding:10px;max-height:70%;overflow-y:auto;'></div>
+          <div style='padding:10px;max-height:70%;overflow-y:auto;'>
+            <table id='bigDropsTable' class='searchResults statsTable' style='width:100%;border-spacing:0;padding:10px;'>
+              <thead class='sticky bigDropsHeader'>
+                <tr>
+                  <th>Date</th>
+                  <th>Item</th>
+                  <th>Value</th>
+                  <th>Found in</th>
+                </tr>
+              </thead>
+              <tbody id='bigDropsRows'></tbody>
+            </table>
+          </div>
         </div>
         
       </div>
