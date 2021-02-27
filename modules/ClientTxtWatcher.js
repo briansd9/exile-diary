@@ -206,6 +206,13 @@ function getEvent(arg) {
     };
   }
   
+  if(str.startsWith("Abnormal disconnect")) {
+    return {
+      type: "abnormalDisconnect",
+      text: str.substr(str.indexOf(": ") + 2)
+    };
+  }
+  
   
   if(str.startsWith("Successfully allocated")) {
     return {
