@@ -935,13 +935,9 @@
           <div style='line-height: 200%;vertical-align: middle;'>Removes gear changes for which the item was not actually changed.</div>
         </div>
         <div style="display: flex; flex-direction: row; padding-top:10px;">
-          <button class='debugButton' id="v0286fixButton" style="width:320px;margin:0 16px;" onclick="debugClear();v0286fix();">v0.2.86 bug fixes</button>
+          <button class='debugButton' id="v0286fixButton" style="width:320px;margin:0 16px;" onclick="debugClear();updateAtlasRegions();">Update Atlas Regions</button>
           <div style='line-height: 125%;vertical-align: middle;'>
-            Performs the following changes:<br/>
-            - Applies correct value for Ritual-series map drops.<br/>
-            - Sets value of all Rogue's Marker to zero.<br/>
-            - Fixes incorrect conqueror battle stats.<br/>
-            - Calculates boss kill time for Maven-witnessed maps.<br/>
+            Adds region info to all maps run in the current atlas version (Ritual).
           </div>
         </div>
         <div id='debugsql' style="display: none; flex-direction: row; padding-top:10px;">

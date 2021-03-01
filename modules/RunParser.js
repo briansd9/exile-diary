@@ -759,6 +759,10 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
   let lastEnteredArea = "";
   let blightCount = 0;
   
+  if(Constants.atlasRegions[areaName]) {
+    run.atlasRegion = Constants.atlasRegions[areaName];
+  }
+  
   run.areaTimes = getRunAreaTimes(events);
 
   for(let i = 0; i < events.length; i++) {

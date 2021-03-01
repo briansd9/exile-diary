@@ -143,6 +143,38 @@ function execSql(sql) {
   });
 }
 
+async function updateAtlasRegions() {
+  let m = require('./modules/Constants').atlasRegions;
+  let r = {};
+  for(let map in m) {
+    r[m[map]] = r[m[map]] || [];
+    r[m[map]].push(map);
+  }
+  for(let reg in r) {
+    debugLog(`Updating maps in ${reg}`);
+    let maps = r[reg];
+    let mapStr = "";
+    for(let i = 0; i < maps.length; i++) {
+      mapStr += `${i > 0 ? "," : ""} "${maps[i]}"`;
+    }
+    let sql = `
+      update mapruns set runinfo = json_insert(runinfo, "$.atlasRegion", "${reg}") 
+      where id in ( select id from areainfo where id > 20210116000000 and name in (${mapStr}));
+    `;
+    let DB = require('./modules/DB').getDB();
+    DB.run(sql, [], function(err) {
+      $("#debugsql").hide();
+      $("#debugOutput").attr("readonly");
+      if(err) {
+        debugLog(`Error updating maps in ${reg}`);
+        debugLog(err.toString());
+      } else {
+        debugLog(`Updated ${this.changes} map runs in ${reg}.`);
+      }
+    });    
+  }
+}
+
 async function v0286fix() {
   
   $(".debugButton").prop("disabled", true);
