@@ -484,6 +484,10 @@ class Utils {
       return league.match(/\(PL[0-9]+\)$/);
     }
   }
+  
+  static getEncounterIcon(id) {
+    return `<img src='res/img/encountericons/${id}.png'/>`;
+  }
 
 }
 

@@ -363,6 +363,10 @@ span.headerIcon {
   text-align: center;
 }
 
+.mapRow > td {
+  padding: 6px 0;
+}
+
 .mapRow:hover {
   background: #333;
 }
@@ -967,4 +971,78 @@ thead > tr > th > * {
     display: inline-flex;
     margin-left: 10px;
     color: #AAA;
+  }
+  
+  span.menuIcon {
+    float: right;
+    font-size: 50px;
+    font-weight: bold;
+    font-face: sans-serif;
+    margin-right: 10px;
+    cursor: pointer;
+  }
+  
+  div.popupMenu {
+    display: none;
+    position: absolute;
+    padding: 12px;
+    background: #000;
+    border: 2px solid #999;
+    max-width: 320px;
+  }
+  
+  span.popupMenuText {
+    font-family: Fontin;
+    font-size: smaller;
+  }
+  
+  div.colDiv {
+    font-size: smaller;
+    background: #333;
+    margin: 4px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  #unusedCols > div.colDiv {
+    opacity: 0.5;
+  }
+  
+  div.columnList {
+    min-height: 32px;
+    background: #111;
+    padding: 4px;
+  }
+  
+  div.popupMenuButton {
+    padding: 0px 18px;
+    margin: 8px 4px;
+    border: 2px #666 outset;
+    border-radius: 8px;
+    background: #333;
+    display: inline-block;
+    cursor: pointer;
+  }
+  
+  div.popupMenuButton:active {
+    border: 2px #666 inset;
+  }  
+  
+  div.mapEncounterCell > img {
+    height: 1.25em;
+    padding: 0 2px;
+  }
+  
+  thead.sticky > tr > th { 
+    position: sticky; 
+    top: 0; 
+    background: #000; 
+    opacity: 1; 
+  }
+    
+  
+  thead.bigDropsHeader > tr > th { 
+    top: -10; 
+    z-index: 5000; 
   }
