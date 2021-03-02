@@ -117,21 +117,19 @@ async function checkValidLogfile(path) {
     }
   }
   
-  poeRunning = true;
-  if(poeRunning) {
-    require('fs').stat(path, (err, stats) => {
-      if(err) {
-        logger.info(`Error checking Client.txt last update time`);
-        emitter.emit("clientTxtFileError", path);
-      } else {
-        let timeSinceLastUpdate = Date.now() - stats.mtime;
-        logger.info(`Client.txt last updated: ${stats.mtime}`);
-        if(timeSinceLastUpdate > 24 * 60 * 60 * 1000) {
-          emitter.emit("clientTxtNotUpdated", path);
-        }
+  require('fs').stat(path, (err, stats) => {
+    if(err) {
+      logger.info(`Error checking Client.txt last update time`);
+      emitter.emit("clientTxtFileError", path);
+    } else {
+      let timeSinceLastUpdate = Date.now() - stats.mtime;
+      logger.info(`Client.txt last updated: ${stats.mtime}`);
+      if(poeRunning && timeSinceLastUpdate > 24 * 60 * 60 * 1000) {
+        emitter.emit("clientTxtNotUpdated", path);
       }
-    });
-  }
+    }
+  });
+  
 }
 
 async function checkLastActiveCharacter() {
