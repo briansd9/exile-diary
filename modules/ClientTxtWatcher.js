@@ -34,6 +34,8 @@ function start() {
   }
 
   if (settings.clientTxt) {
+    
+    checkValidLogfile(settings.clientTxt);
 
     logger.info(`Watching ${settings.clientTxt}`);
 
@@ -101,6 +103,35 @@ function start() {
     tail.watch();
   }
   
+}
+
+async function checkValidLogfile(path) {
+  
+  let poeRunning = false;
+  
+  let processList = await (require('ps-list'))();
+  for(let i = 0; i < processList.length; i++) {
+    if(processList[i].name.toLowerCase().startsWith("pathofexile")) {
+      poeRunning = true;
+      break;
+    }
+  }
+  
+  poeRunning = true;
+  if(poeRunning) {
+    require('fs').stat(path, (err, stats) => {
+      if(err) {
+        logger.info(`Error checking Client.txt last update time`);
+        emitter.emit("clientTxtFileError", path);
+      } else {
+        let timeSinceLastUpdate = Date.now() - stats.mtime;
+        logger.info(`Client.txt last updated: ${stats.mtime}`);
+        if(timeSinceLastUpdate > 24 * 60 * 60 * 1000) {
+          emitter.emit("clientTxtNotUpdated", path);
+        }
+      }
+    });
+  }
 }
 
 async function checkLastActiveCharacter() {

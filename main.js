@@ -389,7 +389,12 @@ function initWindow(window) {
       mainWindow.loadFile('index.html');
     }
   });
-  
+  ClientTxtWatcher.emitter.on("clientTxtFileError", (path) => {
+    addMessage(`<span class='eventText'>Error reading ${path}. Please check if the file exists.</span>`, true);
+  });
+  ClientTxtWatcher.emitter.on("clientTxtNotUpdated", (path) => {
+    addMessage(`<span class='eventText'>${path} has not been updated recently even though the game is running. Please check if PoE is using a different Client.txt file.</span>`, true);
+  });
   
 }
 
