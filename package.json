@@ -1,6 +1,6 @@
 {
   "name": "exile-diary",
-  "version": "0.2.92",
+  "version": "0.2.93",
   "main": "main.js",
   "build": {
     "appId": "com.pathofexile.exilediary",
@@ -64,6 +64,7 @@
     "nodejs-tail": "^1.0.2",
     "opn": "^5.4.0",
     "pastebin-js": "^1.0.2",
+    "ps-list": "^7.2.0",
     "request": "^2.0.0",
     "sqlite3": "^4.2.0",
     "tesseract.js": "^1.0.10",
