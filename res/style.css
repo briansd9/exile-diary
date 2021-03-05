@@ -333,10 +333,43 @@ button:disabled {
   color: #666666;
 }
 
+button.encounterButton {
+  width: 50px;
+  height: 50px;
+  margin: 4px;
+  border-radius: 0px;
+  border: 2px solid #333;
+  background-color: #000;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 80%;
+  opacity: 0.75;
+}
 
-span.headerIcon {
-  font-size: 24px;
-  vertical-align: middle;
+button.encounterButton.selected {
+  border: 2px solid #CCC;
+  background-color: #333;
+  opacity: 1;
+  filter: brightness(125%);
+}
+
+div.filterTitle {
+  color: #fff8e1;
+  background-color: #222;
+  border-left: 1px solid #634928;  
+  padding: 6px 12px;
+  margin-bottom: 4px;
+}
+
+select.filterDropdown {
+  float: right;
+  margin: 0;
+  padding: 0;
+  min-width: 300px;
+}
+
+div.filterPane {
+  padding-bottom: 20px;
 }
 
 .row {

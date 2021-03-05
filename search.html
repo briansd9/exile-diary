@@ -19,10 +19,21 @@
     <script src="res/jquery.tablesorter.widgets.js"></script>
     <script src="res/utils.js"></script>
     <script src="res/page-utils.js"></script>
+    <script src="res/maptable.js"></script>
 
     <!-- Insert this line after script imports -->
     <script>if (window.module)
         module = window.module;</script>
+    
+    <style>
+      .tooltipStyle {
+        background: rgba(0, 0, 0, 0.9) !important;
+      }
+      .ui-tooltip-content {
+        font-size: medium !important;
+        font-family: Fontin !important;
+      }
+    </style>		
     
     <script>
     
@@ -41,7 +52,6 @@
       const hardcore = remote.getGlobal("hardcore");
       
       var exportData = null;
-      var mapDataList = null;
 
       $(document).ready(function() {
         
@@ -53,32 +63,100 @@
         if(hardcore) {
           $("#deathCount").remove();
         }
-          
+        
+        $(".tooltipElem").tooltip({ classes: { "ui-tooltip": "tooltipStyle" }, show: false, hide: false });        
 
         $("#sidenav").load("sidenav.html", () => {
           $("#sidenav-items").append("<div><a class='ui-text' onclick='screenshot()'>Screenshot</a></div>");
         });
         $("#messages").load("messages.html");
+        
+        DB.all(" select 1 from mapruns where iiq is not null or iir is not null or packsize is not null limit 1 ", (err, rows) => {
+          if(rows.length) {
+            $("#mapFilters-col2").append(numberInput("IIQ", "iiq"));
+            $("#mapFilters-col2").append(numberInput("IIR", "iir"));
+            $("#mapFilters-col2").append(numberInput("Pack Size", "packsize"));
+          }
+        });
+        
+        DB.all(" select 1 from areainfo where level is not null limit 1 ", (err, rows) => {
+          if(rows.length) {
+            $("#mapFilters-col1").append(numberInput("Level", "level"));
+            $("#levellabel").html(`
+              <select name='levelmode' id='levelmode'>
+                <option value='mapTier' selected>Map Tier</option>
+                <option value='delveDepth'>Delve Depth</option>
+                <option value='monsterLevel'>Monster Level</option>
+              </select>
+            `);
+          }
+        });
+        
+        const encounters = {
+          "Masters" : [
+            { id: "alva", hint: "Alva, Master Explorer" },
+            { id: "einhar", hint: "Einhar, Beastmaster" },
+            { id: "jun", hint: "Jun, Veiled Master" },
+            { id: "niko", hint: "Niko, Master of the Depths" },
+            { id: "zana", hint: "Zana, Master Cartographer" }
+          ],
+          "Conquerors" : [
+            { id : "crusader", hint: "Baran, the Crusader" },
+            { id : "hunter", hint: "Al-Hezmin, the Hunter" },
+            { id : "redeemer", hint: "Veritania, the Redeemer" },
+            { id : "warlord", hint: "Drox, the Warlord" }
+          ],
+          "League" : [
+            { id : "blight", hint: "Blight encounter" },
+            { id : "blightedmap", hint: "Blighted map" },
+            { id : "delirium", hint: "Opened a Delirium mirror" },
+            { id : "metamorph", hint: "Harvested metamorph organs" },              
+            { id : "oshabi", hint: "Fought Oshabi, Avatar of the Grove" }
+          ],
+          "Other" : [
+            { id : "maven", hint: "The Maven" },
+            { id : "abnormaldisconnect", hint: "Abnormal disconnect $@#^&%!!!" },
+            { id : "vaalsidearea", hint: "Entered a Vaal side area" }
+          ]
 
-        $("#mapFilters").append(numberInput("IIQ", "iiq"));
-        $("#mapFilters").append(numberInput("IIR", "iir"));
-        $("#mapFilters").append(numberInput("Pack Size", "packsize"));
-        $("#mapFilters").append(numberInput("Level", "level"));
-        $("#mapFilters").append(numberInput("Player Level", "playerlevel"));
+        };
+
+        Object.keys(encounters).forEach( (encType, i) => {
+          let div = $("<div style='margin-bottom: 10px;'>");
+          div.append($(`<div class='filterTitle' id='${encType.toLowerCase()}Filter'>${encType}</div>`));
+          encounters[encType].forEach( enc => {
+            div.append(`
+              <button type='button' class='encounterButton' title='${enc.hint}' id='${enc.id}button' onclick='toggleEncounter(event)' style='background-image:url(res/img/encountericons/${enc.id}.png);' />
+              <input type='checkbox' style='display:none' name='${encType.toLowerCase()}' value='${enc.id}' id='${enc.id}checkbox' />
+            `);
+          });
+          $(`#encounterFilters-col${(i%2)+1}`).append(div);
+        });
+        
+        $("#mastersFilter").append($(`
+          <select name='mastersMissionType' id='mastersMissionType' class='filterDropdown'>
+            <option value='any' selected>Any encounter</option>
+            <option value='completed'>Completed missions only</option>
+          </select>
+        `));
+        $("#conquerorsFilter").append($(`
+          <select name='conquerorType' id='conquerorType' class='filterDropdown'>
+            <option value='any' selected>Any encounter</option>
+            <option value='battle'>Battles only</option>
+            <option value='taunt'>Taunts only</option>
+          </select>
+        `));
+    
+        $(".encounterButton").tooltip({ classes: { "ui-tooltip": "tooltipStyle" }, track: true, show: false, hide: false });
+    
+
+        $("#mapFilters-col2").append(numberInput("Player Level", "playerlevel"));
         if(!ssf) {
-          $("#mapFilters").append(numberInput("Profit (<img class='currencyText' src='res/img/c.png'/>)", "profit", 5));
+          $("#mapFilters-col2").append(numberInput("Profit (<img class='currencyText' src='res/img/c.png'/>)", "profit", 5));
         }
         if(!hardcore) {
-          $("#mapFilters").append(numberInput("Deaths", "deaths"));
+          $("#mapFilters-col2").append(numberInput("Deaths", "deaths"));
         }
-        
-        $("#levellabel").html(`
-          <select name='levelmode' id='levelmode'>
-            <option value='mapTier' selected>Map Tier</option>
-            <option value='delveDepth'>Delve Depth</option>
-            <option value='monsterLevel'>Monster Level</option>
-          </select>
-        `)
         
         DB.all(" select distinct name from areainfo order by replace(name, 'The ', '') ", (err, rows) => {
           var mapNames = rows.map(elem => elem.name);
@@ -89,9 +167,9 @@
           
           event.preventDefault();
           exportData = {};
-          mapDataList = null;
           $("#searchButton").prop("value", "Searching...");
           var data = $(this).serialize();
+          console.log(data);
           ipcRenderer.send("searchMaps", data);
           $("#searchResults").hide();
           $("input.itemToggleCheckbox[type=checkbox]").each(function() {
@@ -145,6 +223,40 @@
             
         });
         
+      function buildTable(mapData) {
+        
+        cols = settings.columnOrder || MapTable.DEFAULT;
+        
+        $("#mapTableHeader").empty();
+        let header = $("<tr>");
+        for(var col of cols) {
+          header.append($(`<th>${MapTable.COLUMNS[col].label}</th>`));
+        }
+        $("#mapTableHeader").append(header);
+        
+        $("#mapTableRows").empty();
+        mapData.forEach( map => addMapRow(map, cols) );
+        
+        $("#mapTable").trigger("updateAll");
+        
+        
+      }
+      
+      function addMapRow(map, cols, prepend = false) {
+        let row = $("<tr class='mapRow'>");
+        row.click(()=>{
+          window.open(`map.html?id=${map.id}&modal=true`);
+        });        
+        for(var col of cols) {
+          row.append($(`<td>${MapTable.COLUMNS[col].f(map)}</td>`));
+        }
+        if(prepend) {
+          $("#mapTableRows").prepend(row);
+        } else {
+          $("#mapTableRows").append(row);
+        }
+      }
+      
         ipcRenderer.on("mapSearchResults", (event, rows) => {
           
           $("#mapRows").empty();
@@ -166,41 +278,9 @@
             }
           };
           
-          var mapData = [];
           rows.forEach(row => {
-            
             row.runinfo = JSON.parse(row.runinfo);
             row.areaType = ( row.runinfo.blightedMap ? "blightedMaps" : Utils.getAreaType(row.name) );
-            
-            var obj = {
-              name: row.name,
-              areaType: row.areaType,
-              time: moment.duration(moment(row.lastevent, "YYYYMMDDHHmmss").diff(moment(row.firstevent, "YYYYMMDDHHmmss"))).asSeconds(),
-              id: row.id,
-              xp: row.xp
-            };
-            if(row.level) {
-              obj.tier = row.level;
-            }
-            if(row.depth) {
-              obj.depth = row.depth;
-            }
-            if(row.gained) {
-              obj.gained = row.gained;
-            }
-            if(row.kills) {
-              obj.kills = row.kills;
-            }
-            mapData.push(obj);
-            
-            Utils.addMapRow({
-              table: $("#mapRows"),
-              data: row,
-              first: false,
-              ssf: ssf,
-              hardcore: hardcore,
-              modal: true
-            });            
             
             exportData.mapList.addRow({
               id: row.id,
@@ -220,9 +300,8 @@
             
           });
           
-          mapDataList = JSON.stringify(mapData);          
+          buildTable(rows);
           
-          $("#mapTable").trigger("update");
           $("#searchButton").prop("value", `${rows.length} results found`);
           if(!$("#getItemsCheckbox").prop("checked")) {
             $("#mapSummaryTab").hide();
@@ -329,17 +408,7 @@
           logger.info("Done capturing");
         });
         
-        $.tablesorter.addParser({ 
-            id: 'numbersOnly',
-            is: function(s) { return false; }, 
-            format: function(s) { return s.replace(/[^0-9]/g,'');}, 
-            type: 'numeric' 
-        });         
-        
-        $("#mapTable").tablesorter({
-          emptyTo: "bottom",
-          headers: { 7: { sorter: "numbersOnly" } }
-        });
+        $("#mapTable").tablesorter({ emptyTo: "bottom" });
         $("#items").tablesorter();
         
         $("#tabs").tabs({
@@ -397,13 +466,9 @@
         `;
       }      
 
-      function toggleFilters() {
-        $("#mapFilters").toggle();
-        if($("#mapFiltersHeaderIcon").html() === "( - )") {
-          $("#mapFiltersHeaderIcon").html("( + )");
-        } else {
-          $("#mapFiltersHeaderIcon").html("( - )");
-        }
+      function toggleFilters(e) {
+        let target = e.target.id.replace("Toggle", "");
+        $(`#${target}`).toggle();
       }
       
       function display(data) {
@@ -417,7 +482,9 @@
 
         items.forEach(item => {
           item.displayName = Utils.getDisplayName(item);
-          totalValue += item.chaosValue;
+          if(item.chaosValue) {
+            totalValue += item.chaosValue;
+          }
         });
         
         
@@ -448,7 +515,10 @@
       
       function itemToString(i) {
         
-        if (!i.chaosValue) return;
+        if (!i.chaosValue) {
+          i.chaosValue = 0;
+          //return;
+        }
         
         var itemClass = ItemCategoryParser.getCategory(i);
         
@@ -460,25 +530,10 @@
         str += `<td style='padding-left:10px;padding-right:10px'>${i.stackSize ? "x" : "&nbsp;"}</td>`;
         str += `<td style='padding-left:10px;padding-right:10px;min-width:300px'>${i.displayName}</td>`;
         if(!ssf) {
-          str += `<td style='padding-left:10px;padding-right:10px'>${i.chaosValue ? Number(i.chaosValue).toFixed(2) + "" : "&nbsp;"}</td>`;
+          str += `<td style='padding-left:10px;padding-right:10px'>${i.chaosValue ? Number(i.chaosValue).toFixed(2) + "": "&nbsp;"}</td>`;
         }
         str += `</tr>`;
         return str;
-      }
-      
-      function uploadMapList() {
-        logger.info("Creating paste");
-        var PastebinAPI = require('pastebin-js'), pastebin = new PastebinAPI('5d7f037b8fc68a841d496bfc1023e185');
-        logger.info(`Data size is ${mapDataList.length}`);
-        pastebin.createPaste({ text: mapDataList, expiration: '1W' })
-          .then(url  => {
-            logger.info("Created successfully: " + url);
-            ipcRenderer.send("pastebin-success", url);
-          })
-          .fail(err => {
-            logger.info(`Error uploading to pastebin: ${err.message}`);
-            ipcRenderer.send("pastebin-error");
-          });
       }
       
       function exportToExcel() {
@@ -508,6 +563,17 @@
         ipcRenderer.send("exportSheetReady", wb);
         
       }
+      
+      function toggleEncounter(e) {
+        $(e.target).toggleClass("selected");
+        $(`#${e.target.id.replace("button", "checkbox")}`).click();
+      }
+      
+      function resetFilters() {
+        $(".encounterButton").removeClass("selected");
+        $("#mapFilters").show();
+        $("#encounterFilters").show();
+      }
 
     </script>    
   </head>
@@ -517,36 +583,82 @@
     <form autocomplete='off' id='form' method='POST' target="test">
       <div class='row'>
         <div class='column'>
-          <div class='searchHeader' id='mapFiltersHeader' onclick='toggleFilters()'>
-            <span class='headerIcon' id='mapFiltersHeaderIcon'>( - )</span> Map Filters
+          
+          <div class='searchHeader' id='mapFiltersHeader'>
+            <input type='checkbox' class='filterToggle' id='mapFiltersToggle' onchange='toggleFilters(event)' checked/> Map Filters
           </div>
-          <div style='display:grid;grid-template-columns:1fr 1fr;'>
-            <div id='mapFilters' style='white-space: nowrap;'>
+          <div id='mapFilters' class='filterPane' style='display:grid;grid-gap:0 80px;grid-template-columns:1fr 1fr;'>
+
+            <div id='mapFilters-col1' style='white-space: nowrap;'>
               <div id='mapnamerow'>
                 <div id='mapnamelabel' class='searchLabel'>Area Name</div>
                 <input class='autoclick' name='mapname' id='mapname' type='text' maxlength='30' size='40' />
               </div>
+              <div id='mapregionrow'>
+                <div id='mapregionlabel' class='searchLabel'>Atlas Region</div>
+                <select name='mapregion' id='mapregion' style='font-size:22px;'>
+                  <option value="" selected>Any</option>
+                  <option value="Haewark Hamlet">Haewark Hamlet</option>
+                  <option value="Glennach Cairns">Glennach Cairns</option>
+                  <option value="New Vastir">New Vastir</option>
+                  <option value="Tirn's End">Tirn's End</option>
+                  <option value="Lex Proxima">Lex Proxima</option>
+                  <option value="Lex Ejoris">Lex Ejoris</option>
+                  <option value="Valdo's Rest">Valdo's Rest</option>
+                  <option value="Lira Arthain">Lira Arthain</option>
+                  <option value="none">None</option>
+                </select>
+              </div>
+              <div id='mapdaterow'>
+                <div id='mapcountlabel' class='searchLabel' style='padding-right:8px;'>
+                  Date between
+                </div>
+                  <input name='mapdatemin' id='mapdatemin' class='text' type='text' placeholder='yyyy-mm-dd' maxlength='20' size='16' />
+                  <span>and</span>
+                  <input name='mapdatemax' id='mapdatemax' class='text' type='text' placeholder='yyyy-mm-dd' maxlength='20' size='16' />
+                  <img 
+                    src='res/img/q.png'
+                    class='currencyText tooltipElem'
+                    title='Enter start and end dates in the format YYYY-MM-DD HH:MM:SS (time is optional)'
+                  />
+              </div>
               <div id='mapcountrow'>
                 <div id='mapcountlabel' class='searchLabel' style='padding-right:8px;'>Only search previous</div>
                 <input name='mapcount' id='mapcount' class='number' type='number' min='0' max='99999' size='5' />
-                <span style='padding-left:8px;' class='searchLabel'>maps</span>
-              </div>
-              <div id='blightedrow'>
-                <div id='blightedlabel' class='searchLabel'>Blighted</div>
-                <select name='blighted' id='blighted' style='font-size:22px;'>
-                  <option value='any' selected>Any</option>
-                  <option value='yes'>Yes</option>
-                  <option value='no'>No</option>
+                <select name='mapcounttype' id='mapcounttype' style='font-size:22px;'>
+                  <option value='maps' selected>maps</option>
+                  <option value='minutes'>minutes</option>
+                  <option value='hours'>hours</option>
+                  <option value='days'>days</option>
                 </select>
               </div>
             </div>
+
+            <div id='mapFilters-col2' style='white-space: nowrap;'>
+            </div>
+
           </div>
+          
+          <div class='searchHeader' id='encounterFiltersHeader'>
+            <input type='checkbox' class='filterToggle' id='encounterFiltersToggle' onchange='toggleFilters(event)' checked/> Encounter Filters
+            <img 
+              src='res/img/q.png'
+              class='currencyText tooltipElem'
+              style='height:22px;width:22px;'
+              title='Search for maps with any of the encounters selected below.'
+            />
+          </div>
+          <div id='encounterFilters' class='filterPane' style='display:grid;grid-gap:0 80px;grid-template-columns:1fr 1fr;'>
+            <div id='encounterFilters-col1'></div>
+            <div id='encounterFilters-col2'></div>
+          </div>
+          
           <div id='getItems' style='padding:10px 0px;border-top:1px solid #333;margin-top:10px'>
             <span class='itemToggle'><input type='checkbox' id='getItemsCheckbox' checked name='getItems' value='true'/> Also retrieve items (may be very slow)</span>
           </div>
           <div id='mapFilterButtons'>
             <input id='searchButton' style='float:left;width:85%' type='submit' value='Search'/>
-            <input id='resetButton' style='float:right;width:10%' type='reset' value='Clear Filters'/>
+            <input id='resetButton' style='float:right;width:10%' type='reset' value='Clear Filters' onclick='resetFilters()'/>
           </div>
         </div>
       </div>
@@ -594,28 +706,14 @@
         </div>
         <div id="mapList">
           <table class='searchResults' id='mapTable' style='width:100%;border-spacing:0px 6px;'>
-            <thead>
-              <tr>
-                <th id="mapDate">Date</th>
-                <th id="mapName">Name</th>
-                <th id="mapTier">Tier</th>
-                <th id="mapIIQ">IIQ</th>
-                <th id="mapIIR">IIR</th>
-                <th id="mapPackSize">Pack Size</th>
-                <th id="mapTime">Time</th>
-                <th id="mapXpRate">XP/hr</th>
-                <th id='totalProfitCell'><img src='res/img/c.png'></th>
-                <th id='deathCount'>Deaths</th>
-                <th>Kills</th>
-              </tr>
+            <thead id='mapTableHeader'>
             </thead>
-            <tbody id='mapRows'>
+            <tbody id='mapTableRows'>
             </tbody>
           </table>
         </div>
         <div id="export">
           <div style='width: 60%;'>
-          <button id='uploadMapList' onclick='uploadMapList()'>Upload Map List to Pastebin</button>
           <button id='exportToExcel' onclick='exportToExcel()'>Export Map List to Excel</button>
           </div>
         </div>        

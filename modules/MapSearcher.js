@@ -8,6 +8,27 @@ const ItemData = require('./ItemData');
 const ItemPricer = require('./ItemPricer');
 const ItemCategoryParser = require('./ItemCategoryParser');
 
+const encounters = {
+  "alva": "Alva, Master Explorer",
+  "einhar": "Einhar, Beastmaster",
+  "jun": "Jun, Veiled Master",
+  "niko": "Niko, Master of the Depths",
+  "zana": "Zana, Master Cartographer",
+  "blight": "blightEncounter",
+  "blightedmap": "blightedMap",
+  "delirium": "strangeVoiceEncountered",
+  "oshabi": "oshabiBattle",
+  "metamorph": "metamorph",
+  "hunter": "Al-Hezmin, the Hunter",
+  "crusader": "Baran, the Crusader",
+  "warlord": "Drox, the Warlord",
+  "redeemer": "Veritania, the Redeemer",
+  "maven": "maven",
+  "abnormaldisconnect": "abnormalDisconnect",
+  "vaalsidearea": "vaalSideAreas",
+};
+
+
 var emitter = new EventEmitter();
 var settings;
 var pseudoItemPriceCache;
@@ -99,7 +120,9 @@ function mergeItems(arr) {
   var items = {};
   for(var i = 0; i < arr.length; i++) {
     var item = arr[i];
-    if(!item.chaosValue) continue;
+    if(!item.chaosValue) {
+      item.chaosValue = 0;
+    }
     if(!item.stackSize) item.stackSize = 1;
     var typeLine = Utils.getBaseName(item);
     var suffix = Utils.getSuffix(item);
@@ -175,27 +198,28 @@ async function getItemsFromEvent(mapID, eventID) {
         
         var item = JSON.parse(rows[i].rawdata);
         
-        if(rows[i].value) {
-          item.chaosValue = rows[i].value;
-        }
+        item.chaosValue = rows[i].value || 0;
         
         // check if vendor recipe
         var sockets = ItemData.getSockets(item);
+        let hasVendorValue = false;
         if(sockets.length) {
           if(ItemData.countSockets(sockets) === 6) {
             if(sockets.length === 1) {
               if(item.chaosValue <= rates.sixLinkValue) {
                 item.chaosValue = 0;
+                hasVendorValue = true;
                 sixLinkItems += (item.stackSize || 1);
               } else {
-                logger.info(`${mapID} ${item.typeLine} value ${item.chaosValue} > 6L ${rates.sixLinkValue}`);
+                //logger.info(`${mapID} ${item.typeLine} value ${item.chaosValue} > 6L ${rates.sixLinkValue}`);
               }
             } else {
               if(item.chaosValue <= rates.sixSocketValue) {
                 item.chaosValue = 0;
+                hasVendorValue = true;
                 sixSocketItems += (item.stackSize || 1);
               } else {
-                logger.info(`${mapID} ${item.typeLine} value ${item.chaosValue} > 6S ${rates.sixSocketValue}`);
+                //logger.info(`${mapID} ${item.typeLine} value ${item.chaosValue} > 6S ${rates.sixSocketValue}`);
               }
             }            
           } else {
@@ -203,9 +227,10 @@ async function getItemsFromEvent(mapID, eventID) {
               if(sockets[j].includes("R") && sockets[j].includes("G") && sockets[j].includes("B")) {
                 if(item.chaosValue <= rates.rgbLinkedValue) {
                   item.chaosValue = 0;
+                  hasVendorValue = true;
                   rgbLinkedItems += (item.stackSize || 1);
                 } else {
-                  logger.info(`${mapID} ${item.typeLine} value ${item.chaosValue} > RGB ${rates.rgbLinkedValue}`);
+                  //logger.info(`${mapID} ${item.typeLine} value ${item.chaosValue} > RGB ${rates.rgbLinkedValue}`);
                 }
                 break;
               }
@@ -215,14 +240,16 @@ async function getItemsFromEvent(mapID, eventID) {
           if(ItemData.getQuality(item) >= 20 && item.frameType === 4) {
             if(item.chaosValue <= rates.gcpValue) {
               item.chaosValue = 0;
+              hasVendorValue = true;
               gcpItems++;
             } else {
-              logger.info(`${mapID} ${item.typeLine} value ${item.chaosValue} > GCP ${rates.gcpValue}`);
+              //logger.info(`${mapID} ${item.typeLine} value ${item.chaosValue} > GCP ${rates.gcpValue}`);
             }              
           }
         }
         
-        if(item.chaosValue) {
+        // also list items with no value assigned; exclude items with only vendor value
+        if(item.chaosValue || !hasVendorValue) {
           item.mapID = mapID;
           items.push(item);
         }
@@ -303,7 +330,22 @@ function getSQL(q) {
   var params = [];
   
   if(q.mapcount) {
-    str += ` (select * from mapruns where gained > -1 order by id desc limit ${q.mapcount} ) mapruns `;
+    switch(q.mapcounttype) {
+      case 'maps':
+        str += ` (select * from mapruns where gained > -1 order by id desc limit ${q.mapcount} ) mapruns `;
+        break;
+      case 'hours':
+      case 'minutes':
+      case 'days':
+        let diff = {};
+        diff[q.mapcounttype] = q.mapcount;
+        let minDate = moment().subtract(diff).format("YYYYMMDDHHmmss");
+        str += ` (select * from mapruns where gained > -1 and id >= ${minDate} order by id desc) mapruns `;
+        break;
+      default:
+        str += " (select * from mapruns where gained > -1) mapruns ";
+        break;
+    }
   } else {
     str += " (select * from mapruns where gained > -1) mapruns ";
   }
@@ -317,6 +359,31 @@ function getSQL(q) {
   if(q.mapname) {
     str += " and name like ? ";
     params.push(`%${q.mapname}%`);
+  }
+  
+  if(q.mapregion) {
+    if(q.mapregion === "none") {
+      str += " and json_extract(runinfo, '$.atlasRegion') is null ";
+    } else {
+      str += " and json_extract(runinfo, '$.atlasRegion') = ? ";
+      params.push(q.mapregion);
+    }
+  }
+  
+  
+  if(q.mapdatemin && q.mapdatemax) {
+    q.mapdatemin = q.mapdatemin.replace(/\D/g, '').padEnd(14, '0');
+    q.mapdatemax = q.mapdatemax.replace(/\D/g, '').padEnd(14, '0');
+    str += " and mapruns.id between ? and ? ";
+    params.push(q.mapdatemin, q.mapdatemax);
+  } else if(q.mapdatemin) {
+    q.mapdatemin = q.mapdatemin.replace(/\D/g, '').padEnd(14, '0');
+    str += " and mapruns.id >= ? ";
+    params.push(q.mapdatemin);
+  } else if(q.mapdatemax) {
+    q.mapdatemax = q.mapdatemax.replace(/\D/g, '').padEnd(14, '0');
+    str += " and mapruns.id <= ? ";
+    params.push(q.mapdatemax);
   }
 
   if(q.iiqmin && q.iiqmax) {
@@ -441,8 +508,52 @@ function getSQL(q) {
     else if(q.deathsmax) {
       str += " where cast(deaths as integer) <= ? ";
       params.push(q.deathsmax);
-    }
+    }    
     str += " and runs.id = mapruns.id )";
+  }
+  
+  let encounterClause = "1=0 ";
+  
+  if(q.masters) {
+    let arr = (Array.isArray(q.masters) ? q.masters : [ q.masters ]);
+    let searchTag = (q.mastersMissionType === 'any' ? "encountered" : "favourGained");
+    arr.forEach( m => {
+      encounterClause += ` or json_extract(runinfo, '$.masters."${encounters[m]}".${searchTag}') is not null `;
+    });    
+  }
+  
+  if(q.league) {
+    let arr = (Array.isArray(q.league) ? q.league : [ q.league ]);
+    arr.forEach( l => {
+      encounterClause += ` or json_extract(runinfo, '$.${encounters[l]}') is not null `;
+    });    
+  }  
+  
+  if(q.conquerors) {
+    let arr = (Array.isArray(q.conquerors) ? q.conquerors : [ q.conquerors ]);
+    let searchTag = "";
+    switch(q.conquerorType) {
+      case "battle":
+        searchTag = "battle";
+        break;
+      case "taunt":
+        searchTag = "encounter";
+        break;
+    }
+    arr.forEach( c => {
+      encounterClause += ` or json_extract(runinfo, '$.conqueror."${encounters[c]}"${searchTag ? `.${searchTag}` : ""}') is not null `;
+    });    
+  }  
+  
+  if(q.other) {
+    let arr = (Array.isArray(q.other) ? q.other : [ q.other ]);
+    arr.forEach( o => {
+      encounterClause += ` or json_extract(runinfo, '$.${encounters[o]}') is not null `;
+    });    
+  }  
+  
+  if(encounterClause.length > 4) {
+    str += ` and ( ${encounterClause } ) `;
   }
   
   return {

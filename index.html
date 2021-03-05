@@ -18,6 +18,7 @@
     <script src="res/jquery-ui.js"></script>
     <script src="res/page-utils.js"></script>
     <script src="res/debug.js"></script>
+    <script src="res/maptable.js"></script>
 
     <!-- Insert this line after script imports -->
     <script>if (window.module)
@@ -43,86 +44,19 @@
       const momentDurationFormatSetup = require("moment-duration-format");
       const Utils = require('./modules/Utils');
 
-      const fmt = new Intl.NumberFormat();
-      
-      function getEncounters(r) {
-        let str = "";
-        if(r.maven) {
-          str += Utils.getEncounterIcon("maven");
-        }
-        if(r.elderGuardian) {
-          let id = r.elderGuardian.replace("The ", "").toLowerCase();
-          str += Utils.getEncounterIcon(id);
-        }
-        if(r.masters) {
-          Object.keys(r.masters).forEach(m => {
-            let id = m.substr(0, m.indexOf(",")).toLowerCase();
-            str += Utils.getEncounterIcon(id);
-          })
-        }
-        if(r.conqueror) {
-          Object.keys(r.conqueror).forEach(c => {
-            let id = c.substr(c.indexOf("the") + 4).toLowerCase();
-            str += Utils.getEncounterIcon(id);
-          })
-        }
-        if(r.strangeVoiceEncountered) {
-          str += Utils.getEncounterIcon("delirium");
-        }
-        if(r.blightEncounter) {
-          str += Utils.getEncounterIcon("blight");
-        }
-        if(r.blightedMap) {
-          str += Utils.getEncounterIcon("blightedmap");
-        }
-        if(r.metamorph) {
-          str += Utils.getEncounterIcon("metamorph");
-        }
-        if(r.oshabiBattle) {
-          str += Utils.getEncounterIcon("oshabi");
-        }
-        return `<div style='text-align: left;padding-left:10px;' class='mapEncounterCell'>${str}</div>`;
-      }
-      
-      const columns = {
-        date: { label: "Date", f: map => moment(map.id, "YYYYMMDDHHmmss").format("YYYY-MM-DD HH:mm:ss") },
-        area: { label: "Area", f: map => map.name },
-        region: { label: "Atlas Region", f: map => map.runinfo.atlasRegion || "-" },
-        level: { label: "Level", f: map => Utils.getMapTierString(map) },
-        iiq: { label: "IIQ", f: map => (map.iiq ? `+${map.iiq}%` : '-') },
-        iir: { label: "IIR", f: map => (map.iir ? `+${map.iir}%` : '-') },
-        packsize: { label: "Pack Size", f: map => (map.packsize ? `+${map.packsize}%` : '-') },
-        time: { label: "Time", f: map => Utils.getRunningTime(map.firstevent, map.lastevent) },
-        xp: { label: "XP", f: map => fmt.format(map.xpgained) },
-        xpRate: { label: "XP/hr", f: map => map.xpgained > 0 ? Utils.getXPRate(map.xpgained, map.firstevent, map.lastevent) : "-" },
-        c: { label: "<img class='currencyText' src='res/img/c.png'>", f: map => Number(map.gained).toFixed(2) },
-        cRate: { 
-          label: "<img class='currencyText' src='res/img/c.png'>/hr", 
-          f: map => Number( map.gained * 3600 / Utils.getRunningTime(map.firstevent, map.lastevent, "s", {useGrouping:false}) ).toFixed(2)
-        },
-        deaths: { label: "Deaths", f: map => Utils.getDeathCount(map.deaths) },
-        kills: { label: "Kills", f: map => map.kills > 0 ? fmt.format(map.kills) : "-" },
-        encounters: { label: "Encounters", f: map => getEncounters(map.runinfo) }
-      };
-      
-      var columnOrder = settings.columnOrder;
-      if(!columnOrder) {
-        // default columns
-        columnOrder = [ "date", "area", "level", "iiq", "iir", "packsize", "time", "xpRate", "c", "deaths", "kills" ];
-      }
-      
+      var columnOrder = settings.columnOrder || MapTable.DEFAULT;
       var mapData = {};
       
       function setColumnOrder() {
         
         let unused = [];
-        Object.keys(columns).forEach( col => { if(!columnOrder.includes(col)) unused.push(col); });
+        Object.keys(MapTable.COLUMNS).forEach( col => { if(!columnOrder.includes(col)) unused.push(col); });
         
         $("#usedCols").empty();
         $("#unusedCols").empty();
         
-        columnOrder.forEach( col => { $("#usedCols").append(`<div class='colDiv' id='${col}'>${columns[col].label}</div>`); });
-        unused.forEach(col => { $("#unusedCols").append(`<div class='colDiv' id='${col}'>${columns[col].label}</div>`); });
+        columnOrder.forEach( col => { $("#usedCols").append(`<div class='colDiv' id='${col}'>${MapTable.COLUMNS[col].label}</div>`); });
+        unused.forEach(col => { $("#unusedCols").append(`<div class='colDiv' id='${col}'>${MapTable.COLUMNS[col].label}</div>`); });
         
       }
       
@@ -167,7 +101,7 @@
         $("#lastMapsHeader").empty();
         let header = $("<tr>");
         for(var col of cols) {
-          header.append($(`<th>${columns[col].label}</th>`));
+          header.append($(`<th>${MapTable.COLUMNS[col].label}</th>`));
         }
         $("#lastMapsHeader").append(header);
         
@@ -188,7 +122,7 @@
           }
         });
         for(var col of cols) {
-          row.append($(`<td>${columns[col].f(map)}</td>`));
+          row.append($(`<td>${MapTable.COLUMNS[col].f(map)}</td>`));
         }
         if(prepend) {
           $("#lastMapsRows").prepend(row);

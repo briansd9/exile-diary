@@ -214,7 +214,7 @@ class Utils {
   }
   
   static getDeathCount(deaths) {
-    return (deaths == 0 ? "-" : (deaths <= 6 ? "&#x1f480;".repeat(deaths) : `&#x1f480; x ${deaths}`));
+    return (deaths === 0 ? "-" : (deaths <= 6 ? "&#x1f480;".repeat(deaths) : `&#x1f480; x ${deaths}`));
   }
   
   static getMapTierString(map) {
@@ -232,60 +232,6 @@ class Utils {
     var sign = (n > 0 ? "+" : "");
     var css = (n < 0 ? "negative" : "positive");
     return `<span class='${css}'>${parens ? '(' : ''}${sign}${f.format(n)}${parens ? ')' : ''}</span>`;
-  }
-  
-  static addMapRow(param) {
-    
-    var map = param.data;
-
-    var row = $("<tr class='mapRow'>");
-    
-    if(param.modal) {
-      row.click(()=>{
-        window.open(`map.html?id=${map.id}&modal=true`);
-      });
-    } else {
-      row.click(()=>{
-        window.location.href=`map.html?id=${map.id}`;
-        //window.open(`map.html?id=${map.id}`); 
-      });
-    }
-
-    var timestamp = moment(map.id, "YYYYMMDDHHmmss").format("YYYY-MM-DD HH:mm:ss");
-    row.append($("<td>").append(timestamp));
-
-    row.append($("<td>").append(map.name));
-
-    var tier = Utils.getMapTierString(map);
-    row.append($("<td>").append(tier));
-
-    row.append($("<td>").append(map.iiq ? `+${map.iiq}%` : ''));
-    row.append($("<td>").append(map.iir ? `+${map.iir}%` : ''));
-    row.append($("<td>").append(map.packsize ? `+${map.packsize}%` : ''));
-
-    var runningTime = Utils.getRunningTime(map.firstevent, map.lastevent);
-    row.append($("<td>").append(runningTime));
-    
-    var xpRate = (map.xpgained > 0 ? Utils.getXPRate(map.xpgained, map.firstevent, map.lastevent) : "-");
-    row.append($("<td>").append(xpRate));
-    
-    if(!param.ssf) {
-      row.append($("<td>").append(Number(map.gained).toFixed(2)));
-    }
-    
-    if(!param.hardcore) {
-      var deaths = Utils.getDeathCount(map.deaths);
-      row.append($("<td>").append(deaths));
-    }
-
-    row.append($("<td>").append(map.kills > 0 ? (new Intl.NumberFormat()).format(map.kills) : "-"));
-
-    if(param.first) {
-      param.table.prepend(row);
-    } else {
-      param.table.append(row);
-    }
-
   }
   
   static getSockets(item) {
