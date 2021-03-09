@@ -221,7 +221,7 @@
     </div>
     
     <div id="mainContent">
-      <div style="padding:4px;">
+      <div id='lastMapsDiv' style="padding:16px; border: 1px solid #333; background-color:#111; border-radius: 16px;">
         <div class='sectionHeader'>
           Most Recent Maps
           <select id="numberOfShownMaps" onchange="getLastMaps()">
@@ -232,7 +232,7 @@
           </select>
           <span class='menuIcon' id='customizeColumnsButton' onclick='togglePopupMenu()'>≡</span>
         </div>
-        <table class='searchResults' id='lastMapsTable' style='width:100%;border-collapse:collapse;margin-bottom: 80px;'>
+        <table class='searchResults' id='lastMapsTable' style='width:100%;border-collapse:collapse;margin-bottom:16px;'>
           <thead id='lastMapsHeader'>
           </thead>
           <tbody id='lastMapsRows'>
