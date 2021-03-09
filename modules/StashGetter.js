@@ -26,7 +26,11 @@ class StashGetter {
       emitter.removeAllListeners("scheduleNewStashCheck");
       emitter.on("scheduleNewStashCheck", () => {
         clearTimeout(this.nextStashGetTimer);
-        let interval = this.settings.netWorthCheck.interval || 300;
+        // default 5 min between checks
+        let interval = 300;
+        if(this.settings.netWorthCheck && this.settings.netWorthCheck.interval) {
+          interval = this.settings.netWorthCheck.interval;
+        }
         if(!this.offlineStashChecked) {
           logger.info(`Next net worth check in ${interval} seconds`);
         }
