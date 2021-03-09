@@ -466,7 +466,12 @@ function getXPDiff(currentXP) {
     DB.get( " select xp from mapruns order by id desc limit 1 ", (err, row) => {
       if(!err) {
         logger.info(`current xp: ${currentXP}, previous: ${row.xp}`)
-        resolve(currentXP - row.xp);
+        if(!row.xp) {
+          // first map recorded - xp diff can't be determined in this case, return 0
+          resolve(0);
+        } else {
+          resolve(currentXP - row.xp);
+        }
       } else {
         logger.info(`Error getting XP gained: ${err}`);
         resolve(null);
