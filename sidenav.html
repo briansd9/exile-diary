@@ -19,7 +19,11 @@
   
   renderer.on("incubatorsUpdated", (event, incubators) => {
     //console.log(incubators);
-  });            
+  });
+
+  renderer.on("netWorthUpdated", (event) => {
+    updateNetWorth();
+  });
 
   $(document).ready(() => {
 
@@ -32,7 +36,9 @@
     if(!settings || !settings.version || settings.version !== version) {
       $(".newVersion").show();
     }
-
+    
+    setTimeout(updateNetWorth, 250);
+    
   });
 
   $(document).keydown(e => {
@@ -65,6 +71,73 @@
   function hideModal(e) {
     if(e.target.id === "myModal") $("#myModal").hide();
   }
+  
+  function updateNetWorth() {
+    let leagueDB = require('./modules/DB').getLeagueDB();
+    if(leagueDB) {
+      leagueDB.all( " select timestamp, value, length(items) as len from stashes order by timestamp desc limit 50; ", (err, rows) => {
+        if(rows && rows.length) {
+          updateNetWorthBars(rows);
+          $("#sideNetWorthCValue").html(Number(rows[rows.length - 1].value).toFixed(2));
+          let nav = $("#sidenav");
+          let top = (nav.position().top + nav.height()) + 30;
+          $("#sideNetWorth").css("top", `${top}px`);
+          $("#sideNetWorth").show();
+        }
+      })
+    }
+  }
+  
+  function updateNetWorthBars(arr) {
+    
+    let div = $("#sideNetWorthGraph");
+    
+    if(arr.length < 8) {
+      div.hide();
+    } else {
+      div.show();
+    }
+    
+    div.empty();
+    
+    let max = -1;
+    let min = Number.MAX_SAFE_INTEGER;
+    arr.forEach( row => {
+      max = Math.max(max, row.value);
+      min = Math.min(min, row.value);
+    })
+    
+    let newMin = min - ((max - min)*0.5);
+    let newMax = max - newMin;
+    
+    arr.reverse();
+    
+    let m = require('moment');
+    
+    arr.forEach( row => {
+      let height = Number(70 * (row.value - newMin) / newMax).toFixed(2);
+      let width = Number(140 / arr.length).toFixed(2);
+      div.append($(`<div class='sideNetWorthBar' style='height:${height}px;width:${width}px' data-timestamp='${row.timestamp}' data-value='${row.value}' />`));
+    })
+    
+    $(".sideNetWorthBar").tooltip({
+      classes: { "ui-tooltip": "tooltipStyle" }, 
+      track: true, 
+      show: false, 
+      hide: false,
+      items: ".sideNetWorthBar",
+      content: function () {
+        let age = m($(this).data("timestamp"), "YYYYMMDDHHmmss").fromNow();
+        let str = `${age}: <span class='eventText'>${$(this).data("value")}</span>`;
+        return str;
+      },
+      close: function (event, ui) {
+        $(".ui-helper-hidden-accessible").remove();
+      } 
+    });
+    
+  }  
+  
 
 </script>
   
@@ -76,7 +149,7 @@
 <div id='sidenav-items'>
   <hr style='border:1px solid #333'/>
   <div><a class='ui-text' id='sidenav-main' href="index.html">Main</a></div>
-  <div><a class='ui-text' href="stash.html">Net Worth</a></div>
+  <div><a class='ui-text' href="stash.html">Stash</a></div>
   <div><a class='ui-text' href="search.html">Search</a></div>
   <div><a class='ui-text' href="stats.html">Stats</a></div>
   <div><a class='ui-text' href="config.html">Settings</a></div>
@@ -98,6 +171,13 @@
 
 <div>
   <img onclick='openLink("https://patreon.com/briansd9");' style='width: 100%;' src='res/img/patreon.png'/>
+</div>
+
+<div id='sideNetWorth' class='sideNetWorth' style='display:none;'>
+  <div>Net Worth</div>
+  <div id='sideNetWorthC'><span class='eventText' id='sideNetWorthCValue'></span> <img class='currencyText' src='res/img/c.png'/></div>
+  <div id='sideNetWorthGraph' style='height:70px;width:140px;margin-top:8px;margin-bottom:8px;margin-left:8px;font-size:0;'>
+  </div>
 </div>
   
 

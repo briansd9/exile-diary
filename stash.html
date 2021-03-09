@@ -19,6 +19,14 @@
     <script src="res/jquery.tablesorter.js"></script>
     <script src="res/jquery.tablesorter.widgets.js"></script>
     
+    <style type="text/css">
+      .tooltipStyle, .ui-tooltip-content {
+        font-size: medium !important;
+        font-family: Fontin !important;
+        background: rgba(0, 0, 0, 0.9) !important;
+      }
+    </style>   
+    
     <!-- Insert this line after script imports -->
     <script>if (window.module)
         module = window.module;</script>
@@ -69,6 +77,9 @@
         }
         
         getItemsFromData(data) {
+          
+          if(data === "{}") return {};
+          
           return new Promise( (resolve, reject) => {
             zlib.inflate(data, (err, buffer) => {
               if(err) {
@@ -329,6 +340,12 @@
         $("#itemsByValue").hide();
         
         await loadStashList(id);
+        if(Object.keys(stashList).length === 0) {
+          $("#noStash").show();
+          logger.info("No stash found!");
+          return;
+        }
+        
         loadNavLinks(id);
         
         var currStash, prevStash;
@@ -390,6 +407,8 @@
       }
       
       async function displayItems(s) {
+        
+        $("#netWorth").hide();
 
         var exaltRate = await getExaltRate();
         var mirrorRate = await getMirrorRate();
@@ -433,9 +452,13 @@
           netWorthString += ` / ${Number(mirrorValue).toFixed(2)} <img class='currencyText' src='res/img/mirror.png'/>`;
         }        
         
-        $(`#stash_${s.id}`).html(`${s.id} - ${Number(totalChaosValue).toFixed(2)}c`);
-
+        if(totalChaosValue) {
+          $(`#stash_${s.id}`).html(`${s.id} - ${Number(totalChaosValue).toFixed(2)}c`);
+        }
         $("#netWorth").html(`Net Worth: ${netWorthString}`);
+        
+        $("#netWorth").show();
+        $(`#stashes`).show();
         $("#itemsByValue").show();          
         
         
@@ -547,7 +570,7 @@
         function getLeagueStashes(league) {
           let tempDB = require('./modules/DB').getLeagueDB(league);
           return new Promise((resolve, reject) => {
-            tempDB.all(" select timestamp, value from stashes order by timestamp ", (err, rows) => {
+            tempDB.all(" select timestamp, value from stashes where items <> '{}' order by timestamp ", (err, rows) => {
               if(err) {
                 logger.info(`Error getting stashes for ${league} : ${err}`);
                 resolve(null);
@@ -583,7 +606,7 @@
           return id;
         } else {
           return new Promise( (resolve, reject) => {
-            leagueDB.get(" select max(timestamp) as id from stashes ", (err, row) => {
+            leagueDB.get(" select max(timestamp) as id from stashes where items <> '{}' ", (err, row) => {
               if(err) {
                 logger.info(`Unable to get latest stash: ${err}`);
               } else if(row) {
@@ -673,7 +696,7 @@
     
     <div id='noStash' style='display:none;padding:80px;'>
       <img src='res/img/stash.png' style='display:inline-block;vertical-align:middle;'/>
-      Net worth not checked yet. Have you <a href='config.html?loadStash=true'>set up stash tab tracking</a>?
+      No stash data yet. Have you <a href='config.html?loadStash=true'>set up stash tab tracking</a>?
     </div>
     
     

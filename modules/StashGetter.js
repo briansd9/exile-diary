@@ -7,19 +7,34 @@ const ItemParser = require('./ItemParser');
 const ItemPricer = require('./ItemPricer');
 const RateGetterV2 = require('./RateGetterV2');
 
-var nextStashGetTimer;
 var emitter = new EventEmitter();
 
 class StashGetter {
   
   constructor() {
-    clearTimeout(nextStashGetTimer);
+    
     this.settings = require('./settings').get();
     if(this.settings) {
+      
       this.league = this.settings.activeProfile.league;
       this.DB = require('./DB').getDB(this.settings.activeProfile.characterName);
       this.leagueDB = require('./DB').getLeagueDB(this.league);
+      
+      this.nextStashGetTimer = null;
+      this.offlineStashChecked = false;
+      
+      emitter.removeAllListeners("scheduleNewStashCheck");
+      emitter.on("scheduleNewStashCheck", () => {
+        clearTimeout(this.nextStashGetTimer);
+        let interval = this.settings.netWorthCheck.interval || 300;
+        if(!this.offlineStashChecked) {
+          logger.info(`Next net worth check in ${interval} seconds`);
+        }
+        this.nextStashGetTimer = setTimeout(() => { this.tryGet(); }, interval * 1000);
+      })
+      
     }
+    
   }
   
   async tryGet() {
@@ -28,54 +43,33 @@ class StashGetter {
       logger.info("No league set (first run?) - returning");
       return;
     }
-
-    var interval, units;
-    try {
-      interval = this.settings.stashCheck.interval;
-      units = this.settings.stashCheck.units;
-    } catch(e) {
-      interval = 24;
-      units = "hours";
-    }
-
-    switch(units) {
-      case "hours":
-        this.tryGetByTime(interval);
-        break;
-      case "maps":
-        this.tryGetByMapRuns(interval);
-        break;
-      default:
-        logger.info(`Invalid stash check interval: [${interval}] [${units}]`);
-        return;
+    
+    if(this.settings.netWorthCheck && this.settings.netWorthCheck.enabled === false) {
+      logger.info("Net worth checking is disabled ??? - returning");
+      return;
     }
     
-  }
-
-  async tryGetByMapRuns(interval) {
-    let shouldGet = await this.reachedMapLimit(interval);
-    if(shouldGet) {
-      this.get();
+    let poeRunning = await Utils.poeRunning();
+    if(!poeRunning) {
+      if(this.offlineStashChecked) {
+        emitter.emit("scheduleNewStashCheck");
+        return;
+      } else {
+        logger.info("PoE not running - will check net worth only one more time until it is running again");
+        this.offlineStashChecked = true;
+      }
+    } else {
+      this.offlineStashChecked = false;
     }
+    
+    this.get();
+    
   }
-
-  async tryGetByTime(interval) {
-    clearTimeout(nextStashGetTimer);
-    let lastStashAge = await this.getLastStashAge();
-    if(lastStashAge >= interval) {
-      this.get();
-      nextStashGetTimer = setTimeout(() => { this.tryGet(); }, interval * 60 * 60 * 1000);
-      logger.info(`Set new timer for getting stash in ${Number(interval * 60 * 60).toFixed(2)} sec`);
-    }
-    else {
-      nextStashGetTimer = setTimeout(() => { this.tryGet(); }, (interval - lastStashAge) * 60 * 60 * 1000);
-      logger.info(`Set new timer for getting stash in ${Number((interval - lastStashAge) * 60 * 60).toFixed(2)} sec`);
-    }    
-  }
+    
 
   async getLastStashAge() {
     return new Promise((resolve, reject) => {
-      this.leagueDB.get("select ifnull(max(timestamp), -1) as timestamp from stashes", (err, row) => {
+      this.leagueDB.get("select ifnull(max(timestamp), -1) as timestamp from stashes where items <> '{}' ", (err, row) => {
         if(err) {      
           logger.info(`Error getting latest stash: ${err}`);
           resolve(false);
@@ -86,7 +80,7 @@ class StashGetter {
           var now = moment();
           var then  = moment(row.timestamp, 'YYYYMMDDHHmmss');
           var diff = moment.duration(now.diff(then)).asHours();
-          logger.info(`Last retrieved stash ${row.timestamp} is ${Number(diff).toFixed(2)} hours old`);
+          logger.info(`Last retrieved full stash ${row.timestamp} is ${Number(diff).toFixed(2)} hours old`);
           resolve(diff);
         }
       });
@@ -95,7 +89,7 @@ class StashGetter {
 
   async reachedMapLimit(limit) {
     return new Promise((resolve, reject) => {
-      this.leagueDB.get("select ifnull(max(timestamp), -1) as timestamp from stashes", (err, row) => {
+      this.leagueDB.get("select ifnull(max(timestamp), -1) as timestamp from stashes where items <> '{}' ", (err, row) => {
         if(err) {      
           logger.info(`Error getting latest stash: ${err}`);
           resolve(false);
@@ -109,13 +103,35 @@ class StashGetter {
               logger.info(`Error getting map count: ${err}`);
               resolve(false);
             }
-            logger.info(`${maps.count} map runs since last retrieved stash (set to retrieve every ${limit})`);
+            logger.info(`${maps.count} map runs since last retrieved full stash (set to retrieve every ${limit})`);
             resolve(maps.count >= limit);
           });
         }
       });
     });
-  }  
+  }
+  
+  async checkFullStashInterval() {
+    
+    if(this.settings.stashCheck.enabled === false) {
+      return false;
+    }
+    
+    let interval = this.settings.stashCheck.interval;
+    let units = this.settings.stashCheck.units;
+
+    switch(units) {
+      case "hours":
+        let lastStashAge = await this.getLastStashAge();
+        return (lastStashAge >= interval);
+      case "maps":
+        return (await this.reachedMapLimit(interval));
+      default:
+        logger.info(`Invalid stash check interval: [${interval}] [${units}]`);
+        return false;
+    }
+    
+  }
 
   async get(interval = 10) {
 
@@ -128,10 +144,7 @@ class StashGetter {
       }
       return;
     }
-
     
-    var timestamp = moment().format("YYYYMMDDHHmmss");  
-
     var watchedTabs = null;
     if(this.settings.tabs && this.settings.tabs[this.settings.activeProfile.league]) {
       watchedTabs = this.settings.tabs[this.settings.activeProfile.league];
@@ -142,6 +155,9 @@ class StashGetter {
     } else {
       logger.info("Tabs to monitor not yet set, will retrieve all");
     }
+    
+    let getFullStash = await this.checkFullStashInterval();
+    var timestamp = moment().format("YYYYMMDDHHmmss");  
 
     var params = {
       league : this.league,
@@ -154,6 +170,7 @@ class StashGetter {
     var tabList = await this.getTabList(params);
     if(!tabList) {
       logger.info("Failed to get tab list, will try again later");
+      emitter.emit("scheduleNewStashCheck");
       return;
     }
 
@@ -171,10 +188,11 @@ class StashGetter {
       var tabData = await this.getTab(t, params);
       if(tabData === -1) {
         logger.info(`Failed to get data for tab ${t.name}, aborting stash retrieval - will try again later`);
+        emitter.emit("scheduleNewStashCheck");
         return;
       }
       if(tabData && tabData.items && tabData.items.length > 0) {
-        logger.info(`${t.type} "${t.name}" in ${this.league} has total value ${Number(tabData.value)}`);
+        //logger.info(`${t.type} "${t.name}" in ${this.league} has total value ${Number(tabData.value)}`);
         tabs.value += Number(tabData.value);
         tabs.items = tabs.items.concat(tabData.items);
       }
@@ -185,33 +203,36 @@ class StashGetter {
       this.leagueDB.get("select value, length(items) as len from stashes order by timestamp desc limit 1", async (err, row) => {
         if(err) {
           logger.info(`Error getting previous ${this.league} stash before ${timestamp}: ${err}`);
+          emitter.emit("scheduleNewStashCheck");
         } else {
           if(row && (Number(tabs.value).toFixed(2) === Number(row.value).toFixed(2)) ) {
             logger.info(`No change in ${this.league} stash value (${Number(tabs.value).toFixed(2)}) since last update`);
+            emitter.emit("netWorthUpdated");
+            emitter.emit("scheduleNewStashCheck");
           } else {          
-            let rawdata = await Utils.compress(tabs.items);
+            let rawdata = (getFullStash ? await Utils.compress(tabs.items) : "{}");
             this.leagueDB.run(" insert into stashes(timestamp, items, value) values(?, ?, ?) ", [timestamp, rawdata, tabs.value], (err) => {
               if(err) {      
                 logger.info(`Error inserting ${this.league} stash ${timestamp} with value ${tabs.value}: ${err}`);
+                emitter.emit("scheduleNewStashCheck");
               } else {
                 logger.info(`Inserted ${this.league} stash ${timestamp} with value ${tabs.value}`);
                 this.leagueDB.get(" select value from stashes where timestamp < ? order by timestamp desc limit 1 ", [timestamp], (err, row) => {
                   if(err) {
                     logger.info(`Error getting previous ${this.league} stash before ${timestamp}: ${err}`);
+                    emitter.emit("scheduleNewStashCheck");
                   } else {
-                    if(row && row.value) {
-                      emitter.emit("netWorthUpdated", {
+                    if(getFullStash) {
+                      let change = (row && row.value ? Number(tabs.value - row.value).toFixed(2) : "new");
+                      emitter.emit("fullStashUpdated", {
                         value: Number(tabs.value).toFixed(2),
-                        change: Number(tabs.value - row.value).toFixed(2),
+                        change: change,
                         league: this.league
                       });
                     } else {
-                      emitter.emit("netWorthUpdated", {
-                        value: Number(tabs.value).toFixed(2),
-                        change: "new",
-                        league: this.league
-                      });
+                      emitter.emit("netWorthUpdated");
                     }
+                    emitter.emit("scheduleNewStashCheck");
                   }
                 });
               }
@@ -222,6 +243,7 @@ class StashGetter {
 
     } else {
       logger.info(`No items found in ${this.league} stash, returning`);
+      emitter.emit("scheduleNewStashCheck");
     }
 
   }

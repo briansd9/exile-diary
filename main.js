@@ -288,14 +288,17 @@ function initWindow(window) {
       </span>
     `);
   });
-  StashGetter.emitter.on("netWorthUpdated", (data) => {
+  StashGetter.emitter.on("netWorthUpdated", () => {
+    webContents.send("netWorthUpdated");
+  });
+  StashGetter.emitter.on("fullStashUpdated", (data) => {
+    webContents.send("netWorthUpdated");
     addMessage(
       `
         <span style='cursor:pointer;' onclick='window.location.href="stash.html";'>
         Net worth update for <span class='eventText'>${data.league}</span> league:
-        <span class='eventText'>${data.value}</span>
-        <img src='res/img/c.png' class='currencyText'>
-        ${data.change === "new" ? "" : `(${Utils.formatSignedNumber(data.change)})`}
+        <span class='eventText'>${data.value}</span> <img src='res/img/c.png' class='currencyText'>
+        ${data.change === "new" ? "" : ` (${Utils.formatSignedNumber(Number(data.change).toFixed(2))})`}
         </span>
       `,
       true

@@ -22,8 +22,8 @@ html {
 	
 	body {
 		background-color: #000;
-    margin-left: 200px;
-    margin-right: 100px;
+    margin-left: 180px;
+    margin-right: 20px;
 	}
   
 	.bodyScreenshot {
@@ -442,11 +442,22 @@ span.item-name {
   z-index: 1;
   top: 10px;
   left: 10px;
-  background-color: #111; /* Black */
+  background-color: #111;
   border: 1px solid #333;
   border-radius: 16px;
+  overflow-x: hidden;
   padding: 10px;
-  overflow-x: hidden; /* Disable horizontal scroll */
+}
+
+.sideNetWorth {
+  position: fixed;
+  padding: 1px;
+  left: 10px;
+  width: 160px;
+  text-align: center;
+  background-color: #111;
+  border: 1px solid #333;
+  border-radius: 16px;
 }
 
 * { box-sizing: border-box; }
@@ -1073,9 +1084,42 @@ thead > tr > th > * {
     background: #000; 
     opacity: 1; 
   }
-    
   
   thead.bigDropsHeader > tr > th { 
     top: -10; 
     z-index: 5000; 
   }
+  
+  .spanCheckbox {
+    width: 20px;
+    height: 20px;
+    vertical-align:middle;
+  }
+  
+  .spanCheckbox:not(:checked) + span {
+    opacity: 0.5;    
+  }
+
+  .spanCheckbox:not(:checked) ~ span.togglable {
+    visibility: hidden;
+  }
+  
+  .sideNetWorthBar {
+    display: inline-block;
+    background-color: #333317;
+    margin-left: 0px;
+    vertical-align: bottom;
+  }
+  
+  .sideNetWorthBar:hover {
+    background-color: #A3A14C;
+  }
+  
+  .sideNetWorthBar:first-child {
+    border-bottom-left-radius: 16px;
+  }
+  .sideNetWorthBar:last-child {
+    border-bottom-right-radius: 16px;
+  }
+  
+  

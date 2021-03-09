@@ -83,7 +83,8 @@
             "ui-tooltip" : "tooltipStyle"
           },
           show: false,
-          hide: false
+          hide: false,
+          track: true
         });
         
         var settingsPath = path.join(app.getPath("userData"), "settings.json");
@@ -289,6 +290,11 @@
         if(settings.stashCheck) {
           var value = settings.stashCheck.interval;
           var units = settings.stashCheck.units;
+          var enabled = true;
+          if(settings.stashCheck.hasOwnProperty("enabled")) {
+            enabled = settings.stashCheck.enabled;
+          }
+          $("#stashCheckCheckbox").prop("checked", enabled);
           $("#stashCheckUnits").val(units);
           switch(units) {
             case "hours":
@@ -306,6 +312,15 @@
           $("#stashCheckHours").hide();
           $("#stashCheckMaps").val(20);
           $("#stashCheckUnits").val("maps");
+          $("#stashCheckCheckbox").prop("checked", true);
+        }
+        
+        if(settings.netWorthCheck) {
+          $("#netWorthCheckInterval").val(settings.netWorthCheck.interval);
+          $("#netWorthCheckbox").prop("checked", settings.netWorthCheck.enabled);
+        } else {
+          $("#netWorthCheckInterval").val(300);
+          $("#netWorthCheckbox").prop("checked", true);
         }
         
         // backward compatibility, preserve old minItemValue if present
@@ -486,8 +501,14 @@
         }
         settings.stashCheck = {
           interval: stashCheckInterval,
-          units: stashCheckUnits
-        }
+          units: stashCheckUnits,
+          enabled: $("#stashCheckCheckbox").prop("checked")
+        };
+        
+        settings.netWorthCheck = {
+          interval: $("#netWorthCheckInterval").val() || 300,
+          enabled: $("#netWorthCheckbox").prop("checked")
+        };
         
         let itemFilter = {};
         itemFilterCategories.forEach(cat => {
@@ -596,12 +617,12 @@
       function listTabs(data) {
         var div = $("#tabList");
         data.tabs.forEach(tab => {
-          if(tab.type === "MapStash" || tab.type === "UniqueStash") return;
+          let unsupported = (tab.type === "MapStash" || tab.type === "UniqueStash");
           var color = `#${toHex(tab.colour.r)}${toHex(tab.colour.g)}${toHex(tab.colour.b)}`;
           var checked = settings.tabs && settings.tabs[settings.activeProfile.league] && settings.tabs[settings.activeProfile.league].includes(tab.id);
           div.append(`
-            <div onclick='selectTab("${tab.id}");' class='stashTab' style='background-color:${color};'>
-              <input type='checkbox' onclick='selectTab("${tab.id}")' name='tabList' ${checked ? "checked='checked'" : ""} id='${tab.id}' value='${tab.id}'>
+            <div onclick='selectTab("${tab.id}");' class='stashTab' style='background-color:${color};${unsupported ? "opacity:0.5;" : ""}'>
+              ${unsupported ? "<input type='checkbox' style='visibility:hidden;'/>" : `<input type='checkbox' onclick='selectTab("${tab.id}")' name='tabList' class='stashTabCheckbox' ${checked ? "checked='checked'" : ""} id='${tab.id}' value='${tab.id}'>`}
               <img style='margin-bottom:-8px;margin-right:8px' src="res/img/tabicons/${tab.type}.png"/>
               <span>${tab.n}</span>
             </div>
@@ -623,6 +644,17 @@
 
       function selectTab(id) {
         $(`#${id}`).prop("checked", !$(`#${id}`).prop("checked"));
+      }
+      
+      function toggleTabs() {
+        let select = ($('#toggleTabs').data("mode") === "select");
+        $('#toggleTabs').data("mode", (select ? "unselect" : "select"));
+        $('#toggleTabs').html(`Click here to ${select ? "unselect" : "select"} all`);
+        $(`.stashTabCheckbox`).each( function() {
+          if( (!$(this).prop("checked") && select) || ($(this).prop("checked") && !select) )  {
+            $(this).click();
+          }
+        });
       }
       
       function getCharacters() {
@@ -744,7 +776,16 @@
         $("#characterList").prop("disabled", $("#autoSwitch").is(":checked"));
         $("#characterList").css("display", $("#autoSwitch").is(":checked") ? "none" : "");
       }
-
+      
+      function toggleStashCheckboxes(e) {
+        let id = e.target.id;
+        if(id === "netWorthCheckbox" && $(`#${id}`).prop("checked") === false) {
+          $("#stashCheckCheckbox").prop("checked", false);
+        } else if(id === "stashCheckCheckbox" && $(`#${id}`).prop("checked") === true) {
+          $("#netWorthCheckbox").prop("checked", true);
+        }
+      }
+      
     </script>
 
   </head>
@@ -873,33 +914,47 @@
         </table>    
       </div>
       <div id="stash">
+        <div style='display:inline-block;' title="How often to check the total value of your stash.">
+          <input type='checkbox' id='netWorthCheckbox' onchange="toggleStashCheckboxes(event)" class='spanCheckbox'/> 
+          <span id='netWorthSpan'>Check net worth</span>
+          <span class='togglable'> every <input type='number' value='300' min='0' max='86400' step='1' maxlength='8' style='margin:0 4px;width:60px' id='netWorthCheckInterval' /> seconds</span>
+        </div>
+        <br/>
+        <div style='display:inline-block;' title="How often to save the entire contents of your stash for later viewing. If you're not interested in this, disabling it can save disk space">
+          <input type='checkbox' id='stashCheckCheckbox' onchange="toggleStashCheckboxes(event)" class='spanCheckbox'/> 
+          <span id='stashCheckSpan'>
+            Retrieve full stash contents 
+          </span>
+          <span class='togglable'>
+            every
+            <select class='ui-text' style='margin-left:4px;font-family:FontinSmallCaps;' id="stashCheckHours">
+              <option value="0.25">1/4</option>
+              <option value="0.5">1/2</option>
+              <option value="1">1</option>
+              <option value='2'>2</option>
+              <option value='3'>3</option>
+              <option value='4'>4</option>
+              <option value='6'>6</option>
+              <option value='8'>8</option>
+              <option value='12'>12</option>
+              <option value='24'>24</option>
+            </select>
+            <select class='ui-text' style='margin-left:10px;font-family:FontinSmallCaps;' id="stashCheckMaps">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value='20'>20</option>
+              <option value='50'>50</option>
+              <option value='100'>100</option>
+            </select>
+            <select class='ui-text' style='font-family:FontinSmallCaps;' id="stashCheckUnits">
+              <option value="hours">hours</option>
+              <option value="maps">maps</option>
+            </select>
+          </span>
+        </div>
         <div>
-          Check Net Worth every
-          <select class='ui-text' style='margin-left:10px;font-family:FontinSmallCaps;' id="stashCheckHours">
-            <option value="0.25">1/4</option>
-            <option value="0.5">1/2</option>
-            <option value="1">1</option>
-            <option value='2'>2</option>
-            <option value='3'>3</option>
-            <option value='4'>4</option>
-            <option value='6'>6</option>
-            <option value='8'>8</option>
-            <option value='12'>12</option>
-            <option value='24'>24</option>
-          </select>
-          <select class='ui-text' style='margin-left:10px;font-family:FontinSmallCaps;' id="stashCheckMaps">
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value='20'>20</option>
-            <option value='50'>50</option>
-            <option value='100'>100</option>
-          </select>
-          <select class='ui-text' style='font-family:FontinSmallCaps;' id="stashCheckUnits">
-            <option value="hours">hours</option>
-            <option value="maps">maps</option>
-          </select>
           <hr>
-          <div id="note">Select Stash Tabs to Monitor (Map tabs not yet supported)</div>
+          <div id="note">Select Stash Tabs to Monitor (Map and unique tabs not yet supported). <a id='toggleTabs' data-mode='select' style='color:#66f;' onclick='toggleTabs()'>Click here to select all</a></div>
           <div id="tabList" style="max-height:65%;overflow-y:auto;"></div>
         </div>
       </div>
