@@ -107,15 +107,7 @@ function start() {
 
 async function checkValidLogfile(path) {
   
-  let poeRunning = false;
-  
-  let processList = await (require('ps-list'))();
-  for(let i = 0; i < processList.length; i++) {
-    if(processList[i].name.toLowerCase().startsWith("pathofexile")) {
-      poeRunning = true;
-      break;
-    }
-  }
+  let poeRunning = await Utils.poeRunning();
   
   require('fs').stat(path, (err, stats) => {
     if(err) {
