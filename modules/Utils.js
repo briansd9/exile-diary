@@ -327,6 +327,16 @@ class Utils {
     
   }
   
+  static getWatchstoneBaseType(itemName) {
+    let t = Constants.craftableWatchstoneBaseTypes;
+    for(let i = 0; i < t.length; i++) {
+      if(itemName.includes(t[i])) {
+        return t[i];
+      }
+    }
+    return itemName;
+  }
+  
   static getBase64EncodedData(iconURL) {
     var str = iconURL.replace("https://web.poecdn.com/gen/image/", "");
     str = str.substr(0, str.indexOf("/"));
@@ -434,7 +444,17 @@ class Utils {
   static getEncounterIcon(id) {
     return `<img src='res/img/encountericons/${id}.png'/>`;
   }
-
+  
+  static async poeRunning() {
+    let processList = await (require('ps-list'))();
+    for(let i = 0; i < processList.length; i++) {
+      if(processList[i].name.toLowerCase().startsWith("pathofexile")) {
+        return true;
+      }
+    }
+    return false;
+  }  
+  
 }
 
 
