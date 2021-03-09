@@ -1056,6 +1056,33 @@
     "Ritual Splinter" :  { "item" : "Ritual Vessel", "itemType": "Currency", "stackSize" : 100 }
   },
   
+ "craftableWatchstoneBaseTypes" : [
+    "Chromium Haewark Hamlet Watchstone",
+    "Chromium Tirn's End Watchstone",
+    "Chromium Lex Proxima Watchstone",
+    "Chromium Lex Ejoris Watchstone",
+    "Chromium New Vastir Watchstone",
+    "Chromium Glennach Cairns Watchstone",
+    "Chromium Valdo's Rest Watchstone",
+    "Chromium Lira Arthain Watchstone",
+    "Platinum Haewark Hamlet Watchstone",
+    "Platinum Tirn's End Watchstone",
+    "Platinum Lex Proxima Watchstone",
+    "Platinum Lex Ejoris Watchstone",
+    "Platinum New Vastir Watchstone",
+    "Platinum Glennach Cairns Watchstone",
+    "Platinum Valdo's Rest Watchstone",
+    "Platinum Lira Arthain Watchstone",
+    "Titanium Haewark Hamlet Watchstone",
+    "Titanium Tirn's End Watchstone",
+    "Titanium Lex Proxima Watchstone",
+    "Titanium Lex Ejoris Watchstone",
+    "Titanium New Vastir Watchstone",
+    "Titanium Glennach Cairns Watchstone",
+    "Titanium Valdo's Rest Watchstone",
+    "Titanium Lira Arthain Watchstone"
+  ],   
+  
   "horticrafts" : {
     "Reforge a Normal or Magic item as a Rare item with random modifiers, including a Caster modifier" : "Wild Ursaling Seed",
     "Reforge a Rare item with new random modifiers, including a Caster modifier" : "Wild Ursaling Seed",
