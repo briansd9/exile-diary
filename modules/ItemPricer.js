@@ -110,16 +110,16 @@
       }
     }
     
+    if(item.typeline.includes("Watchstone")) {
+      return getWatchstoneValue();      
+    }    
     
     var helmetBaseValue;
 
     if(item.rarity === "Unique") {
       if(item.category === "Maps") {
         return getUniqueMapValue();
-      } else if(item.typeline.endsWith("Watchstone")) {
-        return getWatchstoneValue();      
-      }    
-      else {
+      } else {
         // handle helmet enchants - if item is a helmet, don't return value yet
         if(item.category === "Helmets") {
           helmetBaseValue = getUniqueItemValue();
@@ -260,7 +260,7 @@
     }    
 
     function getWatchstoneValue() {
-      var identifier = item.name || Utils.getItemName(item.icon);
+      var identifier = ( item.rarity === "Magic" ? Utils.getWatchstoneBaseType(item.typeline) : (item.name || Utils.getItemName(item.icon)) );
       if(!item.identified) {
         if(Constants.watchstoneMaxCharges[identifier]) {
           identifier += `, ${Constants.watchstoneMaxCharges[identifier]} uses remaining`;
