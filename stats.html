@@ -730,7 +730,7 @@
         div += d;
       }
       
-      if(s.trials) {
+      if(s.trials && s.trials.length > 0) {
         let trialStatus = (s.trials.length !== 6 ? "Not complete" : `completed in ${moment.duration(s.trials[s.trials.length-1].totaltime, "seconds").format("HH:mm:ss", { trim: false })}`);
         let t = `
           <div class='totalStatSection'>

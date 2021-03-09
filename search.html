@@ -400,7 +400,7 @@
           });
           $("#mapnamerow").show();
           $("#mapcountrow").show();
-          $("#blightedrow").show();
+          $("#exportTab").show();
 
           $(".footer").hide();
           $("body").removeClass('bodyScreenshot');
@@ -441,9 +441,6 @@
         }
         if(!$("#mapcount").val()) {
           $("#mapcountrow").hide();
-        }
-        if($("#blighted").val() === "any") {
-          $("#blightedrow").hide();
         }
         
         $(".footer").show();
