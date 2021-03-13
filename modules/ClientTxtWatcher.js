@@ -51,6 +51,20 @@ function start() {
         line = JSON.stringify(line).replace(/(\\r\\n|\\n|\\r)/, '');
         line = JSON.parse(line);
       }
+      
+      // set afk flag to avoid unnecessary net worth checking
+      if(line.includes("] : AFK mode is now ON. Autoreply")) {
+        logger.info("Setting AFK mode to ON");
+        global.afk = true;
+        return;
+      } else {
+        if(global.afk) {
+          logger.info("Setting AFK mode to OFF");
+        }
+        global.afk = false;
+      }
+      
+      
       if( 
         line.toLowerCase().endsWith(`] @to ${settings.activeProfile.characterName.toLowerCase()}: end`) 
         || line.toLowerCase().endsWith(`] ${settings.activeProfile.characterName.toLowerCase()}: end`) 

@@ -12,6 +12,17 @@ var emitter = new EventEmitter();
 class StashGetter {
   
   constructor() {
+    if(!StashGetter.instance) {
+      logger.info("Starting StashGetter instance");
+      StashGetter.instance = this;
+    } else {
+      logger.info("Returning existing StashGetter instance");
+    }
+    this.initialize();
+    return StashGetter.instance;
+  }
+  
+  initialize() {
     
     this.settings = require('./settings').get();
     if(this.settings) {
@@ -19,9 +30,10 @@ class StashGetter {
       this.league = this.settings.activeProfile.league;
       this.DB = require('./DB').getDB(this.settings.activeProfile.characterName);
       this.leagueDB = require('./DB').getLeagueDB(this.league);
-      
-      this.nextStashGetTimer = null;
       this.offlineStashChecked = false;
+      
+      // clear any existing scheduled stash check
+      clearTimeout(this.nextStashGetTimer);
       
       emitter.removeAllListeners("scheduleNewStashCheck");
       emitter.on("scheduleNewStashCheck", () => {
@@ -53,13 +65,13 @@ class StashGetter {
       return;
     }
     
-    let poeRunning = await Utils.poeRunning();
-    if(!poeRunning) {
+    let poeActive = (await Utils.poeRunning()) && !(global.afk);
+    if(!poeActive) {
       if(this.offlineStashChecked) {
         emitter.emit("scheduleNewStashCheck");
         return;
       } else {
-        logger.info("PoE not running - will check net worth only one more time until it is running again");
+        logger.info("PoE not running or in AFK mode - suspending net worth check temporarily");
         this.offlineStashChecked = true;
       }
     } else {

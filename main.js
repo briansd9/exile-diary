@@ -337,9 +337,6 @@ function initWindow(window) {
   RunParser.emitter.removeAllListeners();
   RunParser.emitter.on("runProcessed", (run) => {
     
-    let s = new StashGetter();
-    s.tryGet();
-
     var f = new Intl.NumberFormat();
     addMessage(
       `<span style='cursor:pointer;' onclick='window.location.href="map.html?id=${run.id}";'>`      

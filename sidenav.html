@@ -75,7 +75,8 @@
   function updateNetWorth() {
     let leagueDB = require('./modules/DB').getLeagueDB();
     if(leagueDB) {
-      leagueDB.all( " select timestamp, value, length(items) as len from stashes order by timestamp desc limit 50; ", (err, rows) => {
+      // select an extra row - the first one will only be used for calculating diff
+      leagueDB.all( " select timestamp, value, length(items) as len from stashes order by timestamp desc limit 51; ", (err, rows) => {
         if(rows && rows.length) {
           updateNetWorthBars(rows);
           $("#sideNetWorthCValue").html(Number(rows[rows.length - 1].value).toFixed(2));
@@ -114,11 +115,14 @@
     
     let m = require('moment');
     
-    arr.forEach( row => {
-      let height = Number(70 * (row.value - newMin) / newMax).toFixed(2);
-      let width = Number(140 / arr.length).toFixed(2);
-      div.append($(`<div class='sideNetWorthBar' style='height:${height}px;width:${width}px' data-timestamp='${row.timestamp}' data-value='${row.value}' />`));
-    })
+    arr.forEach( (row, idx) => {
+      if(idx > 0) {
+        let diff = Number(row.value - arr[idx-1].value).toFixed(2);
+        let height = Number(70 * (row.value - newMin) / newMax).toFixed(2);
+        let width = Number(140 / arr.length).toFixed(2);
+        div.append($(`<div class='sideNetWorthBar' style='height:${height}px;width:${width}px' data-timestamp='${row.timestamp}' data-value='${row.value}' data-diff='${diff}'/>`));
+      }
+    });
     
     $(".sideNetWorthBar").tooltip({
       classes: { "ui-tooltip": "tooltipStyle" }, 
@@ -128,7 +132,10 @@
       items: ".sideNetWorthBar",
       content: function () {
         let age = m($(this).data("timestamp"), "YYYYMMDDHHmmss").fromNow();
-        let str = `${age}: <span class='eventText'>${$(this).data("value")}</span>`;
+        let val = $(this).data("value");
+        // diff guaranteed to be nonzero - stash value only stored when it changes
+        let diff = Utils.formatSignedNumber($(this).data("diff"), true);
+        let str = `${age}: <span class='eventText'>${val} <img class='currencyText' src='res/img/c.png'/> ${diff}</span>`;
         return str;
       },
       close: function (event, ui) {
