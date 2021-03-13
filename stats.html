@@ -332,7 +332,7 @@
               $("#popupContainer").append(popup);
             }
           }
-          $(document).tooltip({
+          $(".item-container").tooltip({
             classes: { "ui-tooltip": "tooltipOverride" },
             show: "true",
             hide: "false",
@@ -352,7 +352,7 @@
               }
             }
           });
-          $("#bigDropsTable").tablesorter();
+          $("#bigDropsTable").tablesorter().trigger("updateAll");
         } else {
           tabOptions.disabled.push(3);
         }
