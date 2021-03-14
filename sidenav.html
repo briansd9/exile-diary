@@ -103,10 +103,12 @@
     
     let max = -1;
     let min = Number.MAX_SAFE_INTEGER;
-    arr.forEach( row => {
-      max = Math.max(max, row.value);
-      min = Math.min(min, row.value);
-    })
+    arr.forEach( (row, idx) => {
+      if(idx < arr.length - 1) {
+        max = Math.max(max, row.value);
+        min = Math.min(min, row.value);
+      }
+    });
     
     let newMin = min - ((max - min)*0.5);
     let newMax = max - newMin;
