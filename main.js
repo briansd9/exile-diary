@@ -738,11 +738,12 @@ function saveToImgur(img) {
   imgur.setClientId('ba8f73761b94a1d');
   imgur.uploadBase64(img)
     .then(json => {
-      if(json.data.error) {
-        addMessage(`Error uploading image: ${json.data.error.message}`);
+      console.log(json);
+      if(json && json.error && json.error.message) {
+        addMessage(`Error uploading image: ${json.error.message}`);
       } else {
-        logger.info(`Delete link for uploaded image is http://imgur.com/delete/${json.data.deletehash}`);
-        addMessage(`Screenshot uploaded to <a class='opn-link' href='${json.data.link}'>${json.data.link}</a>`);
+        logger.info(`Delete link for uploaded image is http://imgur.com/delete/${json.deletehash}`);
+        addMessage(`Screenshot uploaded to <a class='opn-link' href='${json.link}'>${json.link}</a>`);
       }
     })
     .catch(err => {
