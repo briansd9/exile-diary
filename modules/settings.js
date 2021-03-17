@@ -21,14 +21,21 @@ function set(key, value) {
   if(fs.existsSync(settingsPath)) {
     var settings = require(settingsPath);
     settings[key] = value;
-    fs.writeFile(settingsPath, JSON.stringify(settings), (err) => {
+    var tempFilePath = path.join(app.getPath("userData"), "settings.json.bak");
+    fs.writeFile(tempFilePath, JSON.stringify(settings), (err) => {
       if(err) {
-        logger.info("Error writing settings! " + err.message);
-        throw err;
+        logger.info("Error writing temp settings file: " + err.message);
       } else {
-        if(key !== "mainWindowBounds") {
-          logger.info(`Set "${key}" to ${JSON.stringify(value)}`);
-        }
+        logger.info(`Renaming ${settingsPath}`);
+        fs.rename(tempFilePath, settingsPath, (err2) => {
+          if(err2) {
+            logger.info("Error copying temp settings file: " + err2.message);
+          } else {
+            if(key !== "mainWindowBounds") {
+              logger.info(`Set "${key}" to ${JSON.stringify(value)}`);
+            }
+          }
+        });
       }
     });    
   }  
