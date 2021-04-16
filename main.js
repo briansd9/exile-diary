@@ -247,7 +247,8 @@ async function init() {
     // remove settings file from cache, then restart all components 
     // to make sure they're using the current settings file
     var settingsPath = path.join(app.getPath("userData"), "settings.json");
-    if(fs.existsSync(settingsPath)) {
+    var tmpSettings = Settings.get();
+    if(fs.existsSync(settingsPath) && tmpSettings) {
       delete require.cache[require.resolve(settingsPath)];
       await checkCurrentCharacterLeague();
       logger.info("Done checking, character status is " + characterCheckStatus);
@@ -264,6 +265,9 @@ async function init() {
       }
       resolve(true);
     } else {
+      if(fs.existsSync(settingsPath) && !tmpSettings) {
+        addMessage("<span class='eventText'>Settings file corrupted, please enter your account information again (no other data was lost)</span>");
+      }
       resolve(false);
     }
     
@@ -459,6 +463,8 @@ async function createWindow() {
   mainWindow = new BrowserWindow({
     title: `Exile Diary v${app.getVersion()}`,
     backgroundColor: `#000000`,
+    x: 0,
+    y: 0,
     show: false,
     transparent: false,
     icon: path.join(__dirname, "res/img/icons/png/64x64.png"),
