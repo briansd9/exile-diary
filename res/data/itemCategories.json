@@ -968,7 +968,14 @@
     "Atonement Mask" : "Helmets",
     "Penitent Mask" : "Helmets",
     "Sorrow Mask" : "Helmets",
-    "Samnite Helmet" : "Helmets"
+    "Samnite Helmet" : "Helmets",
+
+    "Seaglass Amulet" : "Amulets",
+    "Blessed Boots" : "Boots",
+    "Apothecary's Gloves" : "Gloves",
+    "Artillery Quiver" : "Quivers",
+    "Iolite Ring" : "Rings",
+    "Grasping Mail" : "Body Armours"
         
   },
 
@@ -1445,7 +1452,16 @@
     
     "Hydrosphere" : "Active Skill Gems",
     "Rolling Magma" : "Active Skill Gems",
-    "Trinity Support" : "Support Skill Gems"    
+    "Trinity Support" : "Support Skill Gems",
+
+    "Exsanguinate" : "Active Skill Gems",
+    "Corrupting Fever" : "Active Skill Gems",
+    "Reap" : "Active Skill Gems",
+    "Petrified Blood" : "Active Skill Gems",
+    "Arrogance Support" : "Support Skill Gems",
+    "Bloodthirst Support" : "Support Skill Gems",
+    "Cruelty Support" : "Support Skill Gems",
+    "Lifetap Support" : "Support Skill Gems"
     
   },
 
@@ -1973,6 +1989,16 @@
     "Titanium Valdo's Rest Watchstone" : "Atlas Region Upgrade Item",
     "Titanium Lira Arthain Watchstone" : "Atlas Region Upgrade Item",    
     "Elevated Sextant" : "Currency",
+    
+    "Accelerating Catalyst" : ["Currency", "Catalyst"],
+    "Noxious Catalyst" : ["Currency", "Catalyst"],
+    "Unstable Catalyst" : ["Currency", "Catalyst"],
+    "Veiled Chaos Orb" : "Currency",
+    "Tainted Oil" : ["Currency", "Oil"],
+    "Vaal Reliquary Key" : "Misc Map Items",
+    "Chronicle Reliquary Key" : "Misc Map Items",
+    "Inscribed Ultimatum" : "Misc Map Items",
+    "Sacred Blossom" : "Map Fragments",
     
     "6-socket Items" : "Currency",
     "6-link Items" : "Currency",

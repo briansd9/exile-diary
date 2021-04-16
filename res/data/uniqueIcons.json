@@ -978,7 +978,24 @@
     "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/LiraArthainWatchstone4.png" : "The False Hope",
     "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/NewVastirWatchstone4.png" : "The Vast Horizon",
     "https://web.poecdn.com/image/Art/2DItems/Currency/Strongholds/HaewarkHamletWatchstone4.png" : "The Walls",
-    "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/ConstrictingCrown.png" : "Viridi's Veil"
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/ConstrictingCrown.png" : "Viridi's Veil",
+    
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/GhastlyEyeUnique.png" : "Amanamu's Gaze",
+    "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/AtzirisRule.png" : "Atziri's Rule",
+    "https://web.poecdn.com/image/Art/2DItems/Weapons/TwoHandWeapons/Staves/CaneofKulemak.png" : "Cane of Kulemak",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/GlimpseofChaos.png" : "Glimpse of Chaos",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/VaalRageGloves.png" : "Hateforge",
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/HypnoticEyeUnique.png" : "Kurgal's Gaze",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/MahuxotlsMachination.png" : "Mahuxotl's Machination",
+    "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Wands/IpochotlWand.png" : "Relic of the Pact",
+    "https://web.poecdn.com/image/Art/2DItems/Quivers/ShardQuiver.png" : "Steelworm",
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/TecrodsGaze.png" : "Tecrod's Gaze",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/AtaitolBoots.png" : "Temptation Step",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/TheScalesofJustice.png" : "The Scales of Justice",
+    "https://web.poecdn.com/image/Art/2DItems/Rings/VaalUnsetRing.png" : "Triumvirate Authority",
+    "https://web.poecdn.com/image/Art/2DItems/Jewels/SearchingEyeUnique.png" : "Ulaman's Gaze",
+    "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Scepters/OnatzliSceptre.png" : "Yaomac's Accord"
+    
     
   }
   
