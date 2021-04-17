@@ -22,7 +22,8 @@
     "Oshabi",
     "Venarius",
     "The Maven",
-    "The Envoy"
+    "The Envoy",
+    "The Trialmaster"
   ],
   
   "mapBosses" : [
@@ -862,6 +863,7 @@
       "Mansion"
     ],
     "ultimatum" : [
+      "The Tower of Ordeals",
       "The Utzaal Arena"
     ],
     "endgame" : [
