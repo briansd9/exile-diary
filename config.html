@@ -167,12 +167,11 @@
           
           let win = require('electron').remote.getCurrentWindow();
           let opts = {
-            properties: ['openFile'],
-            filters: [ { name: "Item Filters", extensions: ["filter"] } ]
+            properties: ['openFile']
           };
           dialog.showOpenDialog(win, opts).then( r => {
             let filepath = r.filePaths;
-            if (filepath && filepath.length === 1 && typeof (filepath[0]) === "string" && filepath[0].endsWith(".filter")) {
+            if (filepath && filepath.length === 1 && typeof (filepath[0]) === "string") {
               processFilter(filepath[0]);
             }            
           });
