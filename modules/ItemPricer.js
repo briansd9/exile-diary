@@ -143,6 +143,7 @@
       || item.typeline === "Simulacrum Splinter" 
       || item.typeline === "Crescent Splinter" 
       || (item.typeline.includes("Timeless") && item.typeline.includes("Splinter"))
+      || (item.typeline.startsWith("Splinter of"))
     ) {
       return getValueFromTable("Fragment");
     }
