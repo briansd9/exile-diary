@@ -985,15 +985,25 @@
           </div>
         </div>
         <div style="display: flex; flex-direction: row; padding-top:10px;">
+          <button class='debugButton' id="recheckGainedButton" style="width:320px;margin:0 16px;" onclick="debugClear();updateUltimatum();">Update Ultimatum Info</button>
+          <div style='line-height: 200%;vertical-align: middle;'>
+            Adds Ultimatum info (rounds, mods picked, completion) to each map run.
+          </div>
+        </div>
+<!--        
+        <div style="display: flex; flex-direction: row; padding-top:10px;">
           <button class='debugButton' id="recheckGearButton" style="width:320px;margin:0 16px;" onclick="debugClear();checkGearDuplicates();">Recheck Gear Changes</button>
-          <div style='line-height: 200%;vertical-align: middle;'>Removes gear changes for which the item was not actually changed.</div>
+          <div style='line-height: 200%; vertical-align: middle;'>
+            Removes gear changes for which the item was not actually changed.
+          </div>
         </div>
         <div style="display: flex; flex-direction: row; padding-top:10px;">
           <button class='debugButton' id="v0286fixButton" style="width:320px;margin:0 16px;" onclick="debugClear();updateAtlasRegions();">Update Atlas Regions</button>
-          <div style='line-height: 125%;vertical-align: middle;'>
+          <div style='line-height: 200%; vertical-align: middle;'>
             Adds region info to all maps run in the current atlas version (Ritual).
           </div>
         </div>
+-->
         <div id='debugsql' style="display: none; flex-direction: row; padding-top:10px;">
           <button class='debugButton' style="border:1px solid #600;background-color:#300;color:#900;width:320px;margin:0 16px;" onclick="debugClear();execSql();">Execute SQL</button>
           <div style='line-height: 200%;vertical-align: middle;color:#900;'>Some things that slumber should never be awoken.</div>

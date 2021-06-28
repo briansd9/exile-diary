@@ -609,9 +609,13 @@
             leagueDB.get(" select max(timestamp) as id from stashes where items <> '{}' ", (err, row) => {
               if(err) {
                 logger.info(`Unable to get latest stash: ${err}`);
-              } else if(row) {
+              } else if(row && row.id) {
                 logger.info(`Retrieving stash with id ${row.id}`);
                 resolve(row.id);
+              } else {
+                $("#noStash").show();
+                logger.info("No stash found!");
+                return;
               }
             });
           });

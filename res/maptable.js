@@ -66,6 +66,9 @@ class MapTable {
     if(r.abnormalDisconnect) {
       str += Utils.getEncounterIcon("abnormalDisconnect");
     }
+    if(r.ultimatum) {
+      str += Utils.getEncounterIcon("ultimatum");
+    }
     return `<div style='text-align: left;padding-left:10px;' class='mapEncounterCell'>${str}</div>`;
   }
   

@@ -809,7 +809,7 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
         }
         continue;
       case "mapBoss":
-        line = getLine(evt.event_text);
+        line = getNPCLine(evt.event_text);
         // use lastEnteredArea instead of areaName to handle Zana map missions
         if(Constants.mapBossBattleStartQuotes[lastEnteredArea] && Constants.mapBossBattleStartQuotes[lastEnteredArea].includes(line.text)) {
           run.mapBoss = run.mapBoss || {};
@@ -829,7 +829,7 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
       case "master":
       case "conqueror":
       case "leagueNPC":
-        line = getLine(evt.event_text);
+        line = getNPCLine(evt.event_text);
         break;
       default:
         // ignore other event types
@@ -956,7 +956,7 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
           run.masters[line.npc] = run.masters[line.npc] || { encountered : true };
         }
         if(line.text.includes("[")) {
-          let subLine = getLine(line.text.substring(1, line.text.length - 1));
+          let subLine = getNPCLine(line.text.substring(1, line.text.length - 1));
           run.syndicate = run.syndicate || {};            
           run.syndicate[subLine.npc] = run.syndicate[subLine.npc] || { encountered : true };
           let q = Constants.syndicateMemberQuotes[subLine.npc];
@@ -1041,10 +1041,119 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
           }
         }
         continue;
+      case "The Trialmaster":
+        // need an array because there can be multiple ultimatums in a map run (campaign areas, Zana missions)
+        run.ultimatum = run.ultimatum || [];
+        if(Constants.ultimatumQuotes.start.includes(line.text)) {
+          run.ultimatum.push({ start : evt.id });
+        } else {
+          let currUlt = run.ultimatum[run.ultimatum.length - 1];
+          if(!currUlt) {
+            // ????
+            logger.info(`Ultimatum event without start event: [${evt.id} ${line.text}]`);
+            continue;
+          }
+          if(Constants.ultimatumQuotes.lost.includes(line.text)) {
+            currUlt.lost = evt.id;
+          } else if(Constants.ultimatumQuotes.tookReward.includes(line.text)) {
+            currUlt.tookReward = evt.id;
+          } else if(Constants.ultimatumQuotes.won.includes(line.text)) {
+            currUlt.won = evt.id;
+          } else if(Constants.ultimatumQuotes.trialmasterDefeated.includes(line.text)) {
+            currUlt.trialmasterDefeated = evt.id;
+          } else if(Constants.ultimatumQuotes.mods[line.text]) {
+            currUlt.rounds = currUlt.rounds || {};            
+            currUlt.rounds[evt.id] = Constants.ultimatumQuotes.mods[line.text];
+            if(currUlt.rounds[evt.id].includes("/") && currUlt.rounds[evt.id].includes("Ruin")) {
+              currUlt.isAmbiguous = true;
+            }            
+          }
+        }
+        continue;
     }
     
   }
 
+  if(run.ultimatum) {
+    
+    // We are jumping through these convoluted hoops because GGG couldn't give a unique quote to each type of mod >:\
+    // Ailment and Curse Reflection is completely indistinguishable from Hindering Flasks, but for the ones below we can at least try
+    for(let u of run.ultimatum) {
+
+      if(!u.isAmbiguous) continue;
+      
+      delete(u.isAmbiguous);
+
+      let keys = Object.keys(u.rounds);
+      let ruin = false, ruin2 = false, ruin3 = false, sruin = false, sruin2 = false, sruin3 = false;
+
+      for(let i = 0; i < keys.length; i++) {
+        let mod = u.rounds[keys[i]];
+        switch(mod) {
+          case "Ruin II": 
+            ruin2 = true; 
+            break;                
+          case "Ruin III": 
+            ruin3 = true;
+            break;
+          case "Stalking Ruin": 
+            sruin = true;
+            break;
+          case "Ruin / Stalking Ruin III":
+            if(i === 0 || !sruin2 || sruin3) {
+              u.rounds[keys[i]] = "Ruin";
+              ruin = true;
+            } else if(ruin) {
+              u.rounds[keys[i]] = "Stalking Ruin III";
+              sruin3 = true;
+            }
+            break;
+          case "Ruin II / Stalking Ruin II":
+            if(sruin2 || (ruin && !sruin)) {
+              u.rounds[keys[i]] = "Ruin II";
+              ruin2 = true;
+            } else if(ruin2 || (sruin && !ruin)) {
+              u.rounds[keys[i]] = "Stalking Ruin II";
+              sruin2 = true;
+            }
+            break;
+        }
+
+      }
+      
+      // make a second pass if needed
+      if(Object.values(u.rounds).includes("Ruin / Stalking Ruin III") || Object.values(u.rounds).includes("Ruin II / Stalking Ruin II")) {
+
+        for(let i = 0; i < keys.length; i++) {
+          let mod = u.rounds[keys[i]];
+          switch(mod) {
+            case "Ruin / Stalking Ruin III":
+              if(sruin3 || (ruin2 && !ruin)) {
+                u.rounds[keys[i]] = "Ruin";
+                ruin = true;
+              } else if(!sruin3) {
+                // if only sruin and sruin2 are true, this case is STILL ambiguous, but fuck it let's just assume this
+                u.rounds[keys[i]] = "Stalking Ruin III";
+                sruin3 = true;
+              }
+              break;
+            case "Ruin II / Stalking Ruin II":
+              if(ruin && ruin3 && !ruin2) {
+                u.rounds[keys[i]] = "Ruin II";
+                ruin2 = true;
+              } else if(sruin && sruin3 && !sruin2) {
+                u.rounds[keys[i]] = "Stalking Ruin II";
+                sruin2 = true;
+              }
+              break;
+          }
+        }                  
+
+      }
+
+    }
+  }
+            
   if(blightCount > 0) {
     // 3.13 update: Zana can give blighted mission maps
     if(blightCount > 8) {
@@ -1227,29 +1336,29 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
 
   }
 
-  function getLine(str) {
-    if(str.indexOf(":") < 0) {
-      return null;
-    }
-    return {
-      npc : str.substr(0, str.indexOf(":")).trim(),
-      text : str.substr(str.indexOf(":") + 1).trim()
-    };
-  }
+}
 
-  function getEvents(firstevent, lastevent) {
-    DB = require('./DB').getDB();
-    return new Promise( (resolve, reject) => {
-      DB.all(" select * from events where id between :first and :last order by id", [firstevent, lastevent], (err, rows) => { 
-        var events = [];
-        for(let i = 0; i < rows.length; i++) {
-          events.push(rows[i]);
-        }
-        resolve(events); 
-      });
+function getEvents(firstevent, lastevent) {
+  DB = require('./DB').getDB();
+  return new Promise( (resolve, reject) => {
+    DB.all(" select * from events where id between :first and :last order by id", [firstevent, lastevent], (err, rows) => { 
+      var events = [];
+      for(let i = 0; i < rows.length; i++) {
+        events.push(rows[i]);
+      }
+      resolve(events); 
     });
+  });
+}
+
+function getNPCLine(str) {
+  if(str.indexOf(":") < 0) {
+    return null;
   }
-  
+  return {
+    npc : str.substr(0, str.indexOf(":")).trim(),
+    text : str.substr(str.indexOf(":") + 1).trim()
+  };
 }
 
 async function recheckGained(startDate = null) {
@@ -1302,4 +1411,6 @@ module.exports.process = process;
 module.exports.tryProcess = tryProcess;
 module.exports.emitter = emitter;
 module.exports.recheckGained = recheckGained;
+module.exports.getEvents = getEvents;
+module.exports.getNPCLine = getNPCLine;
 module.exports.getMapExtraInfo = getMapExtraInfo;

@@ -731,7 +731,11 @@
       }
       
       if(s.trials && s.trials.length > 0) {
-        let trialStatus = (s.trials.length !== 6 ? "Not complete" : `completed in ${moment.duration(s.trials[s.trials.length-1].totaltime, "seconds").format("HH:mm:ss", { trim: false })}`);
+        let trialStatus = "Not complete";
+        if(s.trials.length === 6) {
+          let lastTrial = s.trials[s.trials.length - 1];
+          trialStatus = `completed after ${lastTrial.totalmaps} maps`
+        }
         let t = `
           <div class='totalStatSection'>
             ${statLine("Labyrinth trials", trialStatus, "res/img/encountericons/labtrial.png")}
@@ -739,7 +743,7 @@
               <table class='extraInfo asc' style='margin:0;'><thead><tr>
                 <th>&nbsp;</th>
                 <th>Time</th>
-                <th>Maps</th>
+                <th>Map #</th>
               </tr></thead><tbody>
         `;
         for(var r of s.trials) {
@@ -765,9 +769,33 @@
         arr.sort( (a, b) => { return b[1] - a[1]; });
         let d = "<div class='totalStatSection'><div>";
         d += statLine("Shrines activated", f.format(totalShrines), "res/img/encountericons/shrine.png");
-        arr.forEach( s => {
-          d += statLine(s[0], s[1], `res/img/shrineicons/${s[0]}.png`);
+//        arr.forEach( s => {
+//          d += statLine(s[0], s[1], `res/img/shrineicons/${s[0]}.png`);
+//        });
+
+        let t = `
+          <div style='max-height:15em;overflow-y:auto;width:14em'>
+            <table class='extraInfo' style='margin:0;'><thead><tr>
+              <th>Type</th>
+              <th></th>
+            </tr></thead><tbody>
+        `;
+        arr.forEach(s => {
+          t += `
+            <tr>
+              <td style='text-align:left;'>
+                <img class='statIcon' src='res/img/shrineicons/${s[0]}.png'/>
+                ${s[0]}
+              </td>
+              <td>
+                ${s[1]}
+              </td>
+            </tr>
+          `;
         });
+        t += "</tbody></table></div>";
+        d += t;
+        
         d += "</div></div>";
         div += d;
       }
@@ -893,7 +921,42 @@
         div += d;
       }
       
-
+      if(s.ultimatum) {
+        let d = "<div class='totalStatSection'><div>";
+        d += statLineCompleted("Ultimatum encounters", s.ultimatum.encounters, s.ultimatum.started, "res/img/encountericons/ultimatum.png", "started");
+        d += statLine("Completed", s.ultimatum.completed, "res/img/blank.png");
+        d += statLine("Took reward", s.ultimatum.tookReward, "res/img/blank.png");
+        d += statLine("Failed", s.ultimatum.started - s.ultimatum.completed - s.ultimatum.tookReward, "res/img/blank.png");
+        
+        let t = `
+          <div style='max-height:15em;overflow-y:auto;width:31em'>
+            <table class='extraInfo' style='margin:0;'><thead><tr>
+              <th>Mod</th>
+              <th></th>
+            </tr></thead><tbody>
+        `;
+        for(var r in s.ultimatum.mods) {
+          let img = r.replace(/([^A-Za-z])|(I+$)/g, "");
+          t += `
+            <tr>
+              <td style='text-align:left;'>
+                <img class='statIcon' src='res/img/ultimatumicons/${img}.png'/>
+                ${r}
+              </td>
+              <td>
+                ${s.ultimatum.mods[r]}
+              </td>
+            </tr>
+          `;
+        }
+        t += "</tbody></table></div>";
+        d += t;
+        
+        d += "</div></div>";
+        div += d;
+      }
+      
+      
       div += "</div></div></div>";
       $("#totalStatsTable").append(div);
     }
@@ -963,8 +1026,8 @@
               <span class='conqLabel'>${conq}</span>
             </div>
             <div class="totalStatInfoText">
-              ${statLine("Map Encounters", c.encounters)}
-              ${statLineCompleted("Citadel Battles", c.battles, c.kills)}
+              ${c.encounters > 0 ? statLine("Map Encounters", c.encounters) : ""}
+              ${c.battles > 0 ? statLineCompleted("Citadel Battles", c.battles, c.kills) : ""}
               ${c.orbs > 0 ? (statLine(`${n}'s Exalted Orbs`, getOrbs(n, c.orbs))) : ""}
             </div>
           </div>
@@ -1084,6 +1147,9 @@
     }
     
     function statLine(label, value, img = null) {
+      if(value === 0) {
+        value = "0";
+      }
       return `
         ${img ? `<img class='statIcon' src='${img}'/>` : ""}
         <span>${label}${value? ":" : ""}</span> 

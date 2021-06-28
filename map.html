@@ -448,6 +448,10 @@
           $("#masterDiv").show();
           $(`#${info.elderGuardian.replace("The ", "")}Icon`).show();
         }
+        if(info.ultimatum) {
+          $("#masterDiv").show();
+          $("#UltimatumIcon").show();
+        }
         
         if(info.masters) {
           let displayIcons = true;
@@ -600,6 +604,37 @@
                 return null;
             }
             return(`<span class='eventType'>${eventString}</span>`);
+          } else if(eventText.startsWith("The Trialmaster")) {
+            let ult = null;
+            for(let i = 0; i < r.info.ultimatum.length; i++) {
+              let u = r.info.ultimatum[i];
+              if(e.id === u.start || e.id === u.won || e.id === u.tookReward || e.id === u.lost || (u.rounds && u.rounds[e.id])) {
+                ult = u;
+                break;
+              }
+            }
+            if(!ult) {
+              return null;
+            }
+            let line = eventText.substring(eventText.indexOf(":") + 1).trim();
+            let eventString = null;
+            if(e.id === ult.start && !ult.rounds) {
+              eventString = "Ultimatum declined";
+            } else if(e.id === ult.won) {
+              eventString = `<span class='eventText'>Ultimatum completed after ${Object.keys(ult.rounds).length} round${Object.keys(ult.rounds).length > 1 ? "s" : ""}</span>`;
+            } else if(e.id === ult.tookReward) {
+              eventString = `<span class='eventText'>Took ultimatum reward after ${Object.keys(ult.rounds).length} round${Object.keys(ult.rounds).length > 1 ? "s" : ""}</span>`;
+            } else if(e.id === ult.lost) {
+              eventString = `<span class='eventText'>Ultimatum failed in round ${Object.keys(ult.rounds).length}</span>`;
+            } else if(ult.rounds[e.id]) {
+              let round = Object.keys(ult.rounds).indexOf(e.id) + 1;
+              let img = ult.rounds[e.id].replace(/([^A-Za-z])|(I+$)/g, "")
+              eventString = `Ultimatum round ${round}: 
+                <img class='statIcon' style='height:1em;width:1em;' src='res/img/ultimatumicons/${img}.png'/> 
+                <span class='eventText'>${ult.rounds[e.id]}</span>
+              `;
+            }
+            return eventString;
           } else {
             return null;
           }
@@ -659,7 +694,7 @@
         }
         return itemDiv;
       }
-
+      
       function showEvents(mapRun) {
         
         var events = mapRun.events;
@@ -1195,6 +1230,11 @@
           <div class='encounterIcon' id='OshabiIcon' title='Fought Oshabi, Avatar of the Grove'>
             <div style='position:relative;display:inline;'>
               <img src='res/img/encountericons/oshabi.png'/>
+            </div>
+          </div>
+          <div class='encounterIcon' id='UltimatumIcon' title='Encountered the Trialmaster'>
+            <div style='position:relative;display:inline;'>
+              <img src='res/img/encountericons/ultimatum.png'/>
             </div>
           </div>
           <hr style='border:1px solid #999;' />

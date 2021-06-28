@@ -12,6 +12,145 @@ function debugClear() {
   $("#debugOutput").html("");
 }
 
+async function updateUltimatum() {
+
+  const r = require('./modules/RunParser');
+  const DB = require('./modules/DB').getDB();
+  const Constants = require('./modules/Constants');
+  let queries = {};
+  let updateStmt = DB.prepare(" update mapruns set runinfo = ? where id = ? ");
+  await DB.all( " select id, firstevent, lastevent, runinfo from mapruns order by id ", async (err, rows) => {
+    for(let row of rows) {
+      DB.all(
+        " select * from events where event_type='leagueNPC' and id between :first and :last and event_text like 'The Trialmaster%' order by id ",
+        [ row.firstevent, row.lastevent ],
+        async(err, events) => {
+          if(events.length) {
+            
+            let obj = JSON.parse(row.runinfo);
+            let ult = [];
+            
+            for(let i = 0; i < events.length; i++) {
+              let evt = events[i];
+              let line = r.getNPCLine(evt.event_text);
+              if(Constants.ultimatumQuotes.start.includes(line.text)) {
+                ult.push({ start : evt.id });
+              } else {
+                let currUlt = ult[ult.length - 1];
+                if(!currUlt) {
+                  debugLog(`Ultimatum event without start event: [${evt.id} ${line.text}]`);
+                  continue;
+                }
+                if(Constants.ultimatumQuotes.lost.includes(line.text)) {
+                  currUlt.lost = evt.id;
+                } else if(Constants.ultimatumQuotes.tookReward.includes(line.text)) {
+                  currUlt.tookReward = evt.id;
+                } else if(Constants.ultimatumQuotes.won.includes(line.text)) {
+                  currUlt.won = evt.id;
+                } else if(Constants.ultimatumQuotes.trialmasterDefeated.includes(line.text)) {
+                  currUlt.trialmasterDefeated = evt.id;
+                } else if(Constants.ultimatumQuotes.mods[line.text]) {
+                  currUlt.rounds = currUlt.rounds || {};            
+                  currUlt.rounds[evt.id] = Constants.ultimatumQuotes.mods[line.text];
+                  if(currUlt.rounds[evt.id].includes("/") && currUlt.rounds[evt.id].includes("Ruin")) {
+                    console.log("Found ambiguous mod " + currUlt.rounds[evt.id]);
+                    currUlt.isAmbiguous = true;
+                  }
+                }
+              } 
+            }
+            
+            for(let u of ult) {
+
+              if(!u.isAmbiguous) continue;
+
+              delete(u.isAmbiguous);
+
+              let keys = Object.keys(u.rounds);
+              let ruin = false, ruin2 = false, ruin3 = false, sruin = false, sruin2 = false, sruin3 = false;
+
+              for(let i = 0; i < keys.length; i++) {
+                let mod = u.rounds[keys[i]];
+                switch(mod) {
+                  case "Ruin II": 
+                    ruin2 = true; 
+                    break;                
+                  case "Ruin III": 
+                    ruin3 = true;
+                    break;
+                  case "Stalking Ruin": 
+                    sruin = true;
+                    break;
+                  case "Ruin / Stalking Ruin III":
+                    if(i === 0 || !sruin2 || sruin3) {
+                      u.rounds[keys[i]] = "Ruin";
+                      ruin = true;
+                    } else if(ruin) {
+                      u.rounds[keys[i]] = "Stalking Ruin III";
+                      sruin3 = true;
+                    }
+                    break;
+                  case "Ruin II / Stalking Ruin II":
+                    if(sruin2 || (ruin && !sruin)) {
+                      u.rounds[keys[i]] = "Ruin II";
+                      ruin2 = true;
+                    } else if(ruin2 || (sruin && !ruin)) {
+                      u.rounds[keys[i]] = "Stalking Ruin II";
+                      sruin2 = true;
+                    }
+                    break;
+                }
+
+              }
+
+              // make a second pass if needed
+              if(Object.values(u.rounds).includes("Ruin / Stalking Ruin III") || Object.values(u.rounds).includes("Ruin II / Stalking Ruin II")) {
+
+                for(let i = 0; i < keys.length; i++) {
+                  let mod = u.rounds[keys[i]];
+                  switch(mod) {
+                    case "Ruin / Stalking Ruin III":
+                      if(sruin3 || (ruin2 && !ruin)) {
+                        u.rounds[keys[i]] = "Ruin";
+                        ruin = true;
+                      } else if(!sruin3) {
+                        // if only sruin and sruin2 are true, this case is STILL ambiguous, but fuck it let's just assume this
+                        u.rounds[keys[i]] = "Stalking Ruin III";
+                        sruin3 = true;
+                      }
+                      break;
+                    case "Ruin II / Stalking Ruin II":
+                      if(ruin && ruin3 && !ruin2) {
+                        u.rounds[keys[i]] = "Ruin II";
+                        ruin2 = true;
+                      } else if(sruin && sruin3 && !sruin2) {
+                        u.rounds[keys[i]] = "Stalking Ruin II";
+                        sruin2 = true;
+                      }
+                      break;
+                  }
+                }                  
+
+              }
+
+              
+            }
+            
+            obj.ultimatum = ult;
+            
+            let d = await execStmt(updateStmt, [JSON.stringify(obj), row.id]);
+            if(d) {
+              debugLog(`Updated ultimatum info for map ${row.id}`);
+            } else {
+              debugLog(`Error updating map ${row.id} : ${err}`);              
+            }
+          }
+        }
+      )
+    }
+  });
+}
+
 function recheckGained(startDate) {
   
   let RunParser = require('./modules/RunParser');
@@ -363,19 +502,6 @@ async function v0286fix() {
     
   }
   
-  function execStmt(stmt, data) {
-    return new Promise( (resolve, reject) => {
-      stmt.run(data, async (err) => {
-        if(err) {
-          debugLog(`Error executing statement: ${err}`);
-          resolve(false);
-        } else {
-          resolve(true);
-        }
-      });
-    });       
-  }
-  
   function getMapsSql(sql) {
     return new Promise( (resolve, reject) => {
       DB.all(sql, (err, runs) => {
@@ -392,6 +518,19 @@ async function v0286fix() {
   
 }
 
+async function execStmt(stmt, data) {
+  return new Promise( (resolve, reject) => {
+    stmt.run(data, async (err) => {
+      if(err) {
+        console.log(err);
+        debugLog(`Error executing statement: ${err}`);
+        resolve(false);
+      } else {
+        resolve(true);
+      }
+    });
+  });       
+}
 
 async function migrateLeagueDBData(char, force = false) {
 

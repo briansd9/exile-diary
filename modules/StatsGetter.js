@@ -130,20 +130,22 @@ async function getTrials(char) {
   return new Promise((resolve, reject) => {
     DB.all(`
       select trial, sum(runtime) as totaltime, count(1) as totalmaps 
-      from
-        (select id,
-        firstevent, lastevent, 
-        strftime('%s', substr(lastevent, 1, 4) || '-' || substr(lastevent, 5, 2) || '-' || substr(lastevent, 7, 2) || ' ' || substr(lastevent, 9, 2) || ':' || substr(lastevent, 11, 2) || ':' || substr(lastevent, 13, 2)) -
-        strftime('%s', substr(firstevent, 1, 4) || '-' || substr(firstevent, 5, 2) || '-' || substr(firstevent, 7, 2) || ' ' || substr(firstevent, 9, 2) || ':' || substr(firstevent, 11, 2) || ':' || substr(firstevent, 13, 2))
-        as runtime from mapruns where id > 0) 
-          as times,
-        (select min(id) as id, event_text as trial from events where event_text='Trial of Swirling Fear'
-        union select min(id) as id, event_text as trial from events where event_text='Trial of Lingering Pain'
-        union select min(id) as id, event_text as trial from events where event_text='Trial of Piercing Truth'
-        union select min(id) as id, event_text as trial from events where event_text='Trial of Stinging Doubt'
-        union select min(id) as id, event_text as trial from events where event_text='Trial of Crippling Grief'
-        union select min(id) as id, event_text as trial from events where event_text='Trial of Burning Rage') 
-          as trials
+      from (
+          select id, firstevent, lastevent, 
+            strftime('%s', substr(lastevent, 1, 4) || '-' || substr(lastevent, 5, 2) || '-' || substr(lastevent, 7, 2) || ' ' || substr(lastevent, 9, 2) || ':' || substr(lastevent, 11, 2) || ':' || substr(lastevent, 13, 2)) -
+            strftime('%s', substr(firstevent, 1, 4) || '-' || substr(firstevent, 5, 2) || '-' || substr(firstevent, 7, 2) || ' ' || substr(firstevent, 9, 2) || ':' || substr(firstevent, 11, 2) || ':' || substr(firstevent, 13, 2))
+          as runtime 
+          from mapruns 
+          where id >= (select min(id) from mapruns where json_extract(runinfo, '$.atlasRegion') is not null) and json_extract(runinfo, '$.atlasRegion') is not null
+        ) as times,
+        (
+          select min(id) as id, event_text as trial from events where event_text='Trial of Swirling Fear'
+          union select min(id) as id, event_text as trial from events where event_text='Trial of Lingering Pain'
+          union select min(id) as id, event_text as trial from events where event_text='Trial of Piercing Truth'
+          union select min(id) as id, event_text as trial from events where event_text='Trial of Stinging Doubt'
+          union select min(id) as id, event_text as trial from events where event_text='Trial of Crippling Grief'
+          union select min(id) as id, event_text as trial from events where event_text='Trial of Burning Rage'
+        ) as trials
       where times.firstevent < trials.id
       group by trial
       order by 2
@@ -664,6 +666,29 @@ function mergeRunInfo(totalStats, map) {
         totalStats.heist.rogues[r].grandHeists++;
       }
     });
+  }
+  
+  if(info.ultimatum) {
+    totalStats.ultimatum = totalStats.ultimatum  || { encounters: 0, ignored: 0, started: 0, completed: 0, tookReward: 0, mods : {} };
+    for(let ult of info.ultimatum) {
+      totalStats.ultimatum.encounters++;
+      if(!ult.rounds) {
+        totalStats.ultimatum.ignored++;
+      } else {
+        totalStats.ultimatum.started++;
+        if(ult.won) {
+          totalStats.ultimatum.completed++;
+        } else if(ult.tookReward) {
+          totalStats.ultimatum.tookReward++;
+        } else if(ult.lost) {
+          // no check for this specifically because trialmaster quote not always present (game crash, etc.)
+          // instead, calculate the value (started - completed - tookReward) at display time
+        }
+        for(let mod of Object.values(ult.rounds)) {
+          totalStats.ultimatum.mods[mod] = (totalStats.ultimatum.mods[mod] || 0) + 1;
+        }
+      }
+    }
   }
 
 }
