@@ -1,89 +1,88 @@
 {
-  
-  "templeRoomQuotes" : {
-    "What on earth did they need this much energy for?" : "Conduit of Lightning",
-    "Whew... I'm sweating like a hog in heat." : "Crucible of Flame",
-    "Oh gods, eggs everywhere! Why would you want this, exile!?" : "Hybridisation Chamber",
-    "The waters look clean enough. Couldn't pay me to drink it, though." : "Sanctum of Immortality",
-    "I just got goosebumps." : "Temple Nexus",
-    "Colour me impressed, Exile. This is elaborate." : "Factory",
-    "I'm not one for stereotypes, but damn, I do love jewellery." : "Glittering Halls",
-    "By the gods... Exile, you're a genius." : "Wealth of the Vaal",
-    "Goodness, if Chitus had ever found these... he'd have been unstoppable." : "Doryani's Institute",
-    "From crimson blood to purple flame, this cult must be put to rest." : "House of the Others",
-    "They trained an army. But why? To protect from you?" : "Hall of War",
-    "For a relatively peaceful empire they sure made a lot of weapons." : "Hall of Champions",
-    "You must've really shaken them, Exile. Look how much they wanted to protect themselves." : "Chamber of Iron",
-    "I suppose they wanted to use these explosives to mine more gems." : "Shrine of Unmaking",
-    "Ugh... Something about this place feels... wrong." : "Locus of Corruption",
-    "What a pack-rat! These relics will fetch a pretty penny back home!" : "Museum of Artifacts",
-    "How is this possible!? She should be long dead!" : "Throne of Atziri",
-    "Madness spread. These maps, all the places on them... None of them exist!" : "Atlas of Worlds",
-    "Remind me again why you let them fill this place with traps?" : "Defense Research Lab",
-    "There was so much potential for good here. What a waste." : "Storm of Corruption",
-    "So many dead... Let's please not end up like that." : "Apex of Ascension",
-    "Maybe they'd not have killed so many of each other if they'd grown fruit instead." : "Toxic Grove",
-    "Careful Exile... Something unseen still dwells here." : "Hall of Legends",
-    "Time to fight!" : "Apex of Atzoatl",
-    "No risk, no reward!" : "Apex of Atzoatl",
-    "This better be worth it!" : "Apex of Atzoatl",
-    "You better be filled with gold!" : "Apex of Atzoatl"
+
+  "templeRoomQuotes": {
+    "What on earth did they need this much energy for?": "Conduit of Lightning",
+    "Whew... I'm sweating like a hog in heat.": "Crucible of Flame",
+    "Oh gods, eggs everywhere! Why would you want this, exile!?": "Hybridisation Chamber",
+    "The waters look clean enough. Couldn't pay me to drink it, though.": "Sanctum of Immortality",
+    "I just got goosebumps.": "Temple Nexus",
+    "Colour me impressed, Exile. This is elaborate.": "Factory",
+    "I'm not one for stereotypes, but damn, I do love jewellery.": "Glittering Halls",
+    "By the gods... Exile, you're a genius.": "Wealth of the Vaal",
+    "Goodness, if Chitus had ever found these... he'd have been unstoppable.": "Doryani's Institute",
+    "From crimson blood to purple flame, this cult must be put to rest.": "House of the Others",
+    "They trained an army. But why? To protect from you?": "Hall of War",
+    "For a relatively peaceful empire they sure made a lot of weapons.": "Hall of Champions",
+    "You must've really shaken them, Exile. Look how much they wanted to protect themselves.": "Chamber of Iron",
+    "I suppose they wanted to use these explosives to mine more gems.": "Shrine of Unmaking",
+    "Ugh... Something about this place feels... wrong.": "Locus of Corruption",
+    "What a pack-rat! These relics will fetch a pretty penny back home!": "Museum of Artifacts",
+    "How is this possible!? She should be long dead!": "Throne of Atziri",
+    "Madness spread. These maps, all the places on them... None of them exist!": "Atlas of Worlds",
+    "Remind me again why you let them fill this place with traps?": "Defense Research Lab",
+    "There was so much potential for good here. What a waste.": "Storm of Corruption",
+    "So many dead... Let's please not end up like that.": "Apex of Ascension",
+    "Maybe they'd not have killed so many of each other if they'd grown fruit instead.": "Toxic Grove",
+    "Careful Exile... Something unseen still dwells here.": "Hall of Legends",
+    "Time to fight!": "Apex of Atzoatl",
+    "No risk, no reward!": "Apex of Atzoatl",
+    "This better be worth it!": "Apex of Atzoatl",
+    "You better be filled with gold!": "Apex of Atzoatl"
   },
-  
-  "beastCaptureQuotes" : {
-    
-    "Haha! You are captured, stupid beast." : "yellow",
-    "You have been captured, beast. You will be a survivor, or you will be food." : "yellow",
-    "This one is captured. Einhar will take it." : "yellow",
-    "Ohhh... That was a juicy one, exile." : "yellow",
-    "Do not worry little beast! We are friends now!" : "yellow",
-    "Off you go, little beast! Away!" : "yellow",
-    "We will be best friends beast! Until we slaughter you!" : "yellow",    
-    
-    "Great job, Exile! Einhar will take the captured beast to the Menagerie." : "red",
-    "The First Ones look upon this capture with pride, Exile. You hunt well." : "red",
-    "Survivor! You are well prepared for the end. This is a fine capture." : "red",
-    "What? Do you not have nets, exile?" : "red",
-    
-    "That was a great hunt, exile! Einhar will write a mighty poem about it." : "unknown",
-    "There are no more worthy beasts nearby, so Einhar will go feed the ones we caught." : "unknown",
-    "An exhilarating hunt, exile! Now it is time for Einhar to go do Einhar business." : "unknown",
-    "That was a hunt you will not soon forget! You're welcome! Goodbye!" : "unknown"
-    
+
+  "beastCaptureQuotes": {
+
+    "Haha! You are captured, stupid beast.": "yellow",
+    "You have been captured, beast. You will be a survivor, or you will be food.": "yellow",
+    "This one is captured. Einhar will take it.": "yellow",
+    "Ohhh... That was a juicy one, exile.": "yellow",
+    "Do not worry little beast! We are friends now!": "yellow",
+    "Off you go, little beast! Away!": "yellow",
+    "We will be best friends beast! Until we slaughter you!": "yellow",    
+
+    "Great job, Exile! Einhar will take the captured beast to the Menagerie.": "red",
+    "The First Ones look upon this capture with pride, Exile. You hunt well.": "red",
+    "Survivor! You are well prepared for the end. This is a fine capture.": "red",
+    "What? Do you not have nets, exile?": "red",
+
+    "That was a great hunt, exile! Einhar will write a mighty poem about it.": "unknown",
+    "There are no more worthy beasts nearby, so Einhar will go feed the ones we caught.": "unknown",
+    "An exhilarating hunt, exile! Now it is time for Einhar to go do Einhar business.": "unknown",
+    "That was a hunt you will not soon forget! You're welcome! Goodbye!": "unknown"
   },
-  
-  "elderDefeatedQuotes" : [
+
+  "elderDefeatedQuotes": [
     "So that was the Elder... what terrible, monstrous power! We must find a way to defeat it, exile. We seem to have driven it from this world. There must be a way to defeat it for good..."
   ],
-  
-  "beastRecipeQuotes" : [
+
+  "beastRecipeQuotes": [
     "The ritual... is complete!",
     "You are truly a survivor!"
   ],
-  
-  "conquerorBattleStartQuotes" : {
-    "Al-Hezmin, the Hunter" : [
+
+  "conquerorBattleStartQuotes": {
+    "Al-Hezmin, the Hunter": [
       "There is no true safety from you, is there?",
       "Come, monster. Do your worst.",
       "I will never go down without a fight, beast.",
       "The spectre out of the mist comes to haunt me yet again.",
       "With your death, this nightmare may finally end."
     ],
-    "Baran, the Crusader" : [
+    "Baran, the Crusader": [
       "Shadow can never overtake light, demon.",
       "How dare you question God?!",
       "You seek Forgiveness, but you do not deserve it.",
       "I am the Fire of Creation, and I shall purify your soul.",
       "I shall cast you into a pit of infinite tortures."
     ],
-    "Drox, the Warlord" : [
+    "Drox, the Warlord": [
       "I shall crush all who oppose my will!",
       "Killing you will be utterly satisfying.",
       "You've made lawless criminals of us both. Let me show you what I have learned.",
       "I wasted so much time trying to enforce the law. Those rules were nothing but a cage.",
       "I've killed countless thousands. What's one more?"
     ],
-    "Veritania, the Redeemer" : [
+    "Veritania, the Redeemer": [
       "This is my punishment. Come receive yours, exile.",
       "This time, I may show mercy.",
       "The truth is cold. Let me show you.",
@@ -91,9 +90,9 @@
       "Welcome! Time has no meaning here. Your pain will be endless."
     ]
   },
-  
+
   "conquerorDeathQuotes": {
-    "Al-Hezmin, the Hunter" : [
+    "Al-Hezmin, the Hunter": [
       "Fun... for you...",
       "This is no longer enjoyable...",
       "This is not the wondrous land we imagined. We should have listened to Zana.",
@@ -103,14 +102,14 @@
       "Let me out... please, let me out...",
       "I awaken from this nightmare... at last..."
     ],
-    "Baran, the Crusader" : [
+    "Baran, the Crusader": [
       "No minion of Sin could be this powerful... what are you?",
       "... yours is no righteous strength. Deceiver! You are no servant of Innocence!",
       "You reject... my wisdom...? Blasphemer...",
       "I see now... what you are... even God has his opposite...",
       "Kirac... sent you? You must keep him out of the Atlas..."
     ],
-    "Drox, the Warlord" : [
+    "Drox, the Warlord": [
       "You can bend the law, but never break it...",
       "You reject my lesson at your own peril...",
       "Law and order are not enough, it seems...",
@@ -120,7 +119,7 @@
       "Time takes even the greatest of men...",
       "Veritania... my kingdom for... Veritania..."
     ],
-    "Veritania, the Redeemer" : [
+    "Veritania, the Redeemer": [
       "You and I both know this isn't over.",
       "The roots have taken hold. We shall see each other again.",
       "You insist on dooming yourself...",
@@ -132,62 +131,62 @@
     ]
   },
 
-  "legionDeathQuotes" : {
-    "Queen Hyrri Ngamaku" : [
+  "legionDeathQuotes": {
+    "Queen Hyrri Ngamaku": [
       "Back! Regroup!",
       "Retreat! Draw them out!",
       "Into the hills!"
     ],
-    "General Marceus Lioneye" : [
+    "General Marceus Lioneye": [
       "To safety! Protect the Emperor!",
       "To the gates!",
       "Fall back!"
     ],
-    "Viper Napuatzi" : [
+    "Viper Napuatzi": [
       "These are Vaal lands. You only delay your destiny.",
       "Enjoy this brief victory. You will not have another.",
       "When I return, it will be with an army of thousands."
     ],
-    "Cardinal Sanctus Vox" : [
+    "Cardinal Sanctus Vox": [
       "Fall back to the supplies! We must protect the supplies!",
       "There's too many of them! Make way!",
       "Retreat! Close the gates!"
     ],
-    "Aukuna, the Black Sekhema" : [
+    "Aukuna, the Black Sekhema": [
       "To the high ground!",
       "Break formation!",
       "Back, everyone! Back!"      
     ]    
   },
-  
-  "syndicateMemberQuotes" : {
-    "jun" : {
-      "Your reign of terror's over. Talk." : "Aisling Laffrey, The Silent Butcher",
-      "You're done, Aisling." : "Aisling Laffrey, The Silent Butcher",
-      "See? Even nightmares may be defeated." : "Cameria the Coldblooded",
-      "I'm sorry, holy man, but you've chosen the wrong crusade." : "Elreon, Light's Judge",
-      "You've lost. Time to speak, silent brother." : "Vorici, Silent Brother",
-      "Too easy, assassin." : "Vorici, Silent Brother",
-      "An impressive display, warrior, but not enough." : "Vagan, Victory's Herald",
-      "You forced us down this path, Tora." : "Tora, the Culler", 
-      "You're not the strongest here. We are. Tell us what we want to know." : "Thane Jorgin the Banished",
-      "Where are your First Ones now, Ezomyte?" : "Thane Jorgin the Banished",
-      "Pathetic. Stay, dog." : "Rin Yuushu",
-      "Leave the mask on. I don't care who he is." : "Riker Maloney, Midnight Tinkerer",
-      "It's over, Leo. Where's the Lifegiver?" : "Leo, Wolf of the Pits",
-      "Talk, or else I will make you talk." : "Leo, Wolf of the Pits",
-      "Your fight's done, Redblade. Information. Now." : "Korell Goya, Son of Stone",
-      "Don't try anything stupid, Korell." : "Korell Goya, Son of Stone",
-      "Beg for your life, Perandus." : "Janus Perandus",
-      "In the dirt, worm." : "Janus Perandus",
-      "Don't get back up, fiend." : "It That Fled",
-      "Brains over brawn, every time." : "Hillock, the Blacksmith",
-      "Stay down, Haku." : "Haku, Warmaster",
-      "Fun's over, Brinerot." : "Guff \"Tiny\" Grenn",
-      "On your knees, General." : "Gravicius Reborn"
+
+  "syndicateMemberQuotes": {
+    "jun": {
+      "Your reign of terror's over. Talk.": "Aisling Laffrey, The Silent Butcher",
+      "You're done, Aisling.": "Aisling Laffrey, The Silent Butcher",
+      "See? Even nightmares may be defeated.": "Cameria the Coldblooded",
+      "I'm sorry, holy man, but you've chosen the wrong crusade.": "Elreon, Light's Judge",
+      "You've lost. Time to speak, silent brother.": "Vorici, Silent Brother",
+      "Too easy, assassin.": "Vorici, Silent Brother",
+      "An impressive display, warrior, but not enough.": "Vagan, Victory's Herald",
+      "You forced us down this path, Tora.": "Tora, the Culler", 
+      "You're not the strongest here. We are. Tell us what we want to know.": "Thane Jorgin the Banished",
+      "Where are your First Ones now, Ezomyte?": "Thane Jorgin the Banished",
+      "Pathetic. Stay, dog.": "Rin Yuushu",
+      "Leave the mask on. I don't care who he is.": "Riker Maloney, Midnight Tinkerer",
+      "It's over, Leo. Where's the Lifegiver?": "Leo, Wolf of the Pits",
+      "Talk, or else I will make you talk.": "Leo, Wolf of the Pits",
+      "Your fight's done, Redblade. Information. Now.": "Korell Goya, Son of Stone",
+      "Don't try anything stupid, Korell.": "Korell Goya, Son of Stone",
+      "Beg for your life, Perandus.": "Janus Perandus",
+      "In the dirt, worm.": "Janus Perandus",
+      "Don't get back up, fiend.": "It That Fled",
+      "Brains over brawn, every time.": "Hillock, the Blacksmith",
+      "Stay down, Haku.": "Haku, Warmaster",
+      "Fun's over, Brinerot.": "Guff \"Tiny\" Grenn",
+      "On your knees, General.": "Gravicius Reborn"
     },
-    "Aisling Laffrey, The Silent Butcher" : {
-      "defeated" : [
+    "Aisling Laffrey, The Silent Butcher": {
+      "defeated": [
         "Ugh... careless!",
         "How... unprofessional.",
         "You... got... lucky...!",
@@ -200,16 +199,16 @@
         "It can't be...!",
         "What!? No!"
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "Too easy.",
         "Let's finish up and get out of here.",
         "Keep moving.",
         "Good. Get this cleaned up."
       ],
-      "safehouseLeaderDefeated" : "You may have claimed this victory, but we will rise again. You cannot win, exile. Not forever."
+      "safehouseLeaderDefeated": "You may have claimed this victory, but we will rise again. You cannot win, exile. Not forever."
     },
-    "Cameria the Coldblooded" : {
-      "defeated" : [        
+    "Cameria the Coldblooded": {
+      "defeated": [        
         "I don't understand how I lost.",
         "Why did I come here?",
         "Is this... is this a bloody prank?",
@@ -222,16 +221,16 @@
         "Urgh... not possible...",
         "I had you!"
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "Aww, over too soon!",
         "So many limbs, so little time!",
         "I think I'll drag you behind this caravan just for fun.",
         "Your bones will rot in these walls for all time."
       ],
-      "safehouseLeaderDefeated" : "This is a lie... "
+      "safehouseLeaderDefeated": "This is a lie... "
     },
-    "Elreon, Light's Judge" : {
-      "defeated" : [        
+    "Elreon, Light's Judge": {
+      "defeated": [        
         "Lord, did I err?",
         "God's eyes are not upon us this day.",
         "Perhaps I deserve this vengeance.",
@@ -244,16 +243,16 @@
         "Not here!",
         "Agh... my faith was not strong enough..."
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "When you see him, exile, shrink not from God.",
         "Add one more sin to the pile - and burn it.",
         "You should never have come here, child.",
         "I told you this bastion would not fall."
       ],
-      "safehouseLeaderDefeated" : "I thought God was working through me..."
+      "safehouseLeaderDefeated": "I thought God was working through me..."
     },
-    "Gravicius Reborn" : {
-      "defeated" : [        
+    "Gravicius Reborn": {
+      "defeated": [        
         "Just a small misstep on the inevitable path to salvation.",
         "I don't have to win every battle to win the war.",
         "Turnabout is fair play.",
@@ -266,16 +265,16 @@
         "You brute!",
         "Is no defense enough?"
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "You brought this on yourself.",
         "Pile this carcass with the others.",
         "Secure the cargo, and make sure that one is fully dead.",
         "You will never achieve victory fighting only for yourself."
       ],
-      "safehouseLeaderDefeated" : "Bring your Inquisition, Exile. I guarantee I've personally run far worse than your darkest imagining."
+      "safehouseLeaderDefeated": "Bring your Inquisition, Exile. I guarantee I've personally run far worse than your darkest imagining."
     },
-    "Guff \"Tiny\" Grenn" : {
-      "defeated" : [        
+    "Guff \"Tiny\" Grenn": {
+      "defeated": [        
         "Well, this is what I get for sticking me nose in!",
         "I should never have jumped in like that. Aye... not great thinking.",
         "Well, look as us aye! Back and forth, forth and back.",
@@ -288,16 +287,16 @@
         "My spleen, my poor spleen!",
         "Ohh, oh, me kidney..."
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "Never doubted... for a second... that I could do it!",
         "Oof, not a pretty place to fall. I know I wouldn't want to rest here.",
         "Brinerot property remains Brinerot property!",
         "Thank the gods... I mean, totally had that one under control the whole time."
       ],
-      "safehouseLeaderDefeated" : "Oh boy, hoo, Guff's done it now."
+      "safehouseLeaderDefeated": "Oh boy, hoo, Guff's done it now."
     },
-    "Haku, Warmaster" : {
-      "defeated" : [        
+    "Haku, Warmaster": {
+      "defeated": [        
         "I was a fool... to follow my fury.",
         "This was... a cursed task.",
         "You... have learned much...",
@@ -310,16 +309,16 @@
         "No... the cart must... ugh...",
         "Tukohama... how did I fail?"
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "Mother of Death, a gift.",
         "A glorious fight!",
         "You will feed the worms.",
         "A worthy foe."
       ],
-      "safehouseLeaderDefeated" : "Ancestors, have you forsaken me?"
+      "safehouseLeaderDefeated": "Ancestors, have you forsaken me?"
     },
-    "Hillock, the Blacksmith" : {
-      "defeated" : [        
+    "Hillock, the Blacksmith": {
+      "defeated": [        
         "Stupid Hillock! Stupid!",
         "Bad... bad... BAD!",
         "My turn... already...?",
@@ -332,16 +331,16 @@
         "Uggggggh!",
         "Arrrgh!"
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "Easy easy easy.",
         "Smushed.",
         "What's mine is mine.",
         "And stay out!"
       ],
-      "safehouseLeaderDefeated" : "I don't... understand... I was the boss..."
+      "safehouseLeaderDefeated": "I don't... understand... I was the boss..."
     },
-    "It That Fled" : {
-      "defeated" : [        
+    "It That Fled": {
+      "defeated": [        
         "It...lost...? It hurts within It. Dull and sharp... still and moving...",
         "It has failed the Lords. It seeks mercy! Give It mercy!",
         "Now It is It That Lost, too. Its are even... Its are fair...",
@@ -354,16 +353,16 @@
         "It doesn't understand...",
         "Its domain! Noooo!"
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "Why is It still? Play with It! Play!",
         "Time now, with It gone.",
         "Its bones will make crisp white splinters.",
         "It did it! It defended its domain!"
       ],
-      "safehouseLeaderDefeated" : "But... It was a Lord!"
+      "safehouseLeaderDefeated": "But... It was a Lord!"
     },
-    "Janus Perandus" : {
-      "defeated" : [
+    "Janus Perandus": {
+      "defeated": [
         "You... went for the wrong person, Exile...",
         "What an absolute shambles.",
         "I've never been so embarrassed.",
@@ -376,16 +375,16 @@
         "My... cargo...",
         "No... I needed... this land..."
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "I did it! All by myself...!",
         "Wonderful. Can we hurry this up?",
         "Nobody touches a Perandus' wealth.",
         "Well, it wasn't like you were ever going to win."
       ],
-      "safehouseLeaderDefeated" : "You... shouldn't even be here! This shouldn't be allowed!"
+      "safehouseLeaderDefeated": "You... shouldn't even be here! This shouldn't be allowed!"
     },
-    "Korell Goya, Son of Stone" : {
-      "defeated" : [
+    "Korell Goya, Son of Stone": {
+      "defeated": [
         "Hot-headed, I made an error.",
         "This... was over before I even arrived. Foolish!",
         "Our flames... ebb and flow, Exile.",
@@ -398,16 +397,16 @@
         "Some things... do not burn...",
         "Perhaps... I... was the fool... today..."        
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "I will incinerate the carcass. No traces.",
         "Keep cleaning! There may be others.",
         "Keep moving, there might be others!",
         "Like I said, only a fool braves a Redblade's encampment."
       ],
-      "safehouseLeaderDefeated" : "The flames... they don't burn you... what manner of beast are you?"
+      "safehouseLeaderDefeated": "The flames... they don't burn you... what manner of beast are you?"
     },
-    "Leo, Wolf of the Pits" : {
-      "defeated" : [
+    "Leo, Wolf of the Pits": {
+      "defeated": [
         "Sure can pick 'em, can't ya Leo?",
         "I shouldn't have jumped in like I did!",
         "Hah! I knew you'd get me back for killing you.",
@@ -420,16 +419,16 @@
         "Urgh... too much of a ruckus.",
         "How did I lose a bloody cage match?"
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "Didn't even get to use my signature one-handed throw!",
         "Not a nice place to die, is it exile?",
         "I guess it's back to work then.",
         "Match: Leo."
       ],
-      "safehouseLeaderDefeated" : "Bugger. How about a rematch, eh?"
+      "safehouseLeaderDefeated": "Bugger. How about a rematch, eh?"
     },
-    "Riker Maloney, Midnight Tinkerer" : {
-      "defeated" : [        
+    "Riker Maloney, Midnight Tinkerer": {
+      "defeated": [        
         "It's not like me to make mistakes.",
         "It is possible to commit no mistakes and still lose.",
         "A leap of progress, unpredicted...",
@@ -442,16 +441,16 @@
         "Do not... seek... the source...",
         "Defender... down..."
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "You should never challenge an immortal to combat. I will finish you every time.",
         "This house of splattered corpses masks the true terror of the Syndicate.",
         "Your grand theft was automatically doomed to fail the moment you challenged me.",
         "Off the gears you fall, Exile, whipping into darkness, drained of life by the vampire Time."
       ],
-      "safehouseLeaderDefeated" : "This... was not in the plan...!"
+      "safehouseLeaderDefeated": "This... was not in the plan...!"
     },
-    "Rin Yuushu" : {
-      "defeated" : [
+    "Rin Yuushu": {
+      "defeated": [
         "I was blinded by fury...",
         "Damn. Miscalculated.",
         "Thought it'd be as easy as last time...",
@@ -464,16 +463,16 @@
         "All is lost.",
         "How humiliating...!"
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "Good. What's next?",
         "Just another body, now.",
         "Lowlife. Keep moving!",
         "Good riddance."
       ],
-      "safehouseLeaderDefeated" : "I had it all planned out. How could I lose? I... I must have been sabotaged! But by who?"
+      "safehouseLeaderDefeated": "I had it all planned out. How could I lose? I... I must have been sabotaged! But by who?"
     },
-    "Thane Jorgin the Banished" : {
-      "defeated" : [
+    "Thane Jorgin the Banished": {
+      "defeated": [
         "It seems... I have... failed... my own test.",
         "Numbers alone... can't be counted on...",
         "Good show, exile. A real comeback.",
@@ -486,16 +485,16 @@
         "The caravan... is yours...",
         "I am... conquered... and impressed..."
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "And the strongest remains the victor, ha ha ho!",
         "Eh, I was really hoping you'd burn this place.",
         "The prize remains in the hands of the strongest.",
         "I was hoping for a bigger storm."
       ],
-      "safehouseLeaderDefeated" : "Good, exile. The strongest wins. I knew one day it would not be me."
+      "safehouseLeaderDefeated": "Good, exile. The strongest wins. I knew one day it would not be me."
     },
-    "Tora, the Culler" : {
-      "defeated" : [        
+    "Tora, the Culler": {
+      "defeated": [        
         "I pounced too recklessly.",
         "I was too slow...",
         "It seems... you've evolved...",
@@ -508,16 +507,16 @@
         "Damn your lust for wreckage.",
         "Nest invader!"        
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "A successful hunt.",
         "The Syndicate's death toll climbs.",
         "You should have stayed out of this.",
         "The weak perish. Such is life."
       ],
-      "safehouseLeaderDefeated" : "Rise. If I must fall, respect the natural order by rising to your potential."
+      "safehouseLeaderDefeated": "Rise. If I must fall, respect the natural order by rising to your potential."
     },
-    "Vagan, Victory's Herald" : {
-      "defeated" : [        
+    "Vagan, Victory's Herald": {
+      "defeated": [        
         "Well this... is embarrassing...",
         "A proper good turnabout...",
         "I see... you've been training!",
@@ -530,16 +529,16 @@
         "Uggggh...",
         "A good strike... and a painful one."
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "A rousing success!",
         "Ugh. Sorry you had to fall here, among all this.",
         "A fight for the ages!",
         "Ah, over too soon!"
       ],
-      "safehouseLeaderDefeated" : "A surprise upset!... good show..."
+      "safehouseLeaderDefeated": "A surprise upset!... good show..."
     },
-    "Vorici, Silent Brother" : {
-      "defeated" : [
+    "Vorici, Silent Brother": {
+      "defeated": [
         "Foiled by my own selfishness. Humiliating.",
         "How inelegant...",
         "You! You have improved!",
@@ -552,265 +551,265 @@
         "A costly error.",
         "Defeated... within my own walls."
       ],
-      "killPlayer" : [
+      "killPlayer": [
         "A shame. I rather liked that villain.",
         "Secrets remain secret.",
         "I do like a tidy ending.",
         "A nice, clean kill."
       ],
-      "safehouseLeaderDefeated" : "You... only delay our inexorable rise."
+      "safehouseLeaderDefeated": "You... only delay our inexorable rise."
     }
   },
-  
-  "simulacrumWaveQuotes" : {
-    "You've stood against so many horrors and survived. I think it is time to at last test your limits." : "1",
-    "This is only the beginning." : "3",
-    "Let yourself be drawn into the mire!" : "5",
-    "Are you trying to cleanse yourself of me?" : "7",
-    "You can't get rid of me, Exile. I am you." : "9",
-    "Nothing you do matters. The dream will end, and the dreamer will pass into the next world." : "10",
-    "Do you not wonder what tugs at the strings of fate? What stands astride the abyss and beckons you to fall?" : "12",
-    "Believe me, you will fall, Exile." : "15",
-    "I will break you." : "18",
-    "I will not be made the fool!" : "20",
-    "So be it. Keep your precious sanity, my agent of chaos. You shall serve me, whether you like it or not. I'm not going anywhere..." : "completed"
+
+  "simulacrumWaveQuotes": {
+    "You've stood against so many horrors and survived. I think it is time to at last test your limits.": "1",
+    "This is only the beginning.": "3",
+    "Let yourself be drawn into the mire!": "5",
+    "Are you trying to cleanse yourself of me?": "7",
+    "You can't get rid of me, Exile. I am you.": "9",
+    "Nothing you do matters. The dream will end, and the dreamer will pass into the next world.": "10",
+    "Do you not wonder what tugs at the strings of fate? What stands astride the abyss and beckons you to fall?": "12",
+    "Believe me, you will fall, Exile.": "15",
+    "I will break you.": "18",
+    "I will not be made the fool!": "20",
+    "So be it. Keep your precious sanity, my agent of chaos. You shall serve me, whether you like it or not. I'm not going anywhere...": "completed"
   },
 
-  "blightBranchQuotes" : [
+  "blightBranchQuotes": [
     "The Blight is trying to spread!",
     "It's put out new mycelium! ... New roots!",
     "It's branching, exile!"
   ],
-  
-  "venariusBattleQuotes" : {
-    "What secrets are you hiding in that murderous mind of yours? Let's find out." : "start",
-    "Remember me? When we're through here, you won't." : "start",
-    "If I must destroy you before uniting mankind, I will." : "start",
-    "You and I were allies once, even friends. A pity." : "start",
-    "I owe you my renewed existence, but that debt only extends so far." : "start",
-    "I cannot allow you to impede the cause." : "start",
-    "With each new murder you make mankind more vulnerable!" : "completed",
-    "Every friendship becomes a betrayal, given enough time." : "completed",
-    "Keep pushing me, and I'll be forced to pursue those close to you." : "completed",
-    "I will sacrifice everything for the cause. Can you say the same?" : "completed",
-    "This isn't over. This will never be over! I will unify humanity!" : "completed"
-  },
-  
-  "oshabiBattleQuotes" : {
-    "I am born anew!" : "start",
-    "Behold, the first daughter of Wraeclast." : "start",
-    "I'm... undone..." : "completed",
-    "Un-... natural..." : "completed"
+
+  "venariusBattleQuotes": {
+    "What secrets are you hiding in that murderous mind of yours? Let's find out.": "start",
+    "Remember me? When we're through here, you won't.": "start",
+    "If I must destroy you before uniting mankind, I will.": "start",
+    "You and I were allies once, even friends. A pity.": "start",
+    "I owe you my renewed existence, but that debt only extends so far.": "start",
+    "I cannot allow you to impede the cause.": "start",
+    "With each new murder you make mankind more vulnerable!": "completed",
+    "Every friendship becomes a betrayal, given enough time.": "completed",
+    "Keep pushing me, and I'll be forced to pursue those close to you.": "completed",
+    "I will sacrifice everything for the cause. Can you say the same?": "completed",
+    "This isn't over. This will never be over! I will unify humanity!": "completed"
   },
 
-  "shaperBattleQuotes" : {
-    "I see you, little mouse... you don't belong here. Run along!" : "start",
-    "Turn back, trespasser. Cease this madness." : "boss1",
-    "You tamper with things you do not understand." : "boss2",
-    "Your recklessness will not go unpunished." : "boss3",
-    "This is your final warning: Leave, or perish." : "boss4",
-    "You force my hand again, little mouse... So be it. You've chosen to side with Chaos. This is my world, and you shall obey my Order!" : "phase1start",
-    "Behold the face of your unmaking!" : "phase2start",
-    "These memories are mine! I cannot lose them!" : "phase3start",
-    "Irrelevant!" : "completed"
+  "oshabiBattleQuotes": {
+    "I am born anew!": "start",
+    "Behold, the first daughter of Wraeclast.": "start",
+    "I'm... undone...": "completed",
+    "Un-... natural...": "completed"
   },
-  
-  "mastermindBattleQuotes" : {
-    "You found me at last... Very resourceful, Jun. I too am resourceful. Witness." : "battle1start",
-    "There's nothing that makes you feel so alive as death, is there...? Now, come to me Jun. Let us see what your soul is made of." : "battle1end",
-    "Hundreds of dead, rotting soulless in the earth. What a meaningless waste. But your souls... yours will serve." : "battle2start",
-    "You try and try and try to break us, and yet the Syndicate is immortal. Do you think this will end any differently?" : "battle2phase1",
-    "Death will never come for an immortal." : "battle2phase2",
-    "Submit... Let our souls become entwined." : "battle2phase3",
-    "Your hopeless cause will destroy you!" : "battle2phase4",
-    "Don't do this, Exile. You can still join us. It's your chance to bring back anyone you've ever loved or cared about." : "completed"
+
+  "shaperBattleQuotes": {
+    "I see you, little mouse... you don't belong here. Run along!": "start",
+    "Turn back, trespasser. Cease this madness.": "boss1",
+    "You tamper with things you do not understand.": "boss2",
+    "Your recklessness will not go unpunished.": "boss3",
+    "This is your final warning: Leave, or perish.": "boss4",
+    "You force my hand again, little mouse... So be it. You've chosen to side with Chaos. This is my world, and you shall obey my Order!": "phase1start",
+    "Behold the face of your unmaking!": "phase2start",
+    "These memories are mine! I cannot lose them!": "phase3start",
+    "Irrelevant!": "completed"
   },
-  
-  "sirusBattleQuotes" : {
-    "What's this? A real challenge? You've finally caught my attention!" : "start",
-    "On the edge of death, my heart races. I am alive!" : "finalPhaseStart",
-    "At least I felt something..." : "completed"
+
+  "mastermindBattleQuotes": {
+    "You found me at last... Very resourceful, Jun. I too am resourceful. Witness.": "battle1start",
+    "There's nothing that makes you feel so alive as death, is there...? Now, come to me Jun. Let us see what your soul is made of.": "battle1end",
+    "Hundreds of dead, rotting soulless in the earth. What a meaningless waste. But your souls... yours will serve.": "battle2start",
+    "You try and try and try to break us, and yet the Syndicate is immortal. Do you think this will end any differently?": "battle2phase1",
+    "Death will never come for an immortal.": "battle2phase2",
+    "Submit... Let our souls become entwined.": "battle2phase3",
+    "Your hopeless cause will destroy you!": "battle2phase4",
+    "Don't do this, Exile. You can still join us. It's your chance to bring back anyone you've ever loved or cared about.": "completed"
   },
-  
-  "mavenQuotes" : {
-    "A delightful show. A timeless dance written in blood." : "bossKilled",
-    "A flash of pleasure, over all too quickly." : "bossKilled",
-    "A mismatched contest." : "bossKilled",
-    "A rare treat." : "bossKilled",
-    "A riveting battle." : "bossKilled",
-    "Ahh, death is such a beautiful caress across my senses." : "bossKilled",
-    "Another! Joy." : "bossKilled",
-    "Another. Joy!" : "bossKilled",
-    "Another. Joy." : "bossKilled",
-    "Carnage!" : "bossKilled",
-    "Carnage." : "bossKilled",
-    "Carnage. Pretty!" : "bossKilled",
-    "Carnage... pretty." : "bossKilled",
-    "Carnage...! Pretty." : "bossKilled",
-    "Carnage?" : "bossKilled",
-    "Collect another!" : "bossKilled",
-    "Collect another." : "bossKilled",
-    "Collect another..." : "bossKilled",
-    "Death brings joy." : "bossKilled",
-    "Death brings joy..." : "bossKilled",
-    "Death!" : "bossKilled",
-    "Death! Enjoy!" : "bossKilled",
-    "Death." : "bossKilled",
-    "Death. Brings. Joy." : "bossKilled",
-    "Death... enjoy!" : "bossKilled",
-    "Death... enjoy." : "bossKilled",
-    "Delectable. Another!" : "bossKilled",
-    "Delicious!" : "bossKilled",
-    "Delightful violence!" : "bossKilled",
-    "Delightful violence." : "bossKilled",
-    "Exultant!" : "bossKilled",
-    "Exultant..." : "bossKilled",
-    "Exultant...!" : "bossKilled",
-    "Find more anomalies." : "bossKilled",
-    "Flashy." : "bossKilled",
-    "Fleeting joy." : "bossKilled",
-    "Get more special ones!" : "bossKilled",
-    "Glee!" : "bossKilled",
-    "Glee." : "bossKilled",
-    "Great pleasure!" : "bossKilled",
-    "Great pleasure." : "bossKilled",
-    "Great... pleasure." : "bossKilled",
-    "I hope there are more ancient powers like this to collect." : "bossKilled",
-    "I like when the red water sprays." : "bossKilled",
-    "I must get all rare playthings!" : "bossKilled",
-    "I need more." : "bossKilled",
-    "I really must have all of the special combatants..." : "bossKilled",
-    "I want all of the special ones..." : "bossKilled",
-    "I want more like this one." : "bossKilled",
-    "I want more. I want them all." : "bossKilled",
-    "I will never tire of this." : "bossKilled",
-    "I wonder if there are more like this?" : "bossKilled",
-    "I... need... more!" : "bossKilled",
-    "It feels good when playthings die." : "bossKilled",
-    "It was never in doubt." : "bossKilled",
-    "It will not be so simple next time." : "bossKilled",
-    "Joy!" : "bossKilled",
-    "Joy." : "bossKilled",
-    "Mine now!" : "bossKilled",
-    "Mine now." : "bossKilled",
-    "Mine now..." : "bossKilled",
-    "Mine! Mine!" : "bossKilled",
-    "Mmm." : "bossKilled",
-    "More! Rare!" : "bossKilled",
-    "More. Rare." : "bossKilled",
-    "Must improve!" : "bossKilled",
-    "Must improve." : "bossKilled",
-    "Must improve?" : "bossKilled",
-    "My collection grows, and I smile." : "bossKilled",
-    "My collection grows." : "bossKilled",
-    "My favorite outcome." : "bossKilled",
-    "No challenge." : "bossKilled",
-    "No challenge..." : "bossKilled",
-    "Ohh, yes, mine!" : "bossKilled",
-    "On to the next fight!" : "bossKilled",
-    "One more new toy." : "bossKilled",
-    "One more to gather up." : "bossKilled",
-    "Only one leaves... with me." : "bossKilled",
-    "Over too quickly. Another!" : "bossKilled",
-    "Quite the rush." : "bossKilled",
-    "Rare creature!" : "bossKilled",
-    "Rare toy for collection!" : "bossKilled",
-    "Rare... creature..." : "bossKilled",
-    "Rebirth!" : "bossKilled",
-    "Rebirth." : "bossKilled",
-    "Rebirth?" : "bossKilled",
-    "Savoured delight." : "bossKilled",
-    "Special! Mine!" : "bossKilled",
-    "Special. Mine." : "bossKilled",
-    "Special... mine." : "bossKilled",
-    "Sprayed blood floats." : "bossKilled",
-    "Sprayed blood floats..." : "bossKilled",
-    "Strange! Better." : "bossKilled",
-    "Strange! Better..." : "bossKilled",
-    "Strange. Better." : "bossKilled",
-    "Strange... better..." : "bossKilled",
-    "Such a rare sight to behold. There must be more. Find them!" : "bossKilled",
-    "Such pleasure, so brief." : "bossKilled",
-    "Such strange pleasure! More!" : "bossKilled",
-    "Sweet, sweet treat." : "bossKilled",
-    "That was worth the wait." : "bossKilled",
-    "That was... satisfactory." : "bossKilled",
-    "That's one more for my collection." : "bossKilled",
-    "This Atlas has its delights." : "bossKilled",
-    "This brings exultation." : "bossKilled",
-    "This is exquisite!" : "bossKilled",
-    "This makes me exquisitely happy." : "bossKilled",
-    "This one is quite special, and quite rarely seen..." : "bossKilled",
-    "Thrill!" : "bossKilled",
-    "Thrill." : "bossKilled",
-    "Truly riveting!" : "bossKilled",
-    "Violence. Conflict. Pleasure." : "bossKilled",
-    "What a delightfully unusual struggle." : "bossKilled",
-    "Where has such a thing been hiding? I simply must see more." : "bossKilled",
-    "Worthy!" : "bossKilled",
-    "Worthy." : "bossKilled",
-    "Yes mine!" : "bossKilled",
-    "Yes! It's mine!" : "bossKilled",
-    "Yes, mine!" : "bossKilled",
-    "Again!" : "crucibleCompleted",
-    "Again! Now!" : "crucibleCompleted",
-    "Again! Soon!" : "crucibleCompleted",
-    "Again! Soon." : "crucibleCompleted",
-    "Again! Soon..." : "crucibleCompleted",
-    "Again." : "crucibleCompleted",
-    "Again. Now!" : "crucibleCompleted",
-    "Another round will commence as soon as I have more combatants." : "crucibleCompleted",
-    "Another round, soon." : "crucibleCompleted",
-    "Bored again. Don't make me wait." : "crucibleCompleted",
-    "Bored again. Go!" : "crucibleCompleted",
-    "Do again!" : "crucibleCompleted",
-    "Do again." : "crucibleCompleted",
-    "Do again..." : "crucibleCompleted",
-    "Do it again." : "crucibleCompleted",
-    "Fight and repeat." : "crucibleCompleted",
-    "Get more!" : "crucibleCompleted",
-    "Get more." : "crucibleCompleted",
-    "Go get more." : "crucibleCompleted",
-    "Go retrieve more for me." : "crucibleCompleted",
-    "Go! More." : "crucibleCompleted",
-    "Go. More." : "crucibleCompleted",
-    "Hurry. I want to watch another!" : "crucibleCompleted",
-    "I grow bored already. Go now." : "crucibleCompleted",
-    "More!" : "crucibleCompleted",
-    "More." : "crucibleCompleted",
-    "More. Go. Now!" : "crucibleCompleted",
-    "More. Go... now!" : "crucibleCompleted",
-    "Now go retrieve more challengers for the next round!" : "crucibleCompleted",
-    "Quickly, again!" : "crucibleCompleted",
-    "Repeat my challenge." : "crucibleCompleted",
-    "Repeat my challenge. Gather more combatants." : "crucibleCompleted",
-    "Repeat this!" : "crucibleCompleted",
-    "Repeat this." : "crucibleCompleted",
-    "Test over. New test?" : "crucibleCompleted",
-    "Caretaker! To me!" : "mavenDefeated",
-    "I require aid!" : "mavenDefeated",
-    "I am being hurt!" : "mavenDefeated"
+
+  "sirusBattleQuotes": {
+    "What's this? A real challenge? You've finally caught my attention!": "start",
+    "On the edge of death, my heart races. I am alive!": "finalPhaseStart",
+    "At least I felt something...": "completed"
   },
-  
-  "shrineQuotes" : {
-    "Death doesn't wait." : "Acceleration Shrine",
-    "Hit hard. Hit once." : "Brutal Shrine",
-    "Deliver pain exquisite." : "Diamond Shrine",
-    "Become the nightmare." : "Divine Shrine",
-    "Let your rage flow freely." : "Echoing Shrine",
-    "Turn your world to ice." : "Freezing Shrine",
-    "None shall stop you." : "Impenetrable Shrine",
-    "Open the eye of the storm." : "Lightning Shrine",
-    "Courage stands tall." : "Massive Shrine",
-    "Restore that which was lost." : "Replenishing Shrine",
-    "Fear not the elements." : "Resistance Shrine",
-    "Shroud your path in the fog of war." : "Shrouded Shrine",
-    "The past shall serve the present." : "Skeletal Shrine",
-    "Wield your shadows." : "Gloom Shrine",
-    "Overpower, overrun, overcome." : "Resonating Shrine"
+
+  "mavenQuotes": {
+    "A delightful show. A timeless dance written in blood.": "bossKilled",
+    "A flash of pleasure, over all too quickly.": "bossKilled",
+    "A mismatched contest.": "bossKilled",
+    "A rare treat.": "bossKilled",
+    "A riveting battle.": "bossKilled",
+    "Ahh, death is such a beautiful caress across my senses.": "bossKilled",
+    "Another! Joy.": "bossKilled",
+    "Another. Joy!": "bossKilled",
+    "Another. Joy.": "bossKilled",
+    "Carnage!": "bossKilled",
+    "Carnage.": "bossKilled",
+    "Carnage. Pretty!": "bossKilled",
+    "Carnage... pretty.": "bossKilled",
+    "Carnage...! Pretty.": "bossKilled",
+    "Carnage?": "bossKilled",
+    "Collect another!": "bossKilled",
+    "Collect another.": "bossKilled",
+    "Collect another...": "bossKilled",
+    "Death brings joy.": "bossKilled",
+    "Death brings joy...": "bossKilled",
+    "Death!": "bossKilled",
+    "Death! Enjoy!": "bossKilled",
+    "Death.": "bossKilled",
+    "Death. Brings. Joy.": "bossKilled",
+    "Death... enjoy!": "bossKilled",
+    "Death... enjoy.": "bossKilled",
+    "Delectable. Another!": "bossKilled",
+    "Delicious!": "bossKilled",
+    "Delightful violence!": "bossKilled",
+    "Delightful violence.": "bossKilled",
+    "Exultant!": "bossKilled",
+    "Exultant...": "bossKilled",
+    "Exultant...!": "bossKilled",
+    "Find more anomalies.": "bossKilled",
+    "Flashy.": "bossKilled",
+    "Fleeting joy.": "bossKilled",
+    "Get more special ones!": "bossKilled",
+    "Glee!": "bossKilled",
+    "Glee.": "bossKilled",
+    "Great pleasure!": "bossKilled",
+    "Great pleasure.": "bossKilled",
+    "Great... pleasure.": "bossKilled",
+    "I hope there are more ancient powers like this to collect.": "bossKilled",
+    "I like when the red water sprays.": "bossKilled",
+    "I must get all rare playthings!": "bossKilled",
+    "I need more.": "bossKilled",
+    "I really must have all of the special combatants...": "bossKilled",
+    "I want all of the special ones...": "bossKilled",
+    "I want more like this one.": "bossKilled",
+    "I want more. I want them all.": "bossKilled",
+    "I will never tire of this.": "bossKilled",
+    "I wonder if there are more like this?": "bossKilled",
+    "I... need... more!": "bossKilled",
+    "It feels good when playthings die.": "bossKilled",
+    "It was never in doubt.": "bossKilled",
+    "It will not be so simple next time.": "bossKilled",
+    "Joy!": "bossKilled",
+    "Joy.": "bossKilled",
+    "Mine now!": "bossKilled",
+    "Mine now.": "bossKilled",
+    "Mine now...": "bossKilled",
+    "Mine! Mine!": "bossKilled",
+    "Mmm.": "bossKilled",
+    "More! Rare!": "bossKilled",
+    "More. Rare.": "bossKilled",
+    "Must improve!": "bossKilled",
+    "Must improve.": "bossKilled",
+    "Must improve?": "bossKilled",
+    "My collection grows, and I smile.": "bossKilled",
+    "My collection grows.": "bossKilled",
+    "My favorite outcome.": "bossKilled",
+    "No challenge.": "bossKilled",
+    "No challenge...": "bossKilled",
+    "Ohh, yes, mine!": "bossKilled",
+    "On to the next fight!": "bossKilled",
+    "One more new toy.": "bossKilled",
+    "One more to gather up.": "bossKilled",
+    "Only one leaves... with me.": "bossKilled",
+    "Over too quickly. Another!": "bossKilled",
+    "Quite the rush.": "bossKilled",
+    "Rare creature!": "bossKilled",
+    "Rare toy for collection!": "bossKilled",
+    "Rare... creature...": "bossKilled",
+    "Rebirth!": "bossKilled",
+    "Rebirth.": "bossKilled",
+    "Rebirth?": "bossKilled",
+    "Savoured delight.": "bossKilled",
+    "Special! Mine!": "bossKilled",
+    "Special. Mine.": "bossKilled",
+    "Special... mine.": "bossKilled",
+    "Sprayed blood floats.": "bossKilled",
+    "Sprayed blood floats...": "bossKilled",
+    "Strange! Better.": "bossKilled",
+    "Strange! Better...": "bossKilled",
+    "Strange. Better.": "bossKilled",
+    "Strange... better...": "bossKilled",
+    "Such a rare sight to behold. There must be more. Find them!": "bossKilled",
+    "Such pleasure, so brief.": "bossKilled",
+    "Such strange pleasure! More!": "bossKilled",
+    "Sweet, sweet treat.": "bossKilled",
+    "That was worth the wait.": "bossKilled",
+    "That was... satisfactory.": "bossKilled",
+    "That's one more for my collection.": "bossKilled",
+    "This Atlas has its delights.": "bossKilled",
+    "This brings exultation.": "bossKilled",
+    "This is exquisite!": "bossKilled",
+    "This makes me exquisitely happy.": "bossKilled",
+    "This one is quite special, and quite rarely seen...": "bossKilled",
+    "Thrill!": "bossKilled",
+    "Thrill.": "bossKilled",
+    "Truly riveting!": "bossKilled",
+    "Violence. Conflict. Pleasure.": "bossKilled",
+    "What a delightfully unusual struggle.": "bossKilled",
+    "Where has such a thing been hiding? I simply must see more.": "bossKilled",
+    "Worthy!": "bossKilled",
+    "Worthy.": "bossKilled",
+    "Yes mine!": "bossKilled",
+    "Yes! It's mine!": "bossKilled",
+    "Yes, mine!": "bossKilled",
+    "Again!": "crucibleCompleted",
+    "Again! Now!": "crucibleCompleted",
+    "Again! Soon!": "crucibleCompleted",
+    "Again! Soon.": "crucibleCompleted",
+    "Again! Soon...": "crucibleCompleted",
+    "Again.": "crucibleCompleted",
+    "Again. Now!": "crucibleCompleted",
+    "Another round will commence as soon as I have more combatants.": "crucibleCompleted",
+    "Another round, soon.": "crucibleCompleted",
+    "Bored again. Don't make me wait.": "crucibleCompleted",
+    "Bored again. Go!": "crucibleCompleted",
+    "Do again!": "crucibleCompleted",
+    "Do again.": "crucibleCompleted",
+    "Do again...": "crucibleCompleted",
+    "Do it again.": "crucibleCompleted",
+    "Fight and repeat.": "crucibleCompleted",
+    "Get more!": "crucibleCompleted",
+    "Get more.": "crucibleCompleted",
+    "Go get more.": "crucibleCompleted",
+    "Go retrieve more for me.": "crucibleCompleted",
+    "Go! More.": "crucibleCompleted",
+    "Go. More.": "crucibleCompleted",
+    "Hurry. I want to watch another!": "crucibleCompleted",
+    "I grow bored already. Go now.": "crucibleCompleted",
+    "More!": "crucibleCompleted",
+    "More.": "crucibleCompleted",
+    "More. Go. Now!": "crucibleCompleted",
+    "More. Go... now!": "crucibleCompleted",
+    "Now go retrieve more challengers for the next round!": "crucibleCompleted",
+    "Quickly, again!": "crucibleCompleted",
+    "Repeat my challenge.": "crucibleCompleted",
+    "Repeat my challenge. Gather more combatants.": "crucibleCompleted",
+    "Repeat this!": "crucibleCompleted",
+    "Repeat this.": "crucibleCompleted",
+    "Test over. New test?": "crucibleCompleted",
+    "Caretaker! To me!": "mavenDefeated",
+    "I require aid!": "mavenDefeated",
+    "I am being hurt!": "mavenDefeated"
   },
-  
-  "darkshrineQuotes" : [
+
+  "shrineQuotes": {
+    "Death doesn't wait.": "Acceleration Shrine",
+    "Hit hard. Hit once.": "Brutal Shrine",
+    "Deliver pain exquisite.": "Diamond Shrine",
+    "Become the nightmare.": "Divine Shrine",
+    "Let your rage flow freely.": "Echoing Shrine",
+    "Turn your world to ice.": "Freezing Shrine",
+    "None shall stop you.": "Impenetrable Shrine",
+    "Open the eye of the storm.": "Lightning Shrine",
+    "Courage stands tall.": "Massive Shrine",
+    "Restore that which was lost.": "Replenishing Shrine",
+    "Fear not the elements.": "Resistance Shrine",
+    "Shroud your path in the fog of war.": "Shrouded Shrine",
+    "The past shall serve the present.": "Skeletal Shrine",
+    "Wield your shadows.": "Gloom Shrine",
+    "Overpower, overrun, overcome.": "Resonating Shrine"
+  },
+
+  "darkshrineQuotes": [
     "Be twice blessed.",
     "To the worthy go the spoils.",
     "Discover what lies within.",
@@ -824,25 +823,25 @@
     "Death doesn’t wait.",
     "A portal to Izaro appears."    
   ],
-  
-  "labyrinthQuotes" : {
-    "Oh, Argus. I shall miss you." : "argusKilled",
-    "Goodbye, Argus. I couldn't have asked for a more faithful and loving companion." : "argusKilled",
+
+  "labyrinthQuotes": {
+    "Oh, Argus. I shall miss you.": "argusKilled",
+    "Goodbye, Argus. I couldn't have asked for a more faithful and loving companion.": "argusKilled",
     "You killed my poor little Argus.": "argusKilled",
-    "Oh, the weary traveler draws close to the end of the path." : "battle1",
-    "When the time comes to strike, an emperor strikes without hesitation. To entertain doubt is to dance with death." : "battle2",
-    "An aspirant can afford to be promising. An emperor must keep those promises." : "battle3",
-    "Your destination is more dangerous than the journey, ascendant." : "completed",
-    "Delight in your gilded dungeon, ascendant." : "completed",
-    "The trap of tyranny is inescapable." : "completed",
-    "I die for the Empire!" : "completed",
-    "You are free!" : "completed",
-    "Triumphant at last!" : "completed"
+    "Oh, the weary traveler draws close to the end of the path.": "battle1",
+    "When the time comes to strike, an emperor strikes without hesitation. To entertain doubt is to dance with death.": "battle2",
+    "An aspirant can afford to be promising. An emperor must keep those promises.": "battle3",
+    "Your destination is more dangerous than the journey, ascendant.": "completed",
+    "Delight in your gilded dungeon, ascendant.": "completed",
+    "The trap of tyranny is inescapable.": "completed",
+    "I die for the Empire!": "completed",
+    "You are free!": "completed",
+    "Triumphant at last!": "completed"
   },
-  
-  "mapBossBattleStartQuotes" : {
-    "Lava Lake" : [ "I shall strike you down!" ],
-    "Cold River" : [
+
+  "mapBossBattleStartQuotes": {
+    "Lava Lake": ["I shall strike you down!"],
+    "Cold River": [
       "Were we expecting visitors?",
       "This will not stand.",
       "Disappointment is the epitome of the pallid moon.",
@@ -850,14 +849,14 @@
       "You desecrate our sanctum!",
       "Pay no worship to the garish sun!"        
     ],
-    "Crimson Township" : [
+    "Crimson Township": [
       "Another lawbreaker in our midst!",
       "Trespasser!",
       "An untapped source.",
       "Blasphemer!",
       "Immoral deviant!"
     ],
-    "Dark Forest" : [
+    "Dark Forest": [
       "The smell of fear betrays you!",
       "Tonight, I will feast!",
       "The hunt begins!",
@@ -865,24 +864,24 @@
       "The Greatwolf hungers!",
       "My prey draws near!"
     ],
-    "Forking River" : [
+    "Forking River": [
       "The pools welcome your bloated corpse.",
       "Drown in these sacred waters.",
       "Suffocate and drown!"
     ],
-    "Foundry" : [
+    "Foundry": [
       "You'll make a fine new sample!",
       "I won't go back! I won't go back!",
       "Die, meddler!",
       "No, you won't understand! You can't!"
     ],
-    "Frozen Cabins" : [
+    "Frozen Cabins": [
       "Hahaha... You dare challenge me?",
       "Fear what you cannot see!",
       "No pray, no pay!",
       "Time to feed, boys!"
     ],
-    "Lair" : [
+    "Lair": [
       "The smell of fear betrays you!",
       "Tonight, I will feast!",
       "The hunt begins!",
@@ -891,14 +890,14 @@
       "My prey draws near!"
     ]
   },
-  
-  "mapBossKilledQuotes" : {
-    "Lava Lake" : [ "May a new dawn arise!" ],
-    "Forge of the Phoenix" : [ "This is the key to a crucible that stretches the sanity of the mind." ],
-    "Maze of the Minotaur" : [ "This is the key to a crucible that stretches the sanity of the mind." ],    
-    "Lair of the Hydra" : [ "This is the key to a crucible that stretches the sanity of the mind." ],
-    "Pit of the Chimera" : [ "This is the key to a crucible that stretches the sanity of the mind." ],    
-    "Cold River" : [
+
+  "mapBossKilledQuotes": {
+    "Lava Lake": ["May a new dawn arise!"],
+    "Forge of the Phoenix": ["This is the key to a crucible that stretches the sanity of the mind."],
+    "Maze of the Minotaur": ["This is the key to a crucible that stretches the sanity of the mind."],    
+    "Lair of the Hydra": ["This is the key to a crucible that stretches the sanity of the mind."],
+    "Pit of the Chimera": ["This is the key to a crucible that stretches the sanity of the mind."],    
+    "Cold River": [
       "Sister--... I-...",
       "I shall avenge, you, sister.",
       "I... am... eclipsed.",
@@ -906,41 +905,228 @@
       "I am... done...",
       "Dawn comes... at last..."
     ],
-    "Crimson Township" : [
+    "Crimson Township": [
       "Unlawful...",
       "Meeting adjourned...",
       "One with the crimson..."
     ],
-    "Dark Forest" : [
+    "Dark Forest": [
       "...First Ones, remember me.",
       "The Greatwolf has left me!",
       "Forgive me, Ezomyr.",
       "There is nothing to regret."
     ],
-    "Forking River" : [
+    "Forking River": [
       "Death... cannot stop... me.",
       "You only delay...",
       "I... will... return..."
     ],
-    "Foundry" : [
+    "Foundry": [
       "No... It's not... ready...",
       "The work... must... (blehhhh)",
       "So close... so...",
       "M-... Madness..."        
     ],
-    "Frozen Cabins" : [
+    "Frozen Cabins": [
       "Curses...",
       "Death... will... find you.",
       "Impossible...",
       "My last... voyage...",
       "You too... will... perish."
     ],
-   "Lair" : [
+    "Lair": [
       "...First Ones, remember me.",
       "The Greatwolf has left me!",
       "Forgive me, Ezomyr.",
       "There is nothing to regret."
     ]
+  },
+
+  "ultimatumQuotes": {
+    "mods" : {      
+      "Vengeance is cold indeed.": "Blistering Cold",
+      "Death's cold grip is inescapable.": "Blistering Cold II",
+      "Hate begets hate.": "Blistering Cold III",
+      "Time is your enemy.": "Buffs Expire Faster",
+      "Your opponents bring night's madness.": "Bonus Chaos Damage",
+      "Choking vapors seek the living.": "Choking Miasma",
+      "Avoid the miasma, if you can.": "Choking Miasma",
+      "Miasma spreads.": "Choking Miasma II",
+      "Rare is the breath of living air.": "Choking Miasma II",
+      "The vapors are inescapable.": "Choking Miasma III",
+      "Contamination moves swiftly on the wind.": "Choking Miasma III",
+      "Mortality seeks you in kind.": "Escalating Damage Taken",
+      "No defence will be enough.": "Escalating Damage Taken",
+      "Your enemies hasten.": "Escalating Monster Speed",
+      "The tide of death is rapid.": "Escalating Monster Speed",
+      "Fight the slowing of your own heart.": "Less Cooldown recovery",
+      "Your reach exceeds your grasp.": "Lessened Reach",
+      "Your thoughts crackle with pain.": "Lightning Damage from Mana Costs",
+      "Lightning lurks within you.": "Lightning Damage from Mana Costs",
+      "Stray too far and find pain.": "Limited Arena",
+      "Your blood betrays you.": "Limited Flasks",
+      "Your arteries constrict.": "Occasional Impotence",
+      "The storm approaches.": "Stormcaller Runes",
+      "Lightning descends.": "Stormcaller Runes",
+      "The storm comes swiftly.": "Stormcaller Runes II",
+      "Lightning gives little warning.": "Stormcaller Runes II",
+      "Lightning always strikes twice.": "Stormcaller Runes III",
+      "Thunder and lightning abound.": "Stormcaller Runes III",
+      "Slay them amongst the flames.": "Raging Dead",
+      "Fire seeks what it will.": "Raging Dead",
+      "The wind conspires with the flames.": "Raging Dead II",
+      "The flames race toward you.": "Raging Dead II",
+      "Flames beget more flames.": "Raging Dead III",
+      "Fire always spreads.": "Raging Dead III",
+      "Your own volleys turn against you.": "Random Projectiles",
+      "Shrapnel and shards abound.": "Razor Dance",
+      "Relentless assault.": "Razor Dance II",
+      "Be torn to shreds.": "Razor Dance III",
+      "A weight upon the soul.": "Reduced Recovery",
+      "": "Reduced Recovery II",
+      "Night's madness drains away all hope.": "Restless Ground",
+      "Can you feel death coiling around your heart?": "Restless Ground II",
+      "Ruin hides in every corner.": "Restless Ground III",
+      "Ruin surrounds you.": "Ruin III",
+      "The sun is setting on your success.": "Siphoned Charges",
+      "Ruin seeks you.": "Stalking Ruin",      
+      "Steel and pain.": "Totem of Costly Might",    
+      "The fire of summer burns within.": "Totem of Costly Potency",
+      "Confront that which you release.": "Treacherous Auras",
+      "Be diminished.": "Unlucky Criticals",
+      
+      "You shall suffer your own bile." : "Ailment and Curse Reflection / Hindering Flasks",
+      "Ruin arrives suddenly." : "Ruin II / Stalking Ruin II",
+      "You will fall to ruin." : "Ruin / Stalking Ruin III"
+      
+    },
+    "start" : [
+      "Approach, Challenger.",
+      "Can you be victorious twice in a row?",
+      "Chaos would like to see you make it past round seven...",
+      "Come to lose again?",
+      "Does it sting to have gotten so close last time?",
+      "Eight rounds was... respectable.",
+      "Eight rounds! Chaos is watching with anticipation.",
+      "Four rounds should be an easy mark to beat.",
+      "Go for at least the third round this time.",
+      "How ever will you match that last incredible performance?",
+      "I am being punished, aren't I?",
+      "I doubt you'll make it to seven rounds again.",
+      "I expect a better performance.",
+      "I hope you have enjoyed your brief string of victories.",
+      "I sincerely hope you intend to last longer than two rounds.",
+      "I sincerely hope you plan to last longer than two rounds.",
+      "Is this some farcical joke?",
+      "Is your ego bruised?",
+      "Multiple losses. A touch shameful.",
+      "Nine rounds, yet victory was still out of reach.",
+      "No glory in only making it four rounds.",
+      "Now is your chance to claim back victory.",
+      "Oh, it's the five-round challenger.",
+      "One loss is nothing to be ashamed of.",
+      "Only made it to round five last time. Back for more?",
+      "Persistence is your only virtue.",
+      "Prove your last victory was not mere chance.",
+      "Random chance must dictate you win... occasionally.",
+      "Six rounds? Try to make it to the end this time.",
+      "The five-round challenger returns...",
+      "The single-round challenger returns.",
+      "The three-round challenger returns...",
+      "This should be quick...",
+      "This time you will finally lose.",
+      "This trial may be the one that brings about your defeat.",
+      "This trial will see your downfall.",
+      "Try to do better than three rounds this time.",
+      "Will this be a second loss in a row?",
+      "Will you wash clean the marks of failure?",
+      "Win back your pride, challenger.",
+      "Yes, come lose a trial. Productive.",
+      "You know the goal is to succeed, yes?",
+      "You never win, yet you keep trying...",
+      "You only made it six rounds last time. Why do you bother?",
+      "You seem to be a glutton for punishment.",
+      "You won. Once. Do not get ahead of yourself.",
+      "Your luck will run out soon, challenger.",
+      "Your pride demands restoration, challenger.",
+      "Your series of victories will end here.",
+      "Your victories will not continue.",
+      "You're still going to attempt my trials?",
+      "You've been winning, but can you keep it up?"
+    ],
+    "tookReward": [ 
+      "So be it, as disappointing as it is.",
+      "The expected choice.",
+      "The safe choice."
+    ],
+    "lost": [
+      "A second victory in a row was not in the cards for you, it seems.",
+      "Another failure...",
+      "Be not ashamed at your meagre record.",
+      "Chance no longer favours you.",
+      "Hahahahaha! Your luck is over, fool!",
+      "How embarrassing for you.",
+      "How... expected.",
+      "It seems we have found the limit of your skill.",
+      "It was inevitable.",
+      "It was not to be.",
+      "My master, it is done! Torture me no longer!",
+      "Now you understand what not to do.",
+      "Perhaps these trials are too difficult for you.",
+      "Perhaps you don't understand the rules...",
+      "Perhaps you should hone your skills before you attempt my trials again.",
+      "The victorious always fall eventually.",
+      "There is no shame in defeat. Well... there is some.",
+      "To lose twice in a row... how unfortunate.",
+      "Try your luck again soon, challenger.",
+      "Two losses in a row!",
+      "Yet again...",
+      "You are wasting my time, fool.",
+      "You emerge victorious no more.",
+      "You just keep failing!",
+      "Your grand visions fade to dust.",
+      "Your path to greatness has taken a hard turn toward a cliff.",
+      "Your potential remains unrealised.",
+      "Your record worsens...",
+      "Your series of victories has come to an end.",
+      "Your series of victories has reached its end."
+    ],
+    "won": [
+      "A meagre turnaround.",
+      "A second victory!",
+      "Don't get too eager.",
+      "Fair enough. Luck is luck.",
+      "For now, the victor remains the victor!",
+      "Honestly, it's about time. Congratulations, challenger. Sincerely.",
+      "How do you keep winning?!",
+      "I can practically see your ego swelling.",
+      "I should have become a priest of Yaomac instead...",
+      "I suspect I am being made a fool of!",
+      "I was not certain you had it in you.",
+      "Impressive, challenger.",
+      "Keeping it interesting, I see.",
+      "Luck can only carry you so far....",
+      "Not bad... for a mortal.",
+      "Take your prize and go.",
+      "Thank you for not disappointing my master yet again.",
+      "That makes two in a row!",
+      "This is insufferable...",
+      "This is no longer amusing.",
+      "This series of victories is astonishing.",
+      "This will not continue. I am unconcerned.",
+      "Thus, the vagaries of chance.",
+      "Win some... lose most.",
+      "You have redeemed yourself.",
+      "You have restored your pride.",
+      "You have stemmed the tide of losses.",
+      "You play the game well, Challenger. Enjoy the fruits of your luck, and your skill. We shall meet again.",
+      "You win... again.",
+      "You... you won? I honestly didn't expect that of you.",
+      "Your series of losses has finally ended.",
+      "Your series of victories continues."
+    ],
+    "trialmasterDefeated": [
+      "My service... is finally over..."
+    ]
   }
-  
 }
