@@ -577,7 +577,19 @@
     "Nemesis Monsters drop 3 additional Basic Currency Items",
     "+#% increased Pack size",
     "Varieties of Items contained in # Blight Chests are Lucky",
-    "#% increased Size of Synthesised Monster Packs"
+    "#% increased Size of Synthesised Monster Packs",
+    
+    "Area contains 2 additional Smuggler's Caches",
+    "Area contains The Sacred Grove",
+    "Map contains Al-Hezmin's Citadel",
+    "Map contains Baran's Citadel",
+    "Map contains Drox's Citadel",
+    "Map contains Veritania's Citadel",
+    "Item Quantity increases amount of Rewards Al-Hezmin drops by 20% of its value",
+    "Item Quantity increases amount of Rewards Baran drops by 20% of its value",
+    "Item Quantity increases amount of Rewards Drox drops by 20% of its value",
+    "Item Quantity increases amount of Rewards Veritania drops by 20% of its value",
+    "Map's Item Quantity Modifiers also affect Blight Chest count at 20% value"
     
   ]
 
