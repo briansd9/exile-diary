@@ -429,7 +429,7 @@ class Utils {
       }
     }
     logger.info(`No area type found for "${area}"`);
-    return null;
+    return "Other";
   }
   
   // private league IDs end with (PL#####)
