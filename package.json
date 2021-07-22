@@ -69,7 +69,7 @@
     "sqlite3": "^4.2.0",
     "tesseract.js": "^1.0.19",
     "winston": "^3.3.3",
-    "xlsx": "^0.14.5"
+    "xlsx": "^0.17.0"
   },
   "devDependencies": {
     "electron": "^7.3.3",
