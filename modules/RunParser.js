@@ -1144,6 +1144,9 @@ async function getMapExtraInfo(areaName, firstevent, lastevent, items, areaMods)
               } else if(sruin && sruin3 && !sruin2) {
                 u.rounds[keys[i]] = "Stalking Ruin II";
                 sruin2 = true;
+              } else if(ruin && sruin && !ruin3 && !sruin3) {
+                // again, fuck it
+                u.rounds[keys[i]] = (Math.random() > 0.5 ? "Ruin II" : "Stalking Ruin II");
               }
               break;
           }
