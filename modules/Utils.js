@@ -305,6 +305,8 @@ class Utils {
         return getFlaskName(jsonData.f);
       } else if(jsonData.f.includes("/Maps/")) {
         return getUniqueMapName(jsonData.f);
+      } else if(Constants.uniqueIconsNew[jsonData.f]) {
+        return Constants.uniqueIconsNew[jsonData.f];
       } else {
         logger.info(`Invalid icon data found: ${jsonData.f}`);
         return null;

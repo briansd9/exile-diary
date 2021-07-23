@@ -68,6 +68,7 @@
       const moment = require('moment');
       const zlib = require('zlib');
       const GearChecker = require('./modules/GearChecker');
+      const Constants = require('./modules/Constants');
       
       const gearSlotButtons = {
         "Helm": { label: "Helm", icon: "helm" },
@@ -323,10 +324,14 @@
             let mod = item.cosmeticMods[i];
             if(mod.endsWith("You can reclaim this by shift-clicking this item.")) {
               let skinName = mod.substring(4, mod.indexOf(" Skin."));
-              let uniqueIcons = require('./modules/Constants').uniqueIcons;
-              let idx = Object.values(uniqueIcons).indexOf(skinName);
+              let idx = Object.values(Constants.uniqueIcons).indexOf(skinName);
               if(idx > -1) {
                 item.icon = `${Object.keys(uniqueIcons)[idx]}?w=${item.w}&h=${item.h}&scale=1`;
+              } else {
+                idx = Object.values(Constants.uniqueIconsNew).indexOf(skinName);
+                if(idx > -1) {
+                  item.icon = `https://web.poecdn.com/image/Art/2DItems/${Object.keys(uniqueIconsNew)[idx]}?w=${item.w}&h=${item.h}&scale=1`;
+                }
               }
             }
           }
