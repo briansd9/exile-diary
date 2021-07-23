@@ -204,24 +204,8 @@ function Parser() {
 
 	function parseEndOfRule (self) {
 		if (self.currentRule !== null) {
-			validateRule( self, self.currentRule );
 			self.ruleSet.push( self.currentRule );
 			self.currentRule = null;
-		}
-	}
-
-	function validateRule (self, rule) {
-		var ruleLine = "(unknown)";
-		if (rule.codeLines.length > 0) {
-			ruleLine = rule.codeLines[0].toString();
-		}
-
-		var soundModifiers = rule.modifiers.filter( function(m) { return m instanceof PlayAlertSoundModifier; } );
-		if (soundModifiers.length > 1) {
-			reportWarning( self,
-				"Multiple PlayAlertSound modifiers found in rule at line " + ruleLine + ". " +
-				"Only the last sound will be played."
-			);
 		}
 	}
 
@@ -530,13 +514,7 @@ function Parser() {
 			'SetBackgroundColor': SetBackgroundColorModifier,
 			'SetBorderColor': SetBorderColorModifier,
 			'SetTextColor': SetTextColorModifier,
-			'PlayAlertSound': PlayAlertSoundModifier,
-			'PlayAlertSoundPositional': PlayAlertSoundPositionalModifier,
-			'SetFontSize': SetFontSizeModifier,
-			'DisableDropSound': DisableDropSoundModifier,
-			'CustomAlertSound': CustomAlertSoundModifier,
-			'MinimapIcon': MinimapIconModifier,
-			'PlayEffect': PlayEffectModifier,
+			'SetFontSize': SetFontSizeModifier
 		};
 
 		switch (token) {
@@ -556,6 +534,9 @@ function Parser() {
 			case 'PlayAlertSoundPositional':
 			case 'DisableDropSound':
       case 'CustomAlertSound':
+      case 'CustomAlertSoundOptional':
+      case 'DisableDropSoundIfAlertSound':
+      case 'EnableDropSoundIfAlertSound':
 				break;
 
 			default:
@@ -1206,42 +1187,6 @@ function SetFontSizeModifier (fontSize) {
 	this.applyTo = function (item) {
     item.styleModifiers.fontSize = MathUtils.remap(fontSize, 18, 45, 25, 50);
 	}
-}
-
-function PlayAlertSoundModifier (soundId, volume) {
-	this.applyTo = function (item) {
-		// not implemented
-	}
-}
-
-function PlayAlertSoundPositionalModifier (soundId, volume) {
-	this.applyTo = function (item) {
-		// not implemented
-	}
-}
-
-function DisableDropSoundModifier () {
-	this.applyTo = function (item) {
-		// not implemented
-	}
-}
-
-function CustomAlertSoundModifier (path) {
-    this.applyTo = function (item) {
-        // not implemented
-    }
-}
-
-function MinimapIconModifier (size, color, shape) {
-    this.applyTo = function (item) {
-        // not implemented
-    }
-}
-
-function PlayEffectModifier (color) {
-    this.applyTo = function (item) {
-        // not implemented
-    }
 }
 
 /* rule.js from poedit ends here */
