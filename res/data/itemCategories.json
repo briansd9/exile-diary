@@ -794,7 +794,7 @@
     "Amethyst Flask" : "Utility Flasks",
     "Quartz Flask" : "Utility Flasks",
     "Jade Flask" : "Utility Flasks",
-    "Diamond Flask" : "Critical Utility Flasks",
+    "Diamond Flask" : "Utility Flasks",
     "Driftwood Wand" : "Wands",
     "Serpent Wand" : "Wands",
     "Omen Wand" : "Wands",
@@ -975,8 +975,22 @@
     "Apothecary's Gloves" : "Gloves",
     "Artillery Quiver" : "Quivers",
     "Iolite Ring" : "Rings",
-    "Grasping Mail" : "Body Armours"
-        
+    "Grasping Mail" : "Body Armours",
+    
+    "Runic Helm" : "Helmets",
+    "Runic Crest" : "Helmets",
+    "Runic Crown" : "Helmets",
+    "Runic Greaves" : "Boots",
+    "Runic Sollerets" : "Boots",
+    "Runic Sabatons" : "Boots",    
+    "Runic Gloves" : "Gloves",
+    "Runic Gages" : "Gloves",
+    "Runic Gauntlets" : "Gloves",    
+    "Gold Flask" : "Utility Flasks",
+    "Corundum Flask" : "Utility Flasks",
+    "Iron Flask" : "Utility Flasks",
+    "Fugitive Boots" : "Boots"
+
   },
 
   "gemBaseTypes" : {
@@ -1461,7 +1475,29 @@
     "Arrogance Support" : "Support Skill Gems",
     "Bloodthirst Support" : "Support Skill Gems",
     "Cruelty Support" : "Support Skill Gems",
-    "Lifetap Support" : "Support Skill Gems"
+    "Lifetap Support" : "Support Skill Gems",
+    
+    "Defiance Banner" : "Active Skill Gems",
+    "Voltaxic Burst" : "Active Skill Gems",
+    "Rage Vortex" : "Active Skill Gems",
+    "Spectral Helix" : "Active Skill Gems",
+    "Battlemage's Cry" : "Active Skill Gems",
+    "Absolution" : "Active Skill Gems",
+    "Ambush" : "Active Skill Gems",
+    "Forbidden Rite" : "Active Skill Gems",
+    "Manabond" : "Active Skill Gems",
+    "Blade Trap" : "Active Skill Gems",
+    "Shield Crush" : "Active Skill Gems",
+    "Boneshatter" : "Active Skill Gems",
+    "Summon Reaper" : "Active Skill Gems",
+    "Explosive Concoction" : "Active Skill Gems",
+    "Eye of Winter" : "Active Skill Gems",
+    "Storm Rain" : "Active Skill Gems",
+    "Earthbreaker Support" : "Support Skill Gems",
+    "Focused Ballista Support" : "Support Skill Gems",
+    "Behead Support" : "Support Skill Gems",
+    "Chance to Poison Support" : "Support Skill Gems",
+    "Critical Strike Affliction Support" : "Support Skill Gems"
     
   },
 
@@ -2002,7 +2038,30 @@
     
     "6-socket Items" : "Currency",
     "6-link Items" : "Currency",
-    "R-G-B linked Items" : "Currency"
+    "R-G-B linked Items" : "Currency",
+    
+    "Enkindling Orb" : "Stackable Currency",
+    "Instilling Orb" : "Stackable Currency",
+    "Exotic Coinage" : "Stackable Currency",
+    "Scrap Metal" : "Stackable Currency",
+    "Astragali" : "Stackable Currency",
+    "Burial Medallion" : "Stackable Currency",
+    "Lesser Broken Circle Artifact" : "Stackable Currency",
+    "Common Broken Circle Artifact" : "Stackable Currency",
+    "Greater Broken Circle Artifact" : "Stackable Currency",
+    "Grand Broken Circle Artifact" : "Stackable Currency",
+    "Lesser Black Scythe Artifact" : "Stackable Currency",
+    "Common Black Scythe Artifact" : "Stackable Currency",
+    "Greater Black Scythe Artifact" : "Stackable Currency",
+    "Grand Black Scythe Artifact" : "Stackable Currency",
+    "Lesser Order Artifact" : "Stackable Currency",
+    "Common Order Artifact" : "Stackable Currency",
+    "Greater Order Artifact" : "Stackable Currency",
+    "Grand Order Artifact" : "Stackable Currency",
+    "Lesser Sun Artifact" : "Stackable Currency",
+    "Common Sun Artifact" : "Stackable Currency",
+    "Greater Sun Artifact" : "Stackable Currency",
+    "Grand Sun Artifact" : "Stackable Currency"
     
   },
  
