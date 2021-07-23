@@ -64,7 +64,7 @@ class MapTable {
       str += Utils.getEncounterIcon("oshabi");
     }
     if(r.abnormalDisconnect) {
-      str += Utils.getEncounterIcon("abnormalDisconnect");
+      str += Utils.getEncounterIcon("abnormaldisconnect");
     }
     if(r.ultimatum) {
       str += Utils.getEncounterIcon("ultimatum");
