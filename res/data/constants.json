@@ -177,7 +177,11 @@
     "yFlask4" : "Doedre's Elixir",
     "yFlask5" : "Lion's Roar",
     "yFlasks17" : "Divination Distillate",
-    "ZerphisLastBreath" : "Zerphi's Last Breath"
+    "ZerphisLastBreath" : "Zerphi's Last Breath",
+    "WardFlask03" : "Elixir of the Unbroken Circle",
+    "WardFlask02" : "Olroth's Resolve",
+    "AdaptationFlask02" : "Starlight Chalice",
+    "AdaptationFlask03" : "Vorana's Preparation"
   },
   
   "uniqueMaps" : {  

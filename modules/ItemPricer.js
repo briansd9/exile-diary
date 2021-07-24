@@ -357,6 +357,7 @@
           if(icon.includes("mn=8")) return "Harvest";
           if(icon.includes("mn=9")) return "Heist";
           if(icon.includes("mn=10")) return "Ritual";
+          if(icon.includes("mn=11")) return "Expedition";
         } else {
           if(icon.includes("2DItems/Maps/AtlasMaps")) return "Atlas";
           if(icon.includes("2DItems/Maps/Map")) return "Pre 2.4";
@@ -384,6 +385,7 @@
           case 8: return "Harvest";
           case 9: return "Heist";
           case 10: return "Ritual";
+          case 11: return "Expedition";
         }
       } else {
         if(data.f.includes("2DItems/Maps/AtlasMaps")) return "Atlas";

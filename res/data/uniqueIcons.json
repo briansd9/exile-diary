@@ -994,8 +994,14 @@
     "https://web.poecdn.com/image/Art/2DItems/Armours/Shields/TheScalesofJustice.png" : "The Scales of Justice",
     "https://web.poecdn.com/image/Art/2DItems/Rings/VaalUnsetRing.png" : "Triumvirate Authority",
     "https://web.poecdn.com/image/Art/2DItems/Jewels/SearchingEyeUnique.png" : "Ulaman's Gaze",
-    "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Scepters/OnatzliSceptre.png" : "Yaomac's Accord"
+    "https://web.poecdn.com/image/Art/2DItems/Weapons/OneHandWeapons/Scepters/OnatzliSceptre.png" : "Yaomac's Accord",
     
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/CadigansCrown.png" : "Cadigan's Crown",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Helmets/Faithguard.png" : "Faithguard",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/AdaptationGlovesUnique.png" : "Medved's Challenge",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Gloves/SpiritGlovesUnique.png" : "Nightgrip",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/AdaptationBootsUnique.png" : "Olroth's Charge",
+    "https://web.poecdn.com/image/Art/2DItems/Armours/Boots/SpiritBootsUnique.png" : "Vorana's March"
     
   },
   
@@ -1996,7 +2002,12 @@
     "Weapons/OneHandWeapons/Scepters/OnatzliSceptre" : "Yaomac's Accord",
 
     "Armours/Helmets/CadigansCrown" : "Cadigan's Crown",
-    "Armours/Helmets/Faithguard" : "Faithguard"
+    "Armours/Helmets/Faithguard" : "Faithguard",
+    "Armours/Gloves/AdaptationGlovesUnique" : "Medved's Challenge",
+    "Armours/Gloves/SpiritGlovesUnique" : "Nightgrip",
+    "Armours/Boots/AdaptationBootsUnique" : "Olroth's Charge",
+    "Armours/Boots/SpiritBootsUnique" : "Vorana's March",
+    
     
   }
   
