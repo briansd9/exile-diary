@@ -24,6 +24,10 @@ function getCategory(item, subcategory = false) {
   var t = item.typeLine;
   if(!t) return null;
   
+  if(t === "Expedition Logbook") {
+    return t;
+  }
+  
   if(t.includes("Contract")) {
     return data.heistQuestItems.includes(t) ? "Quest Items" : "Contract";
   }

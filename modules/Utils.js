@@ -308,7 +308,7 @@ class Utils {
       } else if(Constants.uniqueIconsNew[jsonData.f]) {
         return Constants.uniqueIconsNew[jsonData.f];
       } else {
-        logger.info(`Invalid icon data found: ${jsonData.f}`);
+//        logger.info(`Invalid icon data found: ${jsonData.f}`);
         return null;
       }
       

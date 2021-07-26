@@ -589,7 +589,24 @@
     "Item Quantity increases amount of Rewards Baran drops by 20% of its value",
     "Item Quantity increases amount of Rewards Drox drops by 20% of its value",
     "Item Quantity increases amount of Rewards Veritania drops by 20% of its value",
-    "Map's Item Quantity Modifiers also affect Blight Chest count at 20% value"
+    "Map's Item Quantity Modifiers also affect Blight Chest count at 20% value",
+    
+    "#% increased Explosive Placement Range",
+    "#% increased Explosive Radius",
+    "#% increased number of Explosives",
+    "#% increased quantity of Artifacts dropped by Monsters",
+    "Area contains # additional Chest Markers",
+    "Area contains #% increased number of Monster Markers",
+    "Area contains #% increased number of Remnants",
+    "Area contains #% increased number of Runic Monster Markers",
+    "Area contains 1 additional Chest Marker",
+    "Area contains an additional Underground Area",
+    "Area contains Medved, Feller of Heroes",
+    "Area contains Olroth, Origin of the Fall",
+    "Area contains Uhtred, Covetous Traitor",
+    "Area contains Vorana, Last to Fall",
+    "Excavated Chests have a #% chance to contain twice as many Items",
+    "Remnants have #% chance to have an additional Suffix Modifier"
     
   ]
 
