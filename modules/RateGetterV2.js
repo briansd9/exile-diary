@@ -30,7 +30,8 @@ const rateTypes = {
   "Watchstone" : cleanWatchstones,
   "Vial" : cleanNameValuePairs,
   "DeliriumOrb" : cleanNameValuePairs,
-  "Invitation" : cleanNameValuePairs
+  "Invitation" : cleanNameValuePairs,
+  "Artifact" : cleanNameValuePairs
   // RIP harvest :-(
   // "Seed" : cleanSeeds 
 };
@@ -167,7 +168,8 @@ class RateGetterV2 {
       tempRates["Fossil"],
       tempRates["Resonator"],
       tempRates["Essence"],
-      tempRates["Vial"]
+      tempRates["Vial"],
+      tempRates["Artifact"]
     );
     rates["Fragment"] = Object.assign(
         tempRates["Fragment"], 
@@ -229,6 +231,7 @@ class RateGetterV2 {
       case "DeliriumOrb":
       case "Seed":
       case "Invitation":
+      case "Artifact":
         url = `/api/data/itemoverview?type=${category}`;
         break;
       default:
