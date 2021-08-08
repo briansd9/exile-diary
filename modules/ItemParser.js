@@ -115,7 +115,14 @@ function parseItem(item, timestamp) {
   var rarity = rarities[item.frameType];
   var category = ItemCategoryParser.getCategory(item);
   var identified = item.identified;
+  
   var typeline = stripTags(item.typeLine);
+  if(rarity === 'Gem' && item.typeLine !== item.baseType) {
+    // to handle hybrid gems (general's cry, predator support)
+    typeline = stripTags(item.baseType);
+  }
+    
+  
   var stacksize = item.stackSize || null;
   var sockets = Utils.getSockets(item);
   var rawdata = JSON.stringify(item);
