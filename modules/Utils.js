@@ -57,7 +57,7 @@ class Utils {
     if(!item.typeLine.endsWith("Map")) {
       displayName += baseName;
     } else {
-      displayName += item.typeLine.replace("Superior ", "");
+      displayName += item.typeLine;
     }
     
     if(suffix) {
@@ -305,9 +305,11 @@ class Utils {
         return getFlaskName(jsonData.f);
       } else if(jsonData.f.includes("/Maps/")) {
         return getUniqueMapName(jsonData.f);
-      } else if(Constants.uniqueIconsNew[jsonData.f]) {
-        return Constants.uniqueIconsNew[jsonData.f];
       } else {
+        let path = jsonData.f.replace("2DItems/", "");
+        if(Constants.uniqueIconsNew[path]) {
+          return Constants.uniqueIconsNew[path];        
+        } else 
 //        logger.info(`Invalid icon data found: ${jsonData.f}`);
         return null;
       }

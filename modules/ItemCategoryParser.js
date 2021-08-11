@@ -21,7 +21,8 @@ const nonStackableBulkItems = [
 
 function getCategory(item, subcategory = false) {
   
-  var t = item.typeLine;
+  // handle hybrid gems
+  var t = (item.hybrid ? item.hybrid.baseTypeName : item.typeLine);
   if(!t) return null;
   
   if(t === "Expedition Logbook") {

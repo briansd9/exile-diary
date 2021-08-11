@@ -221,7 +221,13 @@ static createItem(itemdata)
 	obj.rarity = ItemData.getRarity(itemdata);
 
 	obj.itemClass = ItemCategoryParser.getCategory(itemdata);
-	obj.baseType = itemdata.typeLine.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "");
+  
+  // handle hybrid gems
+  obj.baseType = itemdata.typeLine.replace("<<set:MS>><<set:M>><<set:S>>", "").replace(/<>/g, "");
+  if(itemdata.hybrid && !obj.baseType.startsWith("Vaal")) {
+    obj.baseType = itemdata.hybrid.baseTypeName;
+  }
+	
 	obj.identified = itemdata.identified || false;
 	obj.corrupted = itemdata.corrupted || false;
   obj.mirrored = itemdata.duplicated || false;
@@ -263,7 +269,7 @@ static createItem(itemdata)
 		if (!this.identified || !this.name) {
       var name = (this.stackSize > 1 ? this.stackSize + " x " : "") + this.baseType;
       if(this.gemLevel) {
-        if(this.quality > 0 && !name.includes("Anomalous") && !name.includes("Divergent") && name.includes("Phantasmal")) {
+        if(this.quality > 0 && !name.includes("Anomalous") && !name.includes("Divergent") && !name.includes("Phantasmal")) {
           name = "Superior " + name;
         }
         if(this.gemLevel > 1) name += ` (Level ${this.gemLevel})`;
