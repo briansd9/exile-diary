@@ -365,7 +365,6 @@ function cleanCurrency(arr, getLowConfidence = false) {
   var a = {};
   arr.lines.forEach(item => {
     if(item.currencyTypeName === "Rogue's Marker") {
-      logger.info("Ignoring Rogue's Marker currency listing - not stable");
       return;
     }
     if(item.count && item.count < 10 && !getLowConfidence) return; // ignore low confidence listings
