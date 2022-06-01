@@ -84,8 +84,9 @@ async function checkCurrentActiveCharacter() {
                   Settings.set("activeProfile", {
                     characterName : data[i].name,
                     league: data[i].league,
-                    overrideSSF : settings.activeProfile.overrideSSF,
-                    noGearCheck : settings.activeProfile.noGearCheck
+                    overrideSSF: settings.activeProfile.overrideSSF,
+                    noGearCheck: settings.activeProfile.noGearCheck,
+                    enableIncubatorAlert: settings.activeProfile.enableIncubatorAlert,
                   });
                   await DB.initDB();
                   await DB.initLeagueDB();
@@ -368,7 +369,13 @@ function initWindow(window) {
   KillTracker.emitter.on("incubatorsUpdated", (incubators) => {
     webContents.send("incubatorsUpdated", incubators);
   });
-  
+  KillTracker.emitter.on("incubatorsMissing", (equipments) => {
+    if(equipments.length){
+      addMessage(`Following equipment has incubator missing: ` +
+        equipments.map(([name, icon]) => `<img src='${icon}' class='currencyText'/><span class='eventText'>${name}</span>`).join('; '), true);
+    }
+  })
+
   RateGetterV2.emitter.removeAllListeners();
   RateGetterV2.emitter.on("gettingPrices", () => {
     addMessage("<span class='eventText'>Getting item prices from poe.ninja...</span>")

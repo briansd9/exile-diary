@@ -260,6 +260,7 @@
           $("#uploadFilter").attr('placeholder', `Click to upload new item filter for ${settings.activeProfile.characterName}`);
           $("#overrideSSF").prop("checked", settings.activeProfile.overrideSSF);
           $("#noGearCheck").prop("checked", settings.activeProfile.noGearCheck);
+          $("#enableIncubatorAlert").prop("checked", settings.activeProfile.enableIncubatorAlert || false);
           
           // private league handling
           if(Utils.isPrivateLeague(settings.activeProfile.league)) {
@@ -482,6 +483,9 @@
         }
         if($("#noGearCheck").is(":checked")) {
           settings.activeProfile.noGearCheck = true;
+        }
+        if($("#enableIncubatorAlert").is(":checked")) {
+          settings.activeProfile.enableIncubatorAlert = true;
         }
         
         var stashCheckUnits = $("#stashCheckUnits").val();
@@ -899,6 +903,14 @@
               <div class='configLabel ui-text' title="If checked, whenever you switch characters in-game, Exile Diary will automatically track stats for that character">
                 <input style='margin:0 16px;' name='autoSwitch' id='autoSwitch' type='checkbox' onchange='updateManualSwitch();'/>
                 <label for='autoSwitch'>Enable automatic character switching</label>
+              </div>
+            </td>
+          </tr>
+          <tr id='enableIncubatorAlertRow'>
+            <td colspan="2">
+              <div class='configLabel ui-text' title="If checked, when you get out of map, give a small notification about gear slots that had incubator run out.">
+                <input style='margin:0 16px;' name='enableIncubatorAlert' id='enableIncubatorAlert' type='checkbox'/>
+                <label for='enableIncubatorAlert'>Enable incubator running out alert</label>
               </div>
             </td>
           </tr>
