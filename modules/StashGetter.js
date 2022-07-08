@@ -283,6 +283,7 @@ class StashGetter {
         response.on('end', () => {
           try {
             var data = JSON.parse(body);
+            var data = JSON.parse(body);
             if(data.error && data.error.message === "Forbidden") {
               emitter.emit("invalidSessionID");
               resolve();

@@ -581,7 +581,7 @@
       
       function getTabList() {
         
-        var path = `/character-window/get-stash-items?accountName=${encodeURIComponent(settings.accountName)}&league=${encodeURIComponent(settings.activeProfile.league)}&tabs=1`;
+        var path = `/character-window/get-stash-items?accountName=${encodeURIComponent(settings.accountName)}&league=${encodeURIComponent(settings.activeProfile.league)}&tabs=1&tabIndex=0`;
         var poesessid = $("#poesessid").val();
         var requestParams = Utils.getRequestParams(path, poesessid);
         
@@ -607,6 +607,7 @@
         request.end();
         
         function tabListError(err) {
+            logger.info(err)
           logger.info(`Failed to get tab list: ${err.message}`);
           alert(`Failed to get tab list for ${$("#accountName").val()}. Have you entered your account name and POESESSID correctly?`);
         }        
