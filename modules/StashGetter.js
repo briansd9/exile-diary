@@ -270,7 +270,7 @@ class StashGetter {
 
   getTabList(s) {
 
-    var path = `/character-window/get-stash-items?league=${encodeURIComponent(s.league)}&accountName=${encodeURIComponent(s.accountName)}&tabs=1`;
+    var path = `/character-window/get-stash-items?league=${encodeURIComponent(s.league)}&accountName=${encodeURIComponent(s.accountName)}&tabs=1&tabIndex=0`;
     var requestParams = Utils.getRequestParams(path, s.poesessid);
 
     return new Promise((resolve, reject) => {
@@ -282,6 +282,7 @@ class StashGetter {
         });
         response.on('end', () => {
           try {
+            var data = JSON.parse(body);
             var data = JSON.parse(body);
             if(data.error && data.error.message === "Forbidden") {
               emitter.emit("invalidSessionID");
