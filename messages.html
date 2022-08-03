@@ -5,7 +5,7 @@
     $(elem).removeClass("removeRow");
     $(".retry").html("retrying...");
     require('electron').ipcRenderer.send("rateGetterRetry");
-  }
+ }
 
   function addMessageRow(msg) {
     $("#messages").append(`<div class='message'><span class='eventTime'>[${msg.timestamp}]</span> ${msg.text}</div>`);
@@ -44,7 +44,7 @@
         $("#messages").scrollTop($("#messages")[0].scrollHeight);
       }
     );
-    var messages = require('electron').remote.getGlobal("messages");
+    var messages = require('@electron/remote').getGlobal("messages");
     for(var i = 0; i < messages.length; i++) {
       addMessageRow(messages[i]);
     }

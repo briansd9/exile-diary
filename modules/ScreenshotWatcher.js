@@ -13,7 +13,7 @@ var settings;
 var watcher;
 var currentWatchDirectory;
 
-var app = require('electron').app || require('electron').remote.app;
+var app = require('electron').app || require('@electron/remote').app;
 var emitter = new EventEmitter();
 
 function tryClose() {
