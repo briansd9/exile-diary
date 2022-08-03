@@ -453,6 +453,7 @@ async function createWindow() {
   });
 
   require('./modules/electron-capture/src/main');
+  require('@electron/remote/main').initialize()
   
   const isDev = require('electron-is-dev');
   if(!isDev) {
@@ -470,10 +471,11 @@ async function createWindow() {
     icon: path.join(__dirname, "res/img/icons/png/64x64.png"),
     webPreferences: {
         preload: path.join(__dirname, "/modules/electron-capture/src/preload.js"),
-        nodeIntegration: true
+        nodeIntegration: true,
+        contextIsolation: false
     }
   });
-  
+
   var windowMoving;
   function saveWindowBounds() {
     clearTimeout(windowMoving);
@@ -513,7 +515,10 @@ async function createWindow() {
     opacity: 0.75,
     show: false,
     skipTaskbar: true,
-    webPreferences: { nodeIntegration: true }
+    webPreferences: { 
+      nodeIntegration: true,
+      contextIsolation: false 
+    }
   });
   overlayWindow.loadFile("overlay.html");
 
@@ -573,7 +578,10 @@ async function createWindow() {
       width: Math.floor(mainWindow.getBounds().width * 0.85),
       height: Math.floor(mainWindow.getBounds().height * 0.85),
       parent: mainWindow,
-      webPreferences: { nodeIntegration: true }
+      webPreferences: { 
+        nodeIntegration: true,
+        contextIsolation: false 
+      }
     });
     win.loadURL(urlToOpen);
     win.once('ready-to-show', () => {
@@ -762,6 +770,10 @@ function saveToImgur(img) {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', createWindow);
+
+app.on('browser-window-created', (_, window) => {
+  require('@electron/remote/main').enable(window.webContents)
+})
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
