@@ -2,7 +2,7 @@ const logger = require("./Log").getLogger(__filename);
 const path = require('path');
 
 function get() {
-  var app = require('electron').app || require('electron').remote.app;
+  var app = require('electron').app || require('@electron/remote').app;
   var settings = null;
   try {
     settings = require(path.join(app.getPath("userData"), "settings.json"));
@@ -15,7 +15,7 @@ function get() {
 }
 
 function set(key, value) {
-  var app = require('electron').app || require('electron').remote.app;
+  var app = require('electron').app || require('@electron/remote').app;
   var fs = require('fs');
   var settingsPath = path.join(app.getPath("userData"), "settings.json");
   if(fs.existsSync(settingsPath)) {
