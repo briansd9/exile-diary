@@ -93,3 +93,4 @@ TODO.txt
 
 # dev files
 .vscode
+yarn.lock
