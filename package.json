@@ -31,7 +31,7 @@
   },
   "scripts": {
     "start": "electron .",
-    "postinstall": "install-app-deps",
+    "postinstall": "electron-builder install-app-deps",
     "pack": "electron-builder --dir",
     "dist": "electron-builder"
   },
@@ -73,6 +73,6 @@
   },
   "devDependencies": {
     "electron": "^7.3.3",
-    "electron-builder": "^20.44.4"
+    "electron-builder": "^23.3.3"
   }
 }
