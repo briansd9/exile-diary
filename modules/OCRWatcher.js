@@ -5,6 +5,7 @@ const chokidar = require('chokidar');
 const StringMatcher = require('./StringMatcher');
 const logger = require("./Log").getLogger(__filename);
 const EventEmitter = require('events');
+const { createWorker } = require('tesseract.js');
 
 var DB;
 var watcher;
@@ -48,24 +49,31 @@ function processImage(file) {
   
   logger.info("Performing OCR on " + file + "...");  
 
-  var TesseractWorker = require('tesseract.js').create({ langPath: process.resourcesPath });
-  
-  TesseractWorker.recognize(file, {
-    lang: "eng",
-    tessedit_char_whitelist: "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ:-',%+"
-  }).then(async result => {
+  const worker = createWorker({ langPath: process.resourcesPath, logger: m => logger.info(m) });
+
+  (async () => {
+    logger.info('start');
+    try {
       
-      var filename = path.basename(file);
-      var timestamp = filename.substring(0, filename.indexOf("."));
-      var lines = [];
-      result.lines.forEach(line => {
-        lines.push(line.text.trim());
+      await worker.load();
+      await worker.loadLanguage('eng');
+      await worker.initialize('eng');
+      await worker.setParameters({
+        tessedit_char_whitelist: "1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ:-',%+"
+      })
+      const { data: { text } } = await worker.recognize(file);
+
+      const filename = path.basename(file);
+      const timestamp = filename.substring(0, filename.indexOf("."));
+      const lines = [];
+      text.split('\n').forEach(line => {
+        lines.push(line.trim());
       });
 
       if (file.indexOf("area") > -1) {
         
-        var area = getAreaInfo(lines);
-        var areaName = await getAreaNameFromDB(timestamp);
+        const area = getAreaInfo(lines);
+        const areaName = await getAreaNameFromDB(timestamp);
         if(areaName) {
           logger.info(`Got last entered area from db: ${areaName}`);
           area.name = areaName;
@@ -114,14 +122,16 @@ function processImage(file) {
         }
         
       }
-      
-    }).catch(err => {
-      cleanFailedOCR(err);
-    }).finally(() => {
-      fs.unlinkSync(file);
-      TesseractWorker.terminate();
-      logger.info("Completed OCR on " + file + ", deleting");
-    });
+    
+
+    } catch (e) {
+      logger.info(e);
+    }
+
+    fs.unlinkSync(file);
+    TesseractWorker.terminate();
+    logger.info("Completed OCR on " + file + ", deleting");
+  })();
 }
 
 function checkAreaInfoComplete() {
