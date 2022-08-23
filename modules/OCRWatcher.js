@@ -49,7 +49,7 @@ function processImage(file) {
   
   logger.info("Performing OCR on " + file + "...");  
 
-  const worker = createWorker({ langPath: process.resourcesPath });
+  const worker = createWorker({ langPath: process.resourcesPath, gzip: false });
 
   (async () => {
     try {
