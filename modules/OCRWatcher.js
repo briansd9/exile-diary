@@ -49,12 +49,10 @@ function processImage(file) {
   
   logger.info("Performing OCR on " + file + "...");  
 
-  const worker = createWorker({ langPath: process.resourcesPath, logger: m => logger.info(m) });
+  const worker = createWorker({ langPath: process.resourcesPath });
 
   (async () => {
-    logger.info('start');
     try {
-      
       await worker.load();
       await worker.loadLanguage('eng');
       await worker.initialize('eng');
@@ -125,11 +123,12 @@ function processImage(file) {
     
 
     } catch (e) {
-      logger.info(e);
+      logger.error('Error in fetching OCR text')
+      logger.error(e);
     }
 
     fs.unlinkSync(file);
-    TesseractWorker.terminate();
+    worker.terminate();
     logger.info("Completed OCR on " + file + ", deleting");
   })();
 }
