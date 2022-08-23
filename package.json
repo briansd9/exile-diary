@@ -50,10 +50,10 @@
   "contributors": [],
   "dependencies": {
     "@electron/remote": "^2.0.8",
-    "active-win": "^7.7.2",
     "chokidar": "^3.5.3",
     "color-convert": "^2.0.1",
     "electron-is-dev": "^2.0.0",
+    "electron-overlay-window": "^2.0.1",
     "electron-updater": "^5.2.1",
     "fast-equals": "^4.0.1",
     "imgur": "^2.2.0",
