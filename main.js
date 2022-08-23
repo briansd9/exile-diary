@@ -18,7 +18,7 @@ const Utils = require("./modules/Utils");
 const moment = require('moment');
 const fs = require('fs');
 const path = require('path');
-const activeWin = require('active-win');
+const { overlayWindow: OW } = require('electron-overlay-window');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -429,6 +429,9 @@ async function createWindow() {
   ipcMain.on("hideOverlay", () => {
     overlayWindow.hide();
   });
+  ipcMain.on("showOverlay", () => {
+    overlayWindow.showInactive();
+  });
   ipcMain.on('download-update', function(event) {
     if(!downloadingUpdate) {
       downloadingUpdate = true;
@@ -642,7 +645,6 @@ function showActiveCharacterMessage(char) {
 }
 
 function addMessage(text, sendToOverlay = false) {
-    
   var msg = {
     timestamp: moment().format("YYYY-MM-DD HH:mm:ss"),
     text: text
@@ -654,20 +656,19 @@ function addMessage(text, sendToOverlay = false) {
   }
   
   var settings = Settings.get();
-  if(overlayWindow && overlayWindow.webContents && sendToOverlay && settings.overlayEnabled) { 
+  if(overlayWindow && overlayWindow.webContents && sendToOverlay && settings.overlayEnabled) {
     (async () => {
-      var win = await activeWin();
-      if(win && win.title === "Path of Exile" && win.owner.name.startsWith("PathOfExile")) {
+      if(!global.isAttached) {
         overlayWindow.setBounds({
-          x: win.bounds.x + 10,
-          y: win.bounds.y + 100,
+          ...OW.WINDOW_OPTS,
           width: 200,
           height: 40
         });
-        overlayWindow.webContents.send("message", msg);
-        overlayWindow.setAlwaysOnTop(true, "pop-up-menu");
-        overlayWindow.showInactive();        
+
+        OW.attachTo(overlayWindow, 'Path of Exile');
+        global.isAttached = true;
       }
+      overlayWindow.webContents.send("message", msg);
     })();
   }
 }

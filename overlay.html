@@ -34,9 +34,15 @@
           renderer.send("hideOverlay");
         }
       }
+
+      function showOverlay() {
+        logger.info("Showing overlay");
+        renderer.send("showOverlay");
+      }
       
       $(document).ready(function () {
         renderer.on("message", (event, msg) => {
+          showOverlay();
           
           timestamp = msg.timestamp;
 
