@@ -9,7 +9,7 @@ const EventEmitter = require('events');
 var DB;
 var watcher;
 var emitter = new EventEmitter();
-var app = require('electron').app || require('electron').remote.app;
+var app = require('electron').app || require('@electron/remote').app;
 var areaInfo;
 var mapMods;
 

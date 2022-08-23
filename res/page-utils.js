@@ -1,7 +1,6 @@
 
 $(document).ready(() => {
-  var e = require('electron');
-  var width = e.remote.getCurrentWindow().getBounds().width;
+  var width = require('@electron/remote').getCurrentWindow().getBounds().width;
   setZoomFactor(Math.min(width, 1100) / 1100);
 });
 
