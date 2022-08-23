@@ -33,13 +33,14 @@
     </style>    
 
     <script>
-      const {dialog} = require('electron').remote;
+      const {dialog} = require('@electron/remote');
       const {ipcRenderer} = require('electron');
       const fs = require('fs');
       const DB = require('./modules/DB').getDB();
       const settings = require('./modules/settings').get();
       const logger = require('./modules/Log').getLogger(__filename);
-      const {webContents, remote} = require('electron');
+      const {webContents} = require('electron');
+      const remote = require('@electron/remote');
       const moment = require('moment');
       const momentDurationFormatSetup = require("moment-duration-format");
       const Utils = require('./modules/Utils');

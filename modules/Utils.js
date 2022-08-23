@@ -353,7 +353,7 @@ class Utils {
   
   static getRequestParams(path, poesessid) {
     
-    let app = require('electron').app || require('electron').remote.app;
+    let app = require('electron').app || require('@electron/remote').app;
     let params = {
       hostname: 'www.pathofexile.com',
       path: path,

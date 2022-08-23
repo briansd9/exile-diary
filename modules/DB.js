@@ -18,7 +18,7 @@ class DB {
       }
       char = settings.activeProfile.characterName;
     }
-    var app = require('electron').app || require('electron').remote.app;
+    var app = require('electron').app || require('@electron/remote').app;
     var db = new sqlite3.cached.Database(path.join(app.getPath("userData"), `${char}.db`));
     return db;
   }
@@ -33,7 +33,7 @@ class DB {
         league = settings.activeProfile.league;
       }
     }
-    var app = require('electron').app || require('electron').remote.app;    
+    var app = require('electron').app || require('@electron/remote').app;    
     var db = new sqlite3.cached.Database(path.join(app.getPath("userData"), `${league}.leaguedb`));
     return db;
   }
@@ -51,7 +51,7 @@ class DB {
       }
       char = settings.activeProfile.characterName;
     }
-    var app = require('electron').app || require('electron').remote.app;    
+    var app = require('electron').app || require('@electron/remote').app;    
     var db = new sqlite3.cached.Database(path.join(app.getPath("userData"), `${char}.db`));    
     await this.init(db, initSQL, maintSQL);
     logger.info(`Completed initializing db for ${char}`);
@@ -70,7 +70,7 @@ class DB {
         league = settings.activeProfile.league;
       }
     }
-    var app = require('electron').app || require('electron').remote.app;    
+    var app = require('electron').app || require('@electron/remote').app;    
     var db = new sqlite3.cached.Database(path.join(app.getPath("userData"), `${league}.leaguedb`));
     await this.init(db, leagueInitSQL);
     await Utils.sleep(250);
