@@ -460,7 +460,7 @@
       if(sockets.length) {
         if(ItemData.countSockets(sockets) === 6) {
           if(sockets.length === 1) {
-            vendorValue = rates["Currency"]["Divine Orb"];
+            vendorValue = rates["Currency"]["Orb of Fusing"] * 20;
           } else {
             vendorValue = rates["Currency"]["Jeweller's Orb"] * 7;
           }
