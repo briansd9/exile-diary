@@ -717,19 +717,19 @@ async function getBigDrops(char, league) {
     });
   });
   
-  let exaltPrices = {};
+  let divinePrices = {};
   
   for(let i = drops.length - 1; i > -1; i--) {
     let item = drops[i];
     let date = item.event_id.substring(0, 8);
-    if(!exaltPrices[date]) {
-      exaltPrices[date] = await ItemPricer.getCurrencyByName(date, "Exalted Orb", item.league);
+    if(!divinePrices[date]) {
+      divinePrices[date] = await ItemPricer.getCurrencyByName(date, "Divine Orb", item.league);
     }
-    if(item.value < exaltPrices[date]) {
+    if(item.value < divinePrices[date]) {
       drops.splice(i, 1);
     } else {
       item.parser = await FilterParser.get(item.event_id, char);
-      item.exaltValue = (item.typeline === "Exalted Orb" ? item.stacksize : item.value / exaltPrices[date]);
+      item.divineValue = (item.typeline === "Divine Orb" ? item.stacksize : item.value / divinePrices[date]);
     }
   }
   

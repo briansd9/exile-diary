@@ -411,7 +411,7 @@
         
         $("#netWorth").hide();
 
-        var exaltRate = await getExaltRate();
+        const divineRate = await getDivineRate();
         var mirrorRate = await getMirrorRate();
     
         var keys = Object.keys(s.itemsById);
@@ -429,8 +429,8 @@
           if(item.chaosValue) {
             item.chaosValue = Number(item.chaosValue).toFixed(2);
             totalChaosValue += Number(item.chaosValue);
-            if(item.chaosValue > exaltRate) {
-              item.exaltValue = Number(item.chaosValue / exaltRate).toFixed(2);
+            if(item.chaosValue > divineRate) {
+              item.divineValue = Number(item.chaosValue / divineRate).toFixed(2);
             }
           }
 
@@ -443,9 +443,9 @@
         
         var netWorthString = `${Number(totalChaosValue).toFixed(2)} <img class='currencyText' src='res/img/c.png'/>`;
         
-        if(totalChaosValue > exaltRate) {
-          let exaltValue = totalChaosValue / exaltRate;
-          netWorthString += ` / ${Number(exaltValue).toFixed(2)} <img class='currencyText' src='res/img/ex.png'/>`;
+        if(totalChaosValue > divineRate) {
+          let divineValue = totalChaosValue / divineRate;
+          netWorthString += ` / ${Number(divineValue).toFixed(2)} <img class='currencyText' src='res/img/div.png'/>`;
         }
         
         if(totalChaosValue > mirrorRate) {
@@ -484,6 +484,10 @@
           return (await ItemPricer.getCurrencyByName(s.id, "Exalted Orb"));
         }
 
+        async function getDivineRate() {
+          return (await ItemPricer.getCurrencyByName(s.id, "Divine Orb"));
+        }
+
         async function getMirrorRate() {
           return (await ItemPricer.getCurrencyByName(s.id, "Mirror of Kalandra"));
         }
@@ -507,7 +511,7 @@
             <td style='padding-left:10px;padding-right:10px;min-width:300px'>${i.displayName}</td>
             <td style='padding-left:10px;padding-right:10px'>
               ${i.chaosValue ? i.chaosValue + " <img style='vertical-align:middle;height:1em;width:1em;' src='res/img/c.png' />" : "&nbsp;"}
-              ${i.exaltValue ? "(" + i.exaltValue + " <img style='vertical-align:middle;height:1em;width:1em;' src='res/img/ex.png' />)" : ""}
+              ${i.divineValue ? "(" + i.divineValue + " <img style='vertical-align:middle;height:1em;width:1em;' src='res/img/div.png' />)" : ""}
             </td>
           `;
         return str;
