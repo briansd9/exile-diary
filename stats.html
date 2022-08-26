@@ -160,10 +160,10 @@
         let league = $("#leagueSelect").val() || settings.activeProfile.league;
         let stats = await StatsGetter.get(char, league);
         
-        stats.totalStats.rawEx = 0;
+        stats.totalStats.rawDiv = 0;
         stats.bigDrops.forEach( item => {
-          if(item.typeline === "Exalted Orb") {
-            stats.totalStats.rawEx += item.stacksize;
+          if(item.typeline === "Divine Orb") {
+            stats.totalStats.rawDiv += item.stacksize;
           }
         })
         
@@ -582,13 +582,13 @@
       itemDiv.setAttribute("arrayIndex", item.arrayIndex);
       $(itemDiv).css("display", "inline-block");
       
-      let unitValue = Number(item.exaltValue / (item.stacksize || 1));
+      let unitValue = Number(item.divineValue / (item.stacksize || 1));
       
-      let tableRow = $(`<tr class='mapRow bigDropRow' data-value="${Number(item.exaltValue)}" data-unit-value="${Number(unitValue)}">`);
+      let tableRow = $(`<tr class='mapRow bigDropRow' data-value="${Number(item.divineValue)}" data-unit-value="${Number(unitValue)}">`);
       tableRow.append($(`<td>${moment(item.event_id, "YYYYMMDDHHmmss").format("YYYY-MM-DD HH:mm:ss")}</td>`));
       tableRow.append($(`<td>`).append(itemDiv));
       tableRow.append(
-        $(`<td><span class='eventText'>${Number(item.exaltValue).toFixed(2)}</span> <img src='res/img/ex.png' style='height:20px;width:20px;'></td>)`)
+        $(`<td><span class='eventText'>${Number(item.divineValue).toFixed(2)}</span> <img src='res/img/div.png' style='height:20px;width:20px;'></td>)`)
       );
       tableRow.append($(`<td><a onclick='window.open("map.html?id=${item.map_id}&modal=true");'>${item.area}</a></td>`));
       
@@ -671,8 +671,8 @@
       if(s.gained) {
         div += statLine("Value of Items picked up", `${f.format(Number(s.gained).toFixed(2))} <img class='currencyText' src='res/img/c.png'/>`, "res/img/c.png");
       }
-      if(s.rawEx) {
-        div += statLine("Raw Exalt Drops", s.rawEx, "res/img/ex.png");
+      if(s.rawDiv) {
+        div += statLine("Raw Divine Drops", s.rawDiv, "res/img/div.png");
       }
       div += "</div>";
       
@@ -1205,7 +1205,7 @@
             </a>
           </li>
           <li>
-            <a onclick="this.blur();" id="bigDropsContainerLink" href="#bigDropsContainer"><img src="res/img/ex.png" style="height:30px;width:30px;"></a>
+            <a onclick="this.blur();" id="bigDropsContainerLink" href="#bigDropsContainer"><img src="res/img/div.png" style="height:30px;width:30px;"></a>
           </li>
         </ul>
         
@@ -1266,7 +1266,7 @@
               <div class='tableLinkHeader'>
                 Items picked up worth at least 
                 <input id='bigDropValueFilter' style='margin-left:5px;background-color:0;' onblur='resetBigDropsValue()' oninput='filterBigDrops()' type='text' size='3' value='1'/> 
-                <img src='res/img/ex.png' class='currencyText'/>
+                <img src='res/img/div.png' class='currencyText'/>
                 <select id='bigDropUnitFilter' onchange='filterBigDrops()' >
                   <option id='each' value='each'>each</option>
                   <option id='stacked' value='stacked' selected>stacked</option>
