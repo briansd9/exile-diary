@@ -161,11 +161,14 @@
         let stats = await StatsGetter.get(char, league);
         
         stats.totalStats.rawDiv = 0;
+        stats.totalStats.rawEx = 0;
         stats.bigDrops.forEach( item => {
           if(item.typeline === "Divine Orb") {
             stats.totalStats.rawDiv += item.stacksize;
+          } else if(item.typeline === "Exalted Orb") {
+            stats.totalStats.rawEx += item.stacksize;
           }
-        })
+        });
         
         if( Object.keys(stats.totalStats).length > 0) {
           displayTotalStats(stats.totalStats);
@@ -673,6 +676,9 @@
       }
       if(s.rawDiv) {
         div += statLine("Raw Divine Drops", s.rawDiv, "res/img/div.png");
+      }
+      if(s.rawEx) {
+        div += statLine("Raw Exalt Drops", s.rawDiv, "res/img/ex.png");
       }
       div += "</div>";
       
