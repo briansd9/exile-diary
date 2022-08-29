@@ -5,6 +5,7 @@ const chokidar = require('chokidar');
 const StringMatcher = require('./StringMatcher');
 const logger = require("./Log").getLogger(__filename);
 const EventEmitter = require('events');
+const { getMapStats } = require('./RunParser');
 const { createWorker } = require('tesseract.js');
 
 var DB;
@@ -135,7 +136,8 @@ function processImage(file) {
 
 function checkAreaInfoComplete() {
   if(areaInfo && mapMods) {
-    emitter.emit("areaInfoComplete", {areaInfo: areaInfo, mapMods: mapMods});
+    mapStats = getMapStats(mapMods);
+    emitter.emit("areaInfoComplete", {areaInfo, mapMods, mapStats});
     areaInfo = null;
     mapMods = null;
   }

@@ -325,7 +325,9 @@ function initWindow(window) {
     addMessage("Error getting area info from screenshot. Please try again", true)
   });
   OCRWatcher.emitter.on("areaInfoComplete", (info) => {
-    addMessage(`Got area info for <span class='eventText'>${info.areaInfo.name}</span>`, true);
+    const tier = Utils.getMapTierString({ level: parseInt(info.areaInfo.level) });
+    const stats = `IIR: ${info.mapStats.iiq} / IIQ: ${info.mapStats.iir} / Pack Size: ${info.mapStats.packsize}`;
+    addMessage(`Got area info for <span class='eventText'>${info.areaInfo.name}</span> (${tier} - ${stats})`, true);
   });
   
   ScreenshotWatcher.emitter.removeAllListeners();

@@ -1408,10 +1408,6 @@ async function recheckGained(startDate = null) {
 }
 
 
-module.exports.process = process;
-module.exports.tryProcess = tryProcess;
-module.exports.emitter = emitter;
-module.exports.recheckGained = recheckGained;
-module.exports.getEvents = getEvents;
-module.exports.getNPCLine = getNPCLine;
-module.exports.getMapExtraInfo = getMapExtraInfo;
+module.exports = {
+  process, tryProcess, emitter, recheckGained, getEvents, getNPCLine, getMapExtraInfo, getMapStats
+};
