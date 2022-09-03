@@ -1,24 +1,46 @@
-const Jimp = require('jimp');
 const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
-const StringMatcher = require('./StringMatcher');
 const logger = require("./Log").getLogger(__filename);
 const EventEmitter = require('events');
+const StringMatcher = require('./StringMatcher');
 const { getMapStats } = require('./RunParser');
 const { createWorker } = require('tesseract.js');
 
-var DB;
-var watcher;
-var emitter = new EventEmitter();
-var app = require('electron').app || require('@electron/remote').app;
-var areaInfo;
-var mapMods;
+let DB;
+let watcher;
+const emitter = new EventEmitter();
+const app = require('electron').app || require('@electron/remote').app;
+let areaInfo;
+let mapMods;
+let mapInfoManager;
 
 const watchPaths = [
   path.join(app.getPath('userData'), '.temp_capture', "*.area.png"),
   path.join(app.getPath('userData'), '.temp_capture', "*.mods.png")
 ];
+
+class MapInfoManager {
+  constructor() {}
+  setAreaInfo(info) {
+    this.areaInfo = info;
+  }
+  setMapMods(mods) {
+    this.mapMods = mods;
+  }
+  cleanup() {
+    this.mapMods = null;
+    this.areaInfo = null;
+  }
+  checkAreaInfoComplete() {
+    let { areaInfo, mapMods } = this;
+    if( !!areaInfo && !!mapMods ) {
+      const mapStats = getMapStats(mapMods);
+      emitter.emit("areaInfoComplete", {areaInfo, mapMods, mapStats});
+      this.cleanup()
+    }
+  }
+}
 
 function test(filename) {
   DB = null;
@@ -26,10 +48,9 @@ function test(filename) {
 }
 
 function start() {
-  
-  areaInfo = null;
-  mapMods = null;
+
   DB = require('./DB').getDB();
+  mapInfoManager = new MapInfoManager();
   
   if (watcher) {
     try {
@@ -39,7 +60,7 @@ function start() {
     }
   }
 
-  watcher = chokidar.watch(watchPaths, {usePolling: true, awaitWriteFinish: true, ignoreInitial: true});
+  watcher = chokidar.watch(watchPaths, { usePolling: true, awaitWriteFinish: true, ignoreInitial: true });
   watcher.on("add", (path) => {
     processImage(path);
   });
@@ -67,6 +88,7 @@ function processImage(file) {
       const lines = [];
       text.split('\n').forEach(line => {
         lines.push(line.trim());
+        logger.info(line.trim());
       });
 
       if (file.indexOf("area") > -1) {
@@ -87,17 +109,17 @@ function processImage(file) {
             if(err) {
               cleanFailedOCR(err, timestamp);
             } else {
-              areaInfo = area;
-              checkAreaInfoComplete();
+              mapInfoManager.setAreaInfo(area);
+              mapInfoManager.checkAreaInfoComplete({ area });
             }
           }
         );
 
-      } else if (file.indexOf("mods") > -1) {
+      } else if ( file.indexOf("mods") > -1 ) {
         
         try {
-          var mods = getModInfo(lines);
-          var mapModErr = null;
+          const mods = getModInfo(lines);
+          let mapModErr = null;
           for (var i = 0; i < mods.length; i++) {
             DB.run(
               "insert into mapmods(area_id, id, mod) values(?, ?, ?)",
@@ -112,8 +134,8 @@ function processImage(file) {
           if(mapModErr) {
             cleanFailedOCR(mapModErr, timestamp);
           } else {
-            mapMods = mods;
-            checkAreaInfoComplete();
+            mapInfoManager.setMapMods(mods);
+            mapInfoManager.checkAreaInfoComplete({ areaInfo, mapMods });
           }
         }
         catch(e) {
@@ -134,18 +156,8 @@ function processImage(file) {
   })();
 }
 
-function checkAreaInfoComplete() {
-  if(areaInfo && mapMods) {
-    mapStats = getMapStats(mapMods);
-    emitter.emit("areaInfoComplete", {areaInfo, mapMods, mapStats});
-    areaInfo = null;
-    mapMods = null;
-  }
-}
-
 function cleanFailedOCR(e, timestamp) {
-  areaInfo = null;
-  mapMods = null;
+  mapInfoManager.cleanup();
   logger.info("Error processing screenshot: " + e);
   emitter.emit("OCRError");
   if(timestamp) {
@@ -166,18 +178,18 @@ function cleanFailedOCR(e, timestamp) {
 
 function getAreaInfo(lines) {
 
-  var areaInfo = {};
+  let areaInfo = {};
 
-  for (var i = 0; i < lines.length; i++) {
-    var line = lines[i];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     if (!areaInfo.name) {
-      var str = StringMatcher.getMap(line);
+      const str = StringMatcher.getMap(line);
       if (str.length > 0) {
         areaInfo.name = str;
         continue;
       }
     }
-    var levelMatch = line.match(/Level: ([1-9][0-9])?/);
+    const levelMatch = line.match(/Level: ([1-9][0-9])?/);
     if (levelMatch) {
       areaInfo.level = levelMatch.pop();
       continue;
@@ -198,9 +210,9 @@ function getAreaInfo(lines) {
 
 function getModInfo(lines) {
 
-  var mods = [];
-  for (var i = 0; i < lines.length; i++) {
-    var mod = StringMatcher.getMod(lines[i]);
+  const mods = [];
+  for (let i = 0; i < lines.length; i++) {
+    const mod = StringMatcher.getMod(lines[i]);
     if (mod.length > 0) {
       mods.push(mod);
     }
@@ -222,6 +234,6 @@ function getAreaNameFromDB(timestamp) {
   });
 }
 
-module.exports.start = start;
-module.exports.test = test;
-module.exports.emitter = emitter;
+module.exports = {
+  start, test, emitter
+};
