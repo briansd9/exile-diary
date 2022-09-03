@@ -270,7 +270,6 @@ async function init() {
       }
       resolve(false);
     }
-    
   });
 
 
@@ -527,6 +526,18 @@ async function createWindow() {
   });
   overlayWindow.loadFile("overlay.html");
 
+  overlayWindow.setBounds({
+    ...OW.WINDOW_OPTS,
+    width: 200,
+    height: 40
+  });
+  OW.on('attach', () => {
+    overlayWindow.hide();
+  });
+
+  OW.attachTo(overlayWindow, 'Path of Exile');
+
+
   autoUpdater.logger = logger;
   autoUpdater.autoDownload = false;
   autoUpdater.on('update-available', (info) => {
@@ -659,19 +670,7 @@ function addMessage(text, sendToOverlay = false) {
   
   var settings = Settings.get();
   if(overlayWindow && overlayWindow.webContents && sendToOverlay && settings.overlayEnabled) {
-    (async () => {
-      if(!global.isAttached) {
-        overlayWindow.setBounds({
-          ...OW.WINDOW_OPTS,
-          width: 200,
-          height: 40
-        });
-
-        OW.attachTo(overlayWindow, 'Path of Exile');
-        global.isAttached = true;
-      }
-      overlayWindow.webContents.send("message", msg);
-    })();
+    overlayWindow.webContents.send("message", msg);
   }
 }
 
