@@ -3,7 +3,7 @@ const fs = require('fs');
 const chokidar = require('chokidar');
 const logger = require("./Log").getLogger(__filename);
 const EventEmitter = require('events');
-const { getMap, getMod } = require('./StringMatcher');
+const StringMatcher = require('./StringMatcher');
 const { getMapStats } = require('./RunParser');
 const { createWorker } = require('tesseract.js');
 
@@ -33,11 +33,11 @@ class MapInfoManager {
     this.areaInfo = null;
   }
   checkAreaInfoComplete() {
-    let { areaInfo, mapMods, cleanup } = this;
-    if( areaInfo && mapMods ) {
-      mapStats = getMapStats(mapMods);
+    let { areaInfo, mapMods } = this;
+    if( !!areaInfo && !!mapMods ) {
+      const mapStats = getMapStats(mapMods);
       emitter.emit("areaInfoComplete", {areaInfo, mapMods, mapStats});
-      cleanup()
+      this.cleanup()
     }
   }
 }
@@ -88,6 +88,7 @@ function processImage(file) {
       const lines = [];
       text.split('\n').forEach(line => {
         lines.push(line.trim());
+        logger.info(line.trim());
       });
 
       if (file.indexOf("area") > -1) {
@@ -182,7 +183,7 @@ function getAreaInfo(lines) {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     if (!areaInfo.name) {
-      const str = getMap(line);
+      const str = StringMatcher.getMap(line);
       if (str.length > 0) {
         areaInfo.name = str;
         continue;
@@ -211,7 +212,7 @@ function getModInfo(lines) {
 
   const mods = [];
   for (let i = 0; i < lines.length; i++) {
-    const mod = getMod(lines[i]);
+    const mod = StringMatcher.getMod(lines[i]);
     if (mod.length > 0) {
       mods.push(mod);
     }
