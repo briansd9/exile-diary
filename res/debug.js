@@ -254,7 +254,7 @@ async function migrateAll() {
   $(".debugButton").prop("disabled", true);
   
   let fs = require("fs");
-  let app = require('electron').app || require('electron').remote.app;
+  let app = require('electron').app || require('@electron/remote').app;
   let dataDir = fs.readdirSync(app.getPath("userData"));
   dataDir = dataDir.filter( file => file.endsWith(".db") );
   

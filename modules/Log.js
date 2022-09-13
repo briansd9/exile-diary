@@ -5,7 +5,7 @@ class Log {
 
   static getLogger(module) {
     
-    var app = require('electron').app || require('electron').remote.app;
+    var app = require('electron').app || require('@electron/remote').app;
 
     module = path.basename(module);
     return winston.createLogger({

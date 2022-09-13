@@ -7,7 +7,7 @@
   });
   
   $(document).ready(() => {
-    $("#appVersionAbout").html(`v${require('electron').remote.app.getVersion()}`);
+    $("#appVersionAbout").html(`v${require('@electron/remote').app.getVersion()}`);
   });
   
   

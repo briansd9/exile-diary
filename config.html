@@ -35,7 +35,7 @@
     <script>
 
       const https = require('https');
-      const {dialog, app} = require('electron').remote;
+      const {dialog, app} = require('@electron/remote');
       const path = require('path');
       const {ipcRenderer} = require('electron');
       const fs = require('fs');
@@ -152,7 +152,7 @@
         
         $("#clientTxt").click(() => {
           
-          let win = require('electron').remote.getCurrentWindow();
+          let win = require('@electron/remote').getCurrentWindow();
           let opts = { properties: ['openFile'] };
           dialog.showOpenDialog(win, opts).then( r => {
             let filepath = r.filePaths;
@@ -165,7 +165,7 @@
         
         $("#uploadFilter").click(() => {
           
-          let win = require('electron').remote.getCurrentWindow();
+          let win = require('@electron/remote').getCurrentWindow();
           let opts = {
             properties: ['openFile']
           };
@@ -183,7 +183,7 @@
             return;
           }
           
-          let win = require('electron').remote.getCurrentWindow();
+          let win = require('@electron/remote').getCurrentWindow();
           let opts = { properties: ['openDirectory'] };
           dialog.showOpenDialog(win, opts).then( r => {
             let filepath = r.filePaths;
@@ -260,6 +260,7 @@
           $("#uploadFilter").attr('placeholder', `Click to upload new item filter for ${settings.activeProfile.characterName}`);
           $("#overrideSSF").prop("checked", settings.activeProfile.overrideSSF);
           $("#noGearCheck").prop("checked", settings.activeProfile.noGearCheck);
+          $("#enableIncubatorAlert").prop("checked", settings.activeProfile.enableIncubatorAlert || false);
           
           // private league handling
           if(Utils.isPrivateLeague(settings.activeProfile.league)) {
@@ -483,6 +484,9 @@
         if($("#noGearCheck").is(":checked")) {
           settings.activeProfile.noGearCheck = true;
         }
+        if($("#enableIncubatorAlert").is(":checked")) {
+          settings.activeProfile.enableIncubatorAlert = true;
+        }
         
         var stashCheckUnits = $("#stashCheckUnits").val();
         var stashCheckInterval;
@@ -581,7 +585,7 @@
       
       function getTabList() {
         
-        var path = `/character-window/get-stash-items?accountName=${encodeURIComponent(settings.accountName)}&league=${encodeURIComponent(settings.activeProfile.league)}&tabs=1`;
+        var path = `/character-window/get-stash-items?accountName=${encodeURIComponent(settings.accountName)}&league=${encodeURIComponent(settings.activeProfile.league)}&tabs=1&tabIndex=0`;
         var poesessid = $("#poesessid").val();
         var requestParams = Utils.getRequestParams(path, poesessid);
         
@@ -899,6 +903,14 @@
               <div class='configLabel ui-text' title="If checked, whenever you switch characters in-game, Exile Diary will automatically track stats for that character">
                 <input style='margin:0 16px;' name='autoSwitch' id='autoSwitch' type='checkbox' onchange='updateManualSwitch();'/>
                 <label for='autoSwitch'>Enable automatic character switching</label>
+              </div>
+            </td>
+          </tr>
+          <tr id='enableIncubatorAlertRow'>
+            <td colspan="2">
+              <div class='configLabel ui-text' title="If checked, when you get out of map, give a small notification about gear slots that had incubator run out.">
+                <input style='margin:0 16px;' name='enableIncubatorAlert' id='enableIncubatorAlert' type='checkbox'/>
+                <label for='enableIncubatorAlert'>Enable incubator running out alert</label>
               </div>
             </td>
           </tr>
