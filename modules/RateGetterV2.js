@@ -16,7 +16,6 @@ const rateTypes = {
   "Resonator" : cleanNameValuePairs,
   "Essence" : cleanNameValuePairs,
   "DivinationCard" : cleanNameValuePairs,
-  "Prophecy" : cleanNameValuePairs,
   "SkillGem" : cleanGems,
   "BaseType" : cleanBaseTypes,
   "HelmetEnchant" : cleanEnchants,
@@ -27,11 +26,13 @@ const rateTypes = {
   "UniqueWeapon" : cleanUniqueItems,
   "UniqueArmour" : cleanUniqueItems,
   "UniqueAccessory" : cleanUniqueItems,
-  "Watchstone" : cleanWatchstones,
   "Vial" : cleanNameValuePairs,
   "DeliriumOrb" : cleanNameValuePairs,
   "Invitation" : cleanNameValuePairs,
   "Artifact" : cleanNameValuePairs
+  // Old Categories
+  // "Prophecy" : cleanNameValuePairs,
+  // "Watchstone" : cleanWatchstones,
   // RIP harvest :-(
   // "Seed" : cleanSeeds 
 };
@@ -142,7 +143,9 @@ class RateGetterV2 {
             if(i === 10) throw err;
           }
         }
+        logger.info('here');
         var process = rateTypes[key];
+        logger.info(key);
         tempRates[key] = process(data, getLowConfidence);
       }
       logger.info("Finished getting prices from poe.ninja, processing now");
