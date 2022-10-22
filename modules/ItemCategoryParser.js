@@ -16,7 +16,8 @@ const nonStackableBulkItems = [
   'Labyrinth Items',
   'Maps',
   'Incubator',
-  'Atlas Region Upgrade Item'    
+  'Atlas Region Upgrade Item',
+  "Memory"    
 ];
 
 function getCategory(item, subcategory = false) {
@@ -27,6 +28,10 @@ function getCategory(item, subcategory = false) {
   
   if(t === "Expedition Logbook") {
     return t;
+  }
+
+  if(t.includes("Memory of")){
+    return "Memory";
   }
   
   if(t.includes("Contract")) {
