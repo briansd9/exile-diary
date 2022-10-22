@@ -165,6 +165,8 @@ async function getItems(mapID) {
 }
 
 async function getPseudoItemPriceFor(date) {
+  // Recipe Pricing
+  // TODO: Centralize these
   if(!pseudoItemPriceCache[date]) {
     pseudoItemPriceCache[date] = {
       sixSocketValue: 7 * (await ItemPricer.getCurrencyByName(date, "Jeweller's Orb")),
