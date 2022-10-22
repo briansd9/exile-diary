@@ -819,8 +819,10 @@
         var rgbLinkedItems = 0;
         var gcpItems = 0;
 
+        // Recipe Pricing
+        // TODO: Centralize these
         let sixSocketValue = 7 * (await getCurrencyByName("Jeweller's Orb"));
-        let sixLinkValue = await getCurrencyByName("Divine Orb");
+        let sixLinkValue = 20 * (await getCurrencyByName("Orb of Fusing"));
         let rgbLinkedValue = await getCurrencyByName("Chromatic Orb");
         let gcpValue = await getCurrencyByName("Gemcutter's Prism");
 
