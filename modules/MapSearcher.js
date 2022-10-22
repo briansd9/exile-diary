@@ -168,7 +168,7 @@ async function getPseudoItemPriceFor(date) {
   if(!pseudoItemPriceCache[date]) {
     pseudoItemPriceCache[date] = {
       sixSocketValue: 7 * (await ItemPricer.getCurrencyByName(date, "Jeweller's Orb")),
-      sixLinkValue: await ItemPricer.getCurrencyByName(date, "Divine Orb"),
+      sixLinkValue: 20 * (await ItemPricer.getCurrencyByName(date, "Divine Orb")),
       rgbLinkedValue: await ItemPricer.getCurrencyByName(date, "Chromatic Orb"),
       gcpValue: await ItemPricer.getCurrencyByName(date, "Gemcutter's Prism")
     };
