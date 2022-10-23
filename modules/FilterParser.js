@@ -1,6 +1,5 @@
 const logger = require("./Log").getLogger(__filename);
 const ItemData = require("./ItemData");
-const fs = require('fs');
 
 const Rarity = ItemData.Rarity;
 
@@ -91,26 +90,28 @@ module.exports.test = test;
 
 function Parser() {
 
-	var VISIBILITY_TOKENS = [ 'Show', 'Hide' ];
-  var CONTINUE_TOKEN = 'Continue';
-	var FILTER_TOKENS = [
-    'ItemLevel', 'DropLevel', 'Quality', 'Rarity', 'Class', 'BaseType', 'Sockets', 'LinkedSockets', 'SocketGroup',
-    'Width', 'Height', 'Identified', 'Corrupted', 'ElderItem', 'ShaperItem', 'ShapedMap', 'HasExplicitMod', 'MapTier',
-    'GemLevel', 'StackSize', 'ElderMap', 'Prophecy', 'FracturedItem', 'SynthesisedItem', 'AnyEnchantment', 'HasEnchantment',
-    'BlightedMap', 'HasInfluence',
-    'Mirrored', 'CorruptedMods', 'AreaLevel',
-    'EnchantmentPassiveNode',
-    'AlternateQuality', 'Replica', 'GemQualityType',
-    'EnchantmentPassiveNum',
-  ];
-	var MODIFIER_TOKENS = [
+	const VISIBILITY_TOKENS = [ 'Show', 'Hide' ];
+    const CONTINUE_TOKEN = 'Continue';
+	const FILTER_TOKENS = [
+        'ItemLevel', 'DropLevel', 'Quality', 'Rarity', 'Class', 'BaseType', 'Sockets', 'LinkedSockets', 'SocketGroup',
+        'Width', 'Height', 'Identified', 'Corrupted', 'ElderItem', 'ShaperItem', 'ShapedMap', 'HasExplicitMod', 'MapTier',
+        'GemLevel', 'StackSize', 'ElderMap', 'Prophecy', 'FracturedItem', 'SynthesisedItem', 'AnyEnchantment', 'HasEnchantment',
+        'BlightedMap', 'UberBlightedMap',
+        'Scourged',
+        'HasInfluence', 'HasSearingExarchImplicit', 'HasEaterOfWorldsImplicit',
+        'Mirrored', 'CorruptedMods', 'AreaLevel',
+        'EnchantmentPassiveNode',
+        'AlternateQuality', 'Replica', 'GemQualityType',
+        'EnchantmentPassiveNum', 'BaseDefencePercentile',
+    ];
+	const MODIFIER_TOKENS = [
 	    'SetBackgroundColor', 'SetBorderColor', 'SetTextColor', 'PlayAlertSound', 'PlayAlertSoundPositional',
 	    'SetFontSize', 'DisableDropSound', 'CustomAlertSound', 'MinimapIcon', 'PlayEffect' ];
-	var RARITY_TOKENS = [ 'Normal', 'Magic', 'Rare', 'Unique' ];
-  var INFLUENCE_TOKENS = [ 'shaper', 'elder', 'crusader', 'redeemer', 'hunter', 'warlord' ];
-	var SOUND_TOKENS = [ 'ShAlchemy', 'ShBlessed', 'ShChaos', 'ShDivine', 'ShExalted', 'ShFusing', 'ShGeneral', 'ShMirror', 'ShRegal', 'ShVaal' ];
-  var COLOR_TOKENS = [ 'Red', 'Green', 'Blue', 'Brown', 'White', 'Yellow', 'Grey', 'Pink', 'Cyan', 'Purple', 'Orange' ]
-  var ICON_SHAPE_TOKENS = [ 'Circle', 'Diamond', 'Hexagon', 'Square', 'Star', 'Triangle', 'Kite', 'Cross', 'Pentagon', 'Moon', 'UpsideDownHouse' ]
+	const RARITY_TOKENS = [ 'Normal', 'Magic', 'Rare', 'Unique' ];
+    const INFLUENCE_TOKENS = [ 'shaper', 'elder', 'crusader', 'redeemer', 'hunter', 'warlord' ];
+	const SOUND_TOKENS = [ 'ShAlchemy', 'ShBlessed', 'ShChaos', 'ShDivine', 'ShExalted', 'ShFusing', 'ShGeneral', 'ShMirror', 'ShRegal', 'ShVaal' ];
+    const COLOR_TOKENS = [ 'Red', 'Green', 'Blue', 'Brown', 'White', 'Yellow', 'Grey', 'Pink', 'Cyan', 'Purple', 'Orange' ]
+    const ICON_SHAPE_TOKENS = [ 'Circle', 'Diamond', 'Hexagon', 'Square', 'Star', 'Triangle', 'Kite', 'Cross', 'Pentagon', 'Moon', 'UpsideDownHouse' ]
 
 	this.currentLineNr = 0;
 	this.currentRule = null;
@@ -120,11 +121,11 @@ function Parser() {
 	this.warnings = [];
 	this.lineTypes = [];
   
-  // clear last stored area level when getting new parser
-  currentAreaLevel = null;
-  this.setAreaLevel = function(level) {
-    currentAreaLevel = level;
-  }  
+    // clear last stored area level when getting new parser
+    currentAreaLevel = null;
+    this.setAreaLevel = function(level) {
+        currentAreaLevel = level;
+    }  
 
 	this.parse = function (lines) {
 		this.currentRule = null;
@@ -133,15 +134,15 @@ function Parser() {
 		this.warnings = [];
 		this.lineTypes = [];
 
-		for (var i = 0; i < lines.length; i++) {
+		for (let i = 0; i < lines.length; i++) {
       
-      if(this.errors.length > 100) {
-        // too many errors, this probably isn't a valid filter - stop now
-        break;
-      }
+            if(this.errors.length > 100) {
+                // too many errors, this probably isn't a valid filter - stop now
+                break;
+            }
       
 			this.currentLineNr = i;
-			var line = lines[i];
+			let line = lines[i];
 
 			if (line.trim() === '') {
 				this.lineTypes[i] = 'Empty';
@@ -161,11 +162,11 @@ function Parser() {
 			}
 			else if (CONTINUE_TOKEN === line.trim()) {
 				if (this.currentRule !== null) {
-          this.currentRule.continue = true;
+                    this.currentRule.continue = true;
 					parseEndOfRule( this );
 				} else {
-          reportParseError( this, line.trim(), 'Continue without current rule' );
-        }
+                    reportParseError( this, line.trim(), 'Continue without current rule' );
+                }
 			}
 			else {
 				if (this.currentRule === null) {
@@ -210,15 +211,15 @@ function Parser() {
 	}
 
 	function parseFilterOrModifier (self, line) {
-		var tokens = line.trim().split(' ', 1);
+		const tokens = line.trim().split(' ', 1);
 
 		if (tokens.length == 0) {
 			reportTokenError( self, '', 'filter or modifier' );
 			return;
 		}
 
-		var token = tokens[0].trim();
-		var arguments = line.trim().substring( token.length, line.length );
+		const token = tokens[0].trim();
+		const arguments = line.trim().substring( token.length, line.length );
 
 		if (FILTER_TOKENS.indexOf( token ) >= 0) {
 			parseFilter( self, token, arguments );
@@ -238,6 +239,9 @@ function Parser() {
 
 		var filters = {
 			'ItemLevel': ItemLevelFilter,
+			'HasSearingExarchImplicit': HasSearingExarchImplicitFilter,
+			'HasEaterOfWorldsImplicit': HasEaterOfWorldsImplicitFilter,
+            'BaseDefencePercentile': HasEaterOfWorldsImplicitFilter,
 			'DropLevel': DropLevelFilter,
 			'Quality': QualityFilter,
 			'Rarity': RarityFilter,
@@ -262,21 +266,23 @@ function Parser() {
 			'MapTier': MapTierFilter,
 			'GemLevel': GemLevelFilter,
 			'StackSize': StackSizeFilter,
-      'Prophecy': ProphecyFilter,
-      'FracturedItem': FracturedItemFilter,
-      'SynthesisedItem': SynthesisedItemFilter,
-      'AnyEnchantment': AnyEnchantmentFilter,
-      'HasEnchantment': HasEnchantmentFilter,
-      'BlightedMap': BlightedMapFilter,
-      'HasInfluence' : HasInfluenceFilter,
-      'Mirrored' : MirroredFilter,
-      'CorruptedMods' : CorruptedModsFilter,
-      'AreaLevel' : AreaLevelFilter,
-      'EnchantmentPassiveNode' : HasEnchantmentFilter,
-      'AlternateQuality' : AlternateQualityFilter,
-      'Replica' : ReplicaFilter,
-      'GemQualityType' : GemQualityTypeFilter,
-      'EnchantmentPassiveNum' : EnchantmentPassiveNumFilter
+            'Prophecy': ProphecyFilter,
+            'FracturedItem': FracturedItemFilter,
+            'SynthesisedItem': SynthesisedItemFilter,
+            'AnyEnchantment': AnyEnchantmentFilter,
+            'HasEnchantment': HasEnchantmentFilter,
+            'BlightedMap': BlightedMapFilter,
+            'UberBlightedMap': UberBlightedMapFilter,
+            'Scourged': ScourgedFilter,
+            'HasInfluence' : HasInfluenceFilter,
+            'Mirrored' : MirroredFilter,
+            'CorruptedMods' : CorruptedModsFilter,
+            'AreaLevel' : AreaLevelFilter,
+            'EnchantmentPassiveNode' : HasEnchantmentFilter,
+            'AlternateQuality' : AlternateQualityFilter,
+            'Replica' : ReplicaFilter,
+            'GemQualityType' : GemQualityTypeFilter,
+            'EnchantmentPassiveNum' : EnchantmentPassiveNumFilter
 		};
 
 		switch (token) {
@@ -289,9 +295,12 @@ function Parser() {
 			case 'MapTier':
 			case 'GemLevel':
 			case 'StackSize':
-      case 'CorruptedMods':
-      case 'AreaLevel':
+            case 'CorruptedMods':
+            case 'AreaLevel':
 			case 'EnchantmentPassiveNum':
+            case 'HasSearingExarchImplicit':
+            case 'HasEaterOfWorldsImplicit':
+            case 'BaseDefencePercentile':
 				parseNumericFilter( self, filters[token], arguments );
 				return;
 
@@ -302,10 +311,10 @@ function Parser() {
 			case 'Class':
 			case 'BaseType':
 			case 'HasExplicitMod':
-      case 'Prophecy':
+            case 'Prophecy':
 			case 'HasEnchantment':
-      case 'EnchantmentPassiveNode':
-      case 'GemQualityType':
+            case 'EnchantmentPassiveNode':
+            case 'GemQualityType':
 				parseMultiStringFilter( self, filters[token], arguments );
 				return;
 
@@ -321,14 +330,16 @@ function Parser() {
 			case 'ElderItem':
 			case 'ShaperItem':
 			case 'ShapedMap':
-      case 'ElderMap':
+            case 'ElderMap':
 			case 'FracturedItem':
 			case 'SynthesisedItem':
-      case 'AnyEnchantment':
-      case 'BlightedMap':
-      case 'Mirrored':
-      case 'AlternateQuality':
-      case 'Replica':
+            case 'AnyEnchantment':
+            case 'BlightedMap':
+            case 'UberBlightedMap':
+            case 'Scourged':
+            case 'Mirrored':
+            case 'AlternateQuality':
+            case 'Replica':
 				parseBoolFilter( self, filters[token], arguments );
 				return;
         
@@ -528,15 +539,15 @@ function Parser() {
 				parseNumericModifier( self, modifiers[token], arguments );
 				break;
 
-      case 'MinimapIcon':
-      case 'PlayEffect':
+            case 'MinimapIcon':
+            case 'PlayEffect':
 			case 'PlayAlertSound':
 			case 'PlayAlertSoundPositional':
 			case 'DisableDropSound':
-      case 'CustomAlertSound':
-      case 'CustomAlertSoundOptional':
-      case 'DisableDropSoundIfAlertSound':
-      case 'EnableDropSoundIfAlertSound':
+            case 'CustomAlertSound':
+            case 'CustomAlertSoundOptional':
+            case 'DisableDropSoundIfAlertSound':
+            case 'EnableDropSoundIfAlertSound':
 				break;
 
 			default:
@@ -566,98 +577,6 @@ function Parser() {
 		self.currentRule.modifiers.push( new modifier( color ) );
 	}
 
-    function parsePlayEffectModifier (self, modifier, arguments) {
-        var tokens = arguments.trim().split(' ');
-        if (tokens.length > 2) {
-            reportTokenError( self, arguments, 'COLOR Temp' );
-            return;
-        }
-
-        var color = tokens[0].trim();
-        if (!COLOR_TOKENS.includes(color)) {
-            reportTokenError( self, color, 'Color name');
-            return;
-        }
-
-        var temp = false;
-        if (tokens.length > 1) {
-            if (tokens[1] !== 'Temp') {
-                reportTokenError( self, tokens[1], 'Temp');
-                return;
-            }
-            temp = true;
-        }
-
-        self.currentRule.modifiers.push( new modifier( color, temp ));
-    }
-
-	function parseMinimapIconModifier (self, modifier, arguments) {
-	    var tokens = arguments.trim().split(' ');
-	    if (tokens.length !== 3) {
-	        reportTokenError( self, arguments, 'SIZE COLOR SHAPE' );
-	        return;
-	    }
-
-	    var size = tokens[0];
-	    if (size !== '0' && size !== '1' && size !== '2') {
-	        reportParseError( self, size, 'SIZE must be 0, 1 or 2' );
-	        return;
-	    }
-
-	    var color = tokens[1];
-	    if (!COLOR_TOKENS.includes(color)) {
-	        reportParseError( self, color, 'COLOR must be one of: ' + COLOR_TOKENS.join(', '));
-	        return;
-	    }
-
-	    var shape = tokens[2];
-	    if (!ICON_SHAPE_TOKENS.includes(shape)) {
-	        reportParseError( self, shape, 'SHAPE must be one of: ' + ICON_SHAPE_TOKENS.join(', '));
-	        return;
-	    }
-
-	    self.currentRule.modifiers.push( new modifier( parseInt(size), color, shape ) );
-	}
-
-	function parseAlertSoundModifier (self, modifier, arguments) {
-	    var tokens = getArgumentTokens( arguments );
-	    if (tokens.length < 1 || tokens.length > 2) {
-	        reportTokenError( self, arguments, 'sound id + optional volume' );
-	        return;
-	    }
-
-	    var soundId = parseSoundId( self, tokens[0] );
-	    if (soundId === null) return;
-
-	    var volume = 100;
-	    if (tokens.length === 2) {
-	        if (isNaN(tokens[1])) {
-	            reportParseError( self, arguments, 'volume must be a number' );
-	            return;
-	        }
-
-	        volume = parseInt(tokens[1]);
-	        if (volume < 0 || volume > 300) {
-	            reportParseError( self, arguments, 'volume must be between 0 and 300' );
-	            return;
-	        }
-	    }
-
-		self.currentRule.modifiers.push( new modifier( soundId, volume ) );
-	}
-
-    function parseSoundId (self, token) {
-        if (SOUND_TOKENS.indexOf( token ) >= 0) {
-            return token;
-        }
-
-        if (isNaN(token)) {
-            reportParseError( self, token, 'Sound ID must be a number between 1 and 16, or a valid Sound ID name' );
-            return;
-        }
-        return parseInt( token );
-    }
-
 	function parseNumericModifier (self, modifier, arguments) {
 		var numbers = parseNumbers( self, arguments );
 		if (numbers === null) return;
@@ -667,29 +586,6 @@ function Parser() {
 		}
 
 		self.currentRule.modifiers.push( new modifier( numbers[0] ) );
-	}
-
-	function parseKeywordModifier (self, modifier, arguments) {
-		if (arguments.trim().length > 0) {
-			reportTokenError( self, arguments, 'Unexpected argument' );
-			return;
-		}
-
-		self.currentRule.modifiers.push( new modifier() );
-	}
-
-	function parseFilenameModifier (self, modifier, arguments) {
-	    var argumentTokens = parseStringArguments( self, arguments );
-	    if (argumentTokens.length == 0) {
-	        reportUnexpectedEndOfLine( self, arguments, 'Path or Filename' );
-	        return;
-	    }
-	    if (argumentTokens.length > 1) {
-	        reportParseError( self, arguments, 'Unexpected argument: "' + argumentTokens[1] + '"' );
-	        return;
-	    }
-
-	    self.currentRule.modifiers.push( new modifier(argumentTokens[0]) );
 	}
 
 	// ------------------------ GENERIC PARSING ---------------------------------
@@ -1015,6 +911,20 @@ function ShaperItemFilter (value) {
     }
 }
 
+// These won't respect the level of the mods because the PoE API does not give the info
+function HasSearingExarchImplicitFilter (comparer, modLevel) {
+	this.match = function (item) {
+		return item.searing === true;
+	};
+}
+
+function HasEaterOfWorldsImplicitFilter (comparer, modLevel) {
+	this.match = function (item) {
+		return item.tangled === true;
+	};
+}
+
+
 function ShapedMapFilter (value) {
     this.match = function (item) {
         return item.shapedMap === value;
@@ -1100,6 +1010,18 @@ function HasEnchantmentFilter (mods) {
 function BlightedMapFilter (value) {
     this.match = function (item) {
         return item.blightedMap === value;
+    }
+}
+
+function UberBlightedMapFilter (value) {
+    this.match = function (item) {
+        return item.uberBlightedMap === value;
+    }
+}
+
+function ScourgedFilter (value) {
+    this.match = function (item) {
+        return (item.scourged.tier > 0) === value;
     }
 }
 
