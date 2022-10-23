@@ -561,7 +561,7 @@ div.stashTab {
     background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
 }
 
-.modal-content div {
+.modal-content * {
   font-family: Fontin;  
 }
 
@@ -577,9 +577,60 @@ textarea.changelog {
   color:#aaa;
 }
 
-.aboutInfo {
+.about-modal--text {
   font-family: Fontin;
   font-size: smaller;
+}
+
+.about-modal--container {
+  background-color:black;
+  display: flex;
+  flex-flow: column wrap;
+}
+
+.about-modal--separator {
+  width: 100%;
+  height:0px;
+  margin: 5px 0;
+  border:1px solid #333;
+}
+
+.about-modal--title {
+  font-family: FontinSmallCaps;
+  color: #af6025;
+  font-weight: bold;
+  font-size: larger;
+}
+
+.about-modal--line {
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+}
+
+.about-modal--column {
+  width: 50%;
+  display: flex;
+  flex-flow: column wrap;
+  align-items: center;
+  gap: 10px
+}
+
+.about-modal--link {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.about-modal--column-title {
+  font-family: FontinSmallCaps;
+  border-bottom: 1px solid #333;
+}
+.about-modal--donation-links {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  gap: 10px;
 }
 
 span.itemSuffix {

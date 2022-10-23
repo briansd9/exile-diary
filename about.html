@@ -13,40 +13,47 @@
   
   
 </script>
-<div style="background-color:black;">
-  <table style='width:100%;'>
-    <tr style='width:100%;'>
-      <td>
-        <div class='aboutInfo' style='display:inline-block;'>
-         <span class='eventText' style='font-family:FontinSmallCaps;'>Exile Diary <span id='appVersionAbout'></span></span>
-         <span style='font-size:smaller;'>made with love by <a style="font-size:100%;" class='aboutlink' href="https://www.reddit.com/message/compose/?to=briansd9">/u/briansd9</a></span>
-       </div>
-       <div class='aboutInfo'>
-         <img src='res/img/github.png' style='height:1.2em;vertical-align:middle;margin:8px;'/><a style="font-size:85%;" class='aboutlink' href="https://github.com/briansd9/exile-diary/">https://github.com/briansd9/exile-diary/</a>
-       </div>
-       <div class='aboutInfo'>
-         <img src='res/img/discord.png' style='width:1.2em;vertical-align:middle;margin:8px;'/><a style="font-size:85%;" class='aboutlink' href="https://discord.gg/h4SXQGY">https://discord.gg/h4SXQGY</a>
-       </div>
-      </td>
-      <td style='text-align:right;'>
-        <img onclick='openLink("https://patreon.com/briansd9");' src='res/img/patreon.png'/><br/>
-        <img onclick='openLink("https://ko-fi.com/briansd9");' style='padding-top:5px;border:0px;width:200px;height:50px;' src='res/img/kofi.png' border='0'/>
-      </td>
-    </tr>
-  </table>
-  
-  <div id='alert' style='display:none;'>
-    <hr style='border:1px solid #333'/>
+<div class="about-modal--container">
+  <div class="about-modal--line about-modal--header">
+    <div class="about-modal--text about-modal--header">
+      <span class='about-modal--title' style='font-family:FontinSmallCaps;'>Exile Diary <span id='appVersionAbout'></span></span>
+      <span style='font-size:smaller;'>made with love by <a style="font-size:100%;" class='aboutlink' href="https://www.reddit.com/message/compose/?to=briansd9"><b>/u/briansd9</b></a> and currently maintained by <b>MrTin</b></span>
+    </div>
   </div>
-
-  <hr style='border:1px solid #333'/>
-<!--  
-  <span class='eventText'>
-    Ultimatum stats are now available. Please use Settings->Debug->Update Ultimatum Info to update your character's database
-    and allow them to be displayed.
-  </span>
--->
-  <hr style='border:1px solid #333'/>
+  <div class='about-modal--separator'></div>
+  <div class="about-modal--line about-modal--links">
+    <div class='about-modal--text about-modal--column'>
+      <div class="about-modal--link">
+        <img src='res/img/github.png' style='height:1.2em;vertical-align:middle;margin:8px;'/><a style="font-size:85%;" class='aboutlink' href="https://github.com/qt-dev/exile-diary/">Contribute on Github</a>
+      </div>
+    </div>
+    <div class='about-modal--text about-modal--column'>
+      <div class="about-modal--link">
+        <img src='res/img/discord.png' style='width:1.2em;vertical-align:middle;margin:8px;'/><a style="font-size:85%;" class='aboutlink' href="https://discord.gg/h4SXQGY">Join us on Discord</a>
+      </div>
+    </div>    
+  </div>
+  <div class='about-modal--separator'></div>
+  <div class="about-modal--line">
+      <div class="about-modal--column">
+        <div class='about-modal--column-title'>
+          Current Maintainer
+        </div>
+        <div class='about-modal--donation-links'>
+          <img onclick='openLink("https://ko-fi.com/qtdev");' style='padding-top:5px;border:0px;width:200px;height:50px;' src='res/img/kofi.png' border='0'/>
+        </div>
+      </div>
+      <div class="about-modal--column">
+        <div class='about-modal--column-title'>
+          Exile Diary's original master
+        </div>
+        <div class='about-modal--donation-links'>
+          <img onclick='openLink("https://ko-fi.com/briansd9");' style='padding-top:5px;border:0px;width:200px;height:50px;' src='res/img/kofi.png' border='0'/>
+          <img onclick='openLink("https://patreon.com/briansd9");' src='res/img/patreon.png'/>
+        </div>
+      </div>
+    </div>
+  </div>
   Change log:
   <textarea class='changelog' readonly>
 v0.3.14 (2022-10-22)
