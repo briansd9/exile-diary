@@ -97,11 +97,13 @@ function Parser() {
     'ItemLevel', 'DropLevel', 'Quality', 'Rarity', 'Class', 'BaseType', 'Sockets', 'LinkedSockets', 'SocketGroup',
     'Width', 'Height', 'Identified', 'Corrupted', 'ElderItem', 'ShaperItem', 'ShapedMap', 'HasExplicitMod', 'MapTier',
     'GemLevel', 'StackSize', 'ElderMap', 'Prophecy', 'FracturedItem', 'SynthesisedItem', 'AnyEnchantment', 'HasEnchantment',
-    'BlightedMap', 'HasInfluence',
+        'BlightedMap', 'UberBlightedMap',
+        'Scourged',
+        'HasInfluence', 'HasSearingExarchImplicit', 'HasEaterOfWorldsImplicit',
     'Mirrored', 'CorruptedMods', 'AreaLevel',
     'EnchantmentPassiveNode',
     'AlternateQuality', 'Replica', 'GemQualityType',
-    'EnchantmentPassiveNum',
+        'EnchantmentPassiveNum', 'BaseDefencePercentile',
   ];
 	var MODIFIER_TOKENS = [
 	    'SetBackgroundColor', 'SetBorderColor', 'SetTextColor', 'PlayAlertSound', 'PlayAlertSoundPositional',
@@ -238,6 +240,9 @@ function Parser() {
 
 		var filters = {
 			'ItemLevel': ItemLevelFilter,
+			'HasSearingExarchImplicit': HasSearingExarchImplicitFilter,
+			'HasEaterOfWorldsImplicit': HasEaterOfWorldsImplicitFilter,
+            'BaseDefencePercentile': HasEaterOfWorldsImplicitFilter,
 			'DropLevel': DropLevelFilter,
 			'Quality': QualityFilter,
 			'Rarity': RarityFilter,
@@ -268,6 +273,8 @@ function Parser() {
       'AnyEnchantment': AnyEnchantmentFilter,
       'HasEnchantment': HasEnchantmentFilter,
       'BlightedMap': BlightedMapFilter,
+            'UberBlightedMap': UberBlightedMapFilter,
+            'Scourged': ScourgedFilter,
       'HasInfluence' : HasInfluenceFilter,
       'Mirrored' : MirroredFilter,
       'CorruptedMods' : CorruptedModsFilter,
@@ -292,6 +299,9 @@ function Parser() {
       case 'CorruptedMods':
       case 'AreaLevel':
 			case 'EnchantmentPassiveNum':
+            case 'HasSearingExarchImplicit':
+            case 'HasEaterOfWorldsImplicit':
+            case 'BaseDefencePercentile':
 				parseNumericFilter( self, filters[token], arguments );
 				return;
 
@@ -326,6 +336,8 @@ function Parser() {
 			case 'SynthesisedItem':
       case 'AnyEnchantment':
       case 'BlightedMap':
+            case 'UberBlightedMap':
+            case 'Scourged':
       case 'Mirrored':
       case 'AlternateQuality':
       case 'Replica':
@@ -1015,6 +1027,20 @@ function ShaperItemFilter (value) {
     }
 }
 
+// These won't respect the level of the mods because the PoE API does not give the info
+function HasSearingExarchImplicitFilter (comparer, modLevel) {
+	this.match = function (item) {
+		return item.searing === true;
+	};
+}
+
+function HasEaterOfWorldsImplicitFilter (comparer, modLevel) {
+	this.match = function (item) {
+		return item.tangled === true;
+	};
+}
+
+
 function ShapedMapFilter (value) {
     this.match = function (item) {
         return item.shapedMap === value;
@@ -1100,6 +1126,18 @@ function HasEnchantmentFilter (mods) {
 function BlightedMapFilter (value) {
     this.match = function (item) {
         return item.blightedMap === value;
+    }
+}
+
+function UberBlightedMapFilter (value) {
+    this.match = function (item) {
+        return item.uberBlightedMap === value;
+    }
+}
+
+function ScourgedFilter (value) {
+    this.match = function (item) {
+        return (item.scourged.tier > 0) === value;
     }
 }
 
