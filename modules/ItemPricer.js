@@ -136,7 +136,25 @@
     
     if(item.typeline.includes("Maven's Invitation")) {
       return getValueFromTable("Invitation");
-    }    
+    }
+
+    //Invitations 
+    if(item.typeline.includes("Polaric")) {
+      return getValueFromTable("Polaric Invitation");
+    }
+
+    if(item.typeline.includes("Screaming")) {
+      return getValueFromTable("Screaming Invitation");
+    }
+
+    if(item.typeline.includes("Incandescent")) {
+      return getValueFromTable("Incandescent Invitation");
+    }
+
+    if(item.typeline.includes("Writhing")) {
+      return getValueFromTable("Writhing Invitation");
+    }
+
     if(
       item.category === "Map Fragments" 
       || (item.category === "Labyrinth Items" && item.typeline.endsWith("to the Goddess")) 
