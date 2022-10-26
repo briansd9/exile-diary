@@ -1021,7 +1021,7 @@ function UberBlightedMapFilter (value) {
 
 function ScourgedFilter (value) {
     this.match = function (item) {
-        return (item.scourged.tier > 0) === value;
+        return (item.scourged && item.scourged.tier && item.scourged.tier > 0) === value;
     }
 }
 
