@@ -135,24 +135,24 @@
     }
     
     if(item.typeline.includes("Maven's Invitation")) {
-      return getValueFromTable("Invitation", "Maven's Invitation");
+      return getValueFromTable("Invitation", item.typeline);
     }
 
     //Invitations 
     if(item.typeline.includes("Polaric Invitation")) {
-      return getValueFromTable("Invitation", "Polaric Invitation");
+      return getValueFromTable("Invitation", item.typeline);
     }
 
     if(item.typeline.includes("Screaming Invitation")) {
-      return getValueFromTable("Invitation", "Screaming Invitation");
+      return getValueFromTable("Invitation", item.typeline);
     }
 
     if(item.typeline.includes("Incandescent Invitation")) {
-      return getValueFromTable("Invitation", "Incandescent Invitation");
+      return getValueFromTable("Invitation", item.typeline);
     }
 
     if(item.typeline.includes("Writhing Invitation")) {
-      return getValueFromTable("Invitation", "Writhing Invitation");
+      return getValueFromTable("Invitation", item.typeline);
     }
 
     //Memories
