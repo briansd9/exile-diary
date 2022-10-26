@@ -155,6 +155,11 @@
       return getValueFromTable("Invitation", "Writhing Invitation");
     }
 
+    //Memories
+    if(item.typeline.includes("'s Memory")){
+      return getValueFromTable("Fragment", item.typeline);
+    }
+
     if(
       item.category === "Map Fragments" 
       || (item.category === "Labyrinth Items" && item.typeline.endsWith("to the Goddess")) 
