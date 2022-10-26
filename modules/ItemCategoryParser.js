@@ -17,7 +17,15 @@ const nonStackableBulkItems = [
   'Maps',
   'Incubator',
   'Atlas Region Upgrade Item',
-  "Memory"    
+  "Kirac's Memory",
+  "Einhar's Memory",
+  "Niko's Memory",
+  "Alva's Memory",
+  "Writhing Invitation",
+  "Screaming Invitation",
+  "Polaric Invitation",
+  "Incandescent Invitation",
+  "Maven's Invitation"
 ];
 
 function getCategory(item, subcategory = false) {
@@ -30,8 +38,36 @@ function getCategory(item, subcategory = false) {
     return t;
   }
 
-  if(t.includes("Memory of")){
-    return "Memory";
+  //Memories
+  if(t.includes("Kirac's Memory")){
+    return "Kirac's Memory";
+  }
+  if(t.includes("Einhar's Memory")){
+    return "Einhar's Memory";
+  }
+  if(t.includes("Niko's Memory")){
+    return "Niko's Memory";
+  }
+  if(t.includes("Alva's Memory")){
+    return "Alva's Memory";
+  }
+
+
+  //Invitations
+  if(t.includes("Writhing Invitation")){
+    return "Writhing Invitation";
+  }
+  if(t.includes("Screaming Invitation")){
+    return "Screaming Invitation";
+  }
+  if(t.includes("Polaric Invitation")){
+    return "Polaric Invitation";
+  }
+  if(t.includes("Incandescent Invitation")){
+    return "Incandescent Invitation";
+  }
+  if(t.includes("Maven's Invitation")){
+    return "Maven's Invitation";
   }
   
   if(t.includes("Contract")) {

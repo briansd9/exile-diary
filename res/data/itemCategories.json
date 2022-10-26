@@ -1820,6 +1820,12 @@
     "Fragment of Knowledge" : ["Map Fragments", "Guardian Fragment"],
     "Fragment of Terror" : ["Map Fragments", "Guardian Fragment"],
     "Fragment of Emptiness" : ["Map Fragments", "Guardian Fragment"],
+
+    "Drox's Crest" :["Map Fragments", "Guardian Fragment"],
+    "Baran's Crest" :["Map Fragments", "Guardian Fragment"],
+    "Al-Hezmin's Crest" :["Map Fragments", "Guardian Fragment"],
+    "Veritania's Crest" :["Map Fragments", "Guardian Fragment"],
+
     "Ivory Watchstone" : "Atlas Region Upgrade Item",
     
     "Fine Delirium Orb" : ["Stackable Currency", "Delirium Orb"],
