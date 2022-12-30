@@ -26,8 +26,4 @@ jobs:
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release --dry-run
-        with:
-          assets:
-            - path: dist
-
+        run: npx semantic-release
