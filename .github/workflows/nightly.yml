@@ -1,0 +1,30 @@
+name: Release
+on:
+  schedule:
+    - cron: '0 2 * * *' # run at 2 AM UTC
+  repository_dispatch:
+    types: [semantic-release]
+
+jobs:
+  nightly:
+    name: Deploy nightly
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: npm install, build, and test
+        run: |
+          npm install
+          npm run build --if-present
+          npm test --if-present
+      - name: Install dependencies
+          run: npm ci
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
