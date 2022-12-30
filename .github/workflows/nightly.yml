@@ -4,6 +4,7 @@ on:
     - cron: '0 2 * * *' # run at 2 AM UTC
   repository_dispatch:
     types: [semantic-release]
+  workflow_dispatch:
 
 jobs:
   nightly:
