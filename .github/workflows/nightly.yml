@@ -22,7 +22,7 @@ jobs:
           npm run build --if-present
           npm test --if-present
       - name: Install dependencies
-          run: npm ci
+        run: npm ci
       - name: Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
