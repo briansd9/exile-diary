@@ -325,7 +325,8 @@ function initWindow(window) {
   });
   OCRWatcher.emitter.on("areaInfoComplete", (info) => {
     const tier = Utils.getMapTierString({ level: parseInt(info.areaInfo.level) });
-    const stats = `IIR: ${info.mapStats.iir} / IIQ: ${info.mapStats.iiq} / Pack Size: ${info.mapStats.packsize}`;
+    let stats = `IIR: ${info.mapStats.iir} / IIQ: ${info.mapStats.iiq}`;
+    if(info.mapStats.packsize && info.mapStats.packsize > 0) stats+= ` / Pack Size: ${info.mapStats.packsize}`;
     addMessage(`Got area info for <span class='eventText'>${info.areaInfo.name}</span> (${tier} - ${stats})`, true);
   });
   
