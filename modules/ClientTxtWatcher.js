@@ -81,14 +81,6 @@ function start() {
         } else {
           instanceServerFound = true;
         }
-      } else if (settings.autoSwitch && line.includes("Async connecting to") && line.includes("login.pathofexile.com")) {
-        logger.info("Login found, monitoring possible character change");
-        login = true;
-      } else if(settings.autoSwitch && login && line.includes("entered")) {
-        // corresponding "you have entered" line found for instance server; clear flag
-        instanceServerFound = false;
-        logger.info("Connecting to instance server after login, checking last active character");
-        checkLastActiveCharacter();
       } else {
         var timestamp = line.substring(0, 19).replace(/[^0-9]/g, '');
         var event = getEvent(line);

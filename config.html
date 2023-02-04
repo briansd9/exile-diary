@@ -41,7 +41,7 @@
       const fs = require('fs');
       const logger = require('./modules/Log').getLogger(__filename);
       const Utils = require('./modules/Utils');
-      const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled", "minimizeToTray", "autoSwitch", "getLowConfidence"];
+      const configKeys = ["accountName", "poesessid", "clientTxt", "screenshotDir", "overlayEnabled", "minimizeToTray", "getLowConfidence"];
       
       var settings = {};
       var disabledTabsArray = [ 1 ];
@@ -240,7 +240,7 @@
       async function loadSettings() {
 
         configKeys.forEach((key) => {
-          if(["overlayEnabled", "minimizeToTray", "autoSwitch", "getLowConfidence"].includes(key)) {
+          if(["overlayEnabled", "minimizeToTray", "getLowConfidence"].includes(key)) {
             $("#" + key).prop("checked", settings[key]);
           } else {
             $("#" + key).val(settings[key]);
@@ -283,7 +283,6 @@
           $("#activeProfile").html(`None`);
           $("#uploadFilter").hide();
           $("#privateLeagueRow").empty();
-          $("#autoSwitchRow").hide();
         }
         
         if(settings.stashCheck) {
@@ -342,8 +341,6 @@
             }
           };
         }
-        
-        updateManualSwitch();
 
       }
       
@@ -427,7 +424,7 @@
         
         configKeys.forEach((key) => {
           var inputField = $("#" + key);
-          if(["overlayEnabled", "minimizeToTray", "autoSwitch", "getLowConfidence"].includes(key)) {
+          if(["overlayEnabled", "minimizeToTray", "getLowConfidence"].includes(key)) {
             settings[key] = inputField.is(':checked');
           } else if(inputField.val()) {
             settings[key] = inputField.val();
@@ -771,11 +768,6 @@
         ipcRenderer.send("reinitialize");
       }
       
-      function updateManualSwitch() {
-        $("#characterList").prop("disabled", $("#autoSwitch").is(":checked"));
-        $("#characterList").css("display", $("#autoSwitch").is(":checked") ? "none" : "");
-      }
-      
       function toggleStashCheckboxes(e) {
         let id = e.target.id;
         if(id === "netWorthCheckbox" && $(`#${id}`).prop("checked") === false) {
@@ -891,14 +883,6 @@
               <div class='configLabel ui-text' title="Retrieve prices for items with very few listings from poe.ninja. WARNING: use at your own risk, may result in very skewed item values">
                 <input style='margin:0 16px;' name='getLowConfidence' id='getLowConfidence' type='checkbox'/>
                 <label for='getLowConfidence'>Get low-confidence pricing data from poe.ninja</label>
-              </div>
-            </td>
-          </tr>
-          <tr id='autoSwitchRow'>
-            <td colspan="2">
-              <div class='configLabel ui-text' title="If checked, whenever you switch characters in-game, Exile Diary will automatically track stats for that character">
-                <input style='margin:0 16px;' name='autoSwitch' id='autoSwitch' type='checkbox' onchange='updateManualSwitch();'/>
-                <label for='autoSwitch'>Enable automatic character switching</label>
               </div>
             </td>
           </tr>
