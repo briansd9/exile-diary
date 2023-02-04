@@ -129,80 +129,75 @@ async function checkCurrentActiveCharacter() {
 async function checkCurrentCharacterLeague() {
   
   var settings = Settings.get();
-  if(settings.autoSwitch) {
-    return await checkCurrentActiveCharacter();
-  } else {
-    
-    return new Promise( async (resolve, reject) => {
+  return new Promise( async (resolve, reject) => {
 
-      await DB.initDB();
-      await DB.initLeagueDB();
-      characterCheckStatus = null;
-      logger.info("Checking current character league...");
-      if(!settings || !settings.accountName || !settings.poesessid || !settings.activeProfile || !settings.activeProfile.characterName) {
+    await DB.initDB();
+    await DB.initLeagueDB();
+    characterCheckStatus = null;
+    logger.info("Checking current character league...");
+    if(!settings || !settings.accountName || !settings.poesessid || !settings.activeProfile || !settings.activeProfile.characterName) {
 
-        logger.info("Can't check, info missing from settings");
-        characterCheckStatus = "error";
-        resolve();
+      logger.info("Can't check, info missing from settings");
+      characterCheckStatus = "error";
+      resolve();
 
-      } else {
+    } else {
 
-        var path = `/character-window/get-characters?accountName=${encodeURIComponent(settings.accountName)}`;
-        var requestParams = Utils.getRequestParams(path, settings.poesessid);
+      var path = `/character-window/get-characters?accountName=${encodeURIComponent(settings.accountName)}`;
+      var requestParams = Utils.getRequestParams(path, settings.poesessid);
 
-        var request = require('https').request(requestParams, (response) => {
-          var body = '';
-          response.setEncoding('utf8');
-          response.on('data', (chunk) => {
-            body += chunk;
-          });
-          response.on('end', () => {
-            try {
-              var foundChar = false;
-              var data = JSON.parse(body);
-              if(data.error && data.error.message === "Forbidden") {
-                characterCheckStatus = "error";
-                resolve();
-              } else {
-                for(var i = 0; i < data.length; i++) {
-                  if(data[i].name === settings.activeProfile.characterName) {
-                    foundChar = true;
-                    logger.info(JSON.stringify(data[i]));
-                    checkLeague(settings, data[i].league);
-                    showActiveCharacterMessage(data[i]);
-                    characterCheckStatus = "valid";
-                    break;
-                  }
-                }
-                if(!foundChar) {
-                  characterCheckStatus = "notFound";
-                }
-                resolve();
-              }
-            } catch (err) {
-              logger.info(`Error checking character status: ${err}`);
+      var request = require('https').request(requestParams, (response) => {
+        var body = '';
+        response.setEncoding('utf8');
+        response.on('data', (chunk) => {
+          body += chunk;
+        });
+        response.on('end', () => {
+          try {
+            var foundChar = false;
+            var data = JSON.parse(body);
+            if(data.error && data.error.message === "Forbidden") {
               characterCheckStatus = "error";
               resolve();
+            } else {
+              for(var i = 0; i < data.length; i++) {
+                if(data[i].name === settings.activeProfile.characterName) {
+                  foundChar = true;
+                  logger.info(JSON.stringify(data[i]));
+                  checkLeague(settings, data[i].league);
+                  showActiveCharacterMessage(data[i]);
+                  characterCheckStatus = "valid";
+                  break;
+                }
+              }
+              if(!foundChar) {
+                characterCheckStatus = "notFound";
+              }
+              resolve();
             }
-          });
-          response.on('error', (err) => {
+          } catch (err) {
             logger.info(`Error checking character status: ${err}`);
             characterCheckStatus = "error";
             resolve();
-          });
+          }
         });
-
-        request.on('error', (err) => {
+        response.on('error', (err) => {
           logger.info(`Error checking character status: ${err}`);
           characterCheckStatus = "error";
           resolve();
         });
-        request.end();
+      });
 
-      }
+      request.on('error', (err) => {
+        logger.info(`Error checking character status: ${err}`);
+        characterCheckStatus = "error";
+        resolve();
+      });
+      request.end();
 
-    });
-  }
+    }
+
+  });
 }
 
 function checkLeague(settings, foundLeague) {
