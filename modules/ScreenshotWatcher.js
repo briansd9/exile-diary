@@ -145,7 +145,7 @@ function enhanceImage(image, scaleFactor) {
  * @returns an X Boundary
  */
 function getXBounds(image, yBounds) {
-  const marginWidth = 20;
+  const marginWidth = 10;
   const blueArray = [];
   const imageWidth = image.bitmap.width - 1;
   let xBoundary = 0;
