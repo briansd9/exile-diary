@@ -134,34 +134,48 @@ function enhanceImage(image, scaleFactor) {
   image.contrast(0.75);
 }
 
+/**
+ * Detects the left border of the mods box
+ * 
+ * We create an array of {marginWidth} width. On every column, we check the number of blue pixels.
+ * Then, we check the average of blue pixels on each column in our array.
+ * If above 1, we shift and test the next column, once we get below 1, that means we got {marginWidth} columns with a low blue pixels count.
+ * @param {*} image The image to iterate over
+ * @param {Array} yBounds The y bounds of our mods box
+ * @returns an X Boundary
+ */
 function getXBounds(image, yBounds) {
+  const marginWidth = 20;
+  const blueArray = [];
+  const imageWidth = image.bitmap.width - 1;
+  let xBoundary = 0;
 
-  var numCols = 40;
-  var blueArray = [];
+  // On each column
+  for(let x = imageWidth; x > 0; x--) {
+    let pixelCount = 0;
 
-  for (var x = image.bitmap.width - 1; x > 0; x--) {
-    var pixCount = 0;
-    for (var y = yBounds[0]; y < yBounds[1]; y++) {
-      var pixel = image.getPixelColor(x, y);
-      if (isBlue(pixel)) {
-        pixCount++;
+    // Check pixel on every line of our restricted area
+    for (let y = yBounds[0]; y < yBounds[1]; y++) {
+      if (isBlue(image.getPixelColor(x, y))) {
+        pixelCount++;
       }
     }
-    blueArray.push(pixCount);
-    if (blueArray.length === numCols) {
-      var blueAvg = blueArray.reduce((acc, curr) => {
-        return acc + curr;
-      }) / numCols;
-      if (blueAvg < 1) {
-        return x;
+
+    blueArray.push(pixelCount);
+
+    // If we have enough lines in the moving array
+    if(xBoundary === 0 && blueArray.length === marginWidth) {
+      const blueAvg = blueArray.reduce((acc, curr) => acc + curr) / marginWidth;
+      // If first line with no blue, boundary is here
+      if(blueAvg < 1) { 
+        xBoundary = x;
+        break;
       }
       blueArray.shift();
     }
-
   }
 
-  return 0;
-
+  return xBoundary;
 }
 
 /* 
