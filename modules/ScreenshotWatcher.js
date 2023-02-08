@@ -54,10 +54,10 @@ function start() {
 }
 
 async function checkScreenshotSpaceUsed() {
-    var dir = fs.readdirSync(settings.screenshotDir);
-    if(dir.length > SCREENSHOT_DIRECTORY_SIZE_LIMIT) {
-      emitter.emit("tooMuchScreenshotClutter", dir.length); 
-    }
+  var dir = fs.readdirSync(settings.screenshotDir);
+  if(dir.length > SCREENSHOT_DIRECTORY_SIZE_LIMIT) {
+    emitter.emit("tooMuchScreenshotClutter", dir.length); 
+  }
 }
 
 
@@ -117,14 +117,14 @@ function enhanceImage(image, scaleFactor) {
   image.invert();
   image.greyscale();
   /*
-   image.convolute([
-   [0, 0, 0, 0, 0],
-   [0, 0, -1, 0, 0],
-   [0, -1, 5, -1, 0],
-   [0, 0, -1, 0, 0],
-   [0, 0, 0, 0, 0]
-   ]);
-   */
+  image.convolute([
+    [0, 0, 0, 0, 0],
+    [0, 0, -1, 0, 0],
+    [0, -1, 5, -1, 0],
+    [0, 0, -1, 0, 0],
+    [0, 0, 0, 0, 0]
+  ]);
+  */
   image.convolute([
     [-1 / 8, -1 / 8, -1 / 8],
     [-1 / 8, 2, -1 / 8],
@@ -197,42 +197,42 @@ function getYBounds(image) {
   const firstLineMargin = 5; // Margin to make the top line a bit more readable
   const endDetectionHeight = 20; // Height of the bottom limit we detect (Answer to "After how many pixels do we consider this box to be done?")
   const detectionWidth = 30; // Number of pixels to check for detection. We do not need the full line but we need enough pixels to start capturing blue pixels
-
+  
   let isDone = false;
   let offset = 0;
   let firstLine = -1;
   let lastLine = -1;
-
+  
   while(!isDone && offset < image.bitmap.height) {  
     const lines = [];
-
+    
     // On each Line in a batch
     for (let y = offset; y < batchSize + offset ; y++) {  
       let bluePixels = 0;
       let blackPixels = 0;
-
+      
       // Check each pixel on each line for blueness or blackness
       for (let x = image.bitmap.width - detectionWidth; x < image.bitmap.width; x++) {
         const pixelColor = image.getPixelColor(x, y);
         if (isBlue(pixelColor)) {
-        bluePixels++;
+          bluePixels++;
         } else if (isBlack(pixelColor, 15)) {
-        blackPixels++;
+          blackPixels++;
+        }
       }
-    }
-
+      
       lines.push({
         blue: bluePixels,
         black: blackPixels,
         total: bluePixels + blackPixels
       });
-
+      
       // If we do not have a first line, and we are getting a first line with blues, this is the one
       if(firstLine < 0 && bluePixels > 0 && lines[lines.length - 2].blue === 0) {
         logger.info(`Found first line of the mod box with ${bluePixels} blues at y=${y}`);
         firstLine = y - firstLineMargin;
       }
-
+      
       const lastLines = lines.slice(lines.length - endDetectionHeight, lines.length -2);
       const isEndOfBlackBackground = ( lastLines.length === (endDetectionHeight - 2) && blackPixels < detectionWidth && bluePixels < 1 && Math.min(...lastLines.map(line => line.black)) === detectionWidth);
       const isTooFarAfterBlueText = ( lastLines.length === (endDetectionHeight - 2) && bluePixels < 1 && Math.max(...lastLines.map(line => line.blue)) === 0 );
@@ -242,13 +242,13 @@ function getYBounds(image) {
         lastLine = y;
         isDone = true;
         break;
-        }
       }
-
+    }
+    
     if(!isDone){
       offset += batchSize;
     }
-    }
+  }
 
   if(lastLine === -1) lastLine = image.bitmap.height;
   return [firstLine, lastLine];
