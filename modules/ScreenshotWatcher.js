@@ -54,10 +54,10 @@ function start() {
 }
 
 async function checkScreenshotSpaceUsed() {
-    var dir = fs.readdirSync(settings.screenshotDir);
-    if(dir.length > SCREENSHOT_DIRECTORY_SIZE_LIMIT) {
-      emitter.emit("tooMuchScreenshotClutter", dir.length); 
-    }
+  var dir = fs.readdirSync(settings.screenshotDir);
+  if(dir.length > SCREENSHOT_DIRECTORY_SIZE_LIMIT) {
+    emitter.emit("tooMuchScreenshotClutter", dir.length); 
+  }
 }
 
 
@@ -117,14 +117,14 @@ function enhanceImage(image, scaleFactor) {
   image.invert();
   image.greyscale();
   /*
-   image.convolute([
-   [0, 0, 0, 0, 0],
-   [0, 0, -1, 0, 0],
-   [0, -1, 5, -1, 0],
-   [0, 0, -1, 0, 0],
-   [0, 0, 0, 0, 0]
-   ]);
-   */
+  image.convolute([
+    [0, 0, 0, 0, 0],
+    [0, 0, -1, 0, 0],
+    [0, -1, 5, -1, 0],
+    [0, 0, -1, 0, 0],
+    [0, 0, 0, 0, 0]
+  ]);
+  */
   image.convolute([
     [-1 / 8, -1 / 8, -1 / 8],
     [-1 / 8, 2, -1 / 8],
@@ -134,34 +134,48 @@ function enhanceImage(image, scaleFactor) {
   image.contrast(0.75);
 }
 
+/**
+ * Detects the left border of the mods box
+ * 
+ * We create an array of {marginWidth} width. On every column, we check the number of blue pixels.
+ * Then, we check the average of blue pixels on each column in our array.
+ * If above 1, we shift and test the next column, once we get below 1, that means we got {marginWidth} columns with a low blue pixels count.
+ * @param {*} image The image to iterate over
+ * @param {Array} yBounds The y bounds of our mods box
+ * @returns an X Boundary
+ */
 function getXBounds(image, yBounds) {
+  const marginWidth = 10;
+  const blueArray = [];
+  const imageWidth = image.bitmap.width - 1;
+  let xBoundary = 0;
 
-  var numCols = 40;
-  var blueArray = [];
+  // On each column
+  for(let x = imageWidth; x > 0; x--) {
+    let pixelCount = 0;
 
-  for (var x = image.bitmap.width - 1; x > 0; x--) {
-    var pixCount = 0;
-    for (var y = yBounds[0]; y < yBounds[1]; y++) {
-      var pixel = image.getPixelColor(x, y);
-      if (isBlue(pixel)) {
-        pixCount++;
+    // Check pixel on every line of our restricted area
+    for (let y = yBounds[0]; y < yBounds[1]; y++) {
+      if (isBlue(image.getPixelColor(x, y))) {
+        pixelCount++;
       }
     }
-    blueArray.push(pixCount);
-    if (blueArray.length === numCols) {
-      var blueAvg = blueArray.reduce((acc, curr) => {
-        return acc + curr;
-      }) / numCols;
-      if (blueAvg < 1) {
-        return x;
+
+    blueArray.push(pixelCount);
+
+    // If we have enough lines in the moving array
+    if(xBoundary === 0 && blueArray.length === marginWidth) {
+      const blueAvg = blueArray.reduce((acc, curr) => acc + curr) / marginWidth;
+      // If first line with no blue, boundary is here
+      if(blueAvg < 1) { 
+        xBoundary = x;
+        break;
       }
       blueArray.shift();
     }
-
   }
 
-  return 0;
-
+  return xBoundary;
 }
 
 /* 
@@ -169,72 +183,75 @@ function getXBounds(image, yBounds) {
  * 
  * The map mod list is a solid block of pixels that are either black or blue,
  * in the upper-right corner of the screen 
+ * 
+ * So we check each row of {detectionWidth} pixels from the top, in batches of {batchSize}.
+ * When we find a fully black row right before a row that contains black + blue, we mark it as the first line.
+ * We then check until we find either:
+ *  - A non black background line right after {endDetectionHeight} lines of black -> End of the black box
+ *  - A line with no blues after {endDetectionHeight} lines with no blues -> End of the mods, even on a black background
+ * 
+ * If we did not find the end of the box, we just return the total height as the bottom boundary.
  */
 function getYBounds(image) {
-
-  var numRows = Math.floor(image.bitmap.width / 100);
-  var numCols = Math.floor(image.bitmap.width / 10);
-  var pixArray = [];
-  var blueArray = [];
-  var blueStarted = false;
-  var lowerBound = 0;
-
-  // start from top of image
-  for (var y = 0; y < image.bitmap.height; y++) {
-    var bluePixels = 0;
-    var blackPixels = 0;
-    // scan a row of pixels from left to right starting {numCols} px from the right edge,
-    // counting the number of blue or black pixels in the row
-    for (var x = image.bitmap.width - numCols; x < image.bitmap.width; x++) {
-      var pixel = image.getPixelColor(x, y);
-      if (isBlue(pixel)) {
-        bluePixels++;
-      } else if (isBlack(pixel, 20)) {
-        blackPixels++;
-      }
-    }
-
-    // number of blue or black pixels in row          
-    pixArray.push(bluePixels + blackPixels);
-    // number of blue pixels only
-    blueArray.push(bluePixels);
-
-    // when {numRows} rows have been scanned, get running average
-    if (pixArray.length === numRows) {
-      // average number of blue/black pixels
-      var totalAvg = pixArray.reduce((acc, curr) => {
-        return acc + curr;
-      }) / numRows;
-      // average number of blue pixels
-      var blueAvg = blueArray.reduce((acc, curr) => {
-        return acc + curr;
-      }) / numRows;
+  const batchSize = Math.floor(image.bitmap.height / 10); // Size of the batch of rows to check together
+  const firstLineMargin = 5; // Margin to make the top line a bit more readable
+  const endDetectionHeight = 20; // Height of the bottom limit we detect (Answer to "After how many pixels do we consider this box to be done?")
+  const detectionWidth = 30; // Number of pixels to check for detection. We do not need the full line but we need enough pixels to start capturing blue pixels
+  
+  let isDone = false;
+  let offset = 0;
+  let firstLine = -1;
+  let lastLine = -1;
+  
+  while(!isDone && offset < image.bitmap.height) {  
+    const lines = [];
+    
+    // On each Line in a batch
+    for (let y = offset; y < batchSize + offset ; y++) {  
+      let bluePixels = 0;
+      let blackPixels = 0;
       
-      if (totalAvg > (numRows * 0.95)) {
-        if (blueAvg > 25 && !blueStarted) {
-          // if the top of the mod list has not already been found, 
-          // mark it if average blue/black pixels is > 95% and average blue pixels > 25
-          blueStarted = true;
-          lowerBound = y - numRows;
-        } else if (blueStarted && (blueAvg < 25 || (bluePixels + blackPixels < (numRows * 0.7)))) {
-          // if top of mod list has already been found, check if we've gone past the bottom:
-          // average blue pixels in past {numRows} rows < 25, or current row has less than 70% blue/black pixels
-          // if so, return bounds of mod list
-          return [lowerBound, y];
+      // Check each pixel on each line for blueness or blackness
+      for (let x = image.bitmap.width - detectionWidth; x < image.bitmap.width; x++) {
+        const pixelColor = image.getPixelColor(x, y);
+        if (isBlue(pixelColor)) {
+          bluePixels++;
+        } else if (isBlack(pixelColor, 15)) {
+          blackPixels++;
         }
-      } else if (blueStarted) {
-        // also return bounds of mod list if top has already been found 
-        // and average blue/black pixels in past {numRows} rows < 95%
-        return [lowerBound, y];
       }
-
-      // only keep pixel count for last {numRows} rows
-      pixArray.shift();
-      blueArray.shift();
-
+      
+      lines.push({
+        blue: bluePixels,
+        black: blackPixels,
+        total: bluePixels + blackPixels
+      });
+      
+      // If we do not have a first line, and we are getting a first line with blues, this is the one
+      if(firstLine < 0 && bluePixels > 0 && lines[lines.length - 2].blue === 0) {
+        logger.info(`Found first line of the mod box with ${bluePixels} blues at y=${y}`);
+        firstLine = y - firstLineMargin;
+      }
+      
+      const lastLines = lines.slice(lines.length - endDetectionHeight, lines.length -2);
+      const isEndOfBlackBackground = ( lastLines.length === (endDetectionHeight - 2) && blackPixels < detectionWidth && bluePixels < 1 && Math.min(...lastLines.map(line => line.black)) === detectionWidth);
+      const isTooFarAfterBlueText = ( lastLines.length === (endDetectionHeight - 2) && bluePixels < 1 && Math.max(...lastLines.map(line => line.blue)) === 0 );
+      
+      if( firstLine > -1 && lastLine < 0 && ( isEndOfBlackBackground || isTooFarAfterBlueText ) ) {
+        logger.info(`Found last line of the mod box on y=${y}`);
+        lastLine = y;
+        isDone = true;
+        break;
+      }
     }
-
+    
+    if(!isDone){
+      offset += batchSize;
+    }
   }
+  if(!firstLine) logger.error('Error: Could not find a proper boundary for the mods box');
+  if(lastLine === -1) lastLine = image.bitmap.height;
+  return [firstLine, lastLine];
 }
 
 function isBlue(pixel) {
