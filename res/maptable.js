@@ -13,7 +13,7 @@ class MapTable {
     packsize: { label: "Pack Size", f: map => (map.packsize ? `+${map.packsize}%` : '') },
     time: { label: "Time", f: map => Utils.getRunningTime(map.firstevent, map.lastevent) },
     xp: { label: "XP", f: map => this.fmt.format(map.xpgained) },
-    xpRate: { label: "XP/hr", f: map => map.xpgained > 0 ? Utils.getXPRate(map.xpgained, map.firstevent, map.lastevent) : "" },
+    xpRate: { label: "XP/hr", f: map => Utils.getXPRate(map.xpgained, map.firstevent, map.lastevent) },
     c: { label: "<img class='currencyText' src='res/img/c.png'>", f: map => Number(map.gained).toFixed(2) },
     cRate: { 
       label: "<img class='currencyText' src='res/img/c.png'>/hr", 
