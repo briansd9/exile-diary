@@ -249,7 +249,7 @@ function getYBounds(image) {
       offset += batchSize;
     }
   }
-
+  if(!firstLine) logger.error('Error: Could not find a proper boundary for the mods box');
   if(lastLine === -1) lastLine = image.bitmap.height;
   return [firstLine, lastLine];
 }
