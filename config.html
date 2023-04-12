@@ -974,6 +974,12 @@
             Adds Ultimatum info (rounds, mods picked, completion) to each map run.
           </div>
         </div>
+        <div style="display: flex; flex-direction: row; padding-top:10px;">
+          <button class='debugButton' id="updateTodaysRates" style="width:320px;margin:0 16px;" onclick="debugClear();ipcRenderer.invoke('refetchRates');">Update Today's Rates</button>
+          <div style='line-height: 200%; vertical-align: middle;'>
+            Update Poe.Ninja data for today.
+          </div>
+        </div>
 <!--        
         <div style="display: flex; flex-direction: row; padding-top:10px;">
           <button class='debugButton' id="recheckGearButton" style="width:320px;margin:0 16px;" onclick="debugClear();checkGearDuplicates();">Recheck Gear Changes</button>

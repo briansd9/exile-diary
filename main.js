@@ -448,7 +448,10 @@ async function createWindow() {
   });
   ipcMain.on('rateGetterRetry', function(event) {
     RateGetterV2.Getter.update();
-    r.update();
+  });
+  ipcMain.handle('refetchRates', (event) => {
+    addMessage("<span class='eventText'>Refreshing item prices from poe.ninja...</span>")
+    RateGetterV2.Getter.update(true);
   });
 
   require('./modules/electron-capture/src/main');

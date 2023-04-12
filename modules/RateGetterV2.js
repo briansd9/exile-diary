@@ -69,7 +69,7 @@ class RateGetterV2 {
 /*
  * get today's rates from POE.ninja 
  */
-  async update() {
+  async update(isForced = false) {
     
     if(!this.league) {
       logger.info("No league set, will not attempt to get prices");
@@ -91,14 +91,19 @@ class RateGetterV2 {
       }
     }
     
-    var today = moment().format("YMMDD");  
-    var hasExisting = await this.hasExistingRates(today);
+    const today = moment().format("YMMDD");  
+    const hasExisting = await this.hasExistingRates(today);
 
     if (hasExisting) {
       logger.info(`Found existing ${this.league} rates for ${today}`);
-      RateGetterV2.ratesReady = true;
-      this.scheduleNextUpdate();
-      return;
+
+      if(!isForced) {
+        RateGetterV2.ratesReady = true;
+        this.scheduleNextUpdate();
+        return;
+      } else {
+        await this.cleanRates(today);
+      }
     }
 
     emitter.emit("gettingPrices");
@@ -107,6 +112,15 @@ class RateGetterV2 {
 
   }
   
+  async cleanRates(date) {
+    return this.DB.run("DELETE FROM fullrates WHERE date = ?", [date], (err) => {
+      if(err) {
+        logger.info("Error cleaning rates: " + err);
+        return;
+      }
+    })
+  }
+
   scheduleNextUpdate() {
     
     // schedule next rate update at 10 seconds after midnight
