@@ -436,7 +436,8 @@ function cleanSeeds(arr, getLowConfidence = false) {
   return a;
 }
 
+let Updater = new RateGetterV2();
+module.exports.Getter = Updater;
 
-module.exports = RateGetterV2;
 module.exports.emitter = emitter;
 module.exports.ratesReady = ratesReady;
